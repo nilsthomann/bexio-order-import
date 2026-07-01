@@ -1,0 +1,17 @@
+## Ignore Visual Studio Temporary Files and Build Outputs
+[Oo]bj/
+[Bb]in/
+.vs/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+## Ignore OS Files
+.DS_Store
+Thumbs.db
+
+## Ignore Rider/VS Code IDE settings
+.idea/
+.vscode/
+
