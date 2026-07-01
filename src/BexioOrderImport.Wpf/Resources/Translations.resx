@@ -1,0 +1,288 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="0" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+
+  <!-- Translations -->
+  <data name="MainWindow_Title" xml:space="preserve">
+    <value>Bexio Bestellungs-Importeur</value>
+  </data>
+  <data name="Nav_Import" xml:space="preserve">
+    <value>Excel Auftrags Import</value>
+  </data>
+  <data name="Nav_Settings" xml:space="preserve">
+    <value>Einstellungen</value>
+  </data>
+  <data name="Status_BexioConnected" xml:space="preserve">
+    <value>Bexio-Verbindung: Erfolgreich</value>
+  </data>
+  <data name="Status_BexioDisconnected" xml:space="preserve">
+    <value>Bexio-Verbindung: Nicht verbunden</value>
+  </data>
+  <data name="Status_BexioChecking" xml:space="preserve">
+    <value>Bexio-Verbindung: Prüfe...</value>
+  </data>
+  <data name="Import_DragDropText" xml:space="preserve">
+    <value>Excel-Bestellformular hierher ziehen oder Datei auswählen</value>
+  </data>
+  <data name="Import_BrowseButton" xml:space="preserve">
+    <value>Datei auswählen</value>
+  </data>
+  <data name="Import_SelectFileTitle" xml:space="preserve">
+    <value>Excel Bestellformular auswählen</value>
+  </data>
+  <data name="Import_OrderHeader" xml:space="preserve">
+    <value>Bestellungs-Kopfdaten</value>
+  </data>
+  <data name="Import_Customer" xml:space="preserve">
+    <value>Kunde / Firma</value>
+  </data>
+  <data name="Import_Address" xml:space="preserve">
+    <value>Adresse</value>
+  </data>
+  <data name="Import_Email" xml:space="preserve">
+    <value>E-Mail</value>
+  </data>
+  <data name="Import_Buyer" xml:space="preserve">
+    <value>Einkäufer</value>
+  </data>
+  <data name="Import_DeliveryDate" xml:space="preserve">
+    <value>Datum</value>
+  </data>
+  <data name="Import_Conditions" xml:space="preserve">
+    <value>Konditionen</value>
+  </data>
+  <data name="Import_PositionsHeader" xml:space="preserve">
+    <value>Bestellpositionen</value>
+  </data>
+  <data name="Import_ColArtNum" xml:space="preserve">
+    <value>Art. Nr.</value>
+  </data>
+  <data name="Import_ColName" xml:space="preserve">
+    <value>Bezeichnung</value>
+  </data>
+  <data name="Import_ColColor" xml:space="preserve">
+    <value>Farbe</value>
+  </data>
+  <data name="Import_ColCategory" xml:space="preserve">
+    <value>Kategorie</value>
+  </data>
+  <data name="Import_ColSize" xml:space="preserve">
+    <value>Grösse</value>
+  </data>
+  <data name="Import_ColQuantity" xml:space="preserve">
+    <value>Menge</value>
+  </data>
+  <data name="Import_ColUnitPrice" xml:space="preserve">
+    <value>EP (CHF)</value>
+  </data>
+  <data name="Import_ColTotalPrice" xml:space="preserve">
+    <value>Betrag (CHF)</value>
+  </data>
+  <data name="Import_SummaryQuantity" xml:space="preserve">
+    <value>Gesamtsumme Artikel</value>
+  </data>
+  <data name="Import_SummaryGross" xml:space="preserve">
+    <value>Bruttobetrag</value>
+  </data>
+  <data name="Import_SummaryDiscount" xml:space="preserve">
+    <value>Rabatt</value>
+  </data>
+  <data name="Import_SummaryNet" xml:space="preserve">
+    <value>Nettobetrag (exkl. MwSt.)</value>
+  </data>
+  <data name="Import_UploadButton" xml:space="preserve">
+    <value>In Bexio importieren</value>
+  </data>
+  <data name="Import_NoPositions" xml:space="preserve">
+    <value>Keine Bestellpositionen mit Menge > 0 gefunden.</value>
+  </data>
+  <data name="Import_SelectFileFirst" xml:space="preserve">
+    <value>Bitte wählen Sie zuerst eine Excel-Datei aus.</value>
+  </data>
+  <data name="Import_LogHeader" xml:space="preserve">
+    <value>Import Protokoll</value>
+  </data>
+  <data name="Import_ProgressText" xml:space="preserve">
+    <value>Hochgeladen: {0} / {1} Positionen</value>
+  </data>
+  <data name="Import_SuccessTitle" xml:space="preserve">
+    <value>Erfolgreich</value>
+  </data>
+  <data name="Import_SuccessMessage" xml:space="preserve">
+    <value>Auftrag #{0} wurde erfolgreich in Bexio erstellt!</value>
+  </data>
+  <data name="Settings_Header" xml:space="preserve">
+    <value>Konfigurations-Einstellungen</value>
+  </data>
+  <data name="Settings_ApiSection" xml:space="preserve">
+    <value>Bexio API Einstellungen</value>
+  </data>
+  <data name="Settings_TokenLabel" xml:space="preserve">
+    <value>Bexio API Token</value>
+  </data>
+  <data name="Settings_AccountLabel" xml:space="preserve">
+    <value>Erlöskonto (Account ID)</value>
+  </data>
+  <data name="Settings_TaxLabel" xml:space="preserve">
+    <value>MwSt.-Satz (Tax ID)</value>
+  </data>
+  <data name="Settings_ExcelSection" xml:space="preserve">
+    <value>Excel-Parsing-Koordinaten</value>
+  </data>
+  <data name="Settings_HeaderSection" xml:space="preserve">
+    <value>Excel-Header Zellen</value>
+  </data>
+  <data name="Settings_CellCustomerName" xml:space="preserve">
+    <value>Zelle Kundenname</value>
+  </data>
+  <data name="Settings_CellStreet" xml:space="preserve">
+    <value>Zelle Strasse</value>
+  </data>
+  <data name="Settings_CellZipCode" xml:space="preserve">
+    <value>Zelle PLZ</value>
+  </data>
+  <data name="Settings_CellCity" xml:space="preserve">
+    <value>Zelle Ort</value>
+  </data>
+  <data name="Settings_CellEmail" xml:space="preserve">
+    <value>Zelle E-Mail</value>
+  </data>
+  <data name="Settings_CellBuyerName" xml:space="preserve">
+    <value>Zelle Einkäufer</value>
+  </data>
+  <data name="Settings_CellDeliveryDate" xml:space="preserve">
+    <value>Zelle Datum</value>
+  </data>
+  <data name="Settings_CellPaymentTerms" xml:space="preserve">
+    <value>Zelle Konditionen</value>
+  </data>
+  <data name="Settings_CellDiscount" xml:space="preserve">
+    <value>Zelle Rabatt %</value>
+  </data>
+  <data name="Settings_MatrixSection" xml:space="preserve">
+    <value>Grössen-Matrix Bereich (z.B. D10:R16)</value>
+  </data>
+  <data name="Settings_MatrixStart" xml:space="preserve">
+    <value>Zelle Matrix Start (D10)</value>
+  </data>
+  <data name="Settings_MatrixEnd" xml:space="preserve">
+    <value>Zelle Matrix Ende (R16)</value>
+  </data>
+  <data name="Settings_RowsSection" xml:space="preserve">
+    <value>Artikel-Tabellenzeilen</value>
+  </data>
+  <data name="Settings_RowStart" xml:space="preserve">
+    <value>Erste Artikelzeile (z.B. 18)</value>
+  </data>
+  <data name="Settings_ColsSection" xml:space="preserve">
+    <value>Artikel-Tabellenspalten (Index 1-basiert)</value>
+  </data>
+  <data name="Settings_ColArtNum" xml:space="preserve">
+    <value>Spalte Artikel Nr.</value>
+  </data>
+  <data name="Settings_ColName" xml:space="preserve">
+    <value>Spalte Artikelbezeichnung</value>
+  </data>
+  <data name="Settings_ColColor" xml:space="preserve">
+    <value>Spalte Farbe</value>
+  </data>
+  <data name="Settings_ColSizeCategory" xml:space="preserve">
+    <value>Spalte Grössen-Kategorie</value>
+  </data>
+  <data name="Settings_SaveButton" xml:space="preserve">
+    <value>Einstellungen speichern</value>
+  </data>
+  <data name="Settings_SaveSuccess" xml:space="preserve">
+    <value>Einstellungen erfolgreich gespeichert.</value>
+  </data>
+  <data name="CustomerConfirm_Title" xml:space="preserve">
+    <value>Neuer Kunde in Bexio anlegen?</value>
+  </data>
+  <data name="CustomerConfirm_Warning" xml:space="preserve">
+    <value>Ein Kunde mit dieser E-Mail wurde in Bexio nicht gefunden. Soll ein neuer Kontakt erstellt werden?</value>
+  </data>
+  <data name="CustomerConfirm_Field" xml:space="preserve">
+    <value>Feld</value>
+  </data>
+  <data name="CustomerConfirm_Value" xml:space="preserve">
+    <value>Wert für Neuanlage</value>
+  </data>
+  <data name="CustomerConfirm_CreateButton" xml:space="preserve">
+    <value>Kunde erstellen &amp; fortfahren</value>
+  </data>
+  <data name="CustomerConfirm_CancelButton" xml:space="preserve">
+    <value>Import abbrechen</value>
+  </data>
+  <data name="Dialog_CustomerName" xml:space="preserve">
+    <value>Kundenname / Firma</value>
+  </data>
+  <data name="Dialog_Street" xml:space="preserve">
+    <value>Strasse</value>
+  </data>
+  <data name="Dialog_Zip" xml:space="preserve">
+    <value>PLZ</value>
+  </data>
+  <data name="Dialog_City" xml:space="preserve">
+    <value>Ort</value>
+  </data>
+  <data name="Dialog_Email" xml:space="preserve">
+    <value>E-Mail</value>
+  </data>
+</root>

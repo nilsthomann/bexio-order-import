@@ -1,0 +1,85 @@
+using System.Resources;
+
+namespace BexioOrderImport.Wpf.Resources;
+
+public static class Translations
+{
+    private static readonly ResourceManager ResourceManager = 
+        new ResourceManager("BexioOrderImport.Wpf.Resources.Translations", typeof(Translations).Assembly);
+
+    public static string MainWindow_Title => ResourceManager.GetString(nameof(MainWindow_Title)) ?? "";
+    public static string Nav_Import => ResourceManager.GetString(nameof(Nav_Import)) ?? "";
+    public static string Nav_Settings => ResourceManager.GetString(nameof(Nav_Settings)) ?? "";
+    public static string Status_BexioConnected => ResourceManager.GetString(nameof(Status_BexioConnected)) ?? "";
+    public static string Status_BexioDisconnected => ResourceManager.GetString(nameof(Status_BexioDisconnected)) ?? "";
+    public static string Status_BexioChecking => ResourceManager.GetString(nameof(Status_BexioChecking)) ?? "";
+    public static string Import_DragDropText => ResourceManager.GetString(nameof(Import_DragDropText)) ?? "";
+    public static string Import_BrowseButton => ResourceManager.GetString(nameof(Import_BrowseButton)) ?? "";
+    public static string Import_SelectFileTitle => ResourceManager.GetString(nameof(Import_SelectFileTitle)) ?? "";
+    public static string Import_OrderHeader => ResourceManager.GetString(nameof(Import_OrderHeader)) ?? "";
+    public static string Import_Customer => ResourceManager.GetString(nameof(Import_Customer)) ?? "";
+    public static string Import_Address => ResourceManager.GetString(nameof(Import_Address)) ?? "";
+    public static string Import_Email => ResourceManager.GetString(nameof(Import_Email)) ?? "";
+    public static string Import_Buyer => ResourceManager.GetString(nameof(Import_Buyer)) ?? "";
+    public static string Import_DeliveryDate => ResourceManager.GetString(nameof(Import_DeliveryDate)) ?? "";
+    public static string Import_Conditions => ResourceManager.GetString(nameof(Import_Conditions)) ?? "";
+    public static string Import_PositionsHeader => ResourceManager.GetString(nameof(Import_PositionsHeader)) ?? "";
+    public static string Import_ColArtNum => ResourceManager.GetString(nameof(Import_ColArtNum)) ?? "";
+    public static string Import_ColName => ResourceManager.GetString(nameof(Import_ColName)) ?? "";
+    public static string Import_ColColor => ResourceManager.GetString(nameof(Import_ColColor)) ?? "";
+    public static string Import_ColCategory => ResourceManager.GetString(nameof(Import_ColCategory)) ?? "";
+    public static string Import_ColSize => ResourceManager.GetString(nameof(Import_ColSize)) ?? "";
+    public static string Import_ColQuantity => ResourceManager.GetString(nameof(Import_ColQuantity)) ?? "";
+    public static string Import_ColUnitPrice => ResourceManager.GetString(nameof(Import_ColUnitPrice)) ?? "";
+    public static string Import_ColTotalPrice => ResourceManager.GetString(nameof(Import_ColTotalPrice)) ?? "";
+    public static string Import_SummaryQuantity => ResourceManager.GetString(nameof(Import_SummaryQuantity)) ?? "";
+    public static string Import_SummaryGross => ResourceManager.GetString(nameof(Import_SummaryGross)) ?? "";
+    public static string Import_SummaryDiscount => ResourceManager.GetString(nameof(Import_SummaryDiscount)) ?? "";
+    public static string Import_SummaryNet => ResourceManager.GetString(nameof(Import_SummaryNet)) ?? "";
+    public static string Import_UploadButton => ResourceManager.GetString(nameof(Import_UploadButton)) ?? "";
+    public static string Import_NoPositions => ResourceManager.GetString(nameof(Import_NoPositions)) ?? "";
+    public static string Import_SelectFileFirst => ResourceManager.GetString(nameof(Import_SelectFileFirst)) ?? "";
+    public static string Import_LogHeader => ResourceManager.GetString(nameof(Import_LogHeader)) ?? "";
+    public static string Import_ProgressText => ResourceManager.GetString(nameof(Import_ProgressText)) ?? "";
+    public static string Import_SuccessTitle => ResourceManager.GetString(nameof(Import_SuccessTitle)) ?? "";
+    public static string Import_SuccessMessage => ResourceManager.GetString(nameof(Import_SuccessMessage)) ?? "";
+    public static string Settings_Header => ResourceManager.GetString(nameof(Settings_Header)) ?? "";
+    public static string Settings_ApiSection => ResourceManager.GetString(nameof(Settings_ApiSection)) ?? "";
+    public static string Settings_TokenLabel => ResourceManager.GetString(nameof(Settings_TokenLabel)) ?? "";
+    public static string Settings_AccountLabel => ResourceManager.GetString(nameof(Settings_AccountLabel)) ?? "";
+    public static string Settings_TaxLabel => ResourceManager.GetString(nameof(Settings_TaxLabel)) ?? "";
+    public static string Settings_ExcelSection => ResourceManager.GetString(nameof(Settings_ExcelSection)) ?? "";
+    public static string Settings_HeaderSection => ResourceManager.GetString(nameof(Settings_HeaderSection)) ?? "";
+    public static string Settings_CellCustomerName => ResourceManager.GetString(nameof(Settings_CellCustomerName)) ?? "";
+    public static string Settings_CellStreet => ResourceManager.GetString(nameof(Settings_CellStreet)) ?? "";
+    public static string Settings_CellZipCode => ResourceManager.GetString(nameof(Settings_CellZipCode)) ?? "";
+    public static string Settings_CellCity => ResourceManager.GetString(nameof(Settings_CellCity)) ?? "";
+    public static string Settings_CellEmail => ResourceManager.GetString(nameof(Settings_CellEmail)) ?? "";
+    public static string Settings_CellBuyerName => ResourceManager.GetString(nameof(Settings_CellBuyerName)) ?? "";
+    public static string Settings_CellDeliveryDate => ResourceManager.GetString(nameof(Settings_CellDeliveryDate)) ?? "";
+    public static string Settings_CellPaymentTerms => ResourceManager.GetString(nameof(Settings_CellPaymentTerms)) ?? "";
+    public static string Settings_CellDiscount => ResourceManager.GetString(nameof(Settings_CellDiscount)) ?? "";
+    public static string Settings_MatrixSection => ResourceManager.GetString(nameof(Settings_MatrixSection)) ?? "";
+    public static string Settings_MatrixStart => ResourceManager.GetString(nameof(Settings_MatrixStart)) ?? "";
+    public static string Settings_MatrixEnd => ResourceManager.GetString(nameof(Settings_MatrixEnd)) ?? "";
+    public static string Settings_RowsSection => ResourceManager.GetString(nameof(Settings_RowsSection)) ?? "";
+    public static string Settings_RowStart => ResourceManager.GetString(nameof(Settings_RowStart)) ?? "";
+    public static string Settings_ColsSection => ResourceManager.GetString(nameof(Settings_ColsSection)) ?? "";
+    public static string Settings_ColArtNum => ResourceManager.GetString(nameof(Settings_ColArtNum)) ?? "";
+    public static string Settings_ColName => ResourceManager.GetString(nameof(Settings_ColName)) ?? "";
+    public static string Settings_ColColor => ResourceManager.GetString(nameof(Settings_ColColor)) ?? "";
+    public static string Settings_ColSizeCategory => ResourceManager.GetString(nameof(Settings_ColSizeCategory)) ?? "";
+    public static string Settings_SaveButton => ResourceManager.GetString(nameof(Settings_SaveButton)) ?? "";
+    public static string Settings_SaveSuccess => ResourceManager.GetString(nameof(Settings_SaveSuccess)) ?? "";
+    public static string CustomerConfirm_Title => ResourceManager.GetString(nameof(CustomerConfirm_Title)) ?? "";
+    public static string CustomerConfirm_Warning => ResourceManager.GetString(nameof(CustomerConfirm_Warning)) ?? "";
+    public static string CustomerConfirm_Field => ResourceManager.GetString(nameof(CustomerConfirm_Field)) ?? "";
+    public static string CustomerConfirm_Value => ResourceManager.GetString(nameof(CustomerConfirm_Value)) ?? "";
+    public static string CustomerConfirm_CreateButton => ResourceManager.GetString(nameof(CustomerConfirm_CreateButton)) ?? "";
+    public static string CustomerConfirm_CancelButton => ResourceManager.GetString(nameof(CustomerConfirm_CancelButton)) ?? "";
+    public static string Dialog_CustomerName => ResourceManager.GetString(nameof(Dialog_CustomerName)) ?? "";
+    public static string Dialog_Street => ResourceManager.GetString(nameof(Dialog_Street)) ?? "";
+    public static string Dialog_Zip => ResourceManager.GetString(nameof(Dialog_Zip)) ?? "";
+    public static string Dialog_City => ResourceManager.GetString(nameof(Dialog_City)) ?? "";
+    public static string Dialog_Email => ResourceManager.GetString(nameof(Dialog_Email)) ?? "";
+}

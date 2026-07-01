@@ -37,8 +37,13 @@ public class ClosedXmlExcelParser : IExcelParser
 
         // Parse discount
         string discountVal = sheet.Cell(_options.Header.DiscountCell).Value.ToString().Trim();
+        discountVal = discountVal.Replace("%", "").Trim();
         if (decimal.TryParse(discountVal, out decimal parsedDiscount))
         {
+            if (parsedDiscount > 0 && parsedDiscount < 1)
+            {
+                parsedDiscount *= 100;
+            }
             order.DiscountPercent = parsedDiscount;
         }
 

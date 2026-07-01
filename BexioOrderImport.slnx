@@ -5,5 +5,6 @@
     <Project Path="src/BexioOrderImport.Domain/BexioOrderImport.Domain.csproj" />
     <Project Path="src/BexioOrderImport.Infrastructure/BexioOrderImport.Infrastructure.csproj" />
     <Project Path="src/BexioOrderImport.Tests/BexioOrderImport.Tests.csproj" />
+    <Project Path="src/BexioOrderImport.Wpf/BexioOrderImport.Wpf.csproj" />
   </Folder>
 </Solution>
