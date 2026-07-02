@@ -78,7 +78,7 @@ src/
 ### Build & Run
 1. **Clone the repository**:
    ```bash
-   git clone https://github.com/nils-thomann/bexio-order-import.git
+   git clone https://github.com/nilsthomann/bexio-order-import.git
    cd bexio-order-import
    ```
 

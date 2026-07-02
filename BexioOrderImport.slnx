@@ -1,7 +1,29 @@
 <Solution>
+  <Folder Name="/.github/workflows/">
+    <File Path=".github/workflows/pr-build.yml" />
+    <File Path=".github/workflows/pr-title-lint.yml" />
+    <File Path=".github/workflows/release.yml" />
+  </Folder>
+  <Folder Name="/.husky/">
+    <File Path=".husky/commit-msg" />
+    <File Path=".husky/task-runner.json" />
+  </Folder>
+  <Folder Name="/build/">
+    <File Path="build/lint-commit-msg.ps1" />
+    <File Path="build/run-coverage.ps1" />
+    <File Path="build/setup.iss" />
+  </Folder>
+  <Folder Name="/doc/">
+    <File Path="doc/UserManual.md" />
+  </Folder>
+  <Folder Name="/doc/assets/">
+    <File Path="doc/assets/excel_template_preview.png" />
+  </Folder>
   <Folder Name="/Solution Items/">
+    <File Path=".commitlintrc.json" />
     <File Path=".gitignore" />
     <File Path="CONTRIBUTING.md" />
+    <File Path="dotnet-tools.json" />
     <File Path="LICENSE" />
     <File Path="README.md" />
   </Folder>

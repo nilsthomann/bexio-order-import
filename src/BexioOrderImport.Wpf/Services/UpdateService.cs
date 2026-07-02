@@ -19,7 +19,7 @@ public class UpdateInfo
 public class UpdateService
 {
     private readonly HttpClient _httpClient;
-    private const string RepoOwner = "nils-thomann";
+    private const string RepoOwner = "nilsthomann";
     private const string RepoName = "bexio-order-import";
 
     public UpdateService()
