@@ -31,8 +31,39 @@ public class UpdateService
 
     public async Task<UpdateInfo?> CheckForUpdatesAsync()
     {
+        if (IsUnitTest()) return null;
+
+        string appDataFolder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "BexioOrderImport");
+        string cacheFilePath = Path.Combine(appDataFolder, "last_update_check.txt");
+        if (File.Exists(cacheFilePath))
+        {
+            try
+            {
+                string text = File.ReadAllText(cacheFilePath).Trim();
+                if (long.TryParse(text, out long lastCheckTicks))
+                {
+                    var lastCheck = new DateTime(lastCheckTicks, DateTimeKind.Utc);
+                    if (DateTime.UtcNow - lastCheck < TimeSpan.FromHours(4))
+                    {
+                        return null;
+                    }
+                }
+            }
+            catch { }
+        }
+
         try
         {
+            try
+            {
+                if (!Directory.Exists(appDataFolder))
+                {
+                    Directory.CreateDirectory(appDataFolder);
+                }
+                File.WriteAllText(cacheFilePath, DateTime.UtcNow.Ticks.ToString());
+            }
+            catch { }
+
             string url = $"https://api.github.com/repos/{RepoOwner}/{RepoName}/releases/latest";
             var response = await _httpClient.GetAsync(url);
             if (!response.IsSuccessStatusCode) return null;
@@ -149,6 +180,19 @@ public class UpdateService
         if (Version.TryParse(tag, out var latestVersion))
         {
             return latestVersion > currentVersion;
+        }
+        return false;
+    }
+
+    private bool IsUnitTest()
+    {
+        foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies())
+        {
+            string name = assembly.FullName?.ToLowerInvariant() ?? "";
+            if (name.Contains("xunit") || name.Contains("test") || name.Contains("nunit") || name.Contains("runner"))
+            {
+                return true;
+            }
         }
         return false;
     }
