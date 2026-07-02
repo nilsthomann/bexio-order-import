@@ -38,8 +38,8 @@ public class ImportOrderUseCaseTests
         client.AddArticlePositionCount.Should().Be(1);
         client.AddCustomPositionCount.Should().Be(0);
         
-        loggedMessages.Should().Contain(m => m.Contains("Auftrag erfolgreich erstellt"));
-        loggedMessages.Should().Contain(m => m.Contains("Erfolgreich abgeschlossen"));
+        loggedMessages.Should().Contain(m => m.Contains("Order created successfully"));
+        loggedMessages.Should().Contain(m => m.Contains("Successfully completed"));
     }
 
     [Fact]
@@ -67,8 +67,8 @@ public class ImportOrderUseCaseTests
         client.CreateOrderCalled.Should().BeTrue();
         client.AddArticlePositionCount.Should().Be(1);
         
-        loggedMessages.Should().Contain(m => m.Contains("Erstelle neuen Kunden in Bexio"));
-        loggedMessages.Should().Contain(m => m.Contains("Erfolgreich abgeschlossen"));
+        loggedMessages.Should().Contain(m => m.Contains("Creating new customer in Bexio"));
+        loggedMessages.Should().Contain(m => m.Contains("Successfully completed"));
     }
 
     [Fact]
@@ -95,7 +95,7 @@ public class ImportOrderUseCaseTests
         client.CreateContactCalled.Should().BeFalse();
         client.CreateOrderCalled.Should().BeFalse();
         
-        loggedMessages.Should().Contain(m => m.Contains("Import vom Auftrag abgebrochen (Kunde wurde nicht erstellt)."));
+        loggedMessages.Should().Contain(m => m.Contains("Order import cancelled (customer was not created)."));
     }
 
     [Fact]
@@ -120,7 +120,7 @@ public class ImportOrderUseCaseTests
 
         // Assert
         client.CreateOrderCalled.Should().BeFalse();
-        loggedMessages.Should().Contain("Import vom Auftrag abgebrochen.");
+        loggedMessages.Should().Contain("Order import cancelled.");
     }
 
     private Order CreateSampleOrder()

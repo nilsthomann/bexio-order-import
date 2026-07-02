@@ -3,73 +3,121 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:lex="clr-namespace:BexioOrderImport.Wpf.Resources"
         Title="{x:Static lex:Translations.CustomerConfirm_Title}" 
-        Height="440" Width="560" 
-        WindowStartupLocation="CenterOwner"
-        ResizeMode="NoResize"
-        Background="{StaticResource BackgroundBrush}"
+        WindowStyle="None"
+        AllowsTransparency="True"
+        Background="Transparent"
+        WindowStartupLocation="Manual"
         UseLayoutRounding="True"
         TextOptions.TextFormattingMode="Display"
-        TextOptions.TextRenderingMode="ClearType">
-    
-    <Grid Margin="24">
-        <Grid.RowDefinitions>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="*"/>
-            <RowDefinition Height="Auto"/>
-        </Grid.RowDefinitions>
-        
-        <!-- Header -->
-        <TextBlock Text="{x:Static lex:Translations.CustomerConfirm_Title}" 
-                   Style="{StaticResource SectionHeaderTextBlockStyle}"
-                   FontSize="18" Grid.Row="0"/>
-        
-        <TextBlock Text="{x:Static lex:Translations.CustomerConfirm_Warning}" 
-                   Style="{StaticResource MutedTextBlockStyle}" 
-                   TextWrapping="Wrap" Margin="0,0,0,16" Grid.Row="1"/>
-        
-        <!-- Editable Fields -->
-        <Border Style="{StaticResource CardBorderStyle}" Grid.Row="2" Margin="0" Padding="12">
+        TextOptions.TextRenderingMode="ClearType"
+        ShowInTaskbar="False">
+    <Window.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="/BexioOrderImport.Wpf;component/Styles/AppStyles.xaml"/>
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </Window.Resources>
+
+    <Grid>
+        <!-- Backdrop -->
+        <Rectangle Fill="#99000000"/>
+
+        <!-- Card -->
+        <Border Width="580"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Center"
+                Background="{StaticResource BackgroundBrush}"
+                CornerRadius="12"
+                BorderBrush="{StaticResource BorderBrush}"
+                BorderThickness="1">
+            <Border.Effect>
+                <DropShadowEffect Color="#000000" Opacity="0.25" BlurRadius="32" ShadowDepth="8" Direction="270"/>
+            </Border.Effect>
             <Grid>
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="150"/>
-                    <ColumnDefinition Width="*"/>
-                </Grid.ColumnDefinitions>
                 <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto" MinHeight="40"/>
-                    <RowDefinition Height="Auto" MinHeight="40"/>
-                    <RowDefinition Height="Auto" MinHeight="40"/>
-                    <RowDefinition Height="Auto" MinHeight="40"/>
-                    <RowDefinition Height="Auto" MinHeight="40"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
                 </Grid.RowDefinitions>
 
-                <TextBlock Text="{x:Static lex:Translations.Dialog_Email}" VerticalAlignment="Center" Grid.Row="0" Grid.Column="0"/>
-                <TextBox Text="{Binding Email, UpdateSourceTrigger=PropertyChanged}" Grid.Row="0" Grid.Column="1" VerticalAlignment="Center" IsEnabled="False"/>
+                <!-- Header -->
+                <Border Grid.Row="0" CornerRadius="12,12,0,0" Padding="20,14"
+                        Background="{StaticResource SidebarBrush}">
+                    <Grid>
+                        <TextBlock Text="{x:Static lex:Translations.CustomerConfirm_Title}" 
+                                   FontSize="15" FontWeight="SemiBold"
+                                   Foreground="{StaticResource TextBrush}"
+                                   VerticalAlignment="Center"/>
+                        <Button HorizontalAlignment="Right" VerticalAlignment="Center"
+                                Click="CancelButton_Click"
+                                Style="{StaticResource SecondaryButtonStyle}"
+                                Width="28" Height="28" Padding="0" BorderThickness="0"
+                                ToolTip="Schliessen">
+                            <Path Data="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"
+                                  Fill="{StaticResource TextMutedBrush}" Stretch="Uniform" Width="12" Height="12"/>
+                        </Button>
+                    </Grid>
+                </Border>
 
-                <TextBlock Text="{x:Static lex:Translations.Dialog_CustomerName}" VerticalAlignment="Center" Grid.Row="1" Grid.Column="0"/>
-                <TextBox Text="{Binding CompanyName, UpdateSourceTrigger=PropertyChanged}" Grid.Row="1" Grid.Column="1" VerticalAlignment="Center"/>
-                
-                <TextBlock Text="{x:Static lex:Translations.Dialog_Street}" VerticalAlignment="Center" Grid.Row="2" Grid.Column="0"/>
-                <TextBox Text="{Binding Street, UpdateSourceTrigger=PropertyChanged}" Grid.Row="2" Grid.Column="1" VerticalAlignment="Center"/>
-                
-                <TextBlock Text="{x:Static lex:Translations.Dialog_Zip}" VerticalAlignment="Center" Grid.Row="3" Grid.Column="0"/>
-                <TextBox Text="{Binding ZipCode, UpdateSourceTrigger=PropertyChanged}" Grid.Row="3" Grid.Column="1" VerticalAlignment="Center"/>
-                
-                <TextBlock Text="{x:Static lex:Translations.Dialog_City}" VerticalAlignment="Center" Grid.Row="4" Grid.Column="0"/>
-                <TextBox Text="{Binding City, UpdateSourceTrigger=PropertyChanged}" Grid.Row="4" Grid.Column="1" VerticalAlignment="Center"/>
-             </Grid>
+                <!-- Separator -->
+                <Border Grid.Row="1" Height="1" Background="{StaticResource BorderBrush}"/>
+
+                <!-- Body Content -->
+                <StackPanel Grid.Row="2" Margin="20,16,20,0">
+                    <TextBlock Text="{x:Static lex:Translations.CustomerConfirm_Warning}" 
+                               Style="{StaticResource MutedTextBlockStyle}" 
+                               TextWrapping="Wrap" Margin="0,0,0,16"/>
+                    
+                    <Border Style="{StaticResource CardBorderStyle}" Margin="0" Padding="12">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="150"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto" MinHeight="40"/>
+                                <RowDefinition Height="Auto" MinHeight="40"/>
+                                <RowDefinition Height="Auto" MinHeight="40"/>
+                                <RowDefinition Height="Auto" MinHeight="40"/>
+                                <RowDefinition Height="Auto" MinHeight="40"/>
+                            </Grid.RowDefinitions>
+
+                            <TextBlock Text="{x:Static lex:Translations.Dialog_Email}" VerticalAlignment="Center" Grid.Row="0" Grid.Column="0" FontWeight="Medium"/>
+                            <TextBox Text="{Binding Email, UpdateSourceTrigger=PropertyChanged}" Grid.Row="0" Grid.Column="1" Height="32" VerticalAlignment="Center" IsEnabled="False"/>
+
+                            <TextBlock Text="{x:Static lex:Translations.Dialog_CustomerName}" VerticalAlignment="Center" Grid.Row="1" Grid.Column="0" FontWeight="Medium"/>
+                            <TextBox Text="{Binding CompanyName, UpdateSourceTrigger=PropertyChanged}" Grid.Row="1" Grid.Column="1" Height="32" VerticalAlignment="Center"/>
+                            
+                            <TextBlock Text="{x:Static lex:Translations.Dialog_Street}" VerticalAlignment="Center" Grid.Row="2" Grid.Column="0" FontWeight="Medium"/>
+                            <TextBox Text="{Binding Street, UpdateSourceTrigger=PropertyChanged}" Grid.Row="2" Grid.Column="1" Height="32" VerticalAlignment="Center"/>
+                            
+                            <TextBlock Text="{x:Static lex:Translations.Dialog_Zip}" VerticalAlignment="Center" Grid.Row="3" Grid.Column="0" FontWeight="Medium"/>
+                            <TextBox Text="{Binding ZipCode, UpdateSourceTrigger=PropertyChanged}" Grid.Row="3" Grid.Column="1" Height="32" VerticalAlignment="Center"/>
+                            
+                            <TextBlock Text="{x:Static lex:Translations.Dialog_City}" VerticalAlignment="Center" Grid.Row="4" Grid.Column="0" FontWeight="Medium"/>
+                            <TextBox Text="{Binding City, UpdateSourceTrigger=PropertyChanged}" Grid.Row="4" Grid.Column="1" Height="32" VerticalAlignment="Center"/>
+                        </Grid>
+                    </Border>
+                </StackPanel>
+
+                <!-- Bottom Separator -->
+                <Border Grid.Row="3" Height="1" Background="{StaticResource BorderBrush}" Margin="0,16,0,0"/>
+
+                <!-- Footer Actions -->
+                <StackPanel Grid.Row="4" Orientation="Horizontal" HorizontalAlignment="Right" Margin="20,12,20,16">
+                    <Button Content="{x:Static lex:Translations.CustomerConfirm_CancelButton}" 
+                            Click="CancelButton_Click"
+                            Style="{StaticResource SecondaryButtonStyle}" 
+                            Margin="0,0,8,0" Width="140" Height="34"/>
+                    <Button Content="{x:Static lex:Translations.CustomerConfirm_CreateButton}" 
+                            Click="CreateButton_Click"
+                            Style="{StaticResource ModernButtonStyle}" 
+                            Width="200" Height="34"/>
+                </StackPanel>
+            </Grid>
         </Border>
-        
-        <!-- Actions -->
-        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Grid.Row="3" Margin="0,16,0,0">
-            <Button Content="{x:Static lex:Translations.CustomerConfirm_CancelButton}" 
-                    Click="CancelButton_Click"
-                    Style="{StaticResource SecondaryButtonStyle}" 
-                    Margin="0,0,12,0" Width="140"/>
-            <Button Content="{x:Static lex:Translations.CustomerConfirm_CreateButton}" 
-                    Click="CreateButton_Click"
-                    Style="{StaticResource ModernButtonStyle}" 
-                    Width="200" Foreground="White"/>
-        </StackPanel>
     </Grid>
 </Window>

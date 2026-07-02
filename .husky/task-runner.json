@@ -1,0 +1,10 @@
+{
+   "$schema": "https://alirezanet.github.io/Husky.Net/schema.json",
+   "tasks": [
+      {
+         "name": "lint-commit-msg",
+         "command": "powershell",
+         "args": [ "-ExecutionPolicy", "Bypass", "-File", "build/lint-commit-msg.ps1", "${args}" ]
+      }
+   ]
+}

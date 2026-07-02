@@ -15,6 +15,7 @@
             <conv:ColorToBrushConverter x:Key="ColorToBrushConverter"/>
             <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
             <conv:InverseBooleanToVisibilityConverter x:Key="InverseBooleanToVisibilityConverter"/>
+            <conv:EqualityToBooleanConverter x:Key="EqualityConverter"/>
 
             <!-- Style to hide TabControl headers for navigation -->
             <Style x:Key="TabItemHiddenStyle" TargetType="{x:Type TabItem}">

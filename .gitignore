@@ -15,3 +15,12 @@ Thumbs.db
 .idea/
 .vscode/
 
+/*.xlsx
+
+## Ignore Test Results
+[Tt]est[Rr]esults/
+
+
+## Ignore Build Output / Publish
+/build/Output
+/publish

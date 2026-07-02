@@ -118,420 +118,420 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="MainWindow_Title" xml:space="preserve">
-    <value>Bexio Bestellungs-Importeur</value>
+    <value>Bexio Order Importer</value>
   </data>
   <data name="Nav_Import" xml:space="preserve">
-    <value>Excel Auftrags Import</value>
+    <value>Excel Order Import</value>
   </data>
   <data name="Nav_Settings" xml:space="preserve">
-    <value>Einstellungen</value>
+    <value>Settings</value>
   </data>
   <data name="Status_BexioConnected" xml:space="preserve">
-    <value>Bexio-Verbindung: Erfolgreich</value>
+    <value>Bexio Connection: Connected</value>
   </data>
   <data name="Status_BexioDisconnected" xml:space="preserve">
-    <value>Bexio-Verbindung: Nicht verbunden</value>
+    <value>Bexio Connection: Disconnected</value>
   </data>
   <data name="Status_BexioChecking" xml:space="preserve">
-    <value>Bexio-Verbindung: Prüfe...</value>
+    <value>Bexio Connection: Checking...</value>
   </data>
   <data name="Import_DragDropText" xml:space="preserve">
-    <value>Excel-Bestellformular hierher ziehen oder Datei auswählen</value>
+    <value>Drag Excel order form here or click to browse</value>
   </data>
   <data name="Import_BrowseButton" xml:space="preserve">
-    <value>Datei auswählen</value>
+    <value>Select File</value>
   </data>
   <data name="Import_SelectFileTitle" xml:space="preserve">
-    <value>Excel Bestellformular auswählen</value>
+    <value>Select Excel Order Form</value>
   </data>
   <data name="Import_OrderHeader" xml:space="preserve">
-    <value>Bestellungs-Kopfdaten</value>
+    <value>Order Header Details</value>
   </data>
   <data name="Import_Customer" xml:space="preserve">
-    <value>Kunde / Firma</value>
+    <value>Customer / Company</value>
   </data>
   <data name="Import_Address" xml:space="preserve">
-    <value>Adresse</value>
+    <value>Address</value>
   </data>
   <data name="Import_Email" xml:space="preserve">
     <value>E-Mail</value>
   </data>
   <data name="Import_Buyer" xml:space="preserve">
-    <value>Einkäufer</value>
+    <value>Buyer</value>
   </data>
   <data name="Import_DeliveryDate" xml:space="preserve">
-    <value>Datum</value>
+    <value>Date</value>
   </data>
   <data name="Import_Conditions" xml:space="preserve">
-    <value>Konditionen</value>
+    <value>Terms</value>
   </data>
   <data name="Import_PositionsHeader" xml:space="preserve">
-    <value>Bestellpositionen</value>
+    <value>Order Positions</value>
   </data>
   <data name="Import_ColArtNum" xml:space="preserve">
-    <value>Art. Nr.</value>
+    <value>Art No.</value>
   </data>
   <data name="Import_ColName" xml:space="preserve">
-    <value>Bezeichnung</value>
+    <value>Description</value>
   </data>
   <data name="Import_ColColor" xml:space="preserve">
-    <value>Farbe</value>
+    <value>Color</value>
   </data>
   <data name="Import_ColCategory" xml:space="preserve">
-    <value>Kategorie</value>
+    <value>Category</value>
   </data>
   <data name="Import_ColSize" xml:space="preserve">
-    <value>Grösse</value>
+    <value>Size</value>
   </data>
   <data name="Import_ColQuantity" xml:space="preserve">
-    <value>Menge</value>
+    <value>Quantity</value>
   </data>
   <data name="Import_ColUnitPrice" xml:space="preserve">
     <value>EP (CHF)</value>
   </data>
   <data name="Import_ColTotalPrice" xml:space="preserve">
-    <value>Betrag (CHF)</value>
+    <value>Total (CHF)</value>
   </data>
   <data name="Import_SummaryQuantity" xml:space="preserve">
-    <value>Gesamtsumme Artikel</value>
+    <value>Total Quantity</value>
   </data>
   <data name="Import_SummaryGross" xml:space="preserve">
-    <value>Bruttobetrag</value>
+    <value>Gross Amount</value>
   </data>
   <data name="Import_SummaryDiscount" xml:space="preserve">
-    <value>Rabatt</value>
+    <value>Discount</value>
   </data>
   <data name="Import_SummaryNet" xml:space="preserve">
-    <value>Nettobetrag (exkl. MwSt.)</value>
+    <value>Net Amount (excl. VAT)</value>
   </data>
   <data name="Import_UploadButton" xml:space="preserve">
-    <value>In Bexio importieren</value>
+    <value>Import to Bexio</value>
   </data>
   <data name="Import_NoPositions" xml:space="preserve">
-    <value>Keine Bestellpositionen mit Menge &gt; 0 gefunden.</value>
+    <value>No order positions with quantity &gt; 0 found.</value>
   </data>
   <data name="Import_SelectFileFirst" xml:space="preserve">
-    <value>Bitte wählen Sie zuerst eine Excel-Datei aus.</value>
+    <value>Please select an Excel file first.</value>
   </data>
   <data name="Import_LogHeader" xml:space="preserve">
-    <value>Import Protokoll</value>
+    <value>Import Log</value>
   </data>
   <data name="Import_ProgressText" xml:space="preserve">
-    <value>Hochgeladen: {0} / {1} Positionen</value>
+    <value>Uploaded: {0} / {1} positions</value>
   </data>
   <data name="Import_SuccessTitle" xml:space="preserve">
-    <value>Erfolgreich</value>
+    <value>Success</value>
   </data>
   <data name="Import_SuccessMessage" xml:space="preserve">
-    <value>Auftrag #{0} wurde erfolgreich in Bexio erstellt!</value>
+    <value>Order #{0} was successfully created in Bexio!</value>
   </data>
   <data name="Settings_Header" xml:space="preserve">
-    <value>Konfigurations-Einstellungen</value>
+    <value>Configuration Settings</value>
   </data>
   <data name="Settings_ApiSection" xml:space="preserve">
-    <value>Bexio API Einstellungen</value>
+    <value>Bexio API Settings</value>
   </data>
   <data name="Settings_TokenLabel" xml:space="preserve">
     <value>Bexio API Token</value>
   </data>
   <data name="Settings_AccountLabel" xml:space="preserve">
-    <value>Erlöskonto / Account ID</value>
+    <value>Default Account ID</value>
   </data>
   <data name="Settings_TaxLabel" xml:space="preserve">
-    <value>MwSt.-Satz / Tax ID</value>
+    <value>Default Tax ID</value>
   </data>
   <data name="Settings_ExcelSection" xml:space="preserve">
-    <value>Excel Mapping Konfiguration</value>
+    <value>Excel Mapping Configuration</value>
   </data>
   <data name="Settings_HeaderSection" xml:space="preserve">
-    <value>Excel-Header Zellen</value>
+    <value>Header Coordinates (Cells)</value>
   </data>
   <data name="Settings_CellCustomerName" xml:space="preserve">
-    <value>Zelle Kundenname</value>
+    <value>Customer/Company cell</value>
   </data>
   <data name="Settings_CellStreet" xml:space="preserve">
-    <value>Zelle Strasse</value>
+    <value>Street cell</value>
   </data>
   <data name="Settings_CellZipCode" xml:space="preserve">
-    <value>Zelle PLZ</value>
+    <value>ZIP Code &amp; City cell</value>
   </data>
   <data name="Settings_CellCity" xml:space="preserve">
-    <value>Zelle Ort</value>
+    <value>City cell</value>
   </data>
   <data name="Settings_CellEmail" xml:space="preserve">
-    <value>Zelle E-Mail</value>
+    <value>E-Mail cell</value>
   </data>
   <data name="Settings_CellBuyerName" xml:space="preserve">
-    <value>Zelle Einkäufer</value>
+    <value>Buyer Name cell</value>
   </data>
   <data name="Settings_CellDeliveryDate" xml:space="preserve">
-    <value>Zelle Datum</value>
+    <value>Date cell</value>
   </data>
   <data name="Settings_CellPaymentTerms" xml:space="preserve">
-    <value>Zelle Konditionen</value>
+    <value>Payment Terms cell</value>
   </data>
   <data name="Settings_CellDiscount" xml:space="preserve">
-    <value>Zelle Rabatt %</value>
+    <value>Discount cell</value>
   </data>
   <data name="Settings_MatrixSection" xml:space="preserve">
-    <value>Grössen-Matrix</value>
+    <value>Size Matrix</value>
   </data>
   <data name="Settings_MatrixStart" xml:space="preserve">
-    <value>Startzeile Matrix</value>
+    <value>Matrix Start Row</value>
   </data>
   <data name="Settings_MatrixEnd" xml:space="preserve">
-    <value>Endzeile Matrix</value>
+    <value>Matrix End Row</value>
   </data>
   <data name="Settings_RowsSection" xml:space="preserve">
-    <value>Artikel-Tabellenzeilen</value>
+    <value>Article Grid Rows</value>
   </data>
   <data name="Settings_RowStart" xml:space="preserve">
-    <value>Erste Artikelzeile</value>
+    <value>First Article Row</value>
   </data>
   <data name="Settings_ColsSection" xml:space="preserve">
-    <value>Artikel-Tabellenspalten</value>
+    <value>Article Grid Columns</value>
   </data>
   <data name="Settings_ColArtNum" xml:space="preserve">
-    <value>Spalte Artikel Nr.</value>
+    <value>Article Number Column</value>
   </data>
   <data name="Settings_ColName" xml:space="preserve">
-    <value>Spalte Artikelbezeichnung</value>
+    <value>Article Name Column</value>
   </data>
   <data name="Settings_ColColor" xml:space="preserve">
-    <value>Spalte Farbe</value>
+    <value>Color Column</value>
   </data>
   <data name="Settings_ColSizeCategory" xml:space="preserve">
-    <value>Spalte Grössen-Kategorie</value>
+    <value>Size Category Column</value>
   </data>
   <data name="Settings_SaveButton" xml:space="preserve">
-    <value>Einstellungen speichern</value>
+    <value>Save Settings</value>
   </data>
   <data name="Settings_SaveSuccess" xml:space="preserve">
-    <value>Einstellungen erfolgreich gespeichert.</value>
+    <value>Settings successfully saved.</value>
   </data>
   <data name="CustomerConfirm_Title" xml:space="preserve">
-    <value>Neuer Kunde in Bexio anlegen?</value>
+    <value>Create new Customer in Bexio?</value>
   </data>
   <data name="CustomerConfirm_Warning" xml:space="preserve">
-    <value>Ein Kunde mit dieser E-Mail wurde in Bexio nicht gefunden. Soll ein neuer Kontakt erstellt werden?</value>
+    <value>A customer with this e-mail address was not found in Bexio. Do you want to create a new contact?</value>
   </data>
   <data name="CustomerConfirm_Field" xml:space="preserve">
-    <value>Feld</value>
+    <value>Field</value>
   </data>
   <data name="CustomerConfirm_Value" xml:space="preserve">
-    <value>Wert für Neuanlage</value>
+    <value>Value for creation</value>
   </data>
   <data name="CustomerConfirm_CreateButton" xml:space="preserve">
-    <value>Kunde erstellen &amp; fortfahren</value>
+    <value>Create Contact &amp; Continue</value>
   </data>
   <data name="CustomerConfirm_CancelButton" xml:space="preserve">
-    <value>Import abbrechen</value>
+    <value>Cancel Import</value>
   </data>
   <data name="Dialog_CustomerName" xml:space="preserve">
-    <value>Kundenname / Firma</value>
+    <value>Customer / Company</value>
   </data>
   <data name="Dialog_Street" xml:space="preserve">
-    <value>Strasse</value>
+    <value>Street</value>
   </data>
   <data name="Dialog_Zip" xml:space="preserve">
-    <value>PLZ</value>
+    <value>ZIP Code</value>
   </data>
   <data name="Dialog_City" xml:space="preserve">
-    <value>Ort</value>
+    <value>City</value>
   </data>
   <data name="Dialog_Email" xml:space="preserve">
     <value>E-Mail</value>
   </data>
   <data name="Import_ConfirmTitle" xml:space="preserve">
-    <value>Bestellung übermitteln?</value>
+    <value>Import Order?</value>
   </data>
   <data name="Import_ConfirmMessage" xml:space="preserve">
-    <value>Möchten Sie diese Bestellung jetzt an Bexio übermitteln?</value>
+    <value>Do you want to upload this order to Bexio now?</value>
   </data>
   <data name="Settings_ErrorLoad" xml:space="preserve">
-    <value>Fehler beim Laden der Einstellungen</value>
+    <value>Error loading settings</value>
   </data>
   <data name="Settings_ErrorSave" xml:space="preserve">
-    <value>Fehler beim Speichern der Einstellungen</value>
+    <value>Error saving settings</value>
   </data>
   <data name="Settings_ErrorTitle" xml:space="preserve">
-    <value>Fehler</value>
+    <value>Error</value>
   </data>
   <data name="Settings_LanguageSection" xml:space="preserve">
-    <value>Sprachen</value>
+    <value>Languages</value>
   </data>
   <data name="Settings_LanguageLabel" xml:space="preserve">
-    <value>Sprachauswahl</value>
+    <value>Select Language</value>
   </data>
   <data name="Settings_LanguageGerman" xml:space="preserve">
-    <value>Deutsch</value>
+    <value>German</value>
   </data>
   <data name="Settings_LanguageEnglish" xml:space="preserve">
     <value>English</value>
   </data>
   <data name="Settings_RestartPrompt" xml:space="preserve">
-    <value>Einstellungen gespeichert. Bitte starten Sie die Applikation neu, um die Sprache zu übernehmen.</value>
+    <value>Settings saved. Please restart the application to apply the language change.</value>
   </data>
   <data name="Settings_ColStartQty" xml:space="preserve">
-    <value>Erste Mengen-Spalte</value>
+    <value>First Quantity Column</value>
   </data>
   <data name="Settings_ColEndQty" xml:space="preserve">
-    <value>Letzte Mengen-Spalte</value>
+    <value>Last Quantity Column</value>
   </data>
   <data name="Settings_ColUnitPrice" xml:space="preserve">
-    <value>Spalte Einzelpreis</value>
+    <value>Unit Price Column</value>
   </data>
   <data name="Settings_ProfilesSection" xml:space="preserve">
-    <value>Excel Mapping Profile</value>
+    <value>Excel Mapping Profiles</value>
   </data>
   <data name="Settings_ProfilesSelectLabel" xml:space="preserve">
-    <value>Ausgewähltes Profil</value>
+    <value>Selected Profile</value>
   </data>
   <data name="Settings_ProfilesActiveLabel" xml:space="preserve">
-    <value>Aktives Profil</value>
+    <value>Active Profile</value>
   </data>
   <data name="Settings_ProfilesNewNamePlaceholder" xml:space="preserve">
-    <value>Neuer Profilname</value>
+    <value>New profile name</value>
   </data>
   <data name="Settings_ProfilesAddButton" xml:space="preserve">
-    <value>Erstellen</value>
+    <value>Create</value>
   </data>
   <data name="Settings_ProfilesDeleteButton" xml:space="preserve">
-    <value>Löschen</value>
+    <value>Delete</value>
   </data>
   <data name="Settings_ProfilesSetActiveButton" xml:space="preserve">
-    <value>Als aktiv setzen</value>
+    <value>Set as Active</value>
   </data>
   <data name="Settings_ReloadPromptTitle" xml:space="preserve">
-    <value>Neustart erforderlich</value>
+    <value>Reload Required</value>
   </data>
   <data name="Settings_ReloadPromptMessage" xml:space="preserve">
-    <value>Möchten Sie die Applikation jetzt neu laden, um die Sprache zu übernehmen?</value>
+    <value>Would you like to reload the application now to apply the language change?</value>
   </data>
   <data name="Settings_ProfilesTableColName" xml:space="preserve">
     <value>Name</value>
   </data>
   <data name="Settings_ProfilesTableColActive" xml:space="preserve">
-    <value>Aktiv</value>
+    <value>Active</value>
   </data>
   <data name="Settings_ProfilesTableColActions" xml:space="preserve">
-    <value>Aktionen</value>
+    <value>Actions</value>
   </data>
   <data name="Settings_ProfilesCloneButton" xml:space="preserve">
-    <value>Klonen</value>
+    <value>Clone</value>
   </data>
   <data name="Settings_ProfilesEditButton" xml:space="preserve">
-    <value>Bearbeiten</value>
+    <value>Edit</value>
   </data>
   <data name="Settings_ProfilesCreateTitle" xml:space="preserve">
-    <value>Profil erstellen</value>
+    <value>Create Profile</value>
   </data>
   <data name="Settings_ProfilesCloneTitle" xml:space="preserve">
-    <value>Profil klonen</value>
+    <value>Clone Profile</value>
   </data>
   <data name="Settings_ProfilesEditTitle" xml:space="preserve">
-    <value>Profil bearbeiten</value>
+    <value>Edit Profile</value>
   </data>
   <data name="Dialog_Cancel" xml:space="preserve">
-    <value>Abbrechen</value>
+    <value>Cancel</value>
   </data>
   <data name="Dialog_Save" xml:space="preserve">
-    <value>Speichern</value>
+    <value>Save</value>
   </data>
   <data name="Dialog_Create" xml:space="preserve">
-    <value>Erstellen</value>
+    <value>Create</value>
   </data>
   <data name="Settings_ProfileNameLabel" xml:space="preserve">
-    <value>Profilname:</value>
+    <value>Profile Name:</value>
   </data>
   <data name="Settings_MatrixCategoryCol" xml:space="preserve">
-    <value>Kategorie-Spalte</value>
+    <value>Category Column</value>
   </data>
   <data name="Settings_MatrixStartSizeCol" xml:space="preserve">
-    <value>Erste Grössen-Spalte</value>
+    <value>First Size Column</value>
   </data>
   <data name="Settings_MatrixEndSizeCol" xml:space="preserve">
-    <value>Letzte Grössen-Spalte</value>
+    <value>Last Size Column</value>
   </data>
   <data name="Settings_ProfilesExportButton" xml:space="preserve">
-    <value>Exportieren</value>
+    <value>Export</value>
   </data>
   <data name="Settings_ProfilesImportButton" xml:space="preserve">
-    <value>Importieren</value>
+    <value>Import</value>
   </data>
   <data name="Confirm_DeleteProfileTitle" xml:space="preserve">
-    <value>Profil löschen</value>
+    <value>Delete Profile</value>
   </data>
   <data name="Confirm_DeleteProfileMessage" xml:space="preserve">
-    <value>Möchten Sie das Profil '{0}' wirklich löschen? Diese Aktion kann nicht rückgängig gemacht werden.</value>
+    <value>Do you really want to delete the profile '{0}'? This action cannot be undone.</value>
   </data>
   <data name="Dialog_ImportInvalidFormat" xml:space="preserve">
-    <value>Ungültiges Format: Das Root-Element muss ein JSON-Array sein.</value>
+    <value>Invalid format: The root element must be a JSON array.</value>
   </data>
   <data name="Dialog_ProfileNameRequired" xml:space="preserve">
-    <value>Bitte geben Sie einen Profilnamen ein.</value>
+    <value>Please enter a profile name.</value>
   </data>
   <data name="Dialog_ProfileNameExists" xml:space="preserve">
-    <value>Ein Profil mit diesem Namen existiert bereits.</value>
+    <value>A profile with this name already exists.</value>
   </data>
   <data name="Dialog_ExportSuccess" xml:space="preserve">
-    <value>Profile wurden erfolgreich exportiert.</value>
+    <value>Profiles exported successfully.</value>
   </data>
   <data name="Dialog_ImportSuccess" xml:space="preserve">
-    <value>Profile wurden erfolgreich importiert.</value>
+    <value>Profiles imported successfully.</value>
   </data>
   <data name="Dialog_SettingsSaved" xml:space="preserve">
-    <value>Einstellungen wurden erfolgreich gespeichert.</value>
+    <value>Settings saved successfully.</value>
   </data>
   <data name="Dialog_Yes" xml:space="preserve">
-    <value>Ja</value>
+    <value>Yes</value>
   </data>
   <data name="Dialog_No" xml:space="preserve">
-    <value>Nein</value>
+    <value>No</value>
   </data>
   <data name="Dialog_OK" xml:space="preserve">
     <value>OK</value>
   </data>
   <data name="Dialog_ErrorTitle" xml:space="preserve">
-    <value>Fehler</value>
+    <value>Error</value>
   </data>
   <data name="Dialog_WarningTitle" xml:space="preserve">
-    <value>Warnung</value>
+    <value>Warning</value>
   </data>
   <data name="Dialog_InfoTitle" xml:space="preserve">
     <value>Information</value>
   </data>
   <data name="Dialog_ConfirmTitle" xml:space="preserve">
-    <value>Bestätigung</value>
+    <value>Confirmation</value>
   </data>
   <data name="Settings_WorksheetSection" xml:space="preserve">
-    <value>Excel-Arbeitsblatt</value>
+    <value>Excel Worksheet</value>
   </data>
   <data name="Settings_WorksheetLabel" xml:space="preserve">
-    <value>Excel Arbeitsblatt Index:</value>
+    <value>Excel Worksheet Index:</value>
   </data>
   <data name="Import_LoadingExcel" xml:space="preserve">
-    <value>Excel-Datei wird geladen...</value>
+    <value>Loading Excel file...</value>
   </data>
   <data name="Import_Importing" xml:space="preserve">
-    <value>Importiere Bestellung in Bexio...</value>
+    <value>Importing order into Bexio...</value>
   </data>
   <data name="Import_PleaseWait" xml:space="preserve">
-    <value>Bitte warten...</value>
+    <value>Please wait...</value>
   </data>
   <data name="Update_Available" xml:space="preserve">
-    <value>Ein Update auf Version {0} ist verfügbar.</value>
+    <value>An update to version {0} is available.</value>
   </data>
   <data name="Update_InstallNow" xml:space="preserve">
-    <value>Jetzt installieren</value>
+    <value>Install now</value>
   </data>
   <data name="Update_Downloading" xml:space="preserve">
-    <value>Update wird heruntergeladen ({0:0}%)...</value>
+    <value>Downloading update ({0:0}%)...</value>
   </data>
   <data name="Update_Installing" xml:space="preserve">
-    <value>Installation wird gestartet...</value>
+    <value>Starting installer...</value>
   </data>
   <data name="Update_Error" xml:space="preserve">
-    <value>Fehler beim Aktualisieren: {0}</value>
+    <value>Update error: {0}</value>
   </data>
 </root>
