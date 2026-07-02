@@ -15,7 +15,7 @@ Thumbs.db
 .idea/
 .vscode/
 
-*.xlsx
+/*.xlsx
 
 ## Ignore Test Results
 [Tt]est[Rr]esults/
