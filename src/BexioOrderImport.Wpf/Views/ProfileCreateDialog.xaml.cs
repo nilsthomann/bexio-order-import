@@ -1,16 +1,23 @@
-using System;
 using System.Windows;
-using BexioOrderImport.Domain.Models;
+using BexioOrderImport.Wpf.Resources;
 
 namespace BexioOrderImport.Wpf.Views;
 
 [System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
-public partial class CustomerConfirmWindow : Window
+public partial class ProfileCreateDialog : Window
 {
-    public CustomerConfirmWindow(Customer customer)
+    public string ProfileName { get; private set; } = string.Empty;
+
+    public ProfileCreateDialog(bool isClone = false)
     {
         InitializeComponent();
-        DataContext = customer;
+        if (isClone)
+        {
+            Title = Translations.Settings_ProfilesCloneTitle;
+            TitleTextBlock.Text = Translations.Settings_ProfilesCloneTitle;
+            ActionButton.Content = Translations.Settings_ProfilesCloneButton;
+        }
+        ProfileNameInput.Focus();
     }
 
     protected override void OnSourceInitialized(EventArgs e)
@@ -43,13 +50,21 @@ public partial class CustomerConfirmWindow : Window
         }
     }
 
-    private void CreateButton_Click(object sender, RoutedEventArgs e)
+    private void Create_Click(object sender, RoutedEventArgs e)
     {
+        string name = ProfileNameInput.Text.Trim();
+        if (string.IsNullOrWhiteSpace(name))
+        {
+            Views.CustomDialog.ShowWarning(Translations.Dialog_ProfileNameRequired);
+            return;
+        }
+
+        ProfileName = name;
         DialogResult = true;
         Close();
     }
 
-    private void CancelButton_Click(object sender, RoutedEventArgs e)
+    private void Cancel_Click(object sender, RoutedEventArgs e)
     {
         DialogResult = false;
         Close();

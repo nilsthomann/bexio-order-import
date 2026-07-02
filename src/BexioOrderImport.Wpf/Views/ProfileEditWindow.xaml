@@ -1,0 +1,244 @@
+<Window x:Class="BexioOrderImport.Wpf.Views.ProfileEditWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:lex="clr-namespace:BexioOrderImport.Wpf.Resources"
+        Title="{x:Static lex:Translations.Settings_ProfilesEditTitle}"
+        WindowStyle="None"
+        AllowsTransparency="True"
+        Background="Transparent"
+        WindowStartupLocation="Manual"
+        UseLayoutRounding="True"
+        TextOptions.TextFormattingMode="Display"
+        TextOptions.TextRenderingMode="ClearType"
+        ShowInTaskbar="False">
+
+    <Grid>
+        <!-- Backdrop -->
+        <Rectangle Fill="#99000000"/>
+
+        <!-- Dialog Card — fixed width, auto height, centred, max height bounded -->
+        <Border Width="900"
+                MaxHeight="820"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Center"
+                Background="{StaticResource BackgroundBrush}"
+                CornerRadius="12"
+                BorderBrush="{StaticResource BorderBrush}"
+                BorderThickness="1">
+            <Border.Effect>
+                <DropShadowEffect Color="#000000" Opacity="0.25" BlurRadius="32" ShadowDepth="8" Direction="270"/>
+            </Border.Effect>
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+
+                <!-- Header -->
+                <Border Grid.Row="0" CornerRadius="12,12,0,0" Padding="20,14"
+                        Background="{StaticResource SidebarBrush}">
+                    <Grid>
+                        <TextBlock x:Name="TitleTextBlock"
+                                   Text="{x:Static lex:Translations.Settings_ProfilesEditTitle}"
+                                   FontSize="15" FontWeight="SemiBold"
+                                   Foreground="{StaticResource TextBrush}"
+                                   VerticalAlignment="Center"/>
+                        <Button HorizontalAlignment="Right" VerticalAlignment="Center"
+                                Click="Cancel_Click"
+                                Style="{StaticResource SecondaryButtonStyle}"
+                                Width="28" Height="28" Padding="0" BorderThickness="0"
+                                ToolTip="Schliessen">
+                            <Path Data="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"
+                                  Fill="{StaticResource TextMutedBrush}" Stretch="Uniform" Width="12" Height="12"/>
+                        </Button>
+                    </Grid>
+                </Border>
+
+                <!-- Separator -->
+                <Border Grid.Row="1" Height="1" Background="{StaticResource BorderBrush}"/>
+
+                <!-- Scrollable Content -->
+                <ScrollViewer Grid.Row="2" VerticalScrollBarVisibility="Auto" Margin="20,16,20,0">
+                    <StackPanel>
+
+                        <!-- General Section -->
+                        <Border Style="{StaticResource CardBorderStyle}" Margin="0,0,0,16">
+                            <StackPanel>
+                                <TextBlock Text="{x:Static lex:Translations.Settings_WorksheetSection}" Style="{StaticResource SectionHeaderTextBlockStyle}"/>
+                                <Grid Margin="0,8,0,0">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="200"/>
+                                        <ColumnDefinition Width="*"/>
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Text="{x:Static lex:Translations.Settings_WorksheetLabel}" VerticalAlignment="Center" Margin="0,0,12,0"/>
+                                    <TextBox x:Name="WorksheetIndexInput" Grid.Column="1" Height="32" VerticalAlignment="Center" Width="100" HorizontalAlignment="Left"/>
+                                </Grid>
+                            </StackPanel>
+                        </Border>
+
+                        <!-- Header Section -->
+                        <Border Style="{StaticResource CardBorderStyle}" Margin="0,0,0,16">
+                            <StackPanel>
+                                <TextBlock Text="{x:Static lex:Translations.Settings_HeaderSection}" Style="{StaticResource SectionHeaderTextBlockStyle}"/>
+                                <Grid Margin="0,8,0,0">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="*"/>
+                                    </Grid.ColumnDefinitions>
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="Auto"/>
+                                    </Grid.RowDefinitions>
+
+                                    <StackPanel Grid.Row="0" Grid.Column="0" Margin="0,0,8,12">
+                                        <TextBlock Text="{x:Static lex:Translations.Settings_CellCustomerName}" Style="{StaticResource MutedTextBlockStyle}"/>
+                                        <TextBox x:Name="CompanyNameCellInput" Height="32"/>
+                                    </StackPanel>
+                                    <StackPanel Grid.Row="0" Grid.Column="1" Margin="0,0,8,12">
+                                        <TextBlock Text="{x:Static lex:Translations.Settings_CellStreet}" Style="{StaticResource MutedTextBlockStyle}"/>
+                                        <TextBox x:Name="StreetCellInput" Height="32"/>
+                                    </StackPanel>
+                                    <StackPanel Grid.Row="0" Grid.Column="2" Margin="0,0,8,12">
+                                        <TextBlock Text="{x:Static lex:Translations.Settings_CellZipCode}" Style="{StaticResource MutedTextBlockStyle}"/>
+                                        <TextBox x:Name="ZipCityCellInput" Height="32"/>
+                                    </StackPanel>
+                                    <StackPanel Grid.Row="0" Grid.Column="3" Margin="0,0,0,12">
+                                        <TextBlock Text="{x:Static lex:Translations.Settings_CellEmail}" Style="{StaticResource MutedTextBlockStyle}"/>
+                                        <TextBox x:Name="BuyerEmailCellInput" Height="32"/>
+                                    </StackPanel>
+
+                                    <StackPanel Grid.Row="1" Grid.Column="0" Margin="0,0,8,0">
+                                        <TextBlock Text="{x:Static lex:Translations.Settings_CellBuyerName}" Style="{StaticResource MutedTextBlockStyle}"/>
+                                        <TextBox x:Name="BuyerNameCellInput" Height="32"/>
+                                    </StackPanel>
+                                    <StackPanel Grid.Row="1" Grid.Column="1" Margin="0,0,8,0">
+                                        <TextBlock Text="{x:Static lex:Translations.Settings_CellDeliveryDate}" Style="{StaticResource MutedTextBlockStyle}"/>
+                                        <TextBox x:Name="DeliveryDateCellInput" Height="32"/>
+                                    </StackPanel>
+                                    <StackPanel Grid.Row="1" Grid.Column="2" Margin="0,0,8,0">
+                                        <TextBlock Text="{x:Static lex:Translations.Settings_CellPaymentTerms}" Style="{StaticResource MutedTextBlockStyle}"/>
+                                        <TextBox x:Name="PaymentTermsCellInput" Height="32"/>
+                                    </StackPanel>
+                                    <StackPanel Grid.Row="1" Grid.Column="3" Margin="0,0,0,0">
+                                        <TextBlock Text="{x:Static lex:Translations.Settings_CellDiscount}" Style="{StaticResource MutedTextBlockStyle}"/>
+                                        <TextBox x:Name="DiscountCellInput" Height="32"/>
+                                    </StackPanel>
+                                </Grid>
+                            </StackPanel>
+                        </Border>
+
+                        <!-- Size Matrix Section -->
+                        <Border Style="{StaticResource CardBorderStyle}" Margin="0,0,0,16">
+                            <StackPanel>
+                                <TextBlock Text="{x:Static lex:Translations.Settings_MatrixSection}" Style="{StaticResource SectionHeaderTextBlockStyle}"/>
+                                <Grid Margin="0,8,0,0">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="*"/>
+                                    </Grid.ColumnDefinitions>
+
+                                    <StackPanel Grid.Column="0" Margin="0,0,8,0">
+                                        <TextBlock Text="{x:Static lex:Translations.Settings_MatrixStart}" Style="{StaticResource MutedTextBlockStyle}"/>
+                                        <TextBox x:Name="MatrixStartRowInput" Height="32"/>
+                                    </StackPanel>
+                                    <StackPanel Grid.Column="1" Margin="0,0,8,0">
+                                        <TextBlock Text="{x:Static lex:Translations.Settings_MatrixEnd}" Style="{StaticResource MutedTextBlockStyle}"/>
+                                        <TextBox x:Name="MatrixEndRowInput" Height="32"/>
+                                    </StackPanel>
+                                    <StackPanel Grid.Column="2" Margin="0,0,8,0">
+                                        <TextBlock Text="{x:Static lex:Translations.Settings_MatrixCategoryCol}" Style="{StaticResource MutedTextBlockStyle}"/>
+                                        <TextBox x:Name="MatrixCategoryColInput" Height="32"/>
+                                    </StackPanel>
+                                    <StackPanel Grid.Column="3" Margin="0,0,8,0">
+                                        <TextBlock Text="{x:Static lex:Translations.Settings_MatrixStartSizeCol}" Style="{StaticResource MutedTextBlockStyle}"/>
+                                        <TextBox x:Name="MatrixStartSizeColInput" Height="32"/>
+                                    </StackPanel>
+                                    <StackPanel Grid.Column="4" Margin="0,0,0,0">
+                                        <TextBlock Text="{x:Static lex:Translations.Settings_MatrixEndSizeCol}" Style="{StaticResource MutedTextBlockStyle}"/>
+                                        <TextBox x:Name="MatrixEndSizeColInput" Height="32"/>
+                                    </StackPanel>
+                                </Grid>
+                            </StackPanel>
+                        </Border>
+
+                        <!-- Data Columns Section -->
+                        <Border Style="{StaticResource CardBorderStyle}" Margin="0,0,0,4">
+                            <StackPanel>
+                                <TextBlock Text="{x:Static lex:Translations.Settings_ColsSection}" Style="{StaticResource SectionHeaderTextBlockStyle}"/>
+                                <Grid Margin="0,8,0,0">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="*"/>
+                                    </Grid.ColumnDefinitions>
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="Auto"/>
+                                    </Grid.RowDefinitions>
+
+                                    <StackPanel Grid.Row="0" Grid.Column="0" Margin="0,0,8,12">
+                                        <TextBlock Text="{x:Static lex:Translations.Settings_RowStart}" Style="{StaticResource MutedTextBlockStyle}"/>
+                                        <TextBox x:Name="DataStartRowInput" Height="32"/>
+                                    </StackPanel>
+                                    <StackPanel Grid.Row="0" Grid.Column="1" Margin="0,0,8,12">
+                                        <TextBlock Text="{x:Static lex:Translations.Settings_ColArtNum}" Style="{StaticResource MutedTextBlockStyle}"/>
+                                        <TextBox x:Name="ColArtNumInput" Height="32"/>
+                                    </StackPanel>
+                                    <StackPanel Grid.Row="0" Grid.Column="2" Margin="0,0,8,12">
+                                        <TextBlock Text="{x:Static lex:Translations.Settings_ColName}" Style="{StaticResource MutedTextBlockStyle}"/>
+                                        <TextBox x:Name="ColArtNameInput" Height="32"/>
+                                    </StackPanel>
+                                    <StackPanel Grid.Row="0" Grid.Column="3" Margin="0,0,8,12">
+                                        <TextBlock Text="{x:Static lex:Translations.Settings_ColColor}" Style="{StaticResource MutedTextBlockStyle}"/>
+                                        <TextBox x:Name="ColColorInput" Height="32"/>
+                                    </StackPanel>
+                                    <StackPanel Grid.Row="0" Grid.Column="4" Margin="0,0,0,12">
+                                        <TextBlock Text="{x:Static lex:Translations.Settings_ColSizeCategory}" Style="{StaticResource MutedTextBlockStyle}"/>
+                                        <TextBox x:Name="ColSizeCategoryInput" Height="32"/>
+                                    </StackPanel>
+
+                                    <StackPanel Grid.Row="1" Grid.Column="0" Margin="0,0,8,0">
+                                        <TextBlock Text="{x:Static lex:Translations.Settings_ColStartQty}" Style="{StaticResource MutedTextBlockStyle}"/>
+                                        <TextBox x:Name="ColStartQtyInput" Height="32"/>
+                                    </StackPanel>
+                                    <StackPanel Grid.Row="1" Grid.Column="1" Margin="0,0,8,0">
+                                        <TextBlock Text="{x:Static lex:Translations.Settings_ColEndQty}" Style="{StaticResource MutedTextBlockStyle}"/>
+                                        <TextBox x:Name="ColEndQtyInput" Height="32"/>
+                                    </StackPanel>
+                                    <StackPanel Grid.Row="1" Grid.Column="2" Margin="0,0,8,0">
+                                        <TextBlock Text="{x:Static lex:Translations.Settings_ColUnitPrice}" Style="{StaticResource MutedTextBlockStyle}"/>
+                                        <TextBox x:Name="ColUnitPriceInput" Height="32"/>
+                                    </StackPanel>
+                                </Grid>
+                            </StackPanel>
+                        </Border>
+
+                    </StackPanel>
+                </ScrollViewer>
+
+                <!-- Bottom Separator -->
+                <Border Grid.Row="3" Height="1" Background="{StaticResource BorderBrush}" Margin="0,16,0,0"/>
+
+                <!-- Footer Buttons -->
+                <StackPanel Grid.Row="4" Orientation="Horizontal" HorizontalAlignment="Right" Margin="20,12,20,16">
+                    <Button Content="{x:Static lex:Translations.Dialog_Cancel}" Click="Cancel_Click"
+                            Style="{StaticResource SecondaryButtonStyle}"
+                            Width="110" Height="34" Margin="0,0,8,0"/>
+                    <Button Content="{x:Static lex:Translations.Dialog_Save}" Click="Save_Click"
+                            Style="{StaticResource ModernButtonStyle}"
+                            Width="110" Height="34"/>
+                </StackPanel>
+            </Grid>
+        </Border>
+    </Grid>
+</Window>

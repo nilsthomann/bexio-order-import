@@ -71,7 +71,7 @@ public class BexioApiClient : IBexioClient
         createResponse.EnsureSuccessStatusCode();
 
         var newContact = await createResponse.Content.ReadFromJsonAsync<BexioContact>();
-        return newContact?.Id ?? throw new Exception("Fehler beim Erstellen des Kontakts in Bexio.");
+        return newContact?.Id ?? throw new Exception("Error creating contact in Bexio.");
     }
 
     public async Task<int> CreateOrderAsync(int contactId, Order order)
@@ -79,14 +79,14 @@ public class BexioApiClient : IBexioClient
         var orderPayload = new
         {
             contact_id = contactId,
-            user_id = 1, // Standard-Benutzer
-            title = $"Bestellung: {order.Customer.CompanyName}",
-            mwst_type = 0, // 0 = exklusive MwSt., 1 = inklusive MwSt.
+            user_id = 1, // Default user
+            title = $"Order: {order.Customer.CompanyName}",
+            mwst_type = 0, // 0 = excl. VAT, 1 = incl. VAT
             currency_id = 1, // 1 = CHF
-            payment_type_id = 1, // Standard
-            language_id = 1, // Deutsch
+            payment_type_id = 1, // Default
+            language_id = 1, // German
             api_reference = "Excel-Import",
-            positions = new object[0] // Positionen werden nachträglich angehängt
+            positions = new object[0] // Positions added subsequently
         };
 
         var content = new StringContent(JsonSerializer.Serialize(orderPayload), Encoding.UTF8, "application/json");
@@ -94,7 +94,7 @@ public class BexioApiClient : IBexioClient
         response.EnsureSuccessStatusCode();
 
         var createdOrder = await response.Content.ReadFromJsonAsync<BexioOrder>();
-        return createdOrder?.Id ?? throw new Exception("Fehler beim Erstellen des Auftrags in Bexio.");
+        return createdOrder?.Id ?? throw new Exception("Error creating order in Bexio.");
     }
 
     public async Task<int?> FindArticleIdAsync(string articleNumber, string articleName)

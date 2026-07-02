@@ -6,6 +6,7 @@ using BexioOrderImport.Wpf.ViewModels;
 
 namespace BexioOrderImport.Wpf.Views;
 
+[System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
 public partial class MainWindow : Window
 {
     public MainWindow()
@@ -61,5 +62,21 @@ public partial class MainWindow : Window
                 vm.UpdateTotalsSummary();
             }
         }), System.Windows.Threading.DispatcherPriority.Background);
+    }
+
+    private void TokenTextBox_GotFocus(object sender, RoutedEventArgs e)
+    {
+        if (DataContext is MainViewModel vm)
+        {
+            vm.IsTokenFocused = true;
+        }
+    }
+
+    private void TokenTextBox_LostFocus(object sender, RoutedEventArgs e)
+    {
+        if (DataContext is MainViewModel vm)
+        {
+            vm.IsTokenFocused = false;
+        }
     }
 }

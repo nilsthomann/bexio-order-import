@@ -1,6 +1,7 @@
 using System;
 using System.IO;
 using System.Text.Json;
+using System.Reflection;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Net.Http;
@@ -27,10 +28,24 @@ public class MainViewModel : ViewModelBase
     private double _progressPercentage;
     private string _logText = string.Empty;
     private bool _isImporting;
+    private bool _isImportingActive;
+    private bool _isLoading;
     private string? _selectedFilePath;
     private bool _hasLoadedFile;
     private string _selectedFileName = string.Empty;
     private string _fileSizeText = string.Empty;
+    private string _selectedLanguage = "de";
+    private string _initialLanguage = "de";
+    private Models.MappingProfile? _selectedProfile;
+    private Models.MappingProfile? _activeProfile;
+
+    private readonly Services.UpdateService _updateService = new();
+    private string _updateDownloadUrl = string.Empty;
+    private bool _isUpdateAvailable;
+    private string _updateVersion = string.Empty;
+    private bool _isDownloadingUpdate;
+    private string _updateStatusText = string.Empty;
+    private double _updateProgress;
 
     private int _totalQuantity;
     private decimal _totalGrossAmount;
@@ -126,23 +141,35 @@ public class MainViewModel : ViewModelBase
 
     public MainViewModel()
     {
+        // Commands
+        LoadFileCommand = new RelayCommand(async () => await LoadExcelFileAsync());
+        ClearFileCommand = new RelayCommand(ClearLoadedFile);
+        ImportCommand = new RelayCommand(async () => await ImportToBexioAsync(), () => _loadedOrder != null && !_isImporting);
+        SaveSettingsCommand = new RelayCommand(SaveSettings, () => IsModified);
+        CreateProfileCommand = new RelayCommand(CreateProfile);
+        EditProfileCommand = new RelayCommand<Models.MappingProfile>(EditProfile);
+        CloneProfileCommand = new RelayCommand<Models.MappingProfile>(CloneProfile);
+        SetActiveProfileCommand = new RelayCommand<Models.MappingProfile>(SetActiveProfile);
+        DeleteProfileCommand = new RelayCommand<Models.MappingProfile>(DeleteProfile, p => p != null && p.Name != "Default");
+        ExportProfilesCommand = new RelayCommand(ExportProfiles);
+        ImportProfilesCommand = new RelayCommand(ImportProfiles);
+        InstallUpdateCommand = new RelayCommand(async () => await InstallUpdateAsync(), () => !string.IsNullOrEmpty(_updateDownloadUrl) && !_isDownloadingUpdate);
+
         // Path to CLI appsettings.json or WPF appsettings.json.
-        // We will default to a local appsettings.json in the current working directory, or create one.
-        _configFilePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "appsettings.json");
+        // We will store settings in user LocalAppData so updates do not delete them.
+        string appDataFolder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "BexioOrderImport");
+        _configFilePath = Path.Combine(appDataFolder, "appsettings.json");
         
         // Copy appsettings.json from CLI directory if exists, or write default
         EnsureAppSettingsFile();
 
         LoadSettings();
-        
-        // Commands
-        LoadFileCommand = new RelayCommand(async () => await LoadExcelFileAsync());
-        ClearFileCommand = new RelayCommand(ClearLoadedFile);
-        ImportCommand = new RelayCommand(async () => await ImportToBexioAsync(), () => _loadedOrder != null && !_isImporting);
-        SaveSettingsCommand = new RelayCommand(SaveSettings);
 
         // Async check connection
         _ = CheckBexioConnectionAsync();
+
+        // Async check for updates
+        _ = CheckForUpdatesAsync();
     }
 
     // Commands
@@ -150,6 +177,14 @@ public class MainViewModel : ViewModelBase
     public RelayCommand ClearFileCommand { get; }
     public RelayCommand ImportCommand { get; }
     public RelayCommand SaveSettingsCommand { get; }
+    public RelayCommand CreateProfileCommand { get; }
+    public RelayCommand<Models.MappingProfile> EditProfileCommand { get; }
+    public RelayCommand<Models.MappingProfile> CloneProfileCommand { get; }
+    public RelayCommand<Models.MappingProfile> SetActiveProfileCommand { get; }
+    public RelayCommand<Models.MappingProfile> DeleteProfileCommand { get; }
+    public RelayCommand ExportProfilesCommand { get; }
+    public RelayCommand ImportProfilesCommand { get; }
+    public RelayCommand InstallUpdateCommand { get; }
 
     // Properties for UI
     public ObservableCollection<OrderPosition> OrderPositions { get; } = new();
@@ -189,6 +224,50 @@ public class MainViewModel : ViewModelBase
             }
         }
     }
+
+    public bool IsImportingActive
+    {
+        get => _isImportingActive;
+        set => SetProperty(ref _isImportingActive, value);
+    }
+
+    public bool IsLoading
+    {
+        get => _isLoading;
+        set => SetProperty(ref _isLoading, value);
+    }
+
+    public bool IsUpdateAvailable
+    {
+        get => _isUpdateAvailable;
+        set => SetProperty(ref _isUpdateAvailable, value);
+    }
+
+    public string UpdateVersion
+    {
+        get => _updateVersion;
+        set => SetProperty(ref _updateVersion, value);
+    }
+
+    public bool IsDownloadingUpdate
+    {
+        get => _isDownloadingUpdate;
+        set => SetProperty(ref _isDownloadingUpdate, value);
+    }
+
+    public string UpdateStatusText
+    {
+        get => _updateStatusText;
+        set => SetProperty(ref _updateStatusText, value);
+    }
+
+    public double UpdateProgress
+    {
+        get => _updateProgress;
+        set => SetProperty(ref _updateProgress, value);
+    }
+
+    public string AppVersion => $"v{Assembly.GetExecutingAssembly().GetName().Version?.ToString(3) ?? "1.0.0"}";
 
     public string? SelectedFilePath
     {
@@ -239,23 +318,142 @@ public class MainViewModel : ViewModelBase
         set => SetProperty(ref _totalsSummary, value);
     }
 
+    public System.Collections.ObjectModel.ObservableCollection<Models.MappingProfile> Profiles { get; } = new();
+
+    public Models.MappingProfile? SelectedProfile
+    {
+        get => _selectedProfile;
+        set
+        {
+            if (_selectedProfile != value)
+            {
+                if (_selectedProfile != null)
+                {
+                    CopyVmToProfile(_selectedProfile);
+                }
+                SetProperty(ref _selectedProfile, value);
+                if (_selectedProfile != null)
+                {
+                    CopyProfileToVm(_selectedProfile);
+                }
+                DeleteProfileCommand.RaiseCanExecuteChanged();
+                SetActiveProfileCommand.RaiseCanExecuteChanged();
+            }
+        }
+    }
+
+    public Models.MappingProfile? ActiveProfile
+    {
+        get => _activeProfile;
+        set
+        {
+            SetProperty(ref _activeProfile, value);
+            // Trigger reload of loaded file if active profile changes
+            if (_activeProfile != null && !string.IsNullOrEmpty(SelectedFilePath) && File.Exists(SelectedFilePath))
+            {
+                _ = LoadExcelFileAsync(SelectedFilePath);
+            }
+        }
+    }
+
+
+    private bool _isModified;
+    public bool IsModified
+    {
+        get => _isModified;
+        set => SetProperty(ref _isModified, value);
+    }
+
+    private void SetModified()
+    {
+        IsModified = true;
+        SaveSettingsCommand.RaiseCanExecuteChanged();
+    }
+
     // Settings view bindings
+    public string SelectedLanguage
+    {
+        get => _selectedLanguage;
+        set
+        {
+            if (SetProperty(ref _selectedLanguage, value))
+            {
+                SetModified();
+            }
+        }
+    }
+
     public string BexioToken
     {
         get => _bexioToken;
-        set => SetProperty(ref _bexioToken, value);
+        set
+        {
+            if (SetProperty(ref _bexioToken, value))
+            {
+                SetModified();
+                OnPropertyChanged(nameof(BexioTokenDisplay));
+            }
+        }
+    }
+
+    private bool _isTokenFocused;
+    public bool IsTokenFocused
+    {
+        get => _isTokenFocused;
+        set
+        {
+            if (SetProperty(ref _isTokenFocused, value))
+            {
+                OnPropertyChanged(nameof(BexioTokenDisplay));
+            }
+        }
+    }
+
+    public string BexioTokenDisplay
+    {
+        get
+        {
+            if (_isTokenFocused)
+            {
+                return BexioToken;
+            }
+            else
+            {
+                return string.IsNullOrEmpty(BexioToken) ? string.Empty : new string('•', 24);
+            }
+        }
+        set
+        {
+            if (_isTokenFocused)
+            {
+                BexioToken = value;
+            }
+            OnPropertyChanged(nameof(BexioTokenDisplay));
+        }
     }
 
     public int DefaultAccountId
     {
         get => _defaultAccountId;
-        set => SetProperty(ref _defaultAccountId, value);
+        set
+        {
+            if (SetProperty(ref _defaultAccountId, value))
+            {
+                SetModified();
+            }
+        }
     }
 
     public int DefaultTaxId
     {
         get => _defaultTaxId;
-        set => SetProperty(ref _defaultTaxId, value);
+        set
+        {
+            if (SetProperty(ref _defaultTaxId, value))
+            {
+                SetModified();
+            }
+        }
     }
 
     public string CompanyNameCell
@@ -438,13 +636,16 @@ public class MainViewModel : ViewModelBase
         if (string.IsNullOrEmpty(filePath)) return;
 
         SelectedFilePath = filePath;
-        AppendLog(string.Format(Translations.Import_DragDropText.Split(' ')[0] + " Lese Datei ein: {0}", Path.GetFileName(filePath)));
+        AppendLog(string.Format("Reading Excel file: {0}", Path.GetFileName(filePath)));
+        IsLoading = true;
 
         try
         {
             var options = BuildMappingOptions();
             var parser = new ClosedXmlExcelParser(Options.Create(options));
-            _loadedOrder = parser.ParseOrderForm(filePath);
+            
+            // Parse on background thread to keep UI responsive and allow spinner animation
+            _loadedOrder = await Task.Run(() => parser.ParseOrderForm(filePath));
             
             // Populate file info
             var fileInfo = new FileInfo(filePath);
@@ -468,14 +669,18 @@ public class MainViewModel : ViewModelBase
 
             UpdateTotalsSummary();
             ImportCommand.RaiseCanExecuteChanged();
-            AppendLog($"Erfolgreich eingelesen: {_loadedOrder.Positions.Count} Positionen gefunden.");
+            AppendLog($"Successfully read: {_loadedOrder.Positions.Count} positions found.");
         }
         catch (Exception ex)
         {
-            AppendLog($"[Error] Fehler beim Lesen der Excel-Datei: {ex.Message}");
+            AppendLog($"[Error] Error reading Excel file: {ex.Message}");
             _loadedOrder = null;
             HasLoadedFile = false;
             ImportCommand.RaiseCanExecuteChanged();
+        }
+        finally
+        {
+            IsLoading = false;
         }
     }
 
@@ -520,7 +725,7 @@ public class MainViewModel : ViewModelBase
         OrderPositions.Clear();
         UpdateTotalsSummary();
         ImportCommand.RaiseCanExecuteChanged();
-        AppendLog("Datei-Upload wurde vom Benutzer gelöscht.");
+        AppendLog("File upload was deleted by user.");
     }
 
     private void ClearLoadedFileAfterSuccess()
@@ -541,7 +746,7 @@ public class MainViewModel : ViewModelBase
         OrderPositions.Clear();
         UpdateTotalsSummary();
         ImportCommand.RaiseCanExecuteChanged();
-        AppendLog("Import erfolgreich abgeschlossen. Datei-Auswahl zurückgesetzt.");
+        AppendLog("Import completed successfully. File selection reset.");
     }
 
     private async Task ImportToBexioAsync()
@@ -549,9 +754,10 @@ public class MainViewModel : ViewModelBase
         if (_loadedOrder == null) return;
 
         IsImporting = true;
+        IsImportingActive = true;
         LogText = string.Empty;
         ProgressPercentage = 0;
-        AppendLog("Starte Import-Ablauf...");
+        AppendLog("Starting import process...");
 
         try
         {
@@ -562,7 +768,7 @@ public class MainViewModel : ViewModelBase
             var bexioClient = new BexioApiClient(httpClient, BexioToken, DefaultAccountId, DefaultTaxId);
             var useCase = new ImportOrderUseCase(new InMemoryExcelParser(_loadedOrder), bexioClient);
 
-            await useCase.ExecuteAsync(
+            bool success = await useCase.ExecuteAsync(
                 filePath: SelectedFilePath!,
                 showPreviewCallback: order => { }, // Already shown in UI
                 confirmUploadCallback: ConfirmUploadAsync,
@@ -586,20 +792,28 @@ public class MainViewModel : ViewModelBase
                 }
             );
             
-            ProgressPercentage = 100;
-            
-            App.Current.Dispatcher.Invoke(() =>
+            if (success)
             {
-                ClearLoadedFileAfterSuccess();
-            });
+                ProgressPercentage = 100;
+                App.Current.Dispatcher.Invoke(() =>
+                {
+                    ClearLoadedFileAfterSuccess();
+                });
+            }
+            else
+            {
+                ProgressPercentage = 0;
+                AppendLog("Import cancelled. File remains loaded.");
+            }
         }
         catch (Exception ex)
         {
-            AppendLog($"[Error] Fehler beim Import: {ex.Message}");
+            AppendLog($"[Error] Error during import: {ex.Message}");
         }
         finally
         {
             IsImporting = false;
+            IsImportingActive = false;
         }
     }
 
@@ -607,13 +821,16 @@ public class MainViewModel : ViewModelBase
     {
         return await App.Current.Dispatcher.InvokeAsync(() =>
         {
-            var result = MessageBox.Show(
-                App.Current.MainWindow,
-                "Möchten Sie diese Bestellung jetzt an Bexio übermitteln?",
-                Translations.MainWindow_Title,
-                MessageBoxButton.YesNo,
-                MessageBoxImage.Question);
-            return result == MessageBoxResult.Yes;
+            IsImportingActive = false;
+            try
+            {
+                return Views.CustomDialog.ShowConfirm(Translations.Import_ConfirmMessage, Translations.Import_ConfirmTitle);
+            }
+            finally
+            {
+                // Only restore if the import hasn't been terminated/disposed
+                if (IsImporting) IsImportingActive = true;
+            }
         });
     }
 
@@ -621,53 +838,137 @@ public class MainViewModel : ViewModelBase
     {
         return await App.Current.Dispatcher.InvokeAsync(() =>
         {
-            var dialog = new CustomerConfirmWindow(customer);
-            dialog.Owner = App.Current.MainWindow;
-            return dialog.ShowDialog() == true;
+            IsImportingActive = false;
+            try
+            {
+                var dialog = new CustomerConfirmWindow(customer);
+                dialog.Owner = App.Current.MainWindow;
+                return dialog.ShowDialog() == true;
+            }
+            finally
+            {
+                if (IsImporting) IsImportingActive = true;
+            }
         });
+    }
+
+    private async Task CheckForUpdatesAsync()
+    {
+        var info = await _updateService.CheckForUpdatesAsync();
+        if (info != null)
+        {
+            App.Current.Dispatcher.Invoke(() =>
+            {
+                _updateDownloadUrl = info.DownloadUrl;
+                UpdateVersion = info.LatestVersion;
+                IsUpdateAvailable = true;
+                InstallUpdateCommand.RaiseCanExecuteChanged();
+            });
+        }
+    }
+
+    private async Task InstallUpdateAsync()
+    {
+        if (string.IsNullOrEmpty(_updateDownloadUrl)) return;
+
+        IsDownloadingUpdate = true;
+        InstallUpdateCommand.RaiseCanExecuteChanged();
+        UpdateStatusText = string.Format(Translations.Update_Downloading, 0);
+
+        try
+        {
+            await Task.Run(async () =>
+            {
+                await _updateService.DownloadAndInstallUpdateAsync(_updateDownloadUrl, progress =>
+                {
+                    App.Current.Dispatcher.Invoke(() =>
+                    {
+                        UpdateProgress = progress;
+                        UpdateStatusText = string.Format(Translations.Update_Downloading, progress);
+                    });
+                });
+            });
+        }
+        catch (Exception ex)
+        {
+            App.Current.Dispatcher.Invoke(() =>
+            {
+                IsDownloadingUpdate = false;
+                InstallUpdateCommand.RaiseCanExecuteChanged();
+                UpdateStatusText = string.Format(Translations.Update_Error, ex.Message);
+            });
+        }
     }
 
     // Settings persistence
     private void EnsureAppSettingsFile()
     {
+        string? dir = Path.GetDirectoryName(_configFilePath);
+        if (!string.IsNullOrEmpty(dir) && !Directory.Exists(dir))
+        {
+            Directory.CreateDirectory(dir);
+        }
+
         if (!File.Exists(_configFilePath))
         {
-            // Write default settings structure
+            // Check if there is an appsettings.json in the application directory to use as a template
+            string templatePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "appsettings.json");
+            if (File.Exists(templatePath))
+            {
+                try
+                {
+                    File.Copy(templatePath, _configFilePath, true);
+                    return;
+                }
+                catch (Exception ex)
+                {
+                    AppendLog($"[Warning] Could not copy appsettings.json template: {ex.Message}");
+                }
+            }
+
             var defaultSettings = new
             {
-                Bexio = new { ApiToken = "bexio_api_token_here", DefaultAccountId = 3200, DefaultTaxId = 1 },
-                ExcelMapping = new
+                Bexio = new { ApiToken = "bexio_api_token_here", DefaultAccountId = 3200, DefaultTaxId = 1, Language = "de" },
+                ActiveProfileName = "Default",
+                Profiles = new[]
                 {
-                    WorksheetIndex = 1,
-                    Header = new
+                    new
                     {
-                        CompanyNameCell = "B4",
-                        StreetCell = "B5",
-                        ZipCityCell = "B6",
-                        BuyerEmailCell = "E5",
-                        BuyerNameCell = "E4",
-                        DeliveryDateCell = "T7",
-                        PaymentTermsCell = "A9",
-                        DiscountCell = "V12"
-                    },
-                    SizeMatrix = new
-                    {
-                        StartRow = 10,
-                        EndRow = 17,
-                        CategoryColumn = 4,
-                        StartSizeColumn = 5,
-                        EndSizeColumn = 18
-                    },
-                    Data = new
-                    {
-                        StartRow = 18,
-                        ArticleNumberColumn = 1,
-                        ArticleNameColumn = 2,
-                        ColorColumn = 3,
-                        CategoryColumn = 4,
-                        StartQtyColumn = 5,
-                        EndQtyColumn = 18,
-                        UnitPriceColumn = 20
+                        Name = "Default",
+                        ExcelMapping = new
+                        {
+                            WorksheetIndex = 1,
+                            Header = new
+                            {
+                                CompanyNameCell = "B4",
+                                StreetCell = "B5",
+                                ZipCityCell = "B6",
+                                BuyerEmailCell = "E5",
+                                BuyerNameCell = "E4",
+                                DeliveryDateCell = "T7",
+                                PaymentTermsCell = "A9",
+                                DiscountCell = "V12"
+                            },
+                            SizeMatrix = new
+                            {
+                                StartRow = 10,
+                                EndRow = 17,
+                                CategoryColumn = 4,
+                                StartSizeColumn = 5,
+                                EndSizeColumn = 18
+                            },
+                            Data = new
+                            {
+                                StartRow = 18,
+                                ArticleNumberColumn = 1,
+                                ArticleNameColumn = 2,
+                                ColorColumn = 3,
+                                CategoryColumn = 4,
+                                StartQtyColumn = 5,
+                                EndQtyColumn = 18,
+                                UnitPriceColumn = 20
+                            }
+                        }
                     }
                 }
             };
@@ -679,155 +980,561 @@ public class MainViewModel : ViewModelBase
     {
         try
         {
+            EnsureAppSettingsFile();
+
             using var doc = JsonDocument.Parse(File.ReadAllText(_configFilePath));
             var root = doc.RootElement;
 
             if (root.TryGetProperty("Bexio", out var bexio))
             {
-                BexioToken = bexio.GetProperty("ApiToken").GetString() ?? "";
+                var encryptedToken = bexio.GetProperty("ApiToken").GetString() ?? "";
+                BexioToken = Helpers.EncryptionHelper.Decrypt(encryptedToken);
+                if (string.IsNullOrEmpty(BexioToken) && !string.IsNullOrEmpty(encryptedToken) && encryptedToken != "bexio_api_token_here")
+                {
+                    BexioToken = encryptedToken;
+                }
+                
                 DefaultAccountId = bexio.GetProperty("DefaultAccountId").GetInt32();
                 DefaultTaxId = bexio.GetProperty("DefaultTaxId").GetInt32();
-            }
-
-            if (root.TryGetProperty("ExcelMapping", out var mapping))
-            {
-                var header = mapping.GetProperty("Header");
-                CompanyNameCell = header.GetProperty("CompanyNameCell").GetString() ?? "B4";
-                StreetCell = header.GetProperty("StreetCell").GetString() ?? "B5";
-                ZipCityCell = header.GetProperty("ZipCityCell").GetString() ?? "B6";
-                BuyerEmailCell = header.GetProperty("BuyerEmailCell").GetString() ?? "E5";
-                BuyerNameCell = header.GetProperty("BuyerNameCell").GetString() ?? "E4";
-                DeliveryDateCell = header.GetProperty("DeliveryDateCell").GetString() ?? "T7";
-                PaymentTermsCell = header.GetProperty("PaymentTermsCell").GetString() ?? "A9";
-                
-                if (header.TryGetProperty("DiscountCell", out var discCell))
+                if (bexio.TryGetProperty("Language", out var langProp))
                 {
-                    DiscountCell = discCell.GetString() ?? "V12";
+                    SelectedLanguage = langProp.GetString() ?? "de";
                 }
-
-                var matrix = mapping.GetProperty("SizeMatrix");
-                MatrixStartRow = matrix.GetProperty("StartRow").GetInt32();
-                MatrixEndRow = matrix.GetProperty("EndRow").GetInt32();
-                MatrixCategoryCol = matrix.GetProperty("CategoryColumn").GetInt32();
-                MatrixStartSizeCol = matrix.GetProperty("StartSizeColumn").GetInt32();
-                MatrixEndSizeCol = matrix.GetProperty("EndSizeColumn").GetInt32();
-
-                var data = mapping.GetProperty("Data");
-                DataStartRow = data.GetProperty("StartRow").GetInt32();
-                ColArtNum = data.GetProperty("ArticleNumberColumn").GetInt32();
-                ColArtName = data.GetProperty("ArticleNameColumn").GetInt32();
-                ColColor = data.GetProperty("ColorColumn").GetInt32();
-                ColSizeCategory = data.GetProperty("CategoryColumn").GetInt32();
-                ColStartQty = data.GetProperty("StartQtyColumn").GetInt32();
-                ColEndQty = data.GetProperty("EndQtyColumn").GetInt32();
-                ColUnitPrice = data.GetProperty("UnitPriceColumn").GetInt32();
+                else
+                {
+                    SelectedLanguage = "de";
+                }
+                _initialLanguage = SelectedLanguage;
+                ApplyLanguage(SelectedLanguage);
             }
+
+            Profiles.Clear();
+            string activeProfileName = "Default";
+            if (root.TryGetProperty("ActiveProfileName", out var activeNameProp))
+            {
+                activeProfileName = activeNameProp.GetString() ?? "Default";
+            }
+
+            if (root.TryGetProperty("Profiles", out var profilesEl) && profilesEl.ValueKind == JsonValueKind.Array)
+            {
+                foreach (var el in profilesEl.EnumerateArray())
+                {
+                    var profile = new Models.MappingProfile
+                    {
+                        Name = el.GetProperty("Name").GetString() ?? "Default",
+                        Mapping = DeserializeMapping(el.GetProperty("ExcelMapping"))
+                    };
+                    Profiles.Add(profile);
+                }
+            }
+
+            if (Profiles.Count == 0)
+            {
+                var defaultMapping = new ExcelMappingOptions();
+                if (root.TryGetProperty("ExcelMapping", out var oldMapping))
+                {
+                    defaultMapping = DeserializeMapping(oldMapping);
+                }
+                Profiles.Add(new Models.MappingProfile { Name = "Default", Mapping = defaultMapping });
+            }
+
+            var active = Profiles.FirstOrDefault(p => p.Name.Equals(activeProfileName, StringComparison.OrdinalIgnoreCase)) ?? Profiles[0];
+            _activeProfile = active;
+            SelectedProfile = active;
+            OnPropertyChanged(nameof(ActiveProfile));
         }
         catch (Exception ex)
         {
-            MessageBox.Show($"Fehler beim Laden der Einstellungen: {ex.Message}", "Fehler", MessageBoxButton.OK, MessageBoxImage.Error);
+            Views.CustomDialog.ShowError($"{Translations.Settings_ErrorLoad}: {ex.Message}", Translations.Settings_ErrorTitle);
         }
+
+        IsModified = false;
+        SaveSettingsCommand.RaiseCanExecuteChanged();
+    }
+
+    private ExcelMappingOptions DeserializeMapping(JsonElement el)
+    {
+        var options = new ExcelMappingOptions();
+        if (el.ValueKind == JsonValueKind.Undefined || el.ValueKind == JsonValueKind.Null)
+            return options;
+
+        if (el.TryGetProperty("WorksheetIndex", out var wsIndex)) options.WorksheetIndex = wsIndex.GetInt32();
+        
+        if (el.TryGetProperty("Header", out var header))
+        {
+            if (header.TryGetProperty("CompanyNameCell", out var cell)) options.Header.CompanyNameCell = cell.GetString() ?? "B4";
+            if (header.TryGetProperty("StreetCell", out var cell2)) options.Header.StreetCell = cell2.GetString() ?? "B5";
+            if (header.TryGetProperty("ZipCityCell", out var cell3)) options.Header.ZipCityCell = cell3.GetString() ?? "B6";
+            if (header.TryGetProperty("BuyerEmailCell", out var cell4)) options.Header.BuyerEmailCell = cell4.GetString() ?? "E5";
+            if (header.TryGetProperty("BuyerNameCell", out var cell5)) options.Header.BuyerNameCell = cell5.GetString() ?? "E4";
+            if (header.TryGetProperty("DeliveryDateCell", out var cell6)) options.Header.DeliveryDateCell = cell6.GetString() ?? "T7";
+            if (header.TryGetProperty("PaymentTermsCell", out var cell7)) options.Header.PaymentTermsCell = cell7.GetString() ?? "A9";
+            if (header.TryGetProperty("DiscountCell", out var cell8)) options.Header.DiscountCell = cell8.GetString() ?? "V12";
+        }
+
+        if (el.TryGetProperty("SizeMatrix", out var matrix))
+        {
+            if (matrix.TryGetProperty("StartRow", out var r)) options.SizeMatrix.StartRow = r.GetInt32();
+            if (matrix.TryGetProperty("EndRow", out var r2)) options.SizeMatrix.EndRow = r2.GetInt32();
+            if (matrix.TryGetProperty("CategoryColumn", out var c)) options.SizeMatrix.CategoryColumn = c.GetInt32();
+            if (matrix.TryGetProperty("StartSizeColumn", out var c2)) options.SizeMatrix.StartSizeColumn = c2.GetInt32();
+            if (matrix.TryGetProperty("EndSizeColumn", out var c3)) options.SizeMatrix.EndSizeColumn = c3.GetInt32();
+        }
+
+        if (el.TryGetProperty("Data", out var data))
+        {
+            if (data.TryGetProperty("StartRow", out var r)) options.Data.StartRow = r.GetInt32();
+            if (data.TryGetProperty("ArticleNumberColumn", out var c)) options.Data.ArticleNumberColumn = c.GetInt32();
+            if (data.TryGetProperty("ArticleNameColumn", out var c2)) options.Data.ArticleNameColumn = c2.GetInt32();
+            if (data.TryGetProperty("ColorColumn", out var c3)) options.Data.ColorColumn = c3.GetInt32();
+            if (data.TryGetProperty("CategoryColumn", out var c4)) options.Data.CategoryColumn = c4.GetInt32();
+            if (data.TryGetProperty("StartQtyColumn", out var c5)) options.Data.StartQtyColumn = c5.GetInt32();
+            if (data.TryGetProperty("EndQtyColumn", out var c6)) options.Data.EndQtyColumn = c6.GetInt32();
+            if (data.TryGetProperty("UnitPriceColumn", out var c7)) options.Data.UnitPriceColumn = c7.GetInt32();
+        }
+
+        return options;
     }
 
     private void SaveSettings()
     {
         try
         {
+            if (SelectedProfile != null)
+            {
+                CopyVmToProfile(SelectedProfile);
+            }
+
+            string encryptedToken = Helpers.EncryptionHelper.Encrypt(BexioToken);
+
             var settingsObj = new
             {
-                Bexio = new { ApiToken = BexioToken, DefaultAccountId = DefaultAccountId, DefaultTaxId = DefaultTaxId },
-                ExcelMapping = new
+                Bexio = new { ApiToken = encryptedToken, DefaultAccountId = DefaultAccountId, DefaultTaxId = DefaultTaxId, Language = SelectedLanguage },
+                ActiveProfileName = ActiveProfile?.Name ?? "Default",
+                Profiles = Profiles.Select(p => new
                 {
-                    WorksheetIndex = 1,
-                    Header = new
+                    Name = p.Name,
+                    ExcelMapping = new
                     {
-                        CompanyNameCell = CompanyNameCell,
-                        StreetCell = StreetCell,
-                        ZipCityCell = ZipCityCell,
-                        BuyerEmailCell = BuyerEmailCell,
-                        BuyerNameCell = BuyerNameCell,
-                        DeliveryDateCell = DeliveryDateCell,
-                        PaymentTermsCell = PaymentTermsCell,
-                        DiscountCell = DiscountCell
-                    },
-                    SizeMatrix = new
-                    {
-                        StartRow = MatrixStartRow,
-                        EndRow = MatrixEndRow,
-                        CategoryColumn = MatrixCategoryCol,
-                        StartSizeColumn = MatrixStartSizeCol,
-                        EndSizeColumn = MatrixEndSizeCol
-                    },
-                    Data = new
-                    {
-                        StartRow = DataStartRow,
-                        ArticleNumberColumn = ColArtNum,
-                        ArticleNameColumn = ColArtName,
-                        ColorColumn = ColColor,
-                        CategoryColumn = ColSizeCategory,
-                        StartQtyColumn = ColStartQty,
-                        EndQtyColumn = ColEndQty,
-                        UnitPriceColumn = ColUnitPrice
+                        WorksheetIndex = p.Mapping.WorksheetIndex,
+                        Header = new
+                        {
+                            CompanyNameCell = p.Mapping.Header.CompanyNameCell,
+                            StreetCell = p.Mapping.Header.StreetCell,
+                            ZipCityCell = p.Mapping.Header.ZipCityCell,
+                            BuyerEmailCell = p.Mapping.Header.BuyerEmailCell,
+                            BuyerNameCell = p.Mapping.Header.BuyerNameCell,
+                            DeliveryDateCell = p.Mapping.Header.DeliveryDateCell,
+                            PaymentTermsCell = p.Mapping.Header.PaymentTermsCell,
+                            DiscountCell = p.Mapping.Header.DiscountCell
+                        },
+                        SizeMatrix = new
+                        {
+                            StartRow = p.Mapping.SizeMatrix.StartRow,
+                            EndRow = p.Mapping.SizeMatrix.EndRow,
+                            CategoryColumn = p.Mapping.SizeMatrix.CategoryColumn,
+                            StartSizeColumn = p.Mapping.SizeMatrix.StartSizeColumn,
+                            EndSizeColumn = p.Mapping.SizeMatrix.EndSizeColumn
+                        },
+                        Data = new
+                        {
+                            StartRow = p.Mapping.Data.StartRow,
+                            ArticleNumberColumn = p.Mapping.Data.ArticleNumberColumn,
+                            ArticleNameColumn = p.Mapping.Data.ArticleNameColumn,
+                            ColorColumn = p.Mapping.Data.ColorColumn,
+                            CategoryColumn = p.Mapping.Data.CategoryColumn,
+                            StartQtyColumn = p.Mapping.Data.StartQtyColumn,
+                            EndQtyColumn = p.Mapping.Data.EndQtyColumn,
+                            UnitPriceColumn = p.Mapping.Data.UnitPriceColumn
+                        }
                     }
-                }
+                }).ToArray()
             };
 
             File.WriteAllText(_configFilePath, JsonSerializer.Serialize(settingsObj, new JsonSerializerOptions { WriteIndented = true }));
             
-            // Reload token connection status
             _ = CheckBexioConnectionAsync();
 
-            // Reload the active Excel file to apply configuration changes (e.g. updated discount cell coordinates)
             if (!string.IsNullOrEmpty(SelectedFilePath) && File.Exists(SelectedFilePath))
             {
                 _ = LoadExcelFileAsync(SelectedFilePath);
             }
 
-            MessageBox.Show(Translations.Settings_SaveSuccess, Translations.Import_SuccessTitle, MessageBoxButton.OK, MessageBoxImage.Information);
-            AppendLog("Einstellungen wurden erfolgreich gespeichert und aktivierte Excel-Datei neu eingelesen.");
+            ApplyLanguage(SelectedLanguage);
+            bool languageChanged = SelectedLanguage != _initialLanguage;
+
+            if (languageChanged)
+            {
+                bool reload = Views.CustomDialog.ShowConfirm(
+                    Translations.Settings_ReloadPromptMessage,
+                    Translations.Settings_ReloadPromptTitle);
+
+                if (reload)
+                {
+                    App.Current.Dispatcher.BeginInvoke(new Action(() =>
+                    {
+                        var newWindow = new Views.MainWindow();
+                        newWindow.Show();
+                        App.Current.MainWindow.Close();
+                        App.Current.MainWindow = newWindow;
+                    }));
+                }
+                _initialLanguage = SelectedLanguage;
+            }
+            else
+            {
+                Views.CustomDialog.ShowInfo(Translations.Dialog_SettingsSaved);
+            }
+            
+            AppendLog("Settings saved successfully and active Excel file reloaded.");
+            IsModified = false;
+            SaveSettingsCommand.RaiseCanExecuteChanged();
         }
         catch (Exception ex)
         {
-            MessageBox.Show($"Fehler beim Speichern der Einstellungen: {ex.Message}", "Fehler", MessageBoxButton.OK, MessageBoxImage.Error);
+            Views.CustomDialog.ShowError($"{Translations.Settings_ErrorSave}: {ex.Message}", Translations.Settings_ErrorTitle);
         }
+    }
+
+    private void CopyVmToProfile(Models.MappingProfile profile)
+    {
+        profile.Mapping.Header.CompanyNameCell = CompanyNameCell;
+        profile.Mapping.Header.StreetCell = StreetCell;
+        profile.Mapping.Header.ZipCityCell = ZipCityCell;
+        profile.Mapping.Header.BuyerEmailCell = BuyerEmailCell;
+        profile.Mapping.Header.BuyerNameCell = BuyerNameCell;
+        profile.Mapping.Header.DeliveryDateCell = DeliveryDateCell;
+        profile.Mapping.Header.PaymentTermsCell = PaymentTermsCell;
+        profile.Mapping.Header.DiscountCell = DiscountCell;
+
+        profile.Mapping.SizeMatrix.StartRow = MatrixStartRow;
+        profile.Mapping.SizeMatrix.EndRow = MatrixEndRow;
+        profile.Mapping.SizeMatrix.CategoryColumn = MatrixCategoryCol;
+        profile.Mapping.SizeMatrix.StartSizeColumn = MatrixStartSizeCol;
+        profile.Mapping.SizeMatrix.EndSizeColumn = MatrixEndSizeCol;
+
+        profile.Mapping.Data.StartRow = DataStartRow;
+        profile.Mapping.Data.ArticleNumberColumn = ColArtNum;
+        profile.Mapping.Data.ArticleNameColumn = ColArtName;
+        profile.Mapping.Data.ColorColumn = ColColor;
+        profile.Mapping.Data.CategoryColumn = ColSizeCategory;
+        profile.Mapping.Data.StartQtyColumn = ColStartQty;
+        profile.Mapping.Data.EndQtyColumn = ColEndQty;
+        profile.Mapping.Data.UnitPriceColumn = ColUnitPrice;
+    }
+
+    private void CopyProfileToVm(Models.MappingProfile profile)
+    {
+        CompanyNameCell = profile.Mapping.Header.CompanyNameCell;
+        StreetCell = profile.Mapping.Header.StreetCell;
+        ZipCityCell = profile.Mapping.Header.ZipCityCell;
+        BuyerEmailCell = profile.Mapping.Header.BuyerEmailCell;
+        BuyerNameCell = profile.Mapping.Header.BuyerNameCell;
+        DeliveryDateCell = profile.Mapping.Header.DeliveryDateCell;
+        PaymentTermsCell = profile.Mapping.Header.PaymentTermsCell;
+        DiscountCell = profile.Mapping.Header.DiscountCell;
+
+        MatrixStartRow = profile.Mapping.SizeMatrix.StartRow;
+        MatrixEndRow = profile.Mapping.SizeMatrix.EndRow;
+        MatrixCategoryCol = profile.Mapping.SizeMatrix.CategoryColumn;
+        MatrixStartSizeCol = profile.Mapping.SizeMatrix.StartSizeColumn;
+        MatrixEndSizeCol = profile.Mapping.SizeMatrix.EndSizeColumn;
+
+        DataStartRow = profile.Mapping.Data.StartRow;
+        ColArtNum = profile.Mapping.Data.ArticleNumberColumn;
+        ColArtName = profile.Mapping.Data.ArticleNameColumn;
+        ColColor = profile.Mapping.Data.ColorColumn;
+        ColSizeCategory = profile.Mapping.Data.CategoryColumn;
+        ColStartQty = profile.Mapping.Data.StartQtyColumn;
+        ColEndQty = profile.Mapping.Data.EndQtyColumn;
+        ColUnitPrice = profile.Mapping.Data.UnitPriceColumn;
+    }
+
+    private void CreateProfile()
+    {
+        var dialog = new Views.ProfileCreateDialog(isClone: false);
+        dialog.Owner = App.Current.MainWindow;
+        if (dialog.ShowDialog() == true)
+        {
+            string name = dialog.ProfileName;
+            if (Profiles.Any(p => p.Name.Equals(name, StringComparison.OrdinalIgnoreCase)))
+            {
+                Views.CustomDialog.ShowError(Translations.Dialog_ProfileNameExists, Translations.Dialog_ErrorTitle);
+                return;
+            }
+
+            var newProfile = new Models.MappingProfile
+            {
+                Name = name,
+                Mapping = new ExcelMappingOptions()
+            };
+            Profiles.Add(newProfile);
+            SelectedProfile = newProfile;
+            SetModified();
+
+            // Directly open update window
+            EditProfile(newProfile);
+        }
+    }
+
+    private void CloneProfile(Models.MappingProfile profile)
+    {
+        if (profile == null) return;
+        var dialog = new Views.ProfileCreateDialog(isClone: true);
+        dialog.Owner = App.Current.MainWindow;
+        if (dialog.ShowDialog() == true)
+        {
+            string name = dialog.ProfileName;
+            if (Profiles.Any(p => p.Name.Equals(name, StringComparison.OrdinalIgnoreCase)))
+            {
+                Views.CustomDialog.ShowError(Translations.Dialog_ProfileNameExists, Translations.Dialog_ErrorTitle);
+                return;
+            }
+
+            var newProfile = new Models.MappingProfile
+            {
+                Name = name,
+                Mapping = CloneMapping(profile.Mapping)
+            };
+            Profiles.Add(newProfile);
+            SelectedProfile = newProfile;
+            SetModified();
+        }
+    }
+
+    private void EditProfile(Models.MappingProfile profile)
+    {
+        if (profile == null) return;
+        var editWindow = new Views.ProfileEditWindow(profile);
+        editWindow.Owner = App.Current.MainWindow;
+        if (editWindow.ShowDialog() == true)
+        {
+            if (profile == SelectedProfile)
+            {
+                CopyProfileToVm(profile);
+            }
+            if (profile == ActiveProfile)
+            {
+                if (!string.IsNullOrEmpty(SelectedFilePath) && File.Exists(SelectedFilePath))
+                {
+                    _ = LoadExcelFileAsync(SelectedFilePath);
+                }
+            }
+            SetModified();
+        }
+    }
+
+    private void DeleteProfile(Models.MappingProfile profile)
+    {
+        if (profile == null || profile.Name == "Default" || Profiles.Count <= 1) return;
+
+        string message = string.Format(Translations.Confirm_DeleteProfileMessage, profile.Name);
+        bool confirmed = Views.CustomDialog.ShowConfirm(message, Translations.Confirm_DeleteProfileTitle);
+        if (!confirmed) return;
+
+        Profiles.Remove(profile);
+
+        if (SelectedProfile == profile)
+        {
+            SelectedProfile = Profiles[0];
+        }
+        if (ActiveProfile == profile)
+        {
+            ActiveProfile = Profiles[0];
+        }
+        SetModified();
+    }
+
+    private void SetActiveProfile(Models.MappingProfile profile)
+    {
+        if (profile != null)
+        {
+            ActiveProfile = profile;
+            OnPropertyChanged(nameof(ActiveProfile));
+            AppendLog($"Active profile set to: {ActiveProfile.Name}");
+            SetModified();
+        }
+    }
+
+    private void ExportProfiles()
+    {
+        try
+        {
+            var dialog = new Microsoft.Win32.SaveFileDialog
+            {
+                Filter = "JSON files (*.json)|*.json",
+                DefaultExt = ".json",
+                FileName = "bexio_mapping_profiles.json"
+            };
+
+            if (dialog.ShowDialog() == true)
+            {
+                var exportList = Profiles.Select(p => new
+                {
+                    Name = p.Name,
+                    ExcelMapping = new
+                    {
+                        WorksheetIndex = p.Mapping.WorksheetIndex,
+                        Header = new
+                        {
+                            CompanyNameCell = p.Mapping.Header.CompanyNameCell,
+                            StreetCell = p.Mapping.Header.StreetCell,
+                            ZipCityCell = p.Mapping.Header.ZipCityCell,
+                            BuyerEmailCell = p.Mapping.Header.BuyerEmailCell,
+                            BuyerNameCell = p.Mapping.Header.BuyerNameCell,
+                            DeliveryDateCell = p.Mapping.Header.DeliveryDateCell,
+                            PaymentTermsCell = p.Mapping.Header.PaymentTermsCell,
+                            DiscountCell = p.Mapping.Header.DiscountCell
+                        },
+                        SizeMatrix = new
+                        {
+                            StartRow = p.Mapping.SizeMatrix.StartRow,
+                            EndRow = p.Mapping.SizeMatrix.EndRow,
+                            CategoryColumn = p.Mapping.SizeMatrix.CategoryColumn,
+                            StartSizeColumn = p.Mapping.SizeMatrix.StartSizeColumn,
+                            EndSizeColumn = p.Mapping.SizeMatrix.EndSizeColumn
+                        },
+                        Data = new
+                        {
+                            StartRow = p.Mapping.Data.StartRow,
+                            ArticleNumberColumn = p.Mapping.Data.ArticleNumberColumn,
+                            ArticleNameColumn = p.Mapping.Data.ArticleNameColumn,
+                            ColorColumn = p.Mapping.Data.ColorColumn,
+                            CategoryColumn = p.Mapping.Data.CategoryColumn,
+                            StartQtyColumn = p.Mapping.Data.StartQtyColumn,
+                            EndQtyColumn = p.Mapping.Data.EndQtyColumn,
+                            UnitPriceColumn = p.Mapping.Data.UnitPriceColumn
+                        }
+                    }
+                }).ToList();
+
+                string json = JsonSerializer.Serialize(exportList, new JsonSerializerOptions { WriteIndented = true });
+                File.WriteAllText(dialog.FileName, json);
+                AppendLog($"Profiles exported successfully to: {dialog.FileName}");
+                Views.CustomDialog.ShowInfo(Translations.Dialog_ExportSuccess);
+            }
+        }
+        catch (Exception ex)
+        {
+            Views.CustomDialog.ShowError($"{Translations.Settings_ErrorSave}: {ex.Message}", Translations.Settings_ErrorTitle);
+        }
+    }
+
+    private void ImportProfiles()
+    {
+        try
+        {
+            var dialog = new Microsoft.Win32.OpenFileDialog
+            {
+                Filter = "JSON files (*.json)|*.json",
+                DefaultExt = ".json"
+            };
+
+            if (dialog.ShowDialog() == true)
+            {
+                using var doc = JsonDocument.Parse(File.ReadAllText(dialog.FileName));
+                if (doc.RootElement.ValueKind != JsonValueKind.Array)
+                {
+                    Views.CustomDialog.ShowError(Translations.Dialog_ImportInvalidFormat, Translations.Dialog_ErrorTitle);
+                    return;
+                }
+
+                bool importedAny = false;
+                foreach (var el in doc.RootElement.EnumerateArray())
+                {
+                    if (!el.TryGetProperty("Name", out var nameProp)) continue;
+                    string name = nameProp.GetString() ?? "";
+                    if (string.IsNullOrEmpty(name)) continue;
+
+                    ExcelMappingOptions mapping = DeserializeMapping(el.GetProperty("ExcelMapping"));
+
+                    var existing = Profiles.FirstOrDefault(p => p.Name.Equals(name, StringComparison.OrdinalIgnoreCase));
+                    if (existing != null)
+                    {
+                        existing.Mapping = mapping;
+                        if (existing == SelectedProfile)
+                        {
+                            CopyProfileToVm(existing);
+                        }
+                        if (existing == ActiveProfile)
+                        {
+                            if (!string.IsNullOrEmpty(SelectedFilePath) && File.Exists(SelectedFilePath))
+                            {
+                                _ = LoadExcelFileAsync(SelectedFilePath);
+                            }
+                        }
+                    }
+                    else
+                    {
+                        Profiles.Add(new Models.MappingProfile { Name = name, Mapping = mapping });
+                    }
+                    importedAny = true;
+                }
+
+                if (importedAny)
+                {
+                    SetModified();
+                    AppendLog($"Profiles imported successfully from: {dialog.FileName}");
+                    Views.CustomDialog.ShowInfo(Translations.Dialog_ImportSuccess);
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            Views.CustomDialog.ShowError($"{Translations.Settings_ErrorLoad}: {ex.Message}", Translations.Settings_ErrorTitle);
+        }
+    }
+
+    private ExcelMappingOptions CloneMapping(ExcelMappingOptions source)
+    {
+        return new ExcelMappingOptions
+        {
+            WorksheetIndex = source.WorksheetIndex,
+            Header = new HeaderMapping
+            {
+                CompanyNameCell = source.Header.CompanyNameCell,
+                StreetCell = source.Header.StreetCell,
+                ZipCityCell = source.Header.ZipCityCell,
+                BuyerEmailCell = source.Header.BuyerEmailCell,
+                BuyerNameCell = source.Header.BuyerNameCell,
+                DeliveryDateCell = source.Header.DeliveryDateCell,
+                PaymentTermsCell = source.Header.PaymentTermsCell,
+                DiscountCell = source.Header.DiscountCell
+            },
+            SizeMatrix = new SizeMatrixMapping
+            {
+                StartRow = source.SizeMatrix.StartRow,
+                EndRow = source.SizeMatrix.EndRow,
+                CategoryColumn = source.SizeMatrix.CategoryColumn,
+                StartSizeColumn = source.SizeMatrix.StartSizeColumn,
+                EndSizeColumn = source.SizeMatrix.EndSizeColumn
+            },
+            Data = new DataMapping
+            {
+                StartRow = source.Data.StartRow,
+                ArticleNumberColumn = source.Data.ArticleNumberColumn,
+                ArticleNameColumn = source.Data.ArticleNameColumn,
+                ColorColumn = source.Data.ColorColumn,
+                CategoryColumn = source.Data.CategoryColumn,
+                StartQtyColumn = source.Data.StartQtyColumn,
+                EndQtyColumn = source.Data.EndQtyColumn,
+                UnitPriceColumn = source.Data.UnitPriceColumn
+            }
+        };
     }
 
     private ExcelMappingOptions BuildMappingOptions()
     {
-        return new ExcelMappingOptions
-        {
-            WorksheetIndex = 1,
-            Header = new HeaderMapping
-            {
-                CompanyNameCell = CompanyNameCell,
-                StreetCell = StreetCell,
-                ZipCityCell = ZipCityCell,
-                BuyerEmailCell = BuyerEmailCell,
-                BuyerNameCell = BuyerNameCell,
-                DeliveryDateCell = DeliveryDateCell,
-                PaymentTermsCell = PaymentTermsCell,
-                DiscountCell = DiscountCell
-            },
-            SizeMatrix = new SizeMatrixMapping
-            {
-                StartRow = MatrixStartRow,
-                EndRow = MatrixEndRow,
-                CategoryColumn = MatrixCategoryCol,
-                StartSizeColumn = MatrixStartSizeCol,
-                EndSizeColumn = MatrixEndSizeCol
-            },
-            Data = new DataMapping
-            {
-                StartRow = DataStartRow,
-                ArticleNumberColumn = ColArtNum,
-                ArticleNameColumn = ColArtName,
-                ColorColumn = ColColor,
-                CategoryColumn = ColSizeCategory,
-                StartQtyColumn = ColStartQty,
-                EndQtyColumn = ColEndQty,
-                UnitPriceColumn = ColUnitPrice
-            }
-        };
+        return ActiveProfile != null ? ActiveProfile.Mapping : new ExcelMappingOptions();
+    }
+
+    private void ApplyLanguage(string language)
+    {
+        var culture = new System.Globalization.CultureInfo(language == "en" ? "en-US" : "de-CH");
+        System.Threading.Thread.CurrentThread.CurrentCulture = culture;
+        System.Threading.Thread.CurrentThread.CurrentUICulture = culture;
+        System.Globalization.CultureInfo.DefaultThreadCurrentCulture = culture;
+        System.Globalization.CultureInfo.DefaultThreadCurrentUICulture = culture;
     }
 }
 

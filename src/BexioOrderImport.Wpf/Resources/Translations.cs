@@ -2,6 +2,7 @@ using System.Resources;
 
 namespace BexioOrderImport.Wpf.Resources;
 
+[System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
 public static class Translations
 {
     private static readonly ResourceManager ResourceManager = 
@@ -82,4 +83,68 @@ public static class Translations
     public static string Dialog_Zip => ResourceManager.GetString(nameof(Dialog_Zip)) ?? "";
     public static string Dialog_City => ResourceManager.GetString(nameof(Dialog_City)) ?? "";
     public static string Dialog_Email => ResourceManager.GetString(nameof(Dialog_Email)) ?? "";
+    public static string Import_ConfirmTitle => ResourceManager.GetString(nameof(Import_ConfirmTitle)) ?? "";
+    public static string Import_ConfirmMessage => ResourceManager.GetString(nameof(Import_ConfirmMessage)) ?? "";
+    public static string Settings_ErrorLoad => ResourceManager.GetString(nameof(Settings_ErrorLoad)) ?? "";
+    public static string Settings_ErrorSave => ResourceManager.GetString(nameof(Settings_ErrorSave)) ?? "";
+    public static string Settings_ErrorTitle => ResourceManager.GetString(nameof(Settings_ErrorTitle)) ?? "";
+    public static string Settings_LanguageSection => ResourceManager.GetString(nameof(Settings_LanguageSection)) ?? "";
+    public static string Settings_LanguageLabel => ResourceManager.GetString(nameof(Settings_LanguageLabel)) ?? "";
+    public static string Settings_LanguageGerman => ResourceManager.GetString(nameof(Settings_LanguageGerman)) ?? "";
+    public static string Settings_LanguageEnglish => ResourceManager.GetString(nameof(Settings_LanguageEnglish)) ?? "";
+    public static string Settings_RestartPrompt => ResourceManager.GetString(nameof(Settings_RestartPrompt)) ?? "";
+    public static string Settings_ColStartQty => ResourceManager.GetString(nameof(Settings_ColStartQty)) ?? "";
+    public static string Settings_ColEndQty => ResourceManager.GetString(nameof(Settings_ColEndQty)) ?? "";
+    public static string Settings_ColUnitPrice => ResourceManager.GetString(nameof(Settings_ColUnitPrice)) ?? "";
+    public static string Settings_ProfilesSection => ResourceManager.GetString(nameof(Settings_ProfilesSection)) ?? "";
+    public static string Settings_ProfilesSelectLabel => ResourceManager.GetString(nameof(Settings_ProfilesSelectLabel)) ?? "";
+    public static string Settings_ProfilesActiveLabel => ResourceManager.GetString(nameof(Settings_ProfilesActiveLabel)) ?? "";
+    public static string Settings_ProfilesNewNamePlaceholder => ResourceManager.GetString(nameof(Settings_ProfilesNewNamePlaceholder)) ?? "";
+    public static string Settings_ProfilesAddButton => ResourceManager.GetString(nameof(Settings_ProfilesAddButton)) ?? "";
+    public static string Settings_ProfilesDeleteButton => ResourceManager.GetString(nameof(Settings_ProfilesDeleteButton)) ?? "";
+    public static string Settings_ProfilesSetActiveButton => ResourceManager.GetString(nameof(Settings_ProfilesSetActiveButton)) ?? "";
+    public static string Settings_ReloadPromptTitle => ResourceManager.GetString(nameof(Settings_ReloadPromptTitle)) ?? "";
+    public static string Settings_ReloadPromptMessage => ResourceManager.GetString(nameof(Settings_ReloadPromptMessage)) ?? "";
+    public static string Settings_ProfilesTableColName => ResourceManager.GetString(nameof(Settings_ProfilesTableColName)) ?? "";
+    public static string Settings_ProfilesTableColActive => ResourceManager.GetString(nameof(Settings_ProfilesTableColActive)) ?? "";
+    public static string Settings_ProfilesTableColActions => ResourceManager.GetString(nameof(Settings_ProfilesTableColActions)) ?? "";
+    public static string Settings_ProfilesCloneButton => ResourceManager.GetString(nameof(Settings_ProfilesCloneButton)) ?? "";
+    public static string Settings_ProfilesEditButton => ResourceManager.GetString(nameof(Settings_ProfilesEditButton)) ?? "";
+    public static string Settings_ProfilesCreateTitle => ResourceManager.GetString(nameof(Settings_ProfilesCreateTitle)) ?? "";
+    public static string Settings_ProfilesCloneTitle => ResourceManager.GetString(nameof(Settings_ProfilesCloneTitle)) ?? "";
+    public static string Settings_ProfilesEditTitle => ResourceManager.GetString(nameof(Settings_ProfilesEditTitle)) ?? "";
+    public static string Dialog_Cancel => ResourceManager.GetString(nameof(Dialog_Cancel)) ?? "";
+    public static string Dialog_Save => ResourceManager.GetString(nameof(Dialog_Save)) ?? "";
+    public static string Dialog_Create => ResourceManager.GetString(nameof(Dialog_Create)) ?? "";
+    public static string Settings_ProfileNameLabel => ResourceManager.GetString(nameof(Settings_ProfileNameLabel)) ?? "";
+    public static string Settings_MatrixCategoryCol => ResourceManager.GetString(nameof(Settings_MatrixCategoryCol)) ?? "";
+    public static string Settings_MatrixStartSizeCol => ResourceManager.GetString(nameof(Settings_MatrixStartSizeCol)) ?? "";
+    public static string Settings_MatrixEndSizeCol => ResourceManager.GetString(nameof(Settings_MatrixEndSizeCol)) ?? "";
+    public static string Settings_ProfilesExportButton => ResourceManager.GetString(nameof(Settings_ProfilesExportButton)) ?? "";
+    public static string Settings_ProfilesImportButton => ResourceManager.GetString(nameof(Settings_ProfilesImportButton)) ?? "";
+    public static string Confirm_DeleteProfileTitle => ResourceManager.GetString(nameof(Confirm_DeleteProfileTitle)) ?? "";
+    public static string Confirm_DeleteProfileMessage => ResourceManager.GetString(nameof(Confirm_DeleteProfileMessage)) ?? "";
+    public static string Dialog_ImportInvalidFormat => ResourceManager.GetString(nameof(Dialog_ImportInvalidFormat)) ?? "";
+    public static string Dialog_ProfileNameRequired => ResourceManager.GetString(nameof(Dialog_ProfileNameRequired)) ?? "";
+    public static string Dialog_ProfileNameExists => ResourceManager.GetString(nameof(Dialog_ProfileNameExists)) ?? "";
+    public static string Dialog_ExportSuccess => ResourceManager.GetString(nameof(Dialog_ExportSuccess)) ?? "";
+    public static string Dialog_ImportSuccess => ResourceManager.GetString(nameof(Dialog_ImportSuccess)) ?? "";
+    public static string Dialog_SettingsSaved => ResourceManager.GetString(nameof(Dialog_SettingsSaved)) ?? "";
+    public static string Dialog_Yes => ResourceManager.GetString(nameof(Dialog_Yes)) ?? "";
+    public static string Dialog_No => ResourceManager.GetString(nameof(Dialog_No)) ?? "";
+    public static string Dialog_OK => ResourceManager.GetString(nameof(Dialog_OK)) ?? "";
+    public static string Dialog_ErrorTitle => ResourceManager.GetString(nameof(Dialog_ErrorTitle)) ?? "";
+    public static string Dialog_WarningTitle => ResourceManager.GetString(nameof(Dialog_WarningTitle)) ?? "";
+    public static string Dialog_InfoTitle => ResourceManager.GetString(nameof(Dialog_InfoTitle)) ?? "";
+    public static string Dialog_ConfirmTitle => ResourceManager.GetString(nameof(Dialog_ConfirmTitle)) ?? "";
+    public static string Settings_WorksheetSection => ResourceManager.GetString(nameof(Settings_WorksheetSection)) ?? "";
+    public static string Settings_WorksheetLabel => ResourceManager.GetString(nameof(Settings_WorksheetLabel)) ?? "";
+    public static string Import_LoadingExcel => ResourceManager.GetString(nameof(Import_LoadingExcel)) ?? "";
+    public static string Import_Importing => ResourceManager.GetString(nameof(Import_Importing)) ?? "";
+    public static string Import_PleaseWait => ResourceManager.GetString(nameof(Import_PleaseWait)) ?? "";
+    public static string Update_Available => ResourceManager.GetString(nameof(Update_Available)) ?? "";
+    public static string Update_InstallNow => ResourceManager.GetString(nameof(Update_InstallNow)) ?? "";
+    public static string Update_Downloading => ResourceManager.GetString(nameof(Update_Downloading)) ?? "";
+    public static string Update_Installing => ResourceManager.GetString(nameof(Update_Installing)) ?? "";
+    public static string Update_Error => ResourceManager.GetString(nameof(Update_Error)) ?? "";
 }

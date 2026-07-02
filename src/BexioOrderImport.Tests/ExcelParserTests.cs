@@ -114,4 +114,18 @@ public class ExcelParserTests
         sandalPos.UnitPrice.Should().Be(9.10m);
         sandalPos.TotalPrice.Should().Be(9.10m);
     }
+
+    [Fact]
+    public void ParseOrderForm_WithNonExistentFile_ShouldThrowFileNotFoundException()
+    {
+        // Arrange
+        string filePath = "non_existent_file.xlsx";
+
+        // Act
+        Action act = () => _parser.ParseOrderForm(filePath);
+
+        // Assert
+        act.Should().Throw<FileNotFoundException>()
+           .WithMessage("*Excel file not found*");
+    }
 }

@@ -21,7 +21,7 @@ public class ClosedXmlExcelParser : IExcelParser
     public Order ParseOrderForm(string filePath)
     {
         if (!File.Exists(filePath))
-            throw new FileNotFoundException($"Excel-Datei nicht gefunden: {filePath}");
+            throw new FileNotFoundException($"Excel file not found: {filePath}");
 
         using var workbook = new XLWorkbook(filePath);
         var sheet = workbook.Worksheet(_options.WorksheetIndex);

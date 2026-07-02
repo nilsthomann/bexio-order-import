@@ -6,6 +6,7 @@ using System.Windows.Media;
 
 namespace BexioOrderImport.Wpf.Converters;
 
+[System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
 public class IndexToBooleanConverter : IValueConverter
 {
     public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
@@ -27,6 +28,7 @@ public class IndexToBooleanConverter : IValueConverter
     }
 }
 
+[System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
 public class NullToVisibilityConverter : IValueConverter
 {
     public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
@@ -41,6 +43,7 @@ public class NullToVisibilityConverter : IValueConverter
     }
 }
 
+[System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
 public class ColorToBrushConverter : IValueConverter
 {
     public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
@@ -67,6 +70,7 @@ public class ColorToBrushConverter : IValueConverter
     }
 }
 
+[System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
 public class InverseBooleanToVisibilityConverter : IValueConverter
 {
     public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
@@ -85,5 +89,24 @@ public class InverseBooleanToVisibilityConverter : IValueConverter
             return v != Visibility.Visible;
         }
         return false;
+    }
+}
+
+[System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
+public class EqualityToBooleanConverter : IMultiValueConverter
+{
+    public object Convert(object[] values, Type targetType, object parameter, CultureInfo culture)
+    {
+        if (values == null || values.Length < 2) return false;
+        var val1 = values[0];
+        var val2 = values[1];
+        if (val1 == null && val2 == null) return true;
+        if (val1 == null || val2 == null) return false;
+        return val1.Equals(val2);
+    }
+
+    public object[] ConvertBack(object value, Type[] targetTypes, object parameter, CultureInfo culture)
+    {
+        throw new NotImplementedException();
     }
 }
