@@ -14,8 +14,8 @@ OutputBaseFilename=BexioOrderImportSetup
 SetupIconFile=..\src\BexioOrderImport.Wpf\Resources\app_icon.ico
 Compression=lzma2/max
 SolidCompression=yes
-ArchitecturesAllowed=x64
-ArchitecturesInstallIn64BitMode=x64
+ArchitecturesAllowed=x64compatible
+ArchitecturesInstallIn64BitMode=x64compatible
 UninstallDisplayIcon={app}\BexioOrderImport.Wpf.exe
 WizardStyle=modern
 
