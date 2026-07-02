@@ -1,6 +1,10 @@
 name: Build & Test (PR)
 
 on:
+  push:
+    branches:
+      - main
+      - master
   pull_request:
     branches:
       - main
@@ -9,6 +13,9 @@ on:
 jobs:
   build-and-test:
     runs-on: windows-latest
+    permissions:
+      contents: read
+      code-quality: write
 
     steps:
       - name: Checkout Repository
@@ -38,3 +45,16 @@ jobs:
         run: |
           Get-Content -Path TestResults/CoverageReport/Summary.md | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Append -Encoding utf8
         shell: powershell
+
+      - name: Copy Coverage File to Static Path
+        run: |
+          $covFile = (Get-ChildItem -Path TestResults -Filter "coverage.cobertura.xml" -Recurse | Select-Object -First 1).FullName
+          Copy-Item -Path $covFile -Destination TestResults/coverage.cobertura.xml
+        shell: powershell
+
+      - name: Upload coverage to GitHub native API
+        uses: actions/upload-code-coverage@v1
+        with:
+          file: TestResults/coverage.cobertura.xml
+          language: csharp
+          label: code-coverage-cobertura

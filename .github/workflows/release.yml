@@ -1,4 +1,5 @@
 name: Create Release
+run-name: Release ${{ github.ref_name }}
 
 on:
   push:
@@ -8,6 +9,8 @@ on:
 jobs:
   release:
     runs-on: windows-latest
+    permissions:
+      contents: write
 
     steps:
       - name: Checkout Repository
@@ -35,6 +38,7 @@ jobs:
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
+          name: Release ${{ github.ref_name }}
           files: build/Output/BexioOrderImportSetup.exe
           draft: false
           prerelease: false
