@@ -58,3 +58,4 @@ jobs:
           file: TestResults/coverage.cobertura.xml
           language: csharp
           label: code-coverage-cobertura
+          fail-on-error: false
