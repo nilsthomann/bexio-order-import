@@ -9,7 +9,7 @@ if (Test-Path "../TestResults") {
 }
 
 Write-Host "2. Running unit tests and collecting coverage..." -ForegroundColor Cyan
-dotnet test ../BexioOrderImport.slnx --collect:"XPlat Code Coverage" --results-directory ../TestResults /p:Exclude="[BexioOrderImport.Wpf]BexioOrderImport.Wpf.Views.*%2C[BexioOrderImport.Wpf]BexioOrderImport.Wpf.Converters.*%2C[BexioOrderImport.Wpf]BexioOrderImport.Wpf.Helpers.WindowHelper%2C[BexioOrderImport.Wpf]BexioOrderImport.Wpf.App%2C[BexioOrderImport.Wpf]BexioOrderImport.Wpf.Resources.*"
+dotnet test ../BexioOrderImport.slnx --collect:"XPlat Code Coverage" --results-directory ../TestResults -- DataCollectionRunSettings.DataCollectors.DataCollector.Configuration.Exclude=`"[BexioOrderImport.Wpf]BexioOrderImport.Wpf.Views.*,[BexioOrderImport.Wpf]BexioOrderImport.Wpf.Converters.*,[BexioOrderImport.Wpf]BexioOrderImport.Wpf.Helpers.WindowHelper,[BexioOrderImport.Wpf]BexioOrderImport.Wpf.App,[BexioOrderImport.Wpf]BexioOrderImport.Wpf.Resources.*,[BexioOrderImport.Wpf]XamlGeneratedNamespace.GeneratedInternalTypeHelper`"
 
 # Find the generated Cobertura XML file
 $coverageFile = Get-ChildItem -Path "../TestResults" -Filter "coverage.cobertura.xml" -Recurse | Select-Object -First 1

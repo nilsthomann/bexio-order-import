@@ -147,4 +147,5 @@ public static class Translations
     public static string Update_Downloading => ResourceManager.GetString(nameof(Update_Downloading)) ?? "";
     public static string Update_Installing => ResourceManager.GetString(nameof(Update_Installing)) ?? "";
     public static string Update_Error => ResourceManager.GetString(nameof(Update_Error)) ?? "";
+    public static string Import_NoDeliveryDate => ResourceManager.GetString(nameof(Import_NoDeliveryDate)) ?? "";
 }

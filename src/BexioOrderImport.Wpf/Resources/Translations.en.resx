@@ -534,4 +534,7 @@
   <data name="Update_Error" xml:space="preserve">
     <value>Update error: {0}</value>
   </data>
+  <data name="Import_NoDeliveryDate" xml:space="preserve">
+    <value>Not defined</value>
+  </data>
 </root>

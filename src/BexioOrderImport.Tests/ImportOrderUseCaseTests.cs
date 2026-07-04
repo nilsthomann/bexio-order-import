@@ -143,10 +143,47 @@ public class ImportOrderUseCaseTests
         return order;
     }
 
+    [Fact]
+    public async Task ExecuteAsync_WithNoPositions_ReturnsFalse()
+    {
+        var emptyOrder = new Order { Positions = new System.Collections.Generic.List<OrderPosition>() };
+        var parser = new MockExcelParser(emptyOrder);
+        var client = new MockBexioClient();
+        var useCase = new ImportOrderUseCase(parser, client);
+        bool result = await useCase.ExecuteAsync(
+            "test.xlsx", _ => { }, () => Task.FromResult(true), _ => Task.FromResult(true), _ => { }
+        );
+        result.Should().BeFalse();
+    }
+
+    [Fact]
+    public async Task ExecuteAsync_WhenArticleNotFound_CallsAddCustomPosition()
+    {
+        var order = new Order
+        {
+            Customer = new Customer { Email = "t@t.com", CompanyName = "Test AG" },
+            Positions = new System.Collections.Generic.List<OrderPosition>
+            {
+                new OrderPosition { ArticleNumber = "UNKNOWN", ArticleName = "Part", Quantity = 1, UnitPrice = 10m }
+            }
+        };
+        var parser = new MockExcelParser(order);
+        var client = new MockBexioClient { ArticleIdToReturn = null };
+        var useCase = new ImportOrderUseCase(parser, client);
+        bool result = await useCase.ExecuteAsync(
+            "test.xlsx", _ => { }, () => Task.FromResult(true), _ => Task.FromResult(true), _ => { }
+        );
+        result.Should().BeTrue();
+        client.CustomPositionsAdded.Should().Be(1);
+        client.ArticlePositionsAdded.Should().Be(0);
+    }
+
     // Manual mock classes for Clean Architecture testing
     private class MockExcelParser : IExcelParser
     {
-        public Order OrderToReturn { get; set; } = new();
+        public Order OrderToReturn { get; set; }
+        public MockExcelParser(Order order) { OrderToReturn = order; }
+        public MockExcelParser() { OrderToReturn = new Order(); }
         public Order ParseOrderForm(string filePath) => OrderToReturn;
     }
 
@@ -160,6 +197,10 @@ public class ImportOrderUseCaseTests
         public bool CreateOrderCalled { get; private set; }
         public int AddArticlePositionCount { get; private set; }
         public int AddCustomPositionCount { get; private set; }
+
+        // Named aliases as requested in checklist
+        public int CustomPositionsAdded => AddCustomPositionCount;
+        public int ArticlePositionsAdded => AddArticlePositionCount;
 
         public Task<int?> FindContactIdAsync(string email) => Task.FromResult(ContactIdToReturn);
         

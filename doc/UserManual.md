@@ -10,8 +10,9 @@ Welcome to the **Bexio Order Importer** user manual. This document provides a co
 3. [Configuration & Initial Setup](#3-configuration--initial-setup)
 4. [Understanding the Excel Order Template](#4-understanding-the-excel-order-template)
 5. [Step-by-Step Import Guide](#5-step-by-step-import-guide)
-6. [Updating the Application](#6-updating-the-application)
-7. [Troubleshooting & Support](#7-troubleshooting--support)
+6. [Managing Profiles](#6-managing-profiles)
+7. [Updating the Application](#7-updating-the-application)
+8. [Troubleshooting & Support](#8-troubleshooting--support)
 
 ---
 
@@ -42,16 +43,16 @@ It parses complex spreadsheet files containing customer headers, delivery dates,
 
 ## 3. Configuration & Initial Setup
 
-When you first launch the application, you must configure the Bexio API connection and mapping parameters. Go to the **Einstellungen** (Settings) tab in the sidebar.
+When you first launch the application, you must configure the Bexio API connection and mapping parameters. Go to the **Settings** tab in the sidebar.
 
 ![Settings Panel Preview](assets/excel_template_preview.png)
 *(See section 4 below for mapping detailed coordinates matching the order sheet)*
 
 ### Bexio API Settings
 1. **API-Token**: Paste your Bexio API Token here. To protect your credentials, this field automatically masks the token with dots (`••••••••`) when it loses focus. Clicking inside the field immediately shows the actual text for editing.
-   - *How to get a token*: Log into your Bexio account, navigate to **Settings > Apps & API > API Keys** (Einstellungen > Apps & API > API-Schlüssel) and generate a new token.
-2. **Standard-Konto (Default Account)**: The default bookkeeping account number (e.g., `3200` for product sales) used for custom order positions.
-3. **Standard-MwSt (Default Tax ID)**: The default tax rate index mapped in your Bexio account (typically `1` for the standard domestic tax rate).
+   - *How to get a token*: Log into your Bexio account, navigate to **Settings > Apps & API > API Keys** and generate a new token.
+2. **Revenue Account / Account ID**: The default bookkeeping account number (e.g., `3200` for product sales) used for custom order positions.
+3. **VAT Rate / Tax ID**: The default tax rate index mapped in your Bexio account (typically `1` for the standard domestic tax rate).
 
 > [!NOTE]
 > All configuration files are securely saved in your local user directory at `%LocalAppData%\BexioOrderImport\appsettings.json`. They remain fully preserved when the application updates itself to a newer version.
@@ -69,14 +70,14 @@ Below is a typical order template layout showing how the parser reads the metada
 
 #### Mapped Excel Fields
 * **Customer Header Metadata**:
-  * **Firma (Company)** [Cell `B4`]: Mapped customer company name.
-  * **Strasse (Street)** [Cell `B5`]: Mapped customer street name.
-  * **PLZ Ort (ZIP & City)** [Cell `B6`]: Formatted as `[ZIP] [City]` (e.g., `7000 Chur`). The parser automatically splits this cell into separate postal code and city values.
-  * **E-Mail** [Cell `E5`]: Used to search for existing contacts in Bexio.
-  * **Einkauf (Buyer Name)** [Cell `E4`]: Mapped primary contact person.
-  * **Liefertermin (Delivery Date)** [Cell `T7`]: Date of planned delivery.
-  * **Zahlungskonditionen (Payment Terms)** [Cell `A9`]: Plain text terms of payment.
-  * **Rabatt (Global Discount %)** [Cell `V12`]: The general discount rate applied to the whole order.
+  * **Customer / Company** [Cell `B4`]: Mapped customer company name.
+  * **Street** [Cell `B5`]: Mapped customer street name.
+  * **ZIP & City** [Cell `B6`]: Formatted as `[ZIP] [City]` (e.g., `7000 Chur`). The parser automatically splits this cell into separate postal code and city values.
+  * **Email** [Cell `E5`]: Used to search for existing contacts in Bexio.
+  * **Buyer Name** [Cell `E4`]: Mapped primary contact person.
+  * **Delivery Date** [Cell `T7`]: Date of planned delivery.
+  * **Payment Terms** [Cell `A9`]: Plain text terms of payment.
+  * **Discount %** [Cell `V12`]: The general discount rate applied to the whole order.
 * **Size Matrix Mapping**:
   * **Start/End Row** [Rows `10` to `17`]: Coordinates defining where the size headers are declared.
   * **Category Column** [Column `4` / D]: Defines which category matches which size column.
@@ -101,42 +102,77 @@ Below is a typical order template layout showing how the parser reads the metada
 3. The application will display a rotating spinner while parsing.
 
 ### Step 2: Review Mapped Data & Preview
-1. The **Kopfdaten** (Header Details) card displays the extracted customer metadata, delivery dates, and payment conditions.
+1. The **Header Details** card displays the extracted customer metadata, delivery dates, and payment conditions.
 2. The **Positions preview grid** displays all parsed item rows. Only sizes with a quantity greater than zero will generate a row.
 3. You can double-click cells in the DataGrid to manually override quantities or prices before uploading.
 4. The bottom totals bar dynamically reflects the gross amount, discounts, and net total.
 
 ### Step 3: Trigger the Import
-1. Click **Import starten** (Start Import) in the bottom right corner.
-2. **Customer Checking**:
+1. Click **Import to Bexio** in the bottom right corner. A preview of the order data is shown.
+2. **Confirm Upload**:
+   - A confirmation dialog asks if you want to push the order to Bexio.
+   - Click **Yes** to proceed.
+3. **Customer Checking**:
    - The application checks your Bexio database for a contact matching the customer's email.
    - **If found**: It proceeds automatically using that contact's ID.
-   - **If NOT found**: A dialog pops up showing the new customer details. You can review, correct errors (e.g., misspelled street names), and click **Erstellen** to insert them directly into Bexio. If you click **Abbrechen** (Cancel), the import is aborted and the file remains loaded in your view.
-3. **Confirm Upload**:
-   - A final confirm dialog asks if you want to push the order to Bexio.
-   - Click **Ja** (Yes) to upload.
+   - **If NOT found**: A dialog pops up showing the new customer details. You can review, correct errors (e.g., misspelled street names), and click **Create** to insert them directly into Bexio. If you click **Cancel**, the import is aborted and the file remains loaded in your view.
 4. During upload, a full-screen loading card covers the interface. Once completed, a success dialog displays the created Bexio order number.
 
 ---
 
-## 6. Updating the Application
+## 6. Managing Profiles
+
+The application supports multiple **Excel Mapping Profiles**. Each profile stores a complete, independent set of cell and column coordinates for a different Excel template format. Profiles are managed on the **Settings** tab.
+
+### Create a new profile
+1. In the **Settings** tab, click **Create Profile**.
+2. Enter a unique name for the new profile.
+3. Configure all cell/column coordinates for your Excel template.
+4. Save – the new profile is now available in the profile list.
+
+### Clone a profile
+1. Select the profile you want to use as a base.
+2. Click **Clone**.
+3. Enter a name for the cloned profile.
+4. Adjust only the settings that differ from the original.
+
+### Edit a profile
+1. Select the profile from the list.
+2. Click **Edit** to open the profile editor dialog.
+3. Modify the desired cell or column values.
+4. Confirm with **Save**.
+
+### Set a profile as active
+- Select the profile in the list and click **Set as active**.
+- The active profile is highlighted and is used by the importer when loading Excel files.
+
+### Profile Export / Import
+- **Export**: Click **Export** to save all profiles to a portable JSON file. This is useful for backups or sharing configurations between machines.
+- **Import**: Click **Import** and select a previously exported JSON file to load profiles into the application.
+
+> [!NOTE]
+> The **Default** profile cannot be deleted. You can edit or clone it, but it will always remain available as a fallback.
+
+---
+
+## 7. Updating the Application
 
 The application checks for updates automatically from its GitHub repository on every launch. 
 
 1. If a newer version is available, a colored **Update Banner** appears at the top of the interface:
-   * *„Ein Update auf Version v1.1.0 ist verfügbar.“*
-2. Click **Jetzt installieren** (Install Now).
+   * *“An update to version v1.1.0 is available.”*
+2. Click **Install Now**.
 3. The app displays a progress bar while downloading the setup bundle to your temp folder.
 4. The app will then run the installer silently in the background, close itself automatically to release file locks, update your installation, and restart. Your profile settings will remain untouched.
 
 ---
 
-## 7. Troubleshooting & Support
+## 8. Troubleshooting & Support
 
 ### Common Issues
 
 #### 1. Bexio Connection shows a Red Status Light
-- **Check API Token**: Go to the **Einstellungen** tab, click inside the token field to display it in plaintext, and verify that it matches your Bexio API Key exactly.
+- **Check API Token**: Go to the **Settings** tab, click inside the token field to display it in plaintext, and verify that it matches your Bexio API Key exactly.
 - **Firewall/Network**: Make sure your computer has an active internet connection and can reach `https://api.bexio.com`.
 
 #### 2. The Excel Parsing Fails / throws a Coordinates Error
@@ -144,5 +180,5 @@ The application checks for updates automatically from its GitHub repository on e
 - **Sheet Index**: Ensure your Worksheet Index corresponds to the sheet containing the order (usually `1` for the first tab).
 
 #### 3. Created Order has "Custom Positions" instead of Catalog Articles
-- The importer queries your Bexio database for an article code matching the Excel `Artikel Nr.` column.
+- The importer queries your Bexio database for an article code matching the Excel `Art. No.` column.
 - If the article number is not found in your Bexio product catalog, the importer automatically inserts the row as a custom/free position using the product name, price, and color so that your import doesn't fail. To map to catalog products, make sure the article codes match your Bexio catalog exactly.

@@ -9,60 +9,83 @@ using System.Threading.Tasks;
 
 namespace BexioOrderImport.Wpf.Services;
 
-public class UpdateInfo
-{
-    public string LatestVersion { get; set; } = string.Empty;
-    public string DownloadUrl { get; set; } = string.Empty;
-    public string ReleaseNotes { get; set; } = string.Empty;
-}
-
-public class UpdateService
+public class UpdateService : IUpdateService
 {
     private readonly HttpClient _httpClient;
-    private const string RepoOwner = "nilsthomann";
+    private const string RepoOwner = "nils-thomann";
     private const string RepoName = "bexio-order-import";
+    public Action<string>? ProcessStartAndShutdownTestHook { get; set; }
 
-    public UpdateService()
+    public UpdateService() : this(new HttpClient()) { }
+
+    public UpdateService(HttpClient httpClient)
     {
-        _httpClient = new HttpClient();
+        _httpClient = httpClient;
         // GitHub API requires a User-Agent header
         _httpClient.DefaultRequestHeaders.UserAgent.Add(new ProductInfoHeaderValue("BexioOrderImporter", "1.0"));
     }
 
-    public async Task<UpdateInfo?> CheckForUpdatesAsync()
+    private bool IsUpdateCheckCached(string cacheFilePath)
     {
-        if (IsUnitTest()) return null;
-
-        string appDataFolder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "BexioOrderImport");
-        string cacheFilePath = Path.Combine(appDataFolder, "last_update_check.txt");
-        if (File.Exists(cacheFilePath))
+        if (!File.Exists(cacheFilePath)) return false;
+        try
         {
-            try
+            string text = File.ReadAllText(cacheFilePath).Trim();
+            if (long.TryParse(text, out long lastCheckTicks))
             {
-                string text = File.ReadAllText(cacheFilePath).Trim();
-                if (long.TryParse(text, out long lastCheckTicks))
+                var lastCheck = new DateTime(lastCheckTicks, DateTimeKind.Utc);
+                return DateTime.UtcNow - lastCheck < TimeSpan.FromHours(4);
+            }
+        }
+        catch { }
+        return false;
+    }
+
+    private void UpdateLastCheckCache(string appDataFolder, string cacheFilePath)
+    {
+        try
+        {
+            if (!Directory.Exists(appDataFolder))
+            {
+                Directory.CreateDirectory(appDataFolder);
+            }
+            File.WriteAllText(cacheFilePath, DateTime.UtcNow.Ticks.ToString());
+        }
+        catch { }
+    }
+
+    private string? FindInstallerDownloadUrl(JsonElement root)
+    {
+        if (root.TryGetProperty("assets", out var assetsProp) && assetsProp.ValueKind == JsonValueKind.Array)
+        {
+            foreach (var asset in assetsProp.EnumerateArray())
+            {
+                if (asset.TryGetProperty("name", out var nameProp))
                 {
-                    var lastCheck = new DateTime(lastCheckTicks, DateTimeKind.Utc);
-                    if (DateTime.UtcNow - lastCheck < TimeSpan.FromHours(4))
+                    string name = nameProp.GetString() ?? "";
+                    if (name.Equals("BexioOrderImportSetup.exe", StringComparison.OrdinalIgnoreCase))
                     {
-                        return null;
+                        return asset.GetProperty("browser_download_url").GetString();
                     }
                 }
             }
-            catch { }
+        }
+        return null;
+    }
+
+    public async Task<UpdateInfo?> CheckForUpdatesAsync()
+    {
+        string appDataFolder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "BexioOrderImport");
+        string cacheFilePath = Path.Combine(appDataFolder, "last_update_check.txt");
+        
+        if (IsUpdateCheckCached(cacheFilePath))
+        {
+            return null;
         }
 
         try
         {
-            try
-            {
-                if (!Directory.Exists(appDataFolder))
-                {
-                    Directory.CreateDirectory(appDataFolder);
-                }
-                File.WriteAllText(cacheFilePath, DateTime.UtcNow.Ticks.ToString());
-            }
-            catch { }
+            UpdateLastCheckCache(appDataFolder, cacheFilePath);
 
             string url = $"https://api.github.com/repos/{RepoOwner}/{RepoName}/releases/latest";
             var response = await _httpClient.GetAsync(url);
@@ -78,24 +101,7 @@ public class UpdateService
             var currentVersion = Assembly.GetExecutingAssembly().GetName().Version;
             if (!IsNewerVersion(rawTag, currentVersion)) return null;
 
-            // Find the installer asset
-            string downloadUrl = string.Empty;
-            if (root.TryGetProperty("assets", out var assetsProp) && assetsProp.ValueKind == JsonValueKind.Array)
-            {
-                foreach (var asset in assetsProp.EnumerateArray())
-                {
-                    if (asset.TryGetProperty("name", out var nameProp))
-                    {
-                        string name = nameProp.GetString() ?? "";
-                        if (name.Equals("BexioOrderImportSetup.exe", StringComparison.OrdinalIgnoreCase))
-                        {
-                            downloadUrl = asset.GetProperty("browser_download_url").GetString() ?? "";
-                            break;
-                        }
-                    }
-                }
-            }
-
+            string? downloadUrl = FindInstallerDownloadUrl(root);
             if (string.IsNullOrEmpty(downloadUrl)) return null;
 
             string body = root.TryGetProperty("body", out var bodyProp) ? bodyProp.GetString() ?? "" : "";
@@ -158,6 +164,12 @@ public class UpdateService
             }
         }
 
+        if (ProcessStartAndShutdownTestHook != null)
+        {
+            ProcessStartAndShutdownTestHook(tempFilePath);
+            return;
+        }
+
         // Run installer silently and shut down the app
         var psi = new ProcessStartInfo
         {
@@ -180,19 +192,6 @@ public class UpdateService
         if (Version.TryParse(tag, out var latestVersion))
         {
             return latestVersion > currentVersion;
-        }
-        return false;
-    }
-
-    private bool IsUnitTest()
-    {
-        foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies())
-        {
-            string name = assembly.FullName?.ToLowerInvariant() ?? "";
-            if (name.Contains("xunit") || name.Contains("test") || name.Contains("nunit") || name.Contains("runner"))
-            {
-                return true;
-            }
         }
         return false;
     }

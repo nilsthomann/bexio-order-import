@@ -8,6 +8,9 @@ public static class EncryptionHelper
 {
     private static readonly byte[] Entropy = Encoding.UTF8.GetBytes("BexioOrderImportSecretEntropy");
 
+    public static Func<byte[], byte[], DataProtectionScope, byte[]>? ProtectHook { get; set; }
+    public static Func<byte[], byte[], DataProtectionScope, byte[]>? UnprotectHook { get; set; }
+
     public static string Encrypt(string clearText)
     {
         if (string.IsNullOrEmpty(clearText)) return string.Empty;
@@ -15,7 +18,9 @@ public static class EncryptionHelper
         try
         {
             byte[] clearBytes = Encoding.UTF8.GetBytes(clearText);
-            byte[] encryptedBytes = ProtectedData.Protect(clearBytes, Entropy, DataProtectionScope.CurrentUser);
+            byte[] encryptedBytes = ProtectHook != null 
+                ? ProtectHook(clearBytes, Entropy, DataProtectionScope.CurrentUser) 
+                : ProtectedData.Protect(clearBytes, Entropy, DataProtectionScope.CurrentUser);
             return Convert.ToBase64String(encryptedBytes);
         }
         catch
@@ -32,7 +37,9 @@ public static class EncryptionHelper
         try
         {
             byte[] encryptedBytes = Convert.FromBase64String(encryptedText);
-            byte[] clearBytes = ProtectedData.Unprotect(encryptedBytes, Entropy, DataProtectionScope.CurrentUser);
+            byte[] clearBytes = UnprotectHook != null 
+                ? UnprotectHook(encryptedBytes, Entropy, DataProtectionScope.CurrentUser) 
+                : ProtectedData.Unprotect(encryptedBytes, Entropy, DataProtectionScope.CurrentUser);
             return Encoding.UTF8.GetString(clearBytes);
         }
         catch

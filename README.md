@@ -112,47 +112,67 @@ src/
 
 ## Configuration Template
 
-Profile configuration files utilize a local `appsettings.json` file inside the program folder. In the WPF GUI, these settings can be configured comfortably in the **Einstellungen** (Settings) tab.
+Configuration is stored in `%LocalAppData%\BexioOrderImport\appsettings.json`. In the WPF GUI, these settings can be configured comfortably in the **Settings** tab.
 
 ```json
 {
   "Bexio": {
-    "ApiToken": "your_bexio_api_token",
+    "ApiToken": "bexio_api_token_here",
     "DefaultAccountId": 3200,
-    "DefaultTaxId": 1
+    "DefaultTaxId": 1,
+    "Language": "de"
   },
-  "ExcelMapping": {
-    "WorksheetIndex": 1,
-    "Header": {
-      "CompanyNameCell": "B4",
-      "StreetCell": "B5",
-      "ZipCityCell": "B6",
-      "BuyerEmailCell": "E5",
-      "BuyerNameCell": "E4",
-      "DeliveryDateCell": "T7",
-      "PaymentTermsCell": "A9",
-      "DiscountCell": "V12"
-    },
-    "SizeMatrix": {
-      "StartRow": 10,
-      "EndRow": 17,
-      "CategoryColumn": 4,
-      "StartSizeColumn": 5,
-      "EndSizeColumn": 18
-    },
-    "Data": {
-      "StartRow": 18,
-      "ArticleNumberColumn": 1,
-      "ArticleNameColumn": 2,
-      "ColorColumn": 3,
-      "CategoryColumn": 4,
-      "StartQtyColumn": 5,
-      "EndQtyColumn": 18,
-      "UnitPriceColumn": 20
+  "ActiveProfileName": "Default",
+  "Profiles": [
+    {
+      "Name": "Default",
+      "ExcelMapping": {
+        "WorksheetIndex": 1,
+        "Header": {
+          "CompanyNameCell": "B4",
+          "StreetCell": "B5",
+          "ZipCityCell": "B6",
+          "BuyerEmailCell": "E5",
+          "BuyerNameCell": "E4",
+          "DeliveryDateCell": "T7",
+          "PaymentTermsCell": "A9",
+          "DiscountCell": "V12"
+        },
+        "SizeMatrix": {
+          "StartRow": 10,
+          "EndRow": 17,
+          "CategoryColumn": 4,
+          "StartSizeColumn": 5,
+          "EndSizeColumn": 18
+        },
+        "Data": {
+          "StartRow": 18,
+          "ArticleNumberColumn": 1,
+          "ArticleNameColumn": 2,
+          "ColorColumn": 3,
+          "CategoryColumn": 4,
+          "StartQtyColumn": 5,
+          "EndQtyColumn": 18,
+          "UnitPriceColumn": 20
+        }
+      }
     }
-  }
+  ]
 }
 ```
+
+### Profile System
+
+The WPF app supports multiple **Excel Mapping Profiles**. Each profile stores a complete set of cell/column configuration for a different Excel template format. You can:
+
+- **Create** a new profile from scratch
+- **Clone** an existing profile and adjust individual cells
+- **Edit** a profile via the built-in profile editor dialog
+- **Set Active** – the active profile is used when loading Excel files
+- **Export** all profiles to a portable JSON file
+- **Import** profiles from a JSON file (useful to share configurations between machines)
+
+Profiles are managed on the **Settings tab** in the WPF app.
 
 ---
 
