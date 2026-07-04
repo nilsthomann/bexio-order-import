@@ -138,6 +138,15 @@ public partial class MainViewModel : ViewModelBase
     // Dialog and Window providers (can be overridden in tests to avoid blocking UI)
     public Func<bool, string?> ProfileCreateDialogProvider { get; set; } = isClone =>
     {
+        if (App.Current?.Dispatcher != null && !App.Current.Dispatcher.CheckAccess())
+        {
+            return App.Current.Dispatcher.Invoke(() =>
+            {
+                var dialog = new Views.ProfileCreateDialog(isClone);
+                dialog.Owner = App.Current?.MainWindow;
+                return dialog.ShowDialog() == true ? dialog.ProfileName : null;
+            });
+        }
         var dialog = new Views.ProfileCreateDialog(isClone);
         dialog.Owner = App.Current?.MainWindow;
         return dialog.ShowDialog() == true ? dialog.ProfileName : null;
@@ -145,6 +154,15 @@ public partial class MainViewModel : ViewModelBase
 
     public Func<Models.MappingProfile, bool> ProfileEditDialogProvider { get; set; } = profile =>
     {
+        if (App.Current?.Dispatcher != null && !App.Current.Dispatcher.CheckAccess())
+        {
+            return App.Current.Dispatcher.Invoke(() =>
+            {
+                var editWindow = new Views.ProfileEditWindow(profile);
+                editWindow.Owner = App.Current?.MainWindow;
+                return editWindow.ShowDialog() == true;
+            });
+        }
         var editWindow = new Views.ProfileEditWindow(profile);
         editWindow.Owner = App.Current?.MainWindow;
         return editWindow.ShowDialog() == true;
@@ -152,6 +170,18 @@ public partial class MainViewModel : ViewModelBase
 
     public Func<string, string, string?> OpenFileDialogProvider { get; set; } = (filter, defaultExt) =>
     {
+        if (App.Current?.Dispatcher != null && !App.Current.Dispatcher.CheckAccess())
+        {
+            return App.Current.Dispatcher.Invoke(() =>
+            {
+                var dialog = new Microsoft.Win32.OpenFileDialog
+                {
+                    Filter = filter,
+                    DefaultExt = defaultExt
+                };
+                return dialog.ShowDialog() == true ? dialog.FileName : null;
+            });
+        }
         var dialog = new Microsoft.Win32.OpenFileDialog
         {
             Filter = filter,
@@ -162,6 +192,19 @@ public partial class MainViewModel : ViewModelBase
 
     public Func<string, string, string, string?> SaveFileDialogProvider { get; set; } = (filter, defaultExt, defaultFileName) =>
     {
+        if (App.Current?.Dispatcher != null && !App.Current.Dispatcher.CheckAccess())
+        {
+            return App.Current.Dispatcher.Invoke(() =>
+            {
+                var dialog = new Microsoft.Win32.SaveFileDialog
+                {
+                    Filter = filter,
+                    DefaultExt = defaultExt,
+                    FileName = defaultFileName
+                };
+                return dialog.ShowDialog() == true ? dialog.FileName : null;
+            });
+        }
         var dialog = new Microsoft.Win32.SaveFileDialog
         {
             Filter = filter,
@@ -173,11 +216,24 @@ public partial class MainViewModel : ViewModelBase
 
     public Func<string, string, bool> ConfirmDialogProvider { get; set; } = (message, title) =>
     {
+        if (App.Current?.Dispatcher != null && !App.Current.Dispatcher.CheckAccess())
+        {
+            return App.Current.Dispatcher.Invoke(() => Views.CustomDialog.ShowConfirm(message, title));
+        }
         return Views.CustomDialog.ShowConfirm(message, title);
     };
 
     public Func<Customer, bool> CustomerConfirmDialogProvider { get; set; } = customer =>
     {
+        if (App.Current?.Dispatcher != null && !App.Current.Dispatcher.CheckAccess())
+        {
+            return App.Current.Dispatcher.Invoke(() =>
+            {
+                var dialog = new Views.CustomerConfirmWindow(customer);
+                dialog.Owner = App.Current?.MainWindow;
+                return dialog.ShowDialog() == true;
+            });
+        }
         var dialog = new Views.CustomerConfirmWindow(customer);
         dialog.Owner = App.Current?.MainWindow;
         return dialog.ShowDialog() == true;
@@ -185,11 +241,21 @@ public partial class MainViewModel : ViewModelBase
 
     public Action<string, string> ErrorDialogProvider { get; set; } = (message, title) =>
     {
+        if (App.Current?.Dispatcher != null && !App.Current.Dispatcher.CheckAccess())
+        {
+            App.Current.Dispatcher.Invoke(() => Views.CustomDialog.ShowError(message, title));
+            return;
+        }
         Views.CustomDialog.ShowError(message, title);
     };
 
     public Action<string> InfoDialogProvider { get; set; } = message =>
     {
+        if (App.Current?.Dispatcher != null && !App.Current.Dispatcher.CheckAccess())
+        {
+            App.Current.Dispatcher.Invoke(() => Views.CustomDialog.ShowInfo(message));
+            return;
+        }
         Views.CustomDialog.ShowInfo(message);
     };
 
