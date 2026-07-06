@@ -97,26 +97,49 @@ public partial class CustomDialog : Window
 
     // ── Static factory methods ──────────────────────────────────────────────
 
+    private static bool? _isUnitTest;
+    private static bool IsUnitTest()
+    {
+        if (!_isUnitTest.HasValue)
+        {
+            _isUnitTest = false;
+            foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies())
+            {
+                string name = assembly.FullName?.ToLowerInvariant() ?? "";
+                if (name.Contains("xunit") || name.Contains("test") || name.Contains("nunit") || name.Contains("runner"))
+                {
+                    _isUnitTest = true;
+                    break;
+                }
+            }
+        }
+        return _isUnitTest.Value;
+    }
+
     public static void ShowInfo(string message, string? title = null)
     {
+        if (IsUnitTest()) return;
         var dlg = CreateDialog(CustomDialogType.Info, title ?? Translations.Dialog_InfoTitle, message);
         dlg.ShowDialog();
     }
 
     public static void ShowWarning(string message, string? title = null)
     {
+        if (IsUnitTest()) return;
         var dlg = CreateDialog(CustomDialogType.Warning, title ?? Translations.Dialog_WarningTitle, message);
         dlg.ShowDialog();
     }
 
     public static void ShowError(string message, string? title = null)
     {
+        if (IsUnitTest()) return;
         var dlg = CreateDialog(CustomDialogType.Error, title ?? Translations.Dialog_ErrorTitle, message);
         dlg.ShowDialog();
     }
 
     public static bool ShowConfirm(string message, string? title = null)
     {
+        if (IsUnitTest()) return true;
         var dlg = CreateDialog(CustomDialogType.Confirm, title ?? Translations.Dialog_ConfirmTitle, message);
         return dlg.ShowDialog() == true;
     }

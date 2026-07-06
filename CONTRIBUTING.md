@@ -45,11 +45,32 @@ Please help maintain a professional, respectful, and welcoming environment for e
   ```bash
   dotnet test BexioOrderImport.slnx
   ```
+- Run a specific test class:
+  ```bash
+  dotnet test BexioOrderImport.slnx --filter "FullyQualifiedName~ImportOrderUseCaseTests"
+  ```
+- Run a single test:
+  ```bash
+  dotnet test BexioOrderImport.slnx --filter "FullyQualifiedName=BexioOrderImport.Tests.ImportOrderUseCaseTests.ExecuteAsync_WithNoPositions_ReturnsFalse"
+  ```
 - To collect code coverage and generate/view the HTML report locally:
   ```powershell
   ./build/run-coverage.ps1
   ```
 - Pull requests with failing tests or decreased test coverage cannot be approved.
+
+### Adding New Excel Field Mappings
+
+When adding a new field from an Excel template, follow these steps in order to keep all layers in sync:
+
+1. **Domain model**: Add the property to the relevant class in `src/BexioOrderImport.Domain/Models/`
+2. **ExcelMappingOptions**: Add the corresponding cell/column config property in `src/BexioOrderImport.Application/Options/ExcelMappingOptions.cs`
+3. **Parser**: Read the new cell in `src/BexioOrderImport.Infrastructure/Excel/ClosedXmlExcelParser.cs`
+4. **AppSettingsDto**: Add the new property to the matching DTO class in `src/BexioOrderImport.Wpf/Models/AppSettingsDto.cs`
+5. **MainViewModel**: Add the corresponding VM property and wire it in `CopyVmToProfile`/`CopyProfileToVm` in `MainViewModel.Settings.cs`
+6. **XAML**: Add the UI binding in the Settings tab in `MainWindow.xaml` or `ProfileEditWindow.xaml`
+7. **Translations**: Add the label key in `Translations.resx` and `Translations.en.resx`
+8. **Tests**: Add a test case in `ExcelParserTests.cs` covering the new field
 
 ### Commit Message Convention
 - Commit messages must follow the [Conventional Commits](https://www.conventionalcommits.org/) specification.

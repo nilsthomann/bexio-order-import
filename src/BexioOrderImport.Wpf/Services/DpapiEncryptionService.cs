@@ -2,13 +2,13 @@ using System;
 using System.Security.Cryptography;
 using System.Text;
 
-namespace BexioOrderImport.Wpf.Helpers;
+namespace BexioOrderImport.Wpf.Services;
 
-public static class EncryptionHelper
+public class DpapiEncryptionService : IEncryptionService
 {
     private static readonly byte[] Entropy = Encoding.UTF8.GetBytes("BexioOrderImportSecretEntropy");
 
-    public static string Encrypt(string clearText)
+    public string Encrypt(string clearText)
     {
         if (string.IsNullOrEmpty(clearText)) return string.Empty;
         
@@ -20,12 +20,12 @@ public static class EncryptionHelper
         }
         catch
         {
-            // ponytail: fail-safe fallback to clear text if DPAPI is not available (e.g. testing)
+            // Fail-safe fallback to clear text if DPAPI is not available
             return clearText;
         }
     }
 
-    public static string Decrypt(string encryptedText)
+    public string Decrypt(string encryptedText)
     {
         if (string.IsNullOrEmpty(encryptedText)) return string.Empty;
 
@@ -37,7 +37,7 @@ public static class EncryptionHelper
         }
         catch
         {
-            // ponytail: if decryption fails, return empty
+            // If decryption fails, return empty
             return string.Empty;
         }
     }

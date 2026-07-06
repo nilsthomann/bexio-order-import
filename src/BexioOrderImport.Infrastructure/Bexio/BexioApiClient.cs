@@ -1,34 +1,43 @@
-using System;
-using System.Collections.Generic;
-using System.Net.Http;
+using BexioOrderImport.Application.Interfaces;
+using BexioOrderImport.Domain.Models;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Text;
 using System.Text.Json;
-using System.Threading.Tasks;
-using BexioOrderImport.Application.Interfaces;
-using BexioOrderImport.Domain.Models;
 
 namespace BexioOrderImport.Infrastructure.Bexio;
 
 public class BexioApiClient : IBexioClient
 {
     private readonly HttpClient _httpClient;
+    private readonly string _apiToken;
     private readonly int _accountId; // Standard Buchungskonto für Freipositionen
     private readonly int _taxId;     // Standard MwSt.-Satz ID
 
     public BexioApiClient(HttpClient httpClient, string apiToken, int accountId = 3200, int taxId = 1)
     {
         _httpClient = httpClient;
-        _httpClient.BaseAddress = new Uri("https://api.bexio.com/2.0/");
-        
-        // Authorization Header
-        _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", apiToken);
-        _httpClient.DefaultRequestHeaders.Accept.Clear();
-        _httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
-        
+        _apiToken = apiToken;
         _accountId = accountId;
         _taxId = taxId;
+
+        if (_httpClient.BaseAddress == null)
+        {
+            _httpClient.BaseAddress = new Uri("https://api.bexio.com/2.0/");
+        }
+    }
+
+    /// <summary>
+    /// Creates an <see cref="HttpRequestMessage"/> with per-request Authorization and Accept
+    /// headers. This is thread-safe unlike mutating <c>DefaultRequestHeaders</c>.
+    /// </summary>
+    private HttpRequestMessage CreateRequest(HttpMethod method, string requestUri, HttpContent? content = null)
+    {
+        var request = new HttpRequestMessage(method, requestUri);
+        request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", _apiToken);
+        request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+        if (content != null) request.Content = content;
+        return request;
     }
 
     public async Task<int?> FindContactIdAsync(string email)
@@ -38,9 +47,9 @@ public class BexioApiClient : IBexioClient
             new { field = "mail", value = email, criteria = "=" }
         };
 
-        var searchContent = new StringContent(JsonSerializer.Serialize(searchPayload), Encoding.UTF8, "application/json");
-        var response = await _httpClient.PostAsync("contact/search", searchContent);
-        
+        var body = new StringContent(JsonSerializer.Serialize(searchPayload), Encoding.UTF8, "application/json");
+        var response = await _httpClient.SendAsync(CreateRequest(HttpMethod.Post, "contact/search", body));
+
         if (response.IsSuccessStatusCode)
         {
             var contacts = await response.Content.ReadFromJsonAsync<List<BexioContact>>();
@@ -66,8 +75,8 @@ public class BexioApiClient : IBexioClient
             owner_id = 1 // Standard-Besitzer
         };
 
-        var createContent = new StringContent(JsonSerializer.Serialize(createPayload), Encoding.UTF8, "application/json");
-        var createResponse = await _httpClient.PostAsync("contact", createContent);
+        var body = new StringContent(JsonSerializer.Serialize(createPayload), Encoding.UTF8, "application/json");
+        var createResponse = await _httpClient.SendAsync(CreateRequest(HttpMethod.Post, "contact", body));
         createResponse.EnsureSuccessStatusCode();
 
         var newContact = await createResponse.Content.ReadFromJsonAsync<BexioContact>();
@@ -86,11 +95,11 @@ public class BexioApiClient : IBexioClient
             payment_type_id = 1, // Default
             language_id = 1, // German
             api_reference = "Excel-Import",
-            positions = new object[0] // Positions added subsequently
+            positions = Array.Empty<object>() // Positions added subsequently
         };
 
-        var content = new StringContent(JsonSerializer.Serialize(orderPayload), Encoding.UTF8, "application/json");
-        var response = await _httpClient.PostAsync("kb_order", content);
+        var body = new StringContent(JsonSerializer.Serialize(orderPayload), Encoding.UTF8, "application/json");
+        var response = await _httpClient.SendAsync(CreateRequest(HttpMethod.Post, "kb_order", body));
         response.EnsureSuccessStatusCode();
 
         var createdOrder = await response.Content.ReadFromJsonAsync<BexioOrder>();
@@ -105,9 +114,9 @@ public class BexioApiClient : IBexioClient
             new { field = "intern_code", value = articleNumber, criteria = "=" }
         };
 
-        var searchContent = new StringContent(JsonSerializer.Serialize(searchPayload), Encoding.UTF8, "application/json");
-        var response = await _httpClient.PostAsync("article/search", searchContent);
-        
+        var body = new StringContent(JsonSerializer.Serialize(searchPayload), Encoding.UTF8, "application/json");
+        var response = await _httpClient.SendAsync(CreateRequest(HttpMethod.Post, "article/search", body));
+
         if (response.IsSuccessStatusCode)
         {
             var articles = await response.Content.ReadFromJsonAsync<List<BexioArticle>>();
@@ -123,9 +132,9 @@ public class BexioApiClient : IBexioClient
             new { field = "intern_name", value = articleName, criteria = "=" }
         };
 
-        var searchNameContent = new StringContent(JsonSerializer.Serialize(searchNamePayload), Encoding.UTF8, "application/json");
-        var nameResponse = await _httpClient.PostAsync("article/search", searchNameContent);
-        
+        var nameBody = new StringContent(JsonSerializer.Serialize(searchNamePayload), Encoding.UTF8, "application/json");
+        var nameResponse = await _httpClient.SendAsync(CreateRequest(HttpMethod.Post, "article/search", nameBody));
+
         if (nameResponse.IsSuccessStatusCode)
         {
             var articles = await nameResponse.Content.ReadFromJsonAsync<List<BexioArticle>>();
@@ -150,8 +159,8 @@ public class BexioApiClient : IBexioClient
             discount_in_percent = position.DiscountPercent
         };
 
-        var content = new StringContent(JsonSerializer.Serialize(positionPayload), Encoding.UTF8, "application/json");
-        var response = await _httpClient.PostAsync($"kb_order/{orderId}/kb_position_article", content);
+        var body = new StringContent(JsonSerializer.Serialize(positionPayload), Encoding.UTF8, "application/json");
+        var response = await _httpClient.SendAsync(CreateRequest(HttpMethod.Post, $"kb_order/{orderId}/kb_position_article", body));
         response.EnsureSuccessStatusCode();
     }
 
@@ -167,9 +176,22 @@ public class BexioApiClient : IBexioClient
             discount_in_percent = position.DiscountPercent
         };
 
-        var content = new StringContent(JsonSerializer.Serialize(positionPayload), Encoding.UTF8, "application/json");
-        var response = await _httpClient.PostAsync($"kb_order/{orderId}/kb_position_custom", content);
+        var body = new StringContent(JsonSerializer.Serialize(positionPayload), Encoding.UTF8, "application/json");
+        var response = await _httpClient.SendAsync(CreateRequest(HttpMethod.Post, $"kb_order/{orderId}/kb_position_custom", body));
         response.EnsureSuccessStatusCode();
+    }
+
+    public async Task<bool> CheckConnectionAsync()
+    {
+        try
+        {
+            var response = await _httpClient.SendAsync(CreateRequest(HttpMethod.Get, "contact?limit=1"));
+            return response.IsSuccessStatusCode;
+        }
+        catch
+        {
+            return false;
+        }
     }
 
     // Hilfsklassen für JSON-Deserialisierung

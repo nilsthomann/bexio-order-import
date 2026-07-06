@@ -24,19 +24,27 @@ jobs:
         with:
           dotnet-version: '10.0.x'
 
-      - name: Restore dependencies
-        run: dotnet restore BexioOrderImport.slnx
-
-      - name: Run unit tests
-        run: dotnet test BexioOrderImport.slnx -c Release
+      - name: Restore dependencies (incl. local tools)
+        run: dotnet tool restore && dotnet restore BexioOrderImport.slnx
+ 
+      - name: Run unit tests & generate coverage
+        working-directory: build
+        run: powershell -File run-coverage.ps1 -Configuration Release -CI
 
       - name: Publish WPF App (win-x64 Single File)
         run: |
           dotnet publish src/BexioOrderImport.Wpf/BexioOrderImport.Wpf.csproj -c Release -r win-x64 --self-contained false -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true -o ./publish
 
+      - name: Strip v-prefix from tag for installer version
+        id: version
+        run: |
+          $ver = "${{ github.ref_name }}" -replace '^v', ''
+          echo "version=$ver" >> $env:GITHUB_OUTPUT
+        shell: pwsh
+
       - name: Compile Inno Setup Installer
         run: |
-          iscc build/setup.iss /DAppVersion=${{ github.ref_name }}
+          iscc build/setup.iss /DAppVersion=${{ steps.version.outputs.version }}
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2

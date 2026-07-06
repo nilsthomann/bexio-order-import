@@ -3,6 +3,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using BexioOrderImport.Wpf.ViewModels;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace BexioOrderImport.Wpf.Views;
 
@@ -12,7 +13,7 @@ public partial class MainWindow : Window
     public MainWindow()
     {
         InitializeComponent();
-        DataContext = new MainViewModel();
+        DataContext = App.Services.GetRequiredService<MainViewModel>();
     }
 
     private void DropZone_DragOver(object sender, DragEventArgs e)
