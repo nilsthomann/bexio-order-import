@@ -24,11 +24,12 @@ jobs:
         with:
           dotnet-version: '10.0.x'
 
-      - name: Restore dependencies
-        run: dotnet restore BexioOrderImport.slnx
-
-      - name: Run unit tests
-        run: dotnet test BexioOrderImport.slnx -c Release --no-restore
+      - name: Restore dependencies (incl. local tools)
+        run: dotnet tool restore && dotnet restore BexioOrderImport.slnx
+ 
+      - name: Run unit tests & generate coverage
+        working-directory: build
+        run: powershell -File run-coverage.ps1 -Configuration Release -CI
 
       - name: Publish WPF App (win-x64 Single File)
         run: |

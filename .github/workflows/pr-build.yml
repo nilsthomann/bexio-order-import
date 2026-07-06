@@ -28,11 +28,9 @@ jobs:
       - name: Build solution
         run: dotnet build BexioOrderImport.slnx -c Release --no-restore
 
-      - name: Run unit tests with coverage
-        run: dotnet test BexioOrderImport.slnx -c Release --no-build --collect:"XPlat Code Coverage" --results-directory ./TestResults /p:Exclude="[BexioOrderImport.Wpf]BexioOrderImport.Wpf.Views.*%2C[BexioOrderImport.Wpf]BexioOrderImport.Wpf.Converters.*%2C[BexioOrderImport.Wpf]BexioOrderImport.Wpf.Helpers.WindowHelper%2C[BexioOrderImport.Wpf]BexioOrderImport.Wpf.App%2C[BexioOrderImport.Wpf]BexioOrderImport.Wpf.Resources.*%2C[BexioOrderImport.Wpf]XamlGeneratedNamespace.GeneratedInternalTypeHelper"
-
-      - name: Generate Coverage Summary
-        run: reportgenerator "-reports:TestResults/**/coverage.cobertura.xml" "-targetdir:TestResults/CoverageReport" "-reporttypes:MarkdownSummary"
+      - name: Run unit tests & generate coverage
+        working-directory: build
+        run: powershell -File run-coverage.ps1 -Configuration Release -CI
 
       - name: Publish Coverage to GitHub Run Summary
         run: |
