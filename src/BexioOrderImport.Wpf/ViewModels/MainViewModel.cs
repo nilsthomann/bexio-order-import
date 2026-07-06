@@ -35,6 +35,9 @@ public partial class MainViewModel : ViewModelBase
 
     private readonly IUpdateService _updateService;
     private readonly IBexioClientFactory _bexioClientFactory;
+    private readonly IDialogService _dialogService;
+    private readonly IDispatcherService _dispatcherService;
+    private readonly IEncryptionService _encryptionService;
     private readonly StringBuilder _logBuilder = new();
     private string _updateDownloadUrl = string.Empty;
     private bool _isUpdateAvailable;
@@ -135,160 +138,29 @@ public partial class MainViewModel : ViewModelBase
     private int _colEndQty = 18;
     private int _colUnitPrice = 20;
 
-    // Dialog and Window providers (can be overridden in tests to avoid blocking UI)
-    public Func<bool, string?> ProfileCreateDialogProvider { get; set; } = isClone =>
-    {
-        if (App.Current?.Dispatcher != null && !App.Current.Dispatcher.CheckAccess())
-        {
-            return App.Current.Dispatcher.Invoke(() =>
-            {
-                var dialog = new Views.ProfileCreateDialog(isClone);
-                dialog.Owner = App.Current?.MainWindow;
-                return dialog.ShowDialog() == true ? dialog.ProfileName : null;
-            });
-        }
-        var dialog = new Views.ProfileCreateDialog(isClone);
-        dialog.Owner = App.Current?.MainWindow;
-        return dialog.ShowDialog() == true ? dialog.ProfileName : null;
-    };
-
-    public Func<Models.MappingProfile, bool> ProfileEditDialogProvider { get; set; } = profile =>
-    {
-        if (App.Current?.Dispatcher != null && !App.Current.Dispatcher.CheckAccess())
-        {
-            return App.Current.Dispatcher.Invoke(() =>
-            {
-                var editWindow = new Views.ProfileEditWindow(profile);
-                editWindow.Owner = App.Current?.MainWindow;
-                return editWindow.ShowDialog() == true;
-            });
-        }
-        var editWindow = new Views.ProfileEditWindow(profile);
-        editWindow.Owner = App.Current?.MainWindow;
-        return editWindow.ShowDialog() == true;
-    };
-
-    public Func<string, string, string?> OpenFileDialogProvider { get; set; } = (filter, defaultExt) =>
-    {
-        if (App.Current?.Dispatcher != null && !App.Current.Dispatcher.CheckAccess())
-        {
-            return App.Current.Dispatcher.Invoke(() =>
-            {
-                var dialog = new Microsoft.Win32.OpenFileDialog
-                {
-                    Filter = filter,
-                    DefaultExt = defaultExt
-                };
-                return dialog.ShowDialog() == true ? dialog.FileName : null;
-            });
-        }
-        var dialog = new Microsoft.Win32.OpenFileDialog
-        {
-            Filter = filter,
-            DefaultExt = defaultExt
-        };
-        return dialog.ShowDialog() == true ? dialog.FileName : null;
-    };
-
-    public Func<string, string, string, string?> SaveFileDialogProvider { get; set; } = (filter, defaultExt, defaultFileName) =>
-    {
-        if (App.Current?.Dispatcher != null && !App.Current.Dispatcher.CheckAccess())
-        {
-            return App.Current.Dispatcher.Invoke(() =>
-            {
-                var dialog = new Microsoft.Win32.SaveFileDialog
-                {
-                    Filter = filter,
-                    DefaultExt = defaultExt,
-                    FileName = defaultFileName
-                };
-                return dialog.ShowDialog() == true ? dialog.FileName : null;
-            });
-        }
-        var dialog = new Microsoft.Win32.SaveFileDialog
-        {
-            Filter = filter,
-            DefaultExt = defaultExt,
-            FileName = defaultFileName
-        };
-        return dialog.ShowDialog() == true ? dialog.FileName : null;
-    };
-
-    public Func<string, string, bool> ConfirmDialogProvider { get; set; } = (message, title) =>
-    {
-        if (App.Current?.Dispatcher != null && !App.Current.Dispatcher.CheckAccess())
-        {
-            return App.Current.Dispatcher.Invoke(() => Views.CustomDialog.ShowConfirm(message, title));
-        }
-        return Views.CustomDialog.ShowConfirm(message, title);
-    };
-
-    public Func<Customer, bool> CustomerConfirmDialogProvider { get; set; } = customer =>
-    {
-        if (App.Current?.Dispatcher != null && !App.Current.Dispatcher.CheckAccess())
-        {
-            return App.Current.Dispatcher.Invoke(() =>
-            {
-                var dialog = new Views.CustomerConfirmWindow(customer);
-                dialog.Owner = App.Current?.MainWindow;
-                return dialog.ShowDialog() == true;
-            });
-        }
-        var dialog = new Views.CustomerConfirmWindow(customer);
-        dialog.Owner = App.Current?.MainWindow;
-        return dialog.ShowDialog() == true;
-    };
-
-    public Action<string, string> ErrorDialogProvider { get; set; } = (message, title) =>
-    {
-        if (App.Current?.Dispatcher != null && !App.Current.Dispatcher.CheckAccess())
-        {
-            App.Current.Dispatcher.Invoke(() => Views.CustomDialog.ShowError(message, title));
-            return;
-        }
-        Views.CustomDialog.ShowError(message, title);
-    };
-
-    public Action<string> InfoDialogProvider { get; set; } = message =>
-    {
-        if (App.Current?.Dispatcher != null && !App.Current.Dispatcher.CheckAccess())
-        {
-            App.Current.Dispatcher.Invoke(() => Views.CustomDialog.ShowInfo(message));
-            return;
-        }
-        Views.CustomDialog.ShowInfo(message);
-    };
-
-    public Func<string, Task<bool>>? BexioConnectionCheckTestHook { get; set; }
-
     public void InvokeOnUi(Action action)
     {
-        if (App.Current?.Dispatcher != null)
-        {
-            App.Current.Dispatcher.Invoke(action);
-        }
-        else
-        {
-            action();
-        }
+        _dispatcherService.Invoke(action);
     }
 
     public void InvokeOnUiAsync(Action action)
     {
-        if (App.Current?.Dispatcher != null)
-        {
-            App.Current.Dispatcher.BeginInvoke(action);
-        }
-        else
-        {
-            action();
-        }
+        _dispatcherService.BeginInvoke(action);
     }
 
-    public MainViewModel(IUpdateService updateService, IBexioClientFactory bexioClientFactory, string? configFilePath = null)
+    public MainViewModel(
+        IUpdateService updateService,
+        IBexioClientFactory bexioClientFactory,
+        IDialogService dialogService,
+        IDispatcherService dispatcherService,
+        IEncryptionService encryptionService,
+        string? configFilePath = null)
     {
         _updateService = updateService;
         _bexioClientFactory = bexioClientFactory;
+        _dialogService = dialogService;
+        _dispatcherService = dispatcherService;
+        _encryptionService = encryptionService;
 
         // Commands
         LoadFileCommand = new RelayCommand(async () => await LoadExcelFileAsync());

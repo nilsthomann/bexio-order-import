@@ -1,12 +1,7 @@
-using System;
-using System.IO;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using Xunit;
-using FluentAssertions;
 using BexioOrderImport.Application.Interfaces;
 using BexioOrderImport.Application.Services;
 using BexioOrderImport.Domain.Models;
+using FluentAssertions;
 
 namespace BexioOrderImport.Tests;
 
@@ -37,7 +32,7 @@ public class ImportOrderUseCaseTests
         client.CreateOrderCalled.Should().BeTrue();
         client.AddArticlePositionCount.Should().Be(1);
         client.AddCustomPositionCount.Should().Be(0);
-        
+
         loggedMessages.Should().Contain(m => m.Contains("Order created successfully"));
         loggedMessages.Should().Contain(m => m.Contains("Successfully completed"));
     }
@@ -66,7 +61,7 @@ public class ImportOrderUseCaseTests
         client.CreateContactCalled.Should().BeTrue();
         client.CreateOrderCalled.Should().BeTrue();
         client.AddArticlePositionCount.Should().Be(1);
-        
+
         loggedMessages.Should().Contain(m => m.Contains("Creating new customer in Bexio"));
         loggedMessages.Should().Contain(m => m.Contains("Successfully completed"));
     }
@@ -94,7 +89,7 @@ public class ImportOrderUseCaseTests
         // Assert
         client.CreateContactCalled.Should().BeFalse();
         client.CreateOrderCalled.Should().BeFalse();
-        
+
         loggedMessages.Should().Contain(m => m.Contains("Order import cancelled (customer was not created)."));
     }
 
@@ -123,7 +118,7 @@ public class ImportOrderUseCaseTests
         loggedMessages.Should().Contain("Order import cancelled.");
     }
 
-    private Order CreateSampleOrder()
+    private static Order CreateSampleOrder()
     {
         var order = new Order
         {
@@ -146,7 +141,7 @@ public class ImportOrderUseCaseTests
     [Fact]
     public async Task ExecuteAsync_WithNoPositions_ReturnsFalse()
     {
-        var emptyOrder = new Order { Positions = new System.Collections.Generic.List<OrderPosition>() };
+        var emptyOrder = new Order { Positions = [] };
         var parser = new MockExcelParser(emptyOrder);
         var client = new MockBexioClient();
         var useCase = new ImportOrderUseCase(parser, client);
@@ -162,10 +157,10 @@ public class ImportOrderUseCaseTests
         var order = new Order
         {
             Customer = new Customer { Email = "t@t.com", CompanyName = "Test AG" },
-            Positions = new System.Collections.Generic.List<OrderPosition>
-            {
+            Positions =
+            [
                 new OrderPosition { ArticleNumber = "UNKNOWN", ArticleName = "Part", Quantity = 1, UnitPrice = 10m }
-            }
+            ]
         };
         var parser = new MockExcelParser(order);
         var client = new MockBexioClient { ArticleIdToReturn = null };
@@ -203,31 +198,33 @@ public class ImportOrderUseCaseTests
         public int ArticlePositionsAdded => AddArticlePositionCount;
 
         public Task<int?> FindContactIdAsync(string email) => Task.FromResult(ContactIdToReturn);
-        
+
         public Task<int> CreateContactAsync(Customer customer)
         {
             CreateContactCalled = true;
             return Task.FromResult(1234);
         }
-        
+
         public Task<int> CreateOrderAsync(int contactId, Order order)
         {
             CreateOrderCalled = true;
             return Task.FromResult(OrderIdToReturn);
         }
-        
+
         public Task<int?> FindArticleIdAsync(string articleNumber, string articleName) => Task.FromResult(ArticleIdToReturn);
-        
+
         public Task AddArticlePositionAsync(int orderId, int articleId, OrderPosition position)
         {
             AddArticlePositionCount++;
             return Task.CompletedTask;
         }
-        
+
         public Task AddCustomPositionAsync(int orderId, OrderPosition position)
         {
             AddCustomPositionCount++;
             return Task.CompletedTask;
         }
+
+        public Task<bool> CheckConnectionAsync() => Task.FromResult(true);
     }
 }

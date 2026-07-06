@@ -1,12 +1,7 @@
-using System;
-using System.Net;
-using System.Net.Http;
-using System.Threading;
-using System.Threading.Tasks;
-using Xunit;
-using FluentAssertions;
 using BexioOrderImport.Domain.Models;
 using BexioOrderImport.Infrastructure.Bexio;
+using FluentAssertions;
+using System.Net;
 
 namespace BexioOrderImport.Tests;
 

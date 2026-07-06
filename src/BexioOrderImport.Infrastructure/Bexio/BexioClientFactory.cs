@@ -1,4 +1,3 @@
-using System.Net.Http;
 using BexioOrderImport.Application.Interfaces;
 
 namespace BexioOrderImport.Infrastructure.Bexio;

@@ -50,6 +50,10 @@ public partial class App : System.Windows.Application
         var services = new ServiceCollection();
         services.AddHttpClient("BexioApi");
         services.AddSingleton<IBexioClientFactory, BexioClientFactory>();
+        services.AddSingleton<IEncryptionService, DpapiEncryptionService>();
+        services.AddSingleton<IDispatcherService, WpfDispatcherService>();
+        services.AddSingleton<IAppLifecycleService, WpfLifecycleService>();
+        services.AddSingleton<IDialogService, WpfDialogService>();
         services.AddSingleton<IUpdateService, UpdateService>();
         services.AddTransient<MainViewModel>();
         Services = services.BuildServiceProvider();

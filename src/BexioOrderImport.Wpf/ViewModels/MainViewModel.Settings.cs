@@ -55,7 +55,7 @@ public partial class MainViewModel
             var dto = JsonSerializer.Deserialize<Models.AppSettingsDto>(text) ?? new Models.AppSettingsDto();
 
             var encryptedToken = dto.Bexio.ApiToken;
-            BexioToken = Helpers.EncryptionHelper.Decrypt(encryptedToken);
+            BexioToken = _encryptionService.Decrypt(encryptedToken);
             if (string.IsNullOrEmpty(BexioToken) && !string.IsNullOrEmpty(encryptedToken) && encryptedToken != "bexio_api_token_here")
                 BexioToken = encryptedToken;
 
@@ -87,7 +87,7 @@ public partial class MainViewModel
         }
         catch (Exception ex)
         {
-            ErrorDialogProvider($"{Resources.Translations.Settings_ErrorLoad}: {ex.Message}", Resources.Translations.Settings_ErrorTitle);
+            _dialogService.ShowErrorDialog($"{Resources.Translations.Settings_ErrorLoad}: {ex.Message}", Resources.Translations.Settings_ErrorTitle);
         }
         IsModified = false;
         SaveSettingsCommand.RaiseCanExecuteChanged();
@@ -102,7 +102,7 @@ public partial class MainViewModel
                 CopyVmToProfile(SelectedProfile);
             }
 
-            string encryptedToken = Helpers.EncryptionHelper.Encrypt(BexioToken);
+            string encryptedToken = _encryptionService.Encrypt(BexioToken);
 
             var settingsObj = new Models.AppSettingsDto
             {
@@ -141,7 +141,7 @@ public partial class MainViewModel
         }
         catch (Exception ex)
         {
-            ErrorDialogProvider($"{Resources.Translations.Settings_ErrorSave}: {ex.Message}", Resources.Translations.Settings_ErrorTitle);
+            _dialogService.ShowErrorDialog($"{Resources.Translations.Settings_ErrorSave}: {ex.Message}", Resources.Translations.Settings_ErrorTitle);
         }
     }
 
@@ -149,11 +149,11 @@ public partial class MainViewModel
     {
         if (!languageChanged)
         {
-            InfoDialogProvider(Resources.Translations.Dialog_SettingsSaved);
+            _dialogService.ShowInfoDialog(Resources.Translations.Dialog_SettingsSaved);
             return;
         }
 
-        bool reload = ConfirmDialogProvider(
+        bool reload = _dialogService.ShowConfirmDialog(
             Resources.Translations.Settings_ReloadPromptMessage,
             Resources.Translations.Settings_ReloadPromptTitle);
 
@@ -161,10 +161,13 @@ public partial class MainViewModel
         {
             InvokeOnUiAsync(() =>
             {
-                var newWindow = new Views.MainWindow();
-                newWindow.Show();
-                App.Current.MainWindow.Close();
-                App.Current.MainWindow = newWindow;
+                if (System.Windows.Application.Current is App)
+                {
+                    var newWindow = new Views.MainWindow();
+                    newWindow.Show();
+                    System.Windows.Application.Current.MainWindow.Close();
+                    System.Windows.Application.Current.MainWindow = newWindow;
+                }
             });
         }
         _initialLanguage = SelectedLanguage;

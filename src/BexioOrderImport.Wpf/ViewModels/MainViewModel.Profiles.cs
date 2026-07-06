@@ -10,12 +10,12 @@ public partial class MainViewModel
 {
     private string? ShowProfileCreateDialogAndValidateName(bool isClone)
     {
-        string? name = ProfileCreateDialogProvider(isClone);
+        string? name = _dialogService.ShowProfileCreateDialog(isClone);
         if (name != null)
         {
             if (Profiles.Any(p => p.Name.Equals(name, StringComparison.OrdinalIgnoreCase)))
             {
-                ErrorDialogProvider(Resources.Translations.Dialog_ProfileNameExists, Resources.Translations.Dialog_ErrorTitle);
+                _dialogService.ShowErrorDialog(Resources.Translations.Dialog_ProfileNameExists, Resources.Translations.Dialog_ErrorTitle);
                 return null;
             }
             return name;
@@ -61,7 +61,7 @@ public partial class MainViewModel
 
     private bool ShowProfileEditDialog(Models.MappingProfile profile)
     {
-        return ProfileEditDialogProvider(profile);
+        return _dialogService.ShowProfileEditDialog(profile);
     }
 
     private void EditProfile(Models.MappingProfile profile)
@@ -87,7 +87,7 @@ public partial class MainViewModel
         if (profile == null || profile.Name == "Default" || Profiles.Count <= 1) return;
 
         string message = string.Format(Resources.Translations.Confirm_DeleteProfileMessage, profile.Name);
-        bool confirmed = ConfirmDialogProvider(message, Resources.Translations.Confirm_DeleteProfileTitle);
+        bool confirmed = _dialogService.ShowConfirmDialog(message, Resources.Translations.Confirm_DeleteProfileTitle);
         if (!confirmed) return;
 
         Profiles.Remove(profile);
@@ -118,7 +118,7 @@ public partial class MainViewModel
     {
         try
         {
-            string? fileName = SaveFileDialogProvider("JSON files (*.json)|*.json", ".json", "bexio_mapping_profiles.json");
+            string? fileName = _dialogService.ShowSaveFileDialog("JSON files (*.json)|*.json", ".json", "bexio_mapping_profiles.json");
             if (fileName != null)
             {
                 var exportList = Profiles.Select(p => new Models.MappingProfileDto
@@ -130,12 +130,12 @@ public partial class MainViewModel
                 string json = JsonSerializer.Serialize(exportList, new JsonSerializerOptions { WriteIndented = true });
                 File.WriteAllText(fileName, json);
                 AppendLog($"Profiles exported successfully to: {fileName}");
-                InfoDialogProvider(Resources.Translations.Dialog_ExportSuccess);
+                _dialogService.ShowInfoDialog(Resources.Translations.Dialog_ExportSuccess);
             }
         }
         catch (Exception ex)
         {
-            ErrorDialogProvider($"{Resources.Translations.Settings_ErrorSave}: {ex.Message}", Resources.Translations.Settings_ErrorTitle);
+            _dialogService.ShowErrorDialog($"{Resources.Translations.Settings_ErrorSave}: {ex.Message}", Resources.Translations.Settings_ErrorTitle);
         }
     }
 
@@ -143,14 +143,14 @@ public partial class MainViewModel
     {
         try
         {
-            string? fileName = OpenFileDialogProvider("JSON files (*.json)|*.json", ".json");
+            string? fileName = _dialogService.ShowOpenFileDialog("JSON files (*.json)|*.json", ".json");
             if (fileName != null)
             {
                 string json = File.ReadAllText(fileName);
                 var importedDtos = JsonSerializer.Deserialize<System.Collections.Generic.List<Models.MappingProfileDto>>(json);
                 if (importedDtos == null)
                 {
-                    ErrorDialogProvider(Resources.Translations.Dialog_ImportInvalidFormat, Resources.Translations.Dialog_ErrorTitle);
+                    _dialogService.ShowErrorDialog(Resources.Translations.Dialog_ImportInvalidFormat, Resources.Translations.Dialog_ErrorTitle);
                     return;
                 }
 
@@ -159,7 +159,7 @@ public partial class MainViewModel
         }
         catch (Exception ex)
         {
-            ErrorDialogProvider($"{Resources.Translations.Settings_ErrorLoad}: {ex.Message}", Resources.Translations.Settings_ErrorTitle);
+            _dialogService.ShowErrorDialog($"{Resources.Translations.Settings_ErrorLoad}: {ex.Message}", Resources.Translations.Settings_ErrorTitle);
         }
     }
 
@@ -196,7 +196,7 @@ public partial class MainViewModel
         {
             SetModified();
             AppendLog($"Profiles imported successfully from: {fileName}");
-            InfoDialogProvider(Resources.Translations.Dialog_ImportSuccess);
+            _dialogService.ShowInfoDialog(Resources.Translations.Dialog_ImportSuccess);
         }
     }
 

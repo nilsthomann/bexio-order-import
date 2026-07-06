@@ -1,27 +1,27 @@
-using System;
-using System.IO;
-using System.Threading.Tasks;
-using System.Windows;
-using Xunit;
-using FluentAssertions;
 using BexioOrderImport.Application.Interfaces;
 using BexioOrderImport.Domain.Models;
 using BexioOrderImport.Wpf.Services;
 using BexioOrderImport.Wpf.ViewModels;
+using FluentAssertions;
 
 namespace BexioOrderImport.Tests;
 
 public class MainViewModelTests
 {
     private static MainViewModel CreateVm()
-        => new MainViewModel(new MockUpdateService(), new MockBexioClientFactory());
+        => new(
+            new MockUpdateService(),
+            new MockBexioClientFactory(),
+            new MockDialogService(),
+            new MockDispatcherService(),
+            new MockEncryptionService());
 
     public MainViewModelTests()
     {
         // Initialize WPF Application context for unit tests to prevent null refs on App.Current
         if (System.Windows.Application.Current == null)
         {
-            new System.Windows.Application();
+            _ = new System.Windows.Application();
         }
     }
 
@@ -158,5 +158,30 @@ public class MainViewModelTests
         public Task<int?> FindArticleIdAsync(string articleNumber, string articleName) => Task.FromResult<int?>(null);
         public Task AddArticlePositionAsync(int orderId, int articleId, OrderPosition position) => Task.CompletedTask;
         public Task AddCustomPositionAsync(int orderId, OrderPosition position) => Task.CompletedTask;
+        public Task<bool> CheckConnectionAsync() => Task.FromResult(true);
+    }
+
+    private class MockDialogService : IDialogService
+    {
+        public string? ShowProfileCreateDialog(bool isClone) => null;
+        public bool ShowProfileEditDialog(Wpf.Models.MappingProfile profile) => false;
+        public string? ShowOpenFileDialog(string filter, string defaultExt) => null;
+        public string? ShowSaveFileDialog(string filter, string defaultExt, string defaultFileName) => null;
+        public bool ShowConfirmDialog(string message, string title) => false;
+        public bool ShowCustomerConfirmDialog(Customer customer) => false;
+        public void ShowErrorDialog(string message, string title) { }
+        public void ShowInfoDialog(string message) { }
+    }
+
+    private class MockDispatcherService : IDispatcherService
+    {
+        public void Invoke(Action action) => action();
+        public void BeginInvoke(Action action) => action();
+    }
+
+    private class MockEncryptionService : IEncryptionService
+    {
+        public string Encrypt(string clearText) => clearText;
+        public string Decrypt(string encryptedText) => encryptedText;
     }
 }

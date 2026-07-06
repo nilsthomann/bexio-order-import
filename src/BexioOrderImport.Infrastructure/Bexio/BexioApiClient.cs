@@ -1,13 +1,9 @@
-using System;
-using System.Collections.Generic;
-using System.Net.Http;
+using BexioOrderImport.Application.Interfaces;
+using BexioOrderImport.Domain.Models;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Text;
 using System.Text.Json;
-using System.Threading.Tasks;
-using BexioOrderImport.Application.Interfaces;
-using BexioOrderImport.Domain.Models;
 
 namespace BexioOrderImport.Infrastructure.Bexio;
 
@@ -99,7 +95,7 @@ public class BexioApiClient : IBexioClient
             payment_type_id = 1, // Default
             language_id = 1, // German
             api_reference = "Excel-Import",
-            positions = new object[0] // Positions added subsequently
+            positions = Array.Empty<object>() // Positions added subsequently
         };
 
         var body = new StringContent(JsonSerializer.Serialize(orderPayload), Encoding.UTF8, "application/json");
@@ -183,6 +179,19 @@ public class BexioApiClient : IBexioClient
         var body = new StringContent(JsonSerializer.Serialize(positionPayload), Encoding.UTF8, "application/json");
         var response = await _httpClient.SendAsync(CreateRequest(HttpMethod.Post, $"kb_order/{orderId}/kb_position_custom", body));
         response.EnsureSuccessStatusCode();
+    }
+
+    public async Task<bool> CheckConnectionAsync()
+    {
+        try
+        {
+            var response = await _httpClient.SendAsync(CreateRequest(HttpMethod.Get, "contact?limit=1"));
+            return response.IsSuccessStatusCode;
+        }
+        catch
+        {
+            return false;
+        }
     }
 
     // Hilfsklassen für JSON-Deserialisierung

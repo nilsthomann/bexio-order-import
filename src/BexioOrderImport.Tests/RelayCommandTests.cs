@@ -1,7 +1,5 @@
-using System;
-using Xunit;
-using FluentAssertions;
 using BexioOrderImport.Wpf.ViewModels;
+using FluentAssertions;
 
 namespace BexioOrderImport.Tests;
 
@@ -17,7 +15,7 @@ public class RelayCommandTests
     [Fact]
     public void RelayCommand_CanExecute_WithoutCanExecuteFunc_ReturnsTrue()
     {
-        var cmd = new RelayCommand(() => {});
+        var cmd = new RelayCommand(() => { });
         cmd.CanExecute(null).Should().BeTrue();
     }
 
@@ -25,7 +23,7 @@ public class RelayCommandTests
     public void RelayCommand_CanExecute_WithCanExecuteFunc_ReturnsCorrectValue()
     {
         bool allowed = false;
-        var cmd = new RelayCommand(() => {}, () => allowed);
+        var cmd = new RelayCommand(() => { }, () => allowed);
         cmd.CanExecute(null).Should().BeFalse();
         allowed = true;
         cmd.CanExecute(null).Should().BeTrue();
@@ -43,7 +41,7 @@ public class RelayCommandTests
     [Fact]
     public void RelayCommand_RaiseCanExecuteChanged_DoesNotThrow()
     {
-        var cmd = new RelayCommand(() => {});
+        var cmd = new RelayCommand(() => { });
         Action act = () => cmd.RaiseCanExecuteChanged();
         act.Should().NotThrow();
     }
@@ -51,8 +49,8 @@ public class RelayCommandTests
     [Fact]
     public void RelayCommand_CanExecuteChangedEvent_SubscribeAndUnsubscribe_DoesNotThrow()
     {
-        var cmd = new RelayCommand(() => {});
-        EventHandler handler = (s, e) => {};
+        var cmd = new RelayCommand(() => { });
+        static void handler(object? s, EventArgs e) { }
         Action act = () =>
         {
             cmd.CanExecuteChanged += handler;
@@ -71,7 +69,7 @@ public class RelayCommandTests
     [Fact]
     public void RelayCommandGeneric_CanExecute_InvalidParameterType_ReturnsFalse()
     {
-        var cmd = new RelayCommand<string>(_ => {});
+        var cmd = new RelayCommand<string>(_ => { });
         cmd.CanExecute(123).Should().BeFalse(); // Int instead of string
         cmd.CanExecute(null).Should().BeFalse();
     }
@@ -79,14 +77,14 @@ public class RelayCommandTests
     [Fact]
     public void RelayCommandGeneric_CanExecute_ValidParameterType_ReturnsTrue()
     {
-        var cmd = new RelayCommand<string>(_ => {});
+        var cmd = new RelayCommand<string>(_ => { });
         cmd.CanExecute("test").Should().BeTrue();
     }
 
     [Fact]
     public void RelayCommandGeneric_CanExecute_WithCanExecuteFunc_ReturnsCorrectValue()
     {
-        var cmd = new RelayCommand<string>(_ => {}, val => val == "allow");
+        var cmd = new RelayCommand<string>(_ => { }, val => val == "allow");
         cmd.CanExecute("deny").Should().BeFalse();
         cmd.CanExecute("allow").Should().BeTrue();
     }
@@ -112,8 +110,8 @@ public class RelayCommandTests
     [Fact]
     public void RelayCommandGeneric_CanExecuteChangedEvent_SubscribeAndUnsubscribe_DoesNotThrow()
     {
-        var cmd = new RelayCommand<string>(_ => {});
-        EventHandler handler = (s, e) => {};
+        var cmd = new RelayCommand<string>(_ => { });
+        static void handler(object? s, EventArgs e) { }
         Action act = () =>
         {
             cmd.CanExecuteChanged += handler;
@@ -125,7 +123,7 @@ public class RelayCommandTests
     [Fact]
     public void RelayCommandGeneric_RaiseCanExecuteChanged_DoesNotThrow()
     {
-        var cmd = new RelayCommand<string>(_ => {});
+        var cmd = new RelayCommand<string>(_ => { });
         Action act = () => cmd.RaiseCanExecuteChanged();
         act.Should().NotThrow();
     }

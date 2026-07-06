@@ -16,7 +16,7 @@ public partial class MainViewModel
     {
         if (filePath == null)
         {
-            filePath = OpenFileDialogProvider("Excel Files|*.xlsx;*.xls", ".xlsx");
+            filePath = _dialogService.ShowOpenFileDialog("Excel Files|*.xlsx;*.xls", ".xlsx");
         }
 
         if (string.IsNullOrEmpty(filePath)) return;
@@ -180,44 +180,28 @@ public partial class MainViewModel
 
     private async Task<bool> ConfirmUploadAsync()
     {
-        if (App.Current?.Dispatcher != null)
+        IsImportingActive = false;
+        try
         {
-            return await App.Current.Dispatcher.InvokeAsync(() =>
-            {
-                IsImportingActive = false;
-                try
-                {
-                    return ConfirmDialogProvider(Resources.Translations.Import_ConfirmMessage, Resources.Translations.Import_ConfirmTitle);
-                }
-                finally
-                {
-                    if (IsImporting) IsImportingActive = true;
-                }
-            });
+            return _dialogService.ShowConfirmDialog(Resources.Translations.Import_ConfirmMessage, Resources.Translations.Import_ConfirmTitle);
         }
-        
-        return ConfirmDialogProvider(Resources.Translations.Import_ConfirmMessage, Resources.Translations.Import_ConfirmTitle);
+        finally
+        {
+            if (IsImporting) IsImportingActive = true;
+        }
     }
 
     private async Task<bool> ConfirmCustomerCreationAsync(Customer customer)
     {
-        if (App.Current?.Dispatcher != null)
+        IsImportingActive = false;
+        try
         {
-            return await App.Current.Dispatcher.InvokeAsync(() =>
-            {
-                IsImportingActive = false;
-                try
-                {
-                    return CustomerConfirmDialogProvider(customer);
-                }
-                finally
-                {
-                    if (IsImporting) IsImportingActive = true;
-                }
-            });
+            return _dialogService.ShowCustomerConfirmDialog(customer);
         }
-
-        return CustomerConfirmDialogProvider(customer);
+        finally
+        {
+            if (IsImporting) IsImportingActive = true;
+        }
     }
 
     public async Task CheckBexioConnectionAsync()
@@ -227,20 +211,8 @@ public partial class MainViewModel
         
         try
         {
-            bool isConnected = false;
-            if (BexioConnectionCheckTestHook != null)
-            {
-                isConnected = await BexioConnectionCheckTestHook(BexioToken);
-            }
-            else
-            {
-                using var client = new HttpClient();
-                client.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", BexioToken);
-                client.DefaultRequestHeaders.Accept.Add(new System.Net.Http.Headers.MediaTypeWithQualityHeaderValue("application/json"));
-                
-                var response = await client.GetAsync("https://office.bexio.com/api2.0/contact?limit=1");
-                isConnected = response.IsSuccessStatusCode;
-            }
+            var client = _bexioClientFactory.Create(BexioToken, DefaultAccountId, DefaultTaxId);
+            bool isConnected = await client.CheckConnectionAsync();
 
             if (isConnected)
             {

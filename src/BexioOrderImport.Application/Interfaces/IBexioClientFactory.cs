@@ -1,6 +1,3 @@
-using System.Threading.Tasks;
-using BexioOrderImport.Domain.Models;
-
 namespace BexioOrderImport.Application.Interfaces;
 
 /// <summary>

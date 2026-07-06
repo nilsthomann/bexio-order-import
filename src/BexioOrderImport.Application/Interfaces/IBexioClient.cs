@@ -1,4 +1,3 @@
-using System.Threading.Tasks;
 using BexioOrderImport.Domain.Models;
 
 namespace BexioOrderImport.Application.Interfaces;
@@ -11,4 +10,5 @@ public interface IBexioClient
     Task<int?> FindArticleIdAsync(string articleNumber, string articleName);
     Task AddArticlePositionAsync(int orderId, int articleId, OrderPosition position);
     Task AddCustomPositionAsync(int orderId, OrderPosition position);
+    Task<bool> CheckConnectionAsync();
 }

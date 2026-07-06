@@ -1,11 +1,8 @@
-using System;
-using System.IO;
-using System.Collections.Generic;
-using ClosedXML.Excel;
-using Microsoft.Extensions.Options;
 using BexioOrderImport.Application.Interfaces;
 using BexioOrderImport.Application.Options;
 using BexioOrderImport.Domain.Models;
+using ClosedXML.Excel;
+using Microsoft.Extensions.Options;
 
 namespace BexioOrderImport.Infrastructure.Excel;
 
@@ -26,12 +23,13 @@ public class ClosedXmlExcelParser : IExcelParser
         using var workbook = new XLWorkbook(filePath);
         var sheet = workbook.Worksheet(_options.WorksheetIndex);
 
-        var order = new Order();
-        
-        // 1. Kopfdaten parsen
-        order.Customer = ParseCustomerHeader(sheet);
-        order.DeliveryDate = ParseDeliveryDate(sheet);
-        
+        var order = new Order
+        {
+            // 1. Kopfdaten parsen
+            Customer = ParseCustomerHeader(sheet),
+            DeliveryDate = ParseDeliveryDate(sheet)
+        };
+
         string paymentTermsVal = sheet.Cell(_options.Header.PaymentTermsCell).Value.ToString().Trim();
         order.PaymentTerms = paymentTermsVal;
 
@@ -65,8 +63,7 @@ public class ClosedXmlExcelParser : IExcelParser
                 continue;
 
             // Preis aus Spalte für EP auslesen
-            decimal unitPrice = 0;
-            decimal.TryParse(row.Cell(_options.Data.UnitPriceColumn).Value.ToString(), out unitPrice);
+            _ = decimal.TryParse(row.Cell(_options.Data.UnitPriceColumn).Value.ToString(), out decimal unitPrice);
 
             // Matrix dynamisch zuordnen
             string? matchedCategory = MapCategoryName(rawCategory, sizeMatrices.Keys);
@@ -81,7 +78,7 @@ public class ClosedXmlExcelParser : IExcelParser
                 string qtyStr = row.Cell(col).Value.ToString();
                 if (int.TryParse(qtyStr, out int qty) && qty > 0)
                 {
-                    string sizeName = sizes.ContainsKey(col) ? sizes[col] : $"Spalte_{col}";
+                    string sizeName = sizes.TryGetValue(col, out string? value) ? value : $"Spalte_{col}";
 
                     order.Positions.Add(new OrderPosition
                     {
@@ -152,7 +149,7 @@ public class ClosedXmlExcelParser : IExcelParser
         return matrices;
     }
 
-    private string? MapCategoryName(string rawCategory, IEnumerable<string> registeredCategories)
+    private static string? MapCategoryName(string rawCategory, IEnumerable<string> registeredCategories)
     {
         if (string.IsNullOrWhiteSpace(rawCategory)) return null;
 
@@ -164,15 +161,15 @@ public class ClosedXmlExcelParser : IExcelParser
         }
 
         // 2. Robustes Mapping
-        if (rawCategory.Contains("Hat", StringComparison.OrdinalIgnoreCase) || 
+        if (rawCategory.Contains("Hat", StringComparison.OrdinalIgnoreCase) ||
             rawCategory.Contains("Neck", StringComparison.OrdinalIgnoreCase))
             return "Hats/Necks";
 
-        if (rawCategory.Contains("Mitten", StringComparison.OrdinalIgnoreCase) || 
+        if (rawCategory.Contains("Mitten", StringComparison.OrdinalIgnoreCase) ||
             rawCategory.Contains("Acc", StringComparison.OrdinalIgnoreCase))
             return "Mittens/Acc";
 
-        if (rawCategory.Contains("Socks", StringComparison.OrdinalIgnoreCase) || 
+        if (rawCategory.Contains("Socks", StringComparison.OrdinalIgnoreCase) ||
             rawCategory.Contains("UWear", StringComparison.OrdinalIgnoreCase))
             return "Socks/UWear";
 
@@ -185,7 +182,7 @@ public class ClosedXmlExcelParser : IExcelParser
         // 3. Fallback auf StartsWith/Contains
         foreach (var reg in registeredCategories)
         {
-            if (reg.StartsWith(rawCategory, StringComparison.OrdinalIgnoreCase) || 
+            if (reg.StartsWith(rawCategory, StringComparison.OrdinalIgnoreCase) ||
                 rawCategory.StartsWith(reg, StringComparison.OrdinalIgnoreCase))
                 return reg;
         }
@@ -193,13 +190,13 @@ public class ClosedXmlExcelParser : IExcelParser
         return null;
     }
 
-    private string ExtractZip(string rawZipCity)
+    private static string ExtractZip(string rawZipCity)
     {
         var parts = rawZipCity.Split(' ', 2);
         return parts.Length > 0 ? parts[0] : string.Empty;
     }
 
-    private string ExtractCity(string rawZipCity)
+    private static string ExtractCity(string rawZipCity)
     {
         var parts = rawZipCity.Split(' ', 2);
         return parts.Length > 1 ? parts[1] : string.Empty;

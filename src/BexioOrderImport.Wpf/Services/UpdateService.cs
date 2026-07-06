@@ -12,15 +12,16 @@ namespace BexioOrderImport.Wpf.Services;
 public class UpdateService : IUpdateService
 {
     private readonly HttpClient _httpClient;
+    private readonly IAppLifecycleService _appLifecycleService;
     private const string RepoOwner = "nils-thomann";
     private const string RepoName = "bexio-order-import";
-    public Action<string>? ProcessStartAndShutdownTestHook { get; set; }
 
-    public UpdateService() : this(new HttpClient()) { }
+    public UpdateService(IAppLifecycleService appLifecycleService) : this(new HttpClient(), appLifecycleService) { }
 
-    public UpdateService(HttpClient httpClient)
+    public UpdateService(HttpClient httpClient, IAppLifecycleService appLifecycleService)
     {
         _httpClient = httpClient;
+        _appLifecycleService = appLifecycleService;
         // GitHub API requires a User-Agent header
         _httpClient.DefaultRequestHeaders.UserAgent.Add(new ProductInfoHeaderValue("BexioOrderImporter", "1.0"));
     }
@@ -164,25 +165,7 @@ public class UpdateService : IUpdateService
             }
         }
 
-        if (ProcessStartAndShutdownTestHook != null)
-        {
-            ProcessStartAndShutdownTestHook(tempFilePath);
-            return;
-        }
-
-        // Run installer silently and shut down the app
-        var psi = new ProcessStartInfo
-        {
-            FileName = tempFilePath,
-            Arguments = "/SILENT /CLOSEAPPLICATIONS /RESTARTAPPLICATIONS",
-            UseShellExecute = true
-        };
-
-        Process.Start(psi);
-        System.Windows.Application.Current.Dispatcher.Invoke(() =>
-        {
-            System.Windows.Application.Current.Shutdown();
-        });
+        _appLifecycleService.StartInstallerAndExit(tempFilePath);
     }
 
     public bool IsNewerVersion(string rawTag, Version? currentVersion)

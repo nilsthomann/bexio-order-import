@@ -1,6 +1,3 @@
-using System;
-using System.IO;
-using System.Threading.Tasks;
 using BexioOrderImport.Application.Interfaces;
 using BexioOrderImport.Domain.Models;
 
@@ -18,15 +15,15 @@ public class ImportOrderUseCase
     }
 
     public async Task<bool> ExecuteAsync(
-        string filePath, 
-        Action<Order> showPreviewCallback, 
+        string filePath,
+        Action<Order> showPreviewCallback,
         Func<Task<bool>> confirmUploadCallback,
         Func<Customer, Task<bool>> confirmCustomerCreationCallback,
         Action<string> logInfoCallback)
     {
         logInfoCallback($"Reading Excel file: {Path.GetFileName(filePath)}...");
         var order = _excelParser.ParseOrderForm(filePath);
-        
+
         if (order.Positions.Count == 0)
         {
             logInfoCallback("No order positions with quantity > 0 found.");
@@ -59,7 +56,7 @@ public class ImportOrderUseCase
             contactId = await _bexioClient.CreateContactAsync(order.Customer);
         }
         logInfoCallback($"Customer matched (Bexio ID: {contactId.Value}). Creating order...");
-        
+
         int orderId = await _bexioClient.CreateOrderAsync(contactId.Value, order);
         logInfoCallback($"Order created successfully (Bexio ID: {orderId}). Uploading positions...");
 

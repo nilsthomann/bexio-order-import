@@ -1,17 +1,13 @@
-using System;
-using System.IO;
-using System.Linq;
-using System.Threading.Tasks;
+using BexioOrderImport.Application.Interfaces;
+using BexioOrderImport.Application.Options;
+using BexioOrderImport.Application.Services;
+using BexioOrderImport.Domain.Models;
+using BexioOrderImport.Infrastructure.Bexio;
+using BexioOrderImport.Infrastructure.Excel;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Configuration;
 using Spectre.Console;
-using BexioOrderImport.Application.Interfaces;
-using BexioOrderImport.Application.Services;
-using BexioOrderImport.Application.Options;
-using BexioOrderImport.Infrastructure.Excel;
-using BexioOrderImport.Infrastructure.Bexio;
-using BexioOrderImport.Domain.Models;
 
 namespace BexioOrderImport.Cli;
 
@@ -20,7 +16,7 @@ class Program
     static async Task Main(string[] args)
     {
         Console.OutputEncoding = System.Text.Encoding.UTF8;
-        
+
         // Show Logo and Intro
         AnsiConsole.Write(new FigletText("Bexio Importer").Color(Color.DeepPink3));
         AnsiConsole.MarkupLine("[grey]Textile Excel Order Form Import Interface[/]\n");
@@ -51,14 +47,14 @@ class Program
                 // Register Excel mapping options
                 services.Configure<ExcelMappingOptions>(context.Configuration.GetSection("ExcelMapping"));
                 services.AddSingleton<IExcelParser, ClosedXmlExcelParser>();
-                
+
                 // Read Bexio configurations
                 var bexioToken = context.Configuration["Bexio:ApiToken"] ?? "YOUR_TOKEN";
                 int accountId = int.Parse(context.Configuration["Bexio:DefaultAccountId"] ?? "3200");
                 int taxId = int.Parse(context.Configuration["Bexio:DefaultTaxId"] ?? "1");
 
                 services.AddHttpClient<IBexioClient, BexioApiClient>()
-                    .AddTypedClient<IBexioClient>(httpClient => 
+                    .AddTypedClient<IBexioClient>(httpClient =>
                         new BexioApiClient(httpClient, bexioToken, accountId, taxId));
 
                 services.AddSingleton<ImportOrderUseCase>();
@@ -74,7 +70,7 @@ class Program
                 showPreviewCallback: ShowOrderPreview,
                 confirmUploadCallback: ConfirmUploadPromptAsync,
                 confirmCustomerCreationCallback: ConfirmCustomerCreationPromptAsync,
-                logInfoCallback: message => 
+                logInfoCallback: message =>
                 {
                     if (message.Contains("Warning") || message.Contains("warning"))
                     {
@@ -159,7 +155,7 @@ class Program
     {
         Console.WriteLine();
         AnsiConsole.MarkupLine($"[yellow][[warn]][/] Customer with e-mail [bold]{customer.Email}[/] was not found in Bexio.");
-        
+
         var table = new Table().Border(TableBorder.Rounded);
         table.AddColumn("[bold]Field[/]");
         table.AddColumn("[bold]New Customer Value[/]");
@@ -168,7 +164,7 @@ class Program
         table.AddRow("ZIP City", $"{customer.ZipCode} {customer.City}");
         table.AddRow("E-Mail", customer.Email);
         AnsiConsole.Write(table);
-        
+
         return AnsiConsole.Confirm("Do you want to create a new customer in Bexio with this information?");
     }
 }
