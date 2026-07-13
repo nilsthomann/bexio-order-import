@@ -47,6 +47,8 @@ public static class Translations
     public static string Settings_Header => ResourceManager.GetString(nameof(Settings_Header)) ?? "";
     public static string Settings_ApiSection => ResourceManager.GetString(nameof(Settings_ApiSection)) ?? "";
     public static string Settings_TokenLabel => ResourceManager.GetString(nameof(Settings_TokenLabel)) ?? "";
+    public static string Settings_TokenHintPrefix => ResourceManager.GetString(nameof(Settings_TokenHintPrefix)) ?? "";
+    public static string Settings_TokenHintSuffix => ResourceManager.GetString(nameof(Settings_TokenHintSuffix)) ?? "";
     public static string Settings_AccountLabel => ResourceManager.GetString(nameof(Settings_AccountLabel)) ?? "";
     public static string Settings_TaxLabel => ResourceManager.GetString(nameof(Settings_TaxLabel)) ?? "";
     public static string Settings_ExcelSection => ResourceManager.GetString(nameof(Settings_ExcelSection)) ?? "";

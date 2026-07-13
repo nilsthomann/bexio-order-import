@@ -16,9 +16,9 @@ public class BexioClientFactory : IBexioClientFactory
         _httpClientFactory = httpClientFactory;
     }
 
-    public IBexioClient Create(string apiToken, int? accountId, int? taxId)
+    public IBexioClient Create(string apiToken, int? accountId, int? taxId, string language = "de")
     {
         var httpClient = _httpClientFactory.CreateClient("BexioApi");
-        return new BexioApiClient(httpClient, apiToken, accountId, taxId);
+        return new BexioApiClient(httpClient, apiToken, accountId, taxId, language);
     }
 }

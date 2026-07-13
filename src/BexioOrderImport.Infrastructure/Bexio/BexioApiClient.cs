@@ -13,16 +13,18 @@ public class BexioApiClient : IBexioClient
     private readonly string _apiToken;
     private readonly int? _accountId;
     private readonly int? _taxId;
+    private readonly string _language;
 
     private List<BexioAccount>? _cachedAccounts;
     private List<BexioTax>? _cachedTaxes;
 
-    public BexioApiClient(HttpClient httpClient, string apiToken, int? accountId, int? taxId)
+    public BexioApiClient(HttpClient httpClient, string apiToken, int? accountId, int? taxId, string language = "de")
     {
         _httpClient = httpClient;
         _apiToken = apiToken;
         _accountId = accountId;
         _taxId = taxId;
+        _language = language;
 
         if (_httpClient.BaseAddress == null)
         {
@@ -39,6 +41,7 @@ public class BexioApiClient : IBexioClient
         var request = new HttpRequestMessage(method, requestUri);
         request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", _apiToken);
         request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+        request.Headers.Add("Accept-Language", _language);
         if (content != null) request.Content = content;
         return request;
     }

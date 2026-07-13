@@ -138,7 +138,7 @@ public partial class MainViewModel
             // Sync values from DataGrid back to Order Positions
             _loadedOrder.Positions = OrderPositions.ToList();
 
-            var bexioClient = _bexioClientFactory.Create(BexioToken, AccountId, TaxId);
+            var bexioClient = _bexioClientFactory.Create(BexioToken, AccountId, TaxId, SelectedLanguage);
             var useCase = new ImportOrderUseCase(new Services.InMemoryExcelParser(_loadedOrder), bexioClient);
 
             int createdOrderId = 0;
@@ -232,7 +232,7 @@ public partial class MainViewModel
 
         try
         {
-            var client = _bexioClientFactory.Create(BexioToken, AccountId, TaxId);
+            var client = _bexioClientFactory.Create(BexioToken, AccountId, TaxId, SelectedLanguage);
             bool isConnected = await client.CheckConnectionAsync();
 
             IsConnectionSuccessful = isConnected;
