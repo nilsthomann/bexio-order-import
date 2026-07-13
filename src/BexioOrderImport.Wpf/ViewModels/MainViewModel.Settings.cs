@@ -59,8 +59,8 @@ public partial class MainViewModel
             if (string.IsNullOrEmpty(BexioToken) && !string.IsNullOrEmpty(encryptedToken) && encryptedToken != "bexio_api_token_here")
                 BexioToken = encryptedToken;
 
-            DefaultAccountId = dto.Bexio.DefaultAccountId;
-            DefaultTaxId = dto.Bexio.DefaultTaxId;
+            AccountId = dto.Bexio.AccountId;
+            TaxId = dto.Bexio.TaxId;
             SelectedLanguage = dto.Bexio.Language;
             _initialLanguage = SelectedLanguage;
             ApplyLanguage(SelectedLanguage);
@@ -109,8 +109,8 @@ public partial class MainViewModel
                 Bexio = new Models.BexioSettingsDto
                 {
                     ApiToken = encryptedToken,
-                    DefaultAccountId = DefaultAccountId,
-                    DefaultTaxId = DefaultTaxId,
+                    AccountId = AccountId,
+                    TaxId = TaxId,
                     Language = SelectedLanguage
                 },
                 ActiveProfileName = ActiveProfile?.Name ?? "Default",
@@ -198,6 +198,7 @@ public partial class MainViewModel
         profile.Mapping.Data.StartQtyColumn = ColStartQty;
         profile.Mapping.Data.EndQtyColumn = ColEndQty;
         profile.Mapping.Data.UnitPriceColumn = ColUnitPrice;
+        profile.Mapping.PositionTextTemplate = PositionTextTemplate;
     }
 
     private void CopyProfileToVm(Models.MappingProfile profile)
@@ -225,6 +226,7 @@ public partial class MainViewModel
         ColStartQty = profile.Mapping.Data.StartQtyColumn;
         ColEndQty = profile.Mapping.Data.EndQtyColumn;
         ColUnitPrice = profile.Mapping.Data.UnitPriceColumn;
+        PositionTextTemplate = profile.Mapping.PositionTextTemplate;
     }
 
     private ExcelMappingOptions BuildMappingOptions()
@@ -242,6 +244,7 @@ public partial class MainViewModel
         return new ExcelMappingOptions
         {
             WorksheetIndex = dto.WorksheetIndex,
+            PositionTextTemplate = dto.PositionTextTemplate,
             Header = new HeaderMapping
             {
                 CompanyNameCell = dto.Header.CompanyNameCell,
@@ -280,6 +283,7 @@ public partial class MainViewModel
         return new Models.ExcelMappingDto
         {
             WorksheetIndex = opts.WorksheetIndex,
+            PositionTextTemplate = opts.PositionTextTemplate,
             Header = new Models.HeaderMappingDto
             {
                 CompanyNameCell = opts.Header.CompanyNameCell,

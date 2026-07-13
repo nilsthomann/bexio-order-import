@@ -78,6 +78,7 @@ public partial class ProfileEditWindow : Window
         ColStartQtyInput.Text = _profile.Mapping.Data.StartQtyColumn.ToString();
         ColEndQtyInput.Text = _profile.Mapping.Data.EndQtyColumn.ToString();
         ColUnitPriceInput.Text = _profile.Mapping.Data.UnitPriceColumn.ToString();
+        PositionTextTemplateInput.Text = _profile.Mapping.PositionTextTemplate;
     }
 
     private void Save_Click(object sender, RoutedEventArgs e)
@@ -110,6 +111,7 @@ public partial class ProfileEditWindow : Window
             _profile.Mapping.Data.StartQtyColumn = int.Parse(ColStartQtyInput.Text.Trim());
             _profile.Mapping.Data.EndQtyColumn = int.Parse(ColEndQtyInput.Text.Trim());
             _profile.Mapping.Data.UnitPriceColumn = int.Parse(ColUnitPriceInput.Text.Trim());
+            _profile.Mapping.PositionTextTemplate = PositionTextTemplateInput.Text.Trim();
 
             DialogResult = true;
             Close();

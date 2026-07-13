@@ -147,7 +147,11 @@ public partial class CustomDialog : Window
     private static CustomDialog CreateDialog(CustomDialogType type, string title, string message)
     {
         var dlg = new CustomDialog();
-        dlg.Owner = System.Windows.Application.Current?.MainWindow;
+        var mainWindow = System.Windows.Application.Current?.MainWindow;
+        if (mainWindow != null && mainWindow.IsVisible)
+        {
+            dlg.Owner = mainWindow;
+        }
         dlg.ConfigureDialog(type, title, message);
         return dlg;
     }

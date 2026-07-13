@@ -1,3 +1,4 @@
+using BexioOrderImport.Tests.Utils;
 using BexioOrderImport.Wpf.Services;
 using FluentAssertions;
 using System.Text;
@@ -45,16 +46,6 @@ public class UpdateServiceTests
         result.Should().Be(expectedResult);
     }
 
-    private class MockHttpMessageHandler : HttpMessageHandler
-    {
-        private Func<HttpRequestMessage, CancellationToken, Task<HttpResponseMessage>> sendAsyncFunc = null!;
-
-        public Func<HttpRequestMessage, CancellationToken, Task<HttpResponseMessage>> SendAsyncFunc { get => sendAsyncFunc; set => sendAsyncFunc = value; }
-        protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
-        {
-            return SendAsyncFunc(request, cancellationToken);
-        }
-    }
 
     [Fact]
     public async Task CheckForUpdatesAsync_WhenNewerVersionAvailable_ShouldReturnUpdateInfo()

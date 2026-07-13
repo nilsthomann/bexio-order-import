@@ -1,4 +1,5 @@
 <Solution>
+  <Folder Name="/.github/" />
   <Folder Name="/.github/workflows/">
     <File Path=".github/workflows/pr-build.yml" />
     <File Path=".github/workflows/pr-title-lint.yml" />

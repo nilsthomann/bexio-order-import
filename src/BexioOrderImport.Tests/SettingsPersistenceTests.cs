@@ -10,6 +10,7 @@ using BexioOrderImport.Wpf.Services;
 using BexioOrderImport.Wpf.ViewModels;
 using BexioOrderImport.Wpf.Models;
 using BexioOrderImport.Application.Options;
+using Moq;
 
 [assembly: Xunit.CollectionBehavior(DisableTestParallelization = true)]
 
@@ -72,23 +73,75 @@ public class SettingsPersistenceTests : IDisposable
         tcs.Task.GetAwaiter().GetResult();
     }
 
-    private MockDialogService _dialogServiceMock = null!;
+    private Mock<IDialogService> _dialogServiceMock = null!;
+
+    // Delegated fields for dialog stubs
+    private Func<bool, string?>? _profileCreateDialogFunc;
+    private Func<MappingProfile, bool>? _profileEditDialogFunc;
+    private Func<string, string, string?>? _openFileDialogFunc;
+    private Func<string, string, string, string?>? _saveFileDialogFunc;
+    private Func<string, string, bool>? _confirmDialogFunc;
+    private Func<Customer, bool>? _customerConfirmDialogFunc;
+    private Action<string, string>? _errorDialogAction;
+    private Action<string>? _infoDialogAction;
 
     private MainViewModel CreateVm()
     {
-        return CreateVm(new MockUpdateService(), new MockBexioClientFactory(), _tempFilePath);
+        var mockUpdate = new Mock<IUpdateService>();
+        var mockFactory = new Mock<IBexioClientFactory>();
+        var mockClient = new Mock<IBexioClient>();
+        mockClient.Setup(c => c.CheckConnectionAsync()).ReturnsAsync(true);
+        mockFactory.Setup(f => f.Create(It.IsAny<string>(), It.IsAny<int?>(), It.IsAny<int?>())).Returns(mockClient.Object);
+        return CreateVm(mockUpdate.Object, mockFactory.Object, _tempFilePath);
     }
 
     private MainViewModel CreateVm(IUpdateService updateService, IBexioClientFactory clientFactory, string? configFilePath = null)
     {
-        _dialogServiceMock = new MockDialogService();
-        return new MainViewModel(
+        _profileCreateDialogFunc = null;
+        _profileEditDialogFunc = null;
+        _openFileDialogFunc = null;
+        _saveFileDialogFunc = null;
+        _confirmDialogFunc = null;
+        _customerConfirmDialogFunc = null;
+        _errorDialogAction = null;
+        _infoDialogAction = null;
+
+        _dialogServiceMock = new Mock<IDialogService>();
+        _dialogServiceMock.Setup(d => d.ShowProfileCreateDialog(It.IsAny<bool>()))
+            .Returns((bool isClone) => _profileCreateDialogFunc != null ? _profileCreateDialogFunc(isClone) : "MockProfile");
+        _dialogServiceMock.Setup(d => d.ShowProfileEditDialog(It.IsAny<MappingProfile>()))
+            .Returns((MappingProfile p) => _profileEditDialogFunc == null || _profileEditDialogFunc(p));
+        _dialogServiceMock.Setup(d => d.ShowOpenFileDialog(It.IsAny<string>(), It.IsAny<string>()))
+            .Returns((string filter, string ext) => _openFileDialogFunc != null ? _openFileDialogFunc(filter, ext) : "mock_file.xlsx");
+        _dialogServiceMock.Setup(d => d.ShowSaveFileDialog(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()))
+            .Returns((string filter, string ext, string defaultName) => _saveFileDialogFunc != null ? _saveFileDialogFunc(filter, ext, defaultName) : "mock_save_file.json");
+        _dialogServiceMock.Setup(d => d.ShowConfirmDialog(It.IsAny<string>(), It.IsAny<string>()))
+            .Returns((string msg, string title) => _confirmDialogFunc == null || _confirmDialogFunc(msg, title));
+        _dialogServiceMock.Setup(d => d.ShowCustomerConfirmDialog(It.IsAny<Customer>()))
+            .Returns((Customer c) => _customerConfirmDialogFunc == null || _customerConfirmDialogFunc(c));
+        _dialogServiceMock.Setup(d => d.ShowErrorDialog(It.IsAny<string>(), It.IsAny<string>()))
+            .Callback((string msg, string title) => _errorDialogAction?.Invoke(msg, title));
+        _dialogServiceMock.Setup(d => d.ShowInfoDialog(It.IsAny<string>()))
+            .Callback((string msg) => _infoDialogAction?.Invoke(msg));
+
+        var dispatcherMock = new Mock<IDispatcherService>();
+        dispatcherMock.Setup(d => d.Invoke(It.IsAny<Action>())).Callback((Action a) => a());
+        dispatcherMock.Setup(d => d.BeginInvoke(It.IsAny<Action>())).Callback((Action a) => a());
+
+        var encryptionMock = new Mock<IEncryptionService>();
+        encryptionMock.Setup(e => e.Encrypt(It.IsAny<string>())).Returns((string clearText) => clearText);
+        encryptionMock.Setup(e => e.Decrypt(It.IsAny<string>())).Returns((string encryptedText) => encryptedText);
+
+        var vm = new MainViewModel(
             updateService,
             clientFactory,
-            _dialogServiceMock,
-            new MockDispatcherService(),
-            new MockEncryptionService(),
+            _dialogServiceMock.Object,
+            dispatcherMock.Object,
+            encryptionMock.Object,
             configFilePath);
+        if (vm.AccountId == null) vm.AccountId = 1;
+        if (vm.TaxId == null) vm.TaxId = 1;
+        return vm;
     }
 
     [Fact]
@@ -118,8 +171,8 @@ public class SettingsPersistenceTests : IDisposable
                 Bexio = new BexioSettingsDto
                 {
                     ApiToken = "my-test-token",
-                    DefaultAccountId = 4000,
-                    DefaultTaxId = 2,
+                    AccountId = 1,
+                    TaxId = 1,
                     Language = "en"
                 },
                 ActiveProfileName = "CustomProfile",
@@ -142,8 +195,8 @@ public class SettingsPersistenceTests : IDisposable
 
             // Assert
             vm.BexioToken.Should().Be("my-test-token");
-            vm.DefaultAccountId.Should().Be(4000);
-            vm.DefaultTaxId.Should().Be(2);
+            vm.AccountId.Should().Be(1);
+            vm.TaxId.Should().Be(1);
             vm.SelectedLanguage.Should().Be("en");
             vm.ActiveProfile.Should().NotBeNull();
             vm.ActiveProfile!.Name.Should().Be("CustomProfile");
@@ -159,8 +212,8 @@ public class SettingsPersistenceTests : IDisposable
             // Arrange
             var vm = CreateVm();
             vm.BexioToken = "saved-token";
-            vm.DefaultAccountId = 3400;
-            vm.DefaultTaxId = 3;
+            vm.AccountId = 1; ;
+            vm.TaxId = 1;
             vm.SelectedLanguage = "de";
 
             // Act
@@ -171,8 +224,8 @@ public class SettingsPersistenceTests : IDisposable
             string content = File.ReadAllText(_tempFilePath);
             var dto = JsonSerializer.Deserialize<AppSettingsDto>(content);
             dto.Should().NotBeNull();
-            dto!.Bexio.DefaultAccountId.Should().Be(3400);
-            dto.Bexio.DefaultTaxId.Should().Be(3);
+            dto!.Bexio.AccountId.Should().Be(1);
+            dto.Bexio.TaxId.Should().Be(1);
             dto.Bexio.Language.Should().Be("de");
         });
     }
@@ -319,9 +372,9 @@ public class SettingsPersistenceTests : IDisposable
             vm.HasLoadedFile.Should().BeTrue();
             vm.CompanyName.Should().Be("Muster Fashion AG");
             vm.BuyerName.Should().Be("Hans Muster");
-            vm.Email.Should().Be("orders@musterfashion.ch");
-            vm.TotalQuantity.Should().Be(103);
-            vm.TotalGrossAmount.Should().Be(2228.00m);
+            vm.Email.Should().Be("chris@peakmile.com");
+            vm.TotalQuantity.Should().Be(4);
+            vm.TotalGrossAmount.Should().Be(72.8m);
         });
     }
 
@@ -331,10 +384,21 @@ public class SettingsPersistenceTests : IDisposable
         RunInSta(async () =>
         {
             // Arrange
-            var vm = CreateVm();
+            var mockUpdate = new Mock<IUpdateService>();
+            var mockFactory = new Mock<IBexioClientFactory>();
+            var mockClient = new Mock<IBexioClient>();
+            mockClient.Setup(c => c.CheckConnectionAsync()).ReturnsAsync(true);
+            mockClient.Setup(c => c.CreateOrderAsync(It.IsAny<int>(), It.IsAny<Order>())).ReturnsAsync(12345);
+            mockClient.Setup(c => c.FindArticleIdAsync(It.IsAny<string>())).ReturnsAsync(999);
+            mockFactory.Setup(f => f.Create(It.IsAny<string>(), It.IsAny<int?>(), It.IsAny<int?>())).Returns(mockClient.Object);
+
+            var vm = CreateVm(mockUpdate.Object, mockFactory.Object, _tempFilePath);
             string filePath = FindExcelFile("AnonymizedOrder.xlsx");
             await vm.LoadExcelFileAsync(filePath);
             vm.HasLoadedFile.Should().BeTrue();
+
+            string? infoMessage = null;
+            _infoDialogAction = msg => infoMessage = msg;
 
             // Act
             vm.ImportCommand.Execute(null);
@@ -359,6 +423,8 @@ public class SettingsPersistenceTests : IDisposable
             vm.IsImporting.Should().BeFalse();
             vm.HasLoadedFile.Should().BeFalse();
             vm.LogText.Should().Contain("Import completed successfully");
+            infoMessage.Should().NotBeNull();
+            infoMessage.Should().Contain("12345");
         });
     }
 
@@ -370,8 +436,8 @@ public class SettingsPersistenceTests : IDisposable
             var vm = CreateVm();
             vm.Profiles.Count.Should().Be(1);
 
-            _dialogServiceMock.ProfileCreateDialogFunc = isClone => "NewCustomProfile";
-            _dialogServiceMock.ProfileEditDialogFunc = p => true; // Close edit window with OK
+            _profileCreateDialogFunc = isClone => "NewCustomProfile";
+            _profileEditDialogFunc = p => true; // Close edit window with OK
 
             vm.CreateProfileCommand.Execute(null);
 
@@ -388,7 +454,7 @@ public class SettingsPersistenceTests : IDisposable
         RunInSta(() =>
         {
             var vm = CreateVm();
-            _dialogServiceMock.ProfileCreateDialogFunc = isClone => "Default"; // Duplicate name
+            _profileCreateDialogFunc = isClone => "Default"; // Duplicate name
 
             vm.CreateProfileCommand.Execute(null);
 
@@ -405,7 +471,7 @@ public class SettingsPersistenceTests : IDisposable
             var sourceProfile = vm.Profiles[0];
             sourceProfile.Mapping.Header.CompanyNameCell = "Z99";
 
-            _dialogServiceMock.ProfileCreateDialogFunc = isClone => "ClonedDefault";
+            _profileCreateDialogFunc = isClone => "ClonedDefault";
 
             vm.CloneProfileCommand.Execute(sourceProfile);
 
@@ -423,7 +489,7 @@ public class SettingsPersistenceTests : IDisposable
             var vm = CreateVm();
             var profile = vm.Profiles[0];
 
-            _dialogServiceMock.ProfileEditDialogFunc = p =>
+            _profileEditDialogFunc = p =>
             {
                 p.Mapping.Header.CompanyNameCell = "X12";
                 return true; // Click OK
@@ -452,7 +518,7 @@ public class SettingsPersistenceTests : IDisposable
                 vm.Profiles.Add(custom);
 
                 // Export
-                _dialogServiceMock.SaveFileDialogFunc = (filter, ext, defaultName) => tempJsonPath;
+                _saveFileDialogFunc = (filter, ext, defaultName) => tempJsonPath;
                 vm.ExportProfilesCommand.Execute(null);
 
                 File.Exists(tempJsonPath).Should().BeTrue();
@@ -462,7 +528,7 @@ public class SettingsPersistenceTests : IDisposable
                 vm2.Profiles.Count.Should().Be(1); // Only Default
 
                 // Import
-                _dialogServiceMock.OpenFileDialogFunc = (filter, ext) => tempJsonPath;
+                _openFileDialogFunc = (filter, ext) => tempJsonPath;
                 vm2.ImportProfilesCommand.Execute(null);
 
                 vm2.Profiles.Count.Should().Be(2);
@@ -493,11 +559,11 @@ public class SettingsPersistenceTests : IDisposable
             raised.Should().BeTrue();
 
             // Test other fields
-            vm.DefaultAccountId = 4000;
-            vm.DefaultAccountId.Should().Be(4000);
-
-            vm.DefaultTaxId = 5;
-            vm.DefaultTaxId.Should().Be(5);
+            vm.AccountId = 1;
+            vm.AccountId.Should().Be(1);
+ 
+            vm.TaxId = 1;
+            vm.TaxId.Should().Be(1);
 
             vm.SelectedLanguage = "en";
             vm.SelectedLanguage.Should().Be("en");
@@ -668,11 +734,13 @@ public class SettingsPersistenceTests : IDisposable
     {
         RunInSta(async () =>
         {
-            var updateService = new MockUpdateService();
-            var bexioClientFactory = new MockBexioClientFactory();
-            var vm = CreateVm(updateService, bexioClientFactory);
+            var updateServiceMock = new Mock<IUpdateService>();
+            var bexioClientFactoryMock = new Mock<IBexioClientFactory>();
+            var bexioClientMock = new Mock<IBexioClient>();
+            bexioClientMock.Setup(c => c.CheckConnectionAsync()).ReturnsAsync(true);
+            bexioClientFactoryMock.Setup(f => f.Create(It.IsAny<string>(), It.IsAny<int?>(), It.IsAny<int?>())).Returns(bexioClientMock.Object);
 
-            bexioClientFactory.Client.ConnectionResult = true;
+            var vm = CreateVm(updateServiceMock.Object, bexioClientFactoryMock.Object);
 
             await vm.CheckBexioConnectionAsync();
 
@@ -686,11 +754,13 @@ public class SettingsPersistenceTests : IDisposable
     {
         RunInSta(async () =>
         {
-            var updateService = new MockUpdateService();
-            var bexioClientFactory = new MockBexioClientFactory();
-            var vm = CreateVm(updateService, bexioClientFactory);
+            var updateServiceMock = new Mock<IUpdateService>();
+            var bexioClientFactoryMock = new Mock<IBexioClientFactory>();
+            var bexioClientMock = new Mock<IBexioClient>();
+            bexioClientMock.Setup(c => c.CheckConnectionAsync()).ReturnsAsync(false);
+            bexioClientFactoryMock.Setup(f => f.Create(It.IsAny<string>(), It.IsAny<int?>(), It.IsAny<int?>())).Returns(bexioClientMock.Object);
 
-            bexioClientFactory.Client.ConnectionResult = false;
+            var vm = CreateVm(updateServiceMock.Object, bexioClientFactoryMock.Object);
 
             await vm.CheckBexioConnectionAsync();
 
@@ -705,9 +775,11 @@ public class SettingsPersistenceTests : IDisposable
         RunInSta(() =>
         {
             // Arrange
-            var updateService = new MockUpdateService();
-            var bexioClientFactory = new MockBexioClientFactory();
-            var vm = CreateVm(updateService, bexioClientFactory);
+            var updateServiceMock = new Mock<IUpdateService>();
+            var bexioClientFactoryMock = new Mock<IBexioClientFactory>();
+            var bexioClientMock = new Mock<IBexioClient>();
+            bexioClientFactoryMock.Setup(f => f.Create(It.IsAny<string>(), It.IsAny<int?>(), It.IsAny<int?>())).Returns(bexioClientMock.Object);
+            var vm = CreateVm(updateServiceMock.Object, bexioClientFactoryMock.Object);
 
             // Create a temp dummy file to satisfy File.Exists check
             string tempFile = Path.Combine(Path.GetTempPath(), $"{Guid.NewGuid()}.xlsx");
@@ -734,77 +806,7 @@ public class SettingsPersistenceTests : IDisposable
         });
     }
 
-    private class MockUpdateService : IUpdateService
-    {
-        public UpdateInfo? CheckForUpdatesResult { get; set; }
-        public bool ThrowOnDownload { get; set; }
 
-        public Task<UpdateInfo?> CheckForUpdatesAsync() => Task.FromResult(CheckForUpdatesResult);
-        public Task DownloadAndInstallUpdateAsync(string downloadUrl, Action<double> progressCallback)
-        {
-            if (ThrowOnDownload) throw new InvalidOperationException("Download failed");
-            progressCallback(50);
-            progressCallback(100);
-            return Task.CompletedTask;
-        }
-        public bool IsNewerVersion(string rawTag, Version? currentVersion) => false;
-    }
-
-    private class MockBexioClientFactory : IBexioClientFactory
-    {
-        public bool ThrowOnCreate { get; set; }
-        public MockBexioClient Client { get; } = new();
-        public IBexioClient Create(string apiToken, int accountId, int taxId)
-        {
-            if (ThrowOnCreate) throw new InvalidOperationException("Factory failed");
-            return Client;
-        }
-    }
-
-    private class MockBexioClient : IBexioClient
-    {
-        public bool ConnectionResult { get; set; } = true;
-        public Task<int?> FindContactIdAsync(string email) => Task.FromResult<int?>(null);
-        public Task<int> CreateContactAsync(Customer customer) => Task.FromResult(0);
-        public Task<int> CreateOrderAsync(int contactId, Order order) => Task.FromResult(0);
-        public Task<int?> FindArticleIdAsync(string articleNumber, string articleName) => Task.FromResult<int?>(null);
-        public Task AddArticlePositionAsync(int orderId, int articleId, OrderPosition position) => Task.CompletedTask;
-        public Task AddCustomPositionAsync(int orderId, OrderPosition position) => Task.CompletedTask;
-        public Task<bool> CheckConnectionAsync() => Task.FromResult(ConnectionResult);
-    }
-
-    private class MockDialogService : IDialogService
-    {
-        public Func<bool, string?>? ProfileCreateDialogFunc { get; set; }
-        public Func<BexioOrderImport.Wpf.Models.MappingProfile, bool>? ProfileEditDialogFunc { get; set; }
-        public Func<string, string, string?>? OpenFileDialogFunc { get; set; }
-        public Func<string, string, string, string?>? SaveFileDialogFunc { get; set; }
-        public Func<string, string, bool>? ConfirmDialogFunc { get; set; }
-        public Func<Customer, bool>? CustomerConfirmDialogFunc { get; set; }
-        public Action<string, string>? ErrorDialogAction { get; set; }
-        public Action<string>? InfoDialogAction { get; set; }
-
-        public string? ShowProfileCreateDialog(bool isClone) => ProfileCreateDialogFunc != null ? ProfileCreateDialogFunc(isClone) : "MockProfile";
-        public bool ShowProfileEditDialog(MappingProfile profile) => ProfileEditDialogFunc == null || ProfileEditDialogFunc(profile);
-        public string? ShowOpenFileDialog(string filter, string defaultExt) => OpenFileDialogFunc != null ? OpenFileDialogFunc(filter, defaultExt) : "mock_file.xlsx";
-        public string? ShowSaveFileDialog(string filter, string defaultExt, string defaultFileName) => SaveFileDialogFunc != null ? SaveFileDialogFunc(filter, defaultExt, defaultFileName) : "mock_save_file.json";
-        public bool ShowConfirmDialog(string message, string title) => ConfirmDialogFunc == null || ConfirmDialogFunc(message, title);
-        public bool ShowCustomerConfirmDialog(Customer customer) => CustomerConfirmDialogFunc == null || CustomerConfirmDialogFunc(customer);
-        public void ShowErrorDialog(string message, string title) => ErrorDialogAction?.Invoke(message, title);
-        public void ShowInfoDialog(string message) => InfoDialogAction?.Invoke(message);
-    }
-
-    private class MockDispatcherService : IDispatcherService
-    {
-        public void Invoke(Action action) => action();
-        public void BeginInvoke(Action action) => action();
-    }
-
-    private class MockEncryptionService : IEncryptionService
-    {
-        public string Encrypt(string clearText) => clearText;
-        public string Decrypt(string encryptedText) => encryptedText;
-    }
 
     [Fact]
     public void LoadExcelFileAsync_WithNullFilePath_ShouldCallOpenFileDialogProvider()
@@ -813,7 +815,7 @@ public class SettingsPersistenceTests : IDisposable
         {
             var vm = CreateVm();
             bool providerCalled = false;
-            _dialogServiceMock.OpenFileDialogFunc = (filter, ext) =>
+            _openFileDialogFunc = (filter, ext) =>
             {
                 providerCalled = true;
                 return null;
@@ -831,9 +833,11 @@ public class SettingsPersistenceTests : IDisposable
     {
         RunInSta(async () =>
         {
-            var updateService = new MockUpdateService();
-            var bexioClientFactory = new MockBexioClientFactory { ThrowOnCreate = true };
-            var vm = CreateVm(updateService, bexioClientFactory);
+            var updateServiceMock = new Mock<IUpdateService>();
+            var bexioClientFactoryMock = new Mock<IBexioClientFactory>();
+            bexioClientFactoryMock.Setup(f => f.Create(It.IsAny<string>(), It.IsAny<int?>(), It.IsAny<int?>()))
+                .Throws(new InvalidOperationException("Factory failed"));
+            var vm = CreateVm(updateServiceMock.Object, bexioClientFactoryMock.Object);
 
             await vm.CheckBexioConnectionAsync();
 
@@ -848,7 +852,7 @@ public class SettingsPersistenceTests : IDisposable
         RunInSta(async () =>
         {
             var vm = CreateVm();
-            _dialogServiceMock.ConfirmDialogFunc = (msg, title) => false; // Cancel upload confirmation
+            _confirmDialogFunc = (msg, title) => false; // Cancel upload confirmation
 
             string filePath = FindExcelFile("AnonymizedOrder.xlsx");
             await vm.LoadExcelFileAsync(filePath);
@@ -873,10 +877,12 @@ public class SettingsPersistenceTests : IDisposable
     {
         RunInSta(async () =>
         {
-            var updateService = new MockUpdateService();
-            var throwClientFactory = new MockBexioClientFactory { ThrowOnCreate = true };
-            var vm = CreateVm(updateService, throwClientFactory, _tempFilePath);
-            _dialogServiceMock.ConfirmDialogFunc = (msg, title) => true;
+            var updateServiceMock = new Mock<IUpdateService>();
+            var throwClientFactoryMock = new Mock<IBexioClientFactory>();
+            throwClientFactoryMock.Setup(f => f.Create(It.IsAny<string>(), It.IsAny<int?>(), It.IsAny<int?>()))
+                .Throws(new InvalidOperationException("Factory failed"));
+            var vm = CreateVm(updateServiceMock.Object, throwClientFactoryMock.Object, _tempFilePath);
+            _confirmDialogFunc = (msg, title) => true;
 
             string filePath = FindExcelFile("AnonymizedOrder.xlsx");
             await vm.LoadExcelFileAsync(filePath);
@@ -902,7 +908,7 @@ public class SettingsPersistenceTests : IDisposable
             var vm = CreateVm();
             vm.SelectedLanguage = "en";
             vm.IsModified = true;
-            _dialogServiceMock.ConfirmDialogFunc = (msg, title) => true;
+            _confirmDialogFunc = (msg, title) => true;
 
             vm.SaveSettingsCommand.Execute(null);
 
@@ -918,7 +924,7 @@ public class SettingsPersistenceTests : IDisposable
             var vm = CreateVm();
             vm.SelectedLanguage = "en";
             vm.IsModified = true;
-            _dialogServiceMock.ConfirmDialogFunc = (msg, title) => false; // Cancel reload
+            _confirmDialogFunc = (msg, title) => false; // Cancel reload
 
             vm.SaveSettingsCommand.Execute(null);
 
@@ -934,8 +940,8 @@ public class SettingsPersistenceTests : IDisposable
             string legacyJson = @"{
                 ""Bexio"": {
                     ""ApiToken"": ""legacy_token"",
-                    ""DefaultAccountId"": 3200,
-                    ""DefaultTaxId"": 1,
+                    ""AccountId"": 3200,
+                    ""TaxId"": 1,
                     ""Language"": ""de""
                 },
                 ""ExcelMapping"": {
@@ -950,9 +956,11 @@ public class SettingsPersistenceTests : IDisposable
 
             try
             {
-                var updateService = new MockUpdateService();
-                var clientFactory = new MockBexioClientFactory();
-                var vm = CreateVm(updateService, clientFactory, path);
+                var updateServiceMock = new Mock<IUpdateService>();
+                var clientFactoryMock = new Mock<IBexioClientFactory>();
+                var clientMock = new Mock<IBexioClient>();
+                clientFactoryMock.Setup(f => f.Create(It.IsAny<string>(), It.IsAny<int?>(), It.IsAny<int?>())).Returns(clientMock.Object);
+                var vm = CreateVm(updateServiceMock.Object, clientFactoryMock.Object, path);
 
                 vm.BexioToken.Should().Be("legacy_token");
                 vm.Profiles.Count.Should().Be(1);
@@ -978,10 +986,10 @@ public class SettingsPersistenceTests : IDisposable
             try
             {
                 bool errorCalled = false;
-                var updateService = new MockUpdateService();
-                var clientFactory = new MockBexioClientFactory();
-                var vm = CreateVm(updateService, clientFactory, path);
-                _dialogServiceMock.ErrorDialogAction = (msg, title) => errorCalled = true;
+                var updateServiceMock = new Mock<IUpdateService>();
+                var clientFactoryMock = new Mock<IBexioClientFactory>();
+                var vm = CreateVm(updateServiceMock.Object, clientFactoryMock.Object, path);
+                _errorDialogAction = (msg, title) => errorCalled = true;
 
                 // Force load
                 typeof(MainViewModel).GetMethod("LoadSettings", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)!.Invoke(vm, null);
@@ -1003,13 +1011,13 @@ public class SettingsPersistenceTests : IDisposable
             string validPath = Path.Combine(Path.GetTempPath(), $"{Guid.NewGuid()}.json");
             bool errorCalled = false;
 
-            var updateService = new MockUpdateService();
-            var clientFactory = new MockBexioClientFactory();
-            var vm = CreateVm(updateService, clientFactory, validPath);
+            var updateServiceMock = new Mock<IUpdateService>();
+            var clientFactoryMock = new Mock<IBexioClientFactory>();
+            var vm = CreateVm(updateServiceMock.Object, clientFactoryMock.Object, validPath);
 
             try
             {
-                _dialogServiceMock.ErrorDialogAction = (msg, title) => errorCalled = true;
+                _errorDialogAction = (msg, title) => errorCalled = true;
 
                 // Point the config file path to a directory to force IOException on WriteAllText during Save
                 typeof(MainViewModel)
@@ -1042,7 +1050,7 @@ public class SettingsPersistenceTests : IDisposable
             try
             {
                 vm.SelectedFilePath = tempFile;
-                _dialogServiceMock.ProfileEditDialogFunc = p => true;
+                _profileEditDialogFunc = p => true;
 
                 // Act
                 vm.EditProfileCommand.Execute(vm.ActiveProfile);
@@ -1068,7 +1076,7 @@ public class SettingsPersistenceTests : IDisposable
             vm.SelectedProfile = customProfile;
             vm.ActiveProfile = customProfile;
 
-            _dialogServiceMock.ConfirmDialogFunc = (msg, title) => true;
+            _confirmDialogFunc = (msg, title) => true;
 
             // Act
             vm.DeleteProfileCommand.Execute(customProfile);
@@ -1086,9 +1094,9 @@ public class SettingsPersistenceTests : IDisposable
         RunInSta(() =>
         {
             var vm = CreateVm();
-            _dialogServiceMock.SaveFileDialogFunc = (filter, ext, name) => null; // Cancelled
+            _saveFileDialogFunc = (filter, ext, name) => null; // Cancelled
             bool infoCalled = false;
-            _dialogServiceMock.InfoDialogAction = msg => infoCalled = true;
+            _infoDialogAction = msg => infoCalled = true;
 
             vm.ExportProfilesCommand.Execute(null);
 
@@ -1102,9 +1110,9 @@ public class SettingsPersistenceTests : IDisposable
         RunInSta(() =>
         {
             var vm = CreateVm();
-            _dialogServiceMock.SaveFileDialogFunc = (filter, ext, name) => throw new IOException("Access denied");
+            _saveFileDialogFunc = (filter, ext, name) => throw new IOException("Access denied");
             bool errorCalled = false;
-            _dialogServiceMock.ErrorDialogAction = (msg, title) => errorCalled = true;
+            _errorDialogAction = (msg, title) => errorCalled = true;
 
             vm.ExportProfilesCommand.Execute(null);
 
@@ -1118,9 +1126,9 @@ public class SettingsPersistenceTests : IDisposable
         RunInSta(() =>
         {
             var vm = CreateVm();
-            _dialogServiceMock.OpenFileDialogFunc = (filter, ext) => null; // Cancelled
+            _openFileDialogFunc = (filter, ext) => null; // Cancelled
             bool infoCalled = false;
-            _dialogServiceMock.InfoDialogAction = msg => infoCalled = true;
+            _infoDialogAction = msg => infoCalled = true;
 
             vm.ImportProfilesCommand.Execute(null);
 
@@ -1139,9 +1147,9 @@ public class SettingsPersistenceTests : IDisposable
 
             try
             {
-                _dialogServiceMock.OpenFileDialogFunc = (filter, ext) => path;
+                _openFileDialogFunc = (filter, ext) => path;
                 bool errorCalled = false;
-                _dialogServiceMock.ErrorDialogAction = (msg, title) => errorCalled = true;
+                _errorDialogAction = (msg, title) => errorCalled = true;
 
                 vm.ImportProfilesCommand.Execute(null);
 
@@ -1172,7 +1180,7 @@ public class SettingsPersistenceTests : IDisposable
             try
             {
                 vm.SelectedFilePath = tempFile;
-                _dialogServiceMock.OpenFileDialogFunc = (filter, ext) => path;
+                _openFileDialogFunc = (filter, ext) => path;
 
                 vm.ImportProfilesCommand.Execute(null);
 
@@ -1193,12 +1201,12 @@ public class SettingsPersistenceTests : IDisposable
     {
         RunInSta(async () =>
         {
-            var updateService = new MockUpdateService();
+            var updateServiceMock = new Mock<IUpdateService>();
             var updateInfo = new UpdateInfo { LatestVersion = "2.0.0", DownloadUrl = "http://download.url", ReleaseNotes = "release_notes" };
-            updateService.CheckForUpdatesResult = updateInfo;
+            updateServiceMock.Setup(u => u.CheckForUpdatesAsync()).ReturnsAsync(updateInfo);
 
-            var clientFactory = new MockBexioClientFactory();
-            var vm = CreateVm(updateService, clientFactory);
+            var clientFactoryMock = new Mock<IBexioClientFactory>();
+            var vm = CreateVm(updateServiceMock.Object, clientFactoryMock.Object);
 
             // Wait for completion (command runs async task in background on load)
             int timeout = 100;
@@ -1218,12 +1226,19 @@ public class SettingsPersistenceTests : IDisposable
     {
         RunInSta(async () =>
         {
-            var updateService = new MockUpdateService();
+            var updateServiceMock = new Mock<IUpdateService>();
             var updateInfo = new UpdateInfo { LatestVersion = "2.0.0", DownloadUrl = "http://download.url", ReleaseNotes = "release_notes" };
-            updateService.CheckForUpdatesResult = updateInfo;
+            updateServiceMock.Setup(u => u.CheckForUpdatesAsync()).ReturnsAsync(updateInfo);
+            updateServiceMock.Setup(u => u.DownloadAndInstallUpdateAsync(It.IsAny<string>(), It.IsAny<Action<double>>()))
+                .Returns((string url, Action<double> progressCallback) =>
+                {
+                    progressCallback(50);
+                    progressCallback(100);
+                    return Task.CompletedTask;
+                });
 
-            var clientFactory = new MockBexioClientFactory();
-            var vm = CreateVm(updateService, clientFactory);
+            var clientFactoryMock = new Mock<IBexioClientFactory>();
+            var vm = CreateVm(updateServiceMock.Object, clientFactoryMock.Object);
 
             // Set update available state
             int timeout = 100;
@@ -1252,12 +1267,14 @@ public class SettingsPersistenceTests : IDisposable
     {
         RunInSta(async () =>
         {
-            var updateService = new MockUpdateService { ThrowOnDownload = true };
+            var updateServiceMock = new Mock<IUpdateService>();
             var updateInfo = new UpdateInfo { LatestVersion = "2.0.0", DownloadUrl = "http://download.url", ReleaseNotes = "release_notes" };
-            updateService.CheckForUpdatesResult = updateInfo;
+            updateServiceMock.Setup(u => u.CheckForUpdatesAsync()).ReturnsAsync(updateInfo);
+            updateServiceMock.Setup(u => u.DownloadAndInstallUpdateAsync(It.IsAny<string>(), It.IsAny<Action<double>>()))
+                .Throws(new InvalidOperationException("Download failed"));
 
-            var clientFactory = new MockBexioClientFactory();
-            var vm = CreateVm(updateService, clientFactory);
+            var clientFactoryMock = new Mock<IBexioClientFactory>();
+            var vm = CreateVm(updateServiceMock.Object, clientFactoryMock.Object);
 
             int timeout = 100;
             while (!vm.IsUpdateAvailable && timeout > 0)
@@ -1286,9 +1303,9 @@ public class SettingsPersistenceTests : IDisposable
 
             try
             {
-                var updateService = new MockUpdateService();
-                var clientFactory = new MockBexioClientFactory();
-                var vm = CreateVm(updateService, clientFactory, path);
+                var updateServiceMock = new Mock<IUpdateService>();
+                var clientFactoryMock = new Mock<IBexioClientFactory>();
+                var vm = CreateVm(updateServiceMock.Object, clientFactoryMock.Object, path);
 
                 Directory.Exists(nonExistentDir).Should().BeTrue();
                 File.Exists(path).Should().BeTrue();
@@ -1319,9 +1336,9 @@ public class SettingsPersistenceTests : IDisposable
 
             try
             {
-                var updateService = new MockUpdateService();
-                var clientFactory = new MockBexioClientFactory();
-                var vm = CreateVm(updateService, clientFactory, path);
+                var updateServiceMock = new Mock<IUpdateService>();
+                var clientFactoryMock = new Mock<IBexioClientFactory>();
+                var vm = CreateVm(updateServiceMock.Object, clientFactoryMock.Object, path);
 
                 vm.BexioToken.Should().Be("template_token");
             }

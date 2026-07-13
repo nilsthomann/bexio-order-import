@@ -1,22 +1,14 @@
 using BexioOrderImport.Domain.Models;
 using BexioOrderImport.Infrastructure.Bexio;
+using BexioOrderImport.Tests.Utils;
 using FluentAssertions;
+using Moq;
 using System.Net;
 
 namespace BexioOrderImport.Tests;
 
 public class BexioApiClientTests
 {
-    private class MockHttpMessageHandler : HttpMessageHandler
-    {
-        public Func<HttpRequestMessage, CancellationToken, Task<HttpResponseMessage>> SendAsyncFunc { get; set; } = null!;
-
-        protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
-        {
-            return SendAsyncFunc(request, cancellationToken);
-        }
-    }
-
     [Fact]
     public async Task FindContactIdAsync_WhenContactExists_ShouldReturnContactId()
     {
@@ -34,7 +26,7 @@ public class BexioApiClientTests
         };
 
         var httpClient = new HttpClient(handler);
-        var client = new BexioApiClient(httpClient, "dummy-token");
+        var client = new BexioApiClient(httpClient, "dummy-token", 1, 1);
 
         // Act
         var result = await client.FindContactIdAsync("test@company.com");
@@ -60,7 +52,7 @@ public class BexioApiClientTests
         };
 
         var httpClient = new HttpClient(handler);
-        var client = new BexioApiClient(httpClient, "dummy-token");
+        var client = new BexioApiClient(httpClient, "dummy-token", 1, 1);
 
         // Act
         var result = await client.FindContactIdAsync("none@company.com");
@@ -86,7 +78,7 @@ public class BexioApiClientTests
         };
 
         var httpClient = new HttpClient(handler);
-        var client = new BexioApiClient(httpClient, "dummy-token");
+        var client = new BexioApiClient(httpClient, "dummy-token", 1, 1);
 
         var customer = new Customer
         {
@@ -118,7 +110,7 @@ public class BexioApiClientTests
         };
 
         var httpClient = new HttpClient(handler);
-        var client = new BexioApiClient(httpClient, "dummy-token");
+        var client = new BexioApiClient(httpClient, "dummy-token", 1, 1);
 
         var order = new Order { Customer = new Customer { CompanyName = "Test AG" } };
 
@@ -146,10 +138,10 @@ public class BexioApiClientTests
         };
 
         var httpClient = new HttpClient(handler);
-        var client = new BexioApiClient(httpClient, "dummy-token");
+        var client = new BexioApiClient(httpClient, "dummy-token", 1, 1);
 
         // Act
-        var result = await client.FindArticleIdAsync("ART-001", "Some Article");
+        var result = await client.FindArticleIdAsync("ART-001"); ;
 
         // Assert
         result.Should().Be(77777);
@@ -172,49 +164,13 @@ public class BexioApiClientTests
         };
 
         var httpClient = new HttpClient(handler);
-        var client = new BexioApiClient(httpClient, "dummy-token");
+        var client = new BexioApiClient(httpClient, "dummy-token", 1, 1);
 
         // Act
-        var result = await client.FindArticleIdAsync("UNKNOWN", "Unknown Article");
+        var result = await client.FindArticleIdAsync("UNKNOWN");
 
         // Assert
         result.Should().BeNull();
-    }
-
-    [Fact]
-    public async Task FindArticleIdAsync_WhenCodeNotFoundButNameFound_ReturnsId()
-    {
-        // Arrange
-        int callCount = 0;
-        var handler = new MockHttpMessageHandler
-        {
-            SendAsyncFunc = (req, token) =>
-            {
-                callCount++;
-                var response = new HttpResponseMessage(HttpStatusCode.OK);
-                if (callCount == 1)
-                {
-                    // First search (by code) -> empty list
-                    response.Content = new StringContent("[]", System.Text.Encoding.UTF8, "application/json");
-                }
-                else
-                {
-                    // Second search (by name) -> returns matching article
-                    response.Content = new StringContent("[{\"id\": 88888}]", System.Text.Encoding.UTF8, "application/json");
-                }
-                return Task.FromResult(response);
-            }
-        };
-
-        var httpClient = new HttpClient(handler);
-        var client = new BexioApiClient(httpClient, "dummy-token");
-
-        // Act
-        var result = await client.FindArticleIdAsync("ART-CODE-MISSED", "My Article Title");
-
-        // Assert
-        result.Should().Be(88888);
-        callCount.Should().Be(2);
     }
 
     [Fact]
@@ -226,14 +182,32 @@ public class BexioApiClientTests
         {
             SendAsyncFunc = (req, token) =>
             {
-                req.RequestUri!.ToString().Should().Contain("kb_order/123/kb_position_article");
-                requestSent = true;
-                return Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK));
+                var uri = req.RequestUri!.ToString();
+                if (uri.Contains("accounts"))
+                {
+                    return Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK)
+                    {
+                        Content = new StringContent("[{\"id\": 3200, \"account_no\": \"3200\", \"is_active\": true}]", System.Text.Encoding.UTF8, "application/json")
+                    });
+                }
+                if (uri.Contains("3.0/taxes"))
+                {
+                    return Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK)
+                    {
+                        Content = new StringContent("[{\"id\": 1, \"code\": \"1\", \"is_active\": true}]", System.Text.Encoding.UTF8, "application/json")
+                    });
+                }
+                if (uri.Contains("kb_order/123/kb_position_article"))
+                {
+                    requestSent = true;
+                    return Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK));
+                }
+                return Task.FromResult(new HttpResponseMessage(HttpStatusCode.NotFound));
             }
         };
 
         var httpClient = new HttpClient(handler);
-        var client = new BexioApiClient(httpClient, "dummy-token");
+        var client = new BexioApiClient(httpClient, "dummy-token", 1, 1);
         var pos = new OrderPosition { Quantity = 5, Color = "Red", Size = "M", UnitPrice = 12.5m, DiscountPercent = 10m };
 
         // Act
@@ -243,31 +217,7 @@ public class BexioApiClientTests
         requestSent.Should().BeTrue();
     }
 
-    [Fact]
-    public async Task AddCustomPositionAsync_Succeeds()
-    {
-        // Arrange
-        bool requestSent = false;
-        var handler = new MockHttpMessageHandler
-        {
-            SendAsyncFunc = (req, token) =>
-            {
-                req.RequestUri!.ToString().Should().Contain("kb_order/123/kb_position_custom");
-                requestSent = true;
-                return Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK));
-            }
-        };
 
-        var httpClient = new HttpClient(handler);
-        var client = new BexioApiClient(httpClient, "dummy-token", 3200, 1);
-        var pos = new OrderPosition { Quantity = 3, ArticleNumber = "CUSTOM", ArticleName = "Special Item", Size = "L", Color = "Blue", UnitPrice = 15m, DiscountPercent = 0m };
-
-        // Act
-        await client.AddCustomPositionAsync(123, pos);
-
-        // Assert
-        requestSent.Should().BeTrue();
-    }
 
     [Fact]
     public async Task FindContactIdAsync_WhenApiReturns500_ThrowsHttpRequestException()
@@ -279,29 +229,23 @@ public class BexioApiClientTests
         };
 
         var httpClient = new HttpClient(handler);
-        var client = new BexioApiClient(httpClient, "dummy-token");
+        var client = new BexioApiClient(httpClient, "dummy-token", 1, 1);
 
         // Act & Assert
         await Assert.ThrowsAsync<HttpRequestException>(() => client.FindContactIdAsync("error@error.com"));
     }
 
-    private class MockHttpClientFactory : IHttpClientFactory
-    {
-        public HttpClient CreateClient(string name)
-        {
-            return new HttpClient();
-        }
-    }
 
     [Fact]
     public void BexioClientFactory_Create_ShouldReturnBexioApiClient()
     {
         // Arrange
-        var mockFactory = new MockHttpClientFactory();
-        var factory = new BexioClientFactory(mockFactory);
+        var mockFactory = new Mock<IHttpClientFactory>();
+        mockFactory.Setup(x => x.CreateClient(It.IsAny<string>())).Returns(() => new HttpClient());
+        var factory = new BexioClientFactory(mockFactory.Object);
 
         // Act
-        var client = factory.Create("my-token", 3200, 1);
+        var client = factory.Create("my-token", 1, 1);
 
         // Assert
         client.Should().NotBeNull();
@@ -325,7 +269,7 @@ public class BexioApiClientTests
         };
 
         var httpClient = new HttpClient(handler);
-        var client = new BexioApiClient(httpClient, "dummy-token");
+        var client = new BexioApiClient(httpClient, "dummy-token", 1, 1);
         var customer = new Customer { CompanyName = "New Partner", Email = "partner@domain.com" };
 
         // Act & Assert
@@ -349,10 +293,90 @@ public class BexioApiClientTests
         };
 
         var httpClient = new HttpClient(handler);
-        var client = new BexioApiClient(httpClient, "dummy-token");
+        var client = new BexioApiClient(httpClient, "dummy-token", 1, 1);
         var order = new Order { Customer = new Customer { CompanyName = "Test AG" } };
 
         // Act & Assert
         await Assert.ThrowsAsync<Exception>(() => client.CreateOrderAsync(12345, order));
+    }
+
+    [Fact]
+    public async Task GetAccountsAsync_ReturnsAccountsList()
+    {
+        // Arrange
+        var jsonResponse = @"[
+            { ""id"": 1, ""name"": ""Cash"", ""account_no"": ""1000"", ""is_active"": true, ""account_type"": 1 },
+            { ""id"": 2, ""name"": ""Sales"", ""account_no"": ""3200"", ""is_active"": true, ""account_type"": 1 },
+            { ""id"": 3, ""name"": ""Inactive"", ""account_no"": ""4000"", ""is_active"": false, ""account_type"": 1 },
+            { ""id"": 4, ""name"": ""Type2"", ""account_no"": ""5000"", ""is_active"": true, ""account_type"": 2 }
+        ]";
+        var handler = new MockHttpMessageHandler
+        {
+            SendAsyncFunc = (req, token) =>
+            {
+                req.RequestUri!.ToString().Should().Contain("accounts");
+                var response = new HttpResponseMessage(HttpStatusCode.OK)
+                {
+                    Content = new StringContent(jsonResponse, System.Text.Encoding.UTF8, "application/json")
+                };
+                return Task.FromResult(response);
+            }
+        };
+
+        var httpClient = new HttpClient(handler);
+        var client = new BexioApiClient(httpClient, "dummy-token", 1, 1);
+
+        // Act
+        var result = await client.GetAccountsAsync();
+
+        // Assert
+        result.Should().NotBeNull();
+        result.Count.Should().Be(2);
+        result[0].Id.Should().Be(1);
+        result[0].Name.Should().Be("Cash");
+        result[0].AccountNo.Should().Be("1000");
+        result[0].IsActive.Should().BeTrue();
+        result[0].AccountType.Should().Be(1);
+    }
+
+    [Fact]
+    public async Task GetTaxesAsync_ReturnsTaxesList()
+    {
+        // Arrange
+        var jsonResponse = @"[
+            { ""id"": 10, ""name"": ""MwSt 7.7"", ""percentage"": 7.7, ""is_active"": true, ""code"": ""MWST_77"", ""display_name"": ""MwSt 7.7"", ""type"": ""sales_tax"" },
+            { ""id"": 11, ""name"": ""MwSt 8.1"", ""percentage"": 8.1, ""is_active"": true, ""code"": ""MWST_81"", ""display_name"": ""MwSt 8.1"", ""type"": ""sales_tax"" },
+            { ""id"": 12, ""name"": ""Inactive"", ""percentage"": 8.1, ""is_active"": false, ""code"": ""INACTIVE"", ""display_name"": ""Inactive"", ""type"": ""sales_tax"" },
+            { ""id"": 13, ""name"": ""UEX"", ""percentage"": 8.1, ""is_active"": true, ""code"": ""UEX"", ""display_name"": ""UEX 0"", ""type"": ""not_taxable_turnover"" },
+            { ""id"": 14, ""name"": ""OtherType"", ""percentage"": 8.1, ""is_active"": true, ""code"": ""OTHER"", ""display_name"": ""Other"", ""type"": ""other_tax"" }
+        ]";
+        var handler = new MockHttpMessageHandler
+        {
+            SendAsyncFunc = (req, token) =>
+            {
+                req.RequestUri!.ToString().Should().Contain("3.0/taxes");
+                var response = new HttpResponseMessage(HttpStatusCode.OK)
+                {
+                    Content = new StringContent(jsonResponse, System.Text.Encoding.UTF8, "application/json")
+                };
+                return Task.FromResult(response);
+            }
+        };
+
+        var httpClient = new HttpClient(handler);
+        var client = new BexioApiClient(httpClient, "dummy-token", 1, 1);
+
+        // Act
+        var result = await client.GetTaxesAsync();
+
+        // Assert
+        result.Should().NotBeNull();
+        result.Count.Should().Be(3);
+        result[0].Id.Should().Be(10);
+        result[0].Percentage.Should().Be(7.7m);
+        result[0].IsActive.Should().BeTrue();
+        result[0].Code.Should().Be("MWST_77");
+        result[0].DisplayName.Should().Be("MwSt 7.7");
+        result[0].Type.Should().Be("sales_tax");
     }
 }

@@ -111,8 +111,9 @@ public partial class MainViewModel : ViewModelBase
 
     // Settings fields (bound to Settings Tab fields)
     private string _bexioToken = string.Empty;
-    private int _defaultAccountId = 3200;
-    private int _defaultTaxId = 1;
+    private int? _AccountId = null;
+    private int? _TaxId = null;
+    private string _positionTextTemplate = "Color: {Color}, Size: {Size}";
     
     private string _companyNameCell = "B4";
     private string _streetCell = "B5";
@@ -228,6 +229,16 @@ public partial class MainViewModel : ViewModelBase
         get => _connectionStatusColor;
         set => SetProperty(ref _connectionStatusColor, value);
     }
+
+    private bool _isConnectionSuccessful;
+    public bool IsConnectionSuccessful
+    {
+        get => _isConnectionSuccessful;
+        set => SetProperty(ref _isConnectionSuccessful, value);
+    }
+
+    public ObservableCollection<BexioAccount> AccountsList { get; } = new();
+    public ObservableCollection<BexioTax> TaxesList { get; } = new();
 
     public double ProgressPercentage
     {
@@ -346,7 +357,7 @@ public partial class MainViewModel : ViewModelBase
         set => SetProperty(ref _totalsSummary, value);
     }
 
-    public System.Collections.ObjectModel.ObservableCollection<Models.MappingProfile> Profiles { get; } = new();
+    public ObservableCollection<Models.MappingProfile> Profiles { get; } = new();
 
     public Models.MappingProfile? SelectedProfile
     {
@@ -433,6 +444,10 @@ public partial class MainViewModel : ViewModelBase
             if (SetProperty(ref _isTokenFocused, value))
             {
                 OnPropertyChanged(nameof(BexioTokenDisplay));
+                if (!value)
+                {
+                    _ = CheckBexioConnectionAsync();
+                }
             }
         }
     }
@@ -460,28 +475,34 @@ public partial class MainViewModel : ViewModelBase
         }
     }
 
-    public int DefaultAccountId
+    public int? AccountId
     {
-        get => _defaultAccountId;
+        get => _AccountId;
         set
         {
-            if (SetProperty(ref _defaultAccountId, value))
+            if (SetProperty(ref _AccountId, value))
             {
                 SetModified();
             }
         }
     }
 
-    public int DefaultTaxId
+    public int? TaxId
     {
-        get => _defaultTaxId;
+        get => _TaxId;
         set
         {
-            if (SetProperty(ref _defaultTaxId, value))
+            if (SetProperty(ref _TaxId, value))
             {
                 SetModified();
             }
         }
+    }
+
+    public string PositionTextTemplate
+    {
+        get => _positionTextTemplate;
+        set => SetProperty(ref _positionTextTemplate, value);
     }
 
     public string CompanyNameCell

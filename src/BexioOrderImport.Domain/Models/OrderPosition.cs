@@ -10,5 +10,6 @@ public class OrderPosition
     public int Quantity { get; set; }
     public decimal UnitPrice { get; set; }
     public decimal DiscountPercent { get; set; }
+    public string PositionText { get; set; } = string.Empty;
     public decimal TotalPrice => Quantity * UnitPrice;
 }

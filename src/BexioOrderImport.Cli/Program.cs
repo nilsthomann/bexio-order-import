@@ -50,8 +50,8 @@ class Program
 
                 // Read Bexio configurations
                 var bexioToken = context.Configuration["Bexio:ApiToken"] ?? "YOUR_TOKEN";
-                int accountId = int.Parse(context.Configuration["Bexio:DefaultAccountId"] ?? "3200");
-                int taxId = int.Parse(context.Configuration["Bexio:DefaultTaxId"] ?? "1");
+                int accountId = int.Parse(context.Configuration["Bexio:AccountId"] ?? "3200");
+                int taxId = int.Parse(context.Configuration["Bexio:TaxId"] ?? "1");
 
                 services.AddHttpClient<IBexioClient, BexioApiClient>()
                     .AddTypedClient<IBexioClient>(httpClient =>

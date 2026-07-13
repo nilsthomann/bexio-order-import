@@ -23,10 +23,10 @@ public class BexioSettingsDto
 {
     [JsonPropertyName("ApiToken")]
     public string ApiToken { get; set; } = "bexio_api_token_here";
-    [JsonPropertyName("DefaultAccountId")]
-    public int DefaultAccountId { get; set; } = 3200;
-    [JsonPropertyName("DefaultTaxId")]
-    public int DefaultTaxId { get; set; } = 1;
+    [JsonPropertyName("AccountId")]
+    public int? AccountId { get; set; } = null;
+    [JsonPropertyName("TaxId")]
+    public int? TaxId { get; set; } = null;
     [JsonPropertyName("Language")]
     public string Language { get; set; } = "de";
 }
@@ -43,6 +43,8 @@ public class ExcelMappingDto
 {
     [JsonPropertyName("WorksheetIndex")]
     public int WorksheetIndex { get; set; } = 1;
+    [JsonPropertyName("PositionTextTemplate")]
+    public string PositionTextTemplate { get; set; } = "Color: {Color}, Size: {Size}";
     [JsonPropertyName("Header")]
     public HeaderMappingDto Header { get; set; } = new();
     [JsonPropertyName("SizeMatrix")]

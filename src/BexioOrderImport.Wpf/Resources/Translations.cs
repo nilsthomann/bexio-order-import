@@ -148,4 +148,8 @@ public static class Translations
     public static string Update_Installing => ResourceManager.GetString(nameof(Update_Installing)) ?? "";
     public static string Update_Error => ResourceManager.GetString(nameof(Update_Error)) ?? "";
     public static string Import_NoDeliveryDate => ResourceManager.GetString(nameof(Import_NoDeliveryDate)) ?? "";
+    public static string Settings_PositionTextTemplateLabel => ResourceManager.GetString(nameof(Settings_PositionTextTemplateLabel)) ?? "";
+    public static string Settings_PositionTextTemplateHint => ResourceManager.GetString(nameof(Settings_PositionTextTemplateHint)) ?? "";
+    public static string Settings_PositionTextTemplateSection => ResourceManager.GetString(nameof(Settings_PositionTextTemplateSection)) ?? "";
+    public static string Error_SelectAccountAndTax => ResourceManager.GetString(nameof(Error_SelectAccountAndTax)) ?? "";
 }
