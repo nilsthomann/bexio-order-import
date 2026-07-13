@@ -234,11 +234,17 @@
   <data name="Settings_TokenLabel" xml:space="preserve">
     <value>Bexio API Token</value>
   </data>
+  <data name="Settings_TokenHintPrefix" xml:space="preserve">
+    <value>Get a new API Token here </value>
+  </data>
+  <data name="Settings_TokenHintSuffix" xml:space="preserve">
+    <value>, it's valid for 6 months</value>
+  </data>
   <data name="Settings_AccountLabel" xml:space="preserve">
-    <value>Default Account ID</value>
+    <value>Account</value>
   </data>
   <data name="Settings_TaxLabel" xml:space="preserve">
-    <value>Default Tax ID</value>
+    <value>Tax rate</value>
   </data>
   <data name="Settings_ExcelSection" xml:space="preserve">
     <value>Excel Mapping Configuration</value>
@@ -536,5 +542,17 @@
   </data>
   <data name="Import_NoDeliveryDate" xml:space="preserve">
     <value>Not defined</value>
+  </data>
+  <data name="Settings_PositionTextTemplateLabel" xml:space="preserve">
+    <value>Position Text Template:</value>
+  </data>
+  <data name="Settings_PositionTextTemplateHint" xml:space="preserve">
+    <value>Available placeholders: {Color}, {Size}, {ArticleNumber}, {ArticleName}. Default: Color: {Color}, Size: {Size}</value>
+  </data>
+  <data name="Settings_PositionTextTemplateSection" xml:space="preserve">
+    <value>Position Text Template</value>
+  </data>
+  <data name="Error_SelectAccountAndTax" xml:space="preserve">
+    <value>Please select a default account and a default tax rate in the settings.</value>
   </data>
 </root>

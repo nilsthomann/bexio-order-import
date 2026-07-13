@@ -223,6 +223,24 @@
                             </StackPanel>
                         </Border>
 
+                        <!-- Position Text Template Section -->
+                        <Border Style="{StaticResource CardBorderStyle}" Margin="0,0,0,16">
+                            <StackPanel>
+                                <TextBlock Text="{x:Static lex:Translations.Settings_PositionTextTemplateSection}" Style="{StaticResource SectionHeaderTextBlockStyle}"/>
+                                <Grid Margin="0,8,0,0">
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="Auto"/>
+                                    </Grid.RowDefinitions>
+                                    <TextBox x:Name="PositionTextTemplateInput" Height="32" Grid.Row="0" Margin="0,0,0,4"/>
+                                    <TextBlock Text="{x:Static lex:Translations.Settings_PositionTextTemplateHint}" 
+                                               Style="{StaticResource MutedTextBlockStyle}" 
+                                               Grid.Row="1" 
+                                               FontStyle="Italic"/>
+                                </Grid>
+                            </StackPanel>
+                        </Border>
+
                     </StackPanel>
                 </ScrollViewer>
 

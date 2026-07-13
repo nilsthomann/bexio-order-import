@@ -22,13 +22,13 @@ public partial class App : System.Windows.Application
         // so that {x:Static} XAML bindings resolve with the correct culture.
         try
         {
-            string appDataFolder = System.IO.Path.Combine(
+            string appDataFolder = Path.Combine(
                 Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
                 "BexioOrderImport");
-            string configPath = System.IO.Path.Combine(appDataFolder, "appsettings.json");
+            string configPath = Path.Combine(appDataFolder, "appsettings.json");
             if (!File.Exists(configPath))
             {
-                configPath = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "appsettings.json");
+                configPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "appsettings.json");
             }
 
             if (File.Exists(configPath))

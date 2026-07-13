@@ -8,8 +8,8 @@ The project features a modern, clean **WPF Desktop Application** built following
 
 ## Documentation
 
-* 📖 **[User Manual](doc/UserManual.md)**: A comprehensive guide detailing the application's configuration, imports, matrix-mapping concepts, and updates.
-* 🛠️ **[Contributing Guidelines](CONTRIBUTING.md)**: Information about repository rules, C# formatting, and pull request validations.
+- 📖 **[User Manual](doc/UserManual.md)**: A comprehensive guide detailing the application's configuration, imports, matrix-mapping concepts, and updates.
+- 🛠️ **[Contributing Guidelines](CONTRIBUTING.md)**: Information about repository rules, C# formatting, and pull request validations.
 
 ---
 
@@ -23,11 +23,14 @@ The project features a modern, clean **WPF Desktop Application** built following
   - **Totals & Discount Panel**: Computes gross amounts, parsed discount %, discount amounts, and net totals dynamically.
   - **Live API Indicator**: Visual Red/Yellow/Green connection status light.
   - **API Token Masking**: Securely hides your token as dots (`••••••••`) when the field loses focus; clicking inside reveals it immediately.
+  - **Dynamic Account & Tax Selectors**: Bookkeeping accounts and VAT rates are fetched directly from Bexio APIs and displayed as searchable dropdowns once connected.
+  - **Connection Reconnect Button**: Retry establishing connection and refreshing options easily when connection is lost.
   - **Completely Localized**: German and English language support out of the box.
 - **Bexio API Integration**:
   - Searches contacts dynamically by email.
   - Interactive validation card to review and update new customer details before automatic DB insertion.
   - Generates draft orders mapping correct catalog articles, accounting books, and tax rates.
+  - Strict article validation: If an article is not found by article number in Bexio, the import is immediately aborted and an error is shown.
 - **Auto-Updater & Settings Preservation**:
   - Automatically queries the GitHub Releases API on launch.
   - In-app download card with real-time download progress.
@@ -48,7 +51,7 @@ Below is the template layout supported by the default mapping configuration:
 
 ![Excel Template Preview](doc/assets/excel_template_preview.png)
 
-*Detailed information on coordinate mapping coordinates can be found in the **[User Manual](doc/UserManual.md)**.*
+_Detailed information on coordinate mapping coordinates can be found in the **[User Manual](doc/UserManual.md)**._
 
 ---
 
@@ -71,34 +74,41 @@ src/
 ## Getting Started
 
 ### Prerequisites
+
 - **.NET SDK 10.0** or higher
 - Windows 10/11 (required to run the WPF GUI)
 - [Inno Setup 6](https://jrsoftware.org/isinfo.php) (optional, if you wish to compile the installer locally)
 
 ### Build & Run
+
 1. **Clone the repository**:
+
    ```bash
    git clone https://github.com/nilsthomann/bexio-order-import.git
    cd bexio-order-import
    ```
 
    Restore dotnet local tools and initialize local git hooks (managed by [Husky.NET](https://github.com/alirezanet/Husky.Net)):
+
    ```bash
    dotnet tool restore
    dotnet husky install
    ```
 
 2. **Build the solution**:
+
    ```bash
    dotnet build BexioOrderImport.slnx
    ```
 
 3. **Run unit tests**:
+
    ```bash
    dotnet test BexioOrderImport.slnx
    ```
 
    To collect code coverage and view the HTML report locally:
+
    ```powershell
    ./build/run-coverage.ps1
    ```
@@ -118,8 +128,8 @@ Configuration is stored in `%LocalAppData%\BexioOrderImport\appsettings.json`. I
 {
   "Bexio": {
     "ApiToken": "bexio_api_token_here",
-    "DefaultAccountId": 3200,
-    "DefaultTaxId": 1,
+    "AccountId": null,
+    "TaxId": null,
     "Language": "de"
   },
   "ActiveProfileName": "Default",
@@ -128,6 +138,7 @@ Configuration is stored in `%LocalAppData%\BexioOrderImport\appsettings.json`. I
       "Name": "Default",
       "ExcelMapping": {
         "WorksheetIndex": 1,
+        "PositionTextTemplate": "Color: {Color}, Size: {Size}",
         "Header": {
           "CompanyNameCell": "B4",
           "StreetCell": "B5",

@@ -61,18 +61,19 @@ public class ImportOrderUseCase
         logInfoCallback($"Order created successfully (Bexio ID: {orderId}). Uploading positions...");
 
         int count = 0;
-        foreach (var pos in order.Positions)
+        for (int i = 0; i < order.Positions.Count; i++)
         {
-            // Try to find article in Bexio
-            var articleId = await _bexioClient.FindArticleIdAsync(pos.ArticleNumber, pos.ArticleName);
+            OrderPosition pos = order.Positions[i];
+            
+            var articleId = await _bexioClient.FindArticleIdAsync(pos.ArticleNumber);
             if (articleId.HasValue)
             {
                 await _bexioClient.AddArticlePositionAsync(orderId, articleId.Value, pos);
             }
             else
             {
-                logInfoCallback($"[yellow]Warning:[/] Article '{pos.ArticleNumber}' ({pos.ArticleName}) not found in Bexio. Creating custom position...");
-                await _bexioClient.AddCustomPositionAsync(orderId, pos);
+                logInfoCallback($"[red]Error:[/] Article '{pos.ArticleNumber}' ({pos.ArticleName}) not found in Bexio.");
+                throw new InvalidOperationException($"Article '{pos.ArticleNumber}' ({pos.ArticleName}) not found in Bexio.");
             }
 
             count++;

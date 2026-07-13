@@ -25,7 +25,7 @@ public class ClosedXmlExcelParser : IExcelParser
 
         var order = new Order
         {
-            // 1. Kopfdaten parsen
+            // 1. Parse header data
             Customer = ParseCustomerHeader(sheet),
             DeliveryDate = ParseDeliveryDate(sheet)
         };
@@ -45,10 +45,10 @@ public class ClosedXmlExcelParser : IExcelParser
             order.DiscountPercent = parsedDiscount;
         }
 
-        // 2. Grössenmatrizen aus Zeilen 10–17 einlesen
+        // 2. Read size matrices from rows 10-17
         var sizeMatrices = ParseSizeMatrices(sheet);
 
-        // 3. Zeilenweise Daten ab StartRow einlesen
+        // 3. Read row data starting from StartRow
         int lastRow = sheet.LastRowUsed()?.RowNumber() ?? _options.Data.StartRow;
         for (int r = _options.Data.StartRow; r <= lastRow; r++)
         {
@@ -58,29 +58,29 @@ public class ClosedXmlExcelParser : IExcelParser
             string color = row.Cell(_options.Data.ColorColumn).Value.ToString().Trim();
             string rawCategory = row.Cell(_options.Data.CategoryColumn).Value.ToString().Trim();
 
-            // Abbruchbedingung bei Leerzeile
+            // Stop condition on empty row
             if (string.IsNullOrEmpty(artNr) && string.IsNullOrEmpty(artName))
                 continue;
 
-            // Preis aus Spalte für EP auslesen
+            // Read unit price from column
             _ = decimal.TryParse(row.Cell(_options.Data.UnitPriceColumn).Value.ToString(), out decimal unitPrice);
 
-            // Matrix dynamisch zuordnen
+            // Dynamically assign matrix
             string? matchedCategory = MapCategoryName(rawCategory, sizeMatrices.Keys);
             if (matchedCategory == null || !sizeMatrices.ContainsKey(matchedCategory))
-                continue; // Kategorie nicht in Matrix-Def vorhanden
+                continue; // Category not present in matrix definitions
 
             var sizes = sizeMatrices[matchedCategory];
 
-            // Prüfe Grössen-Spalten auf Bestellmengen
+            // Check size columns for order quantities
             for (int col = _options.Data.StartQtyColumn; col <= _options.Data.EndQtyColumn; col++)
             {
                 string qtyStr = row.Cell(col).Value.ToString();
                 if (int.TryParse(qtyStr, out int qty) && qty > 0)
                 {
-                    string sizeName = sizes.TryGetValue(col, out string? value) ? value : $"Spalte_{col}";
+                    string sizeName = sizes.TryGetValue(col, out string? value) ? value : $"Col_{col}";
 
-                    order.Positions.Add(new OrderPosition
+                    var pos = new OrderPosition
                     {
                         ArticleNumber = artNr,
                         ArticleName = artName,
@@ -90,7 +90,9 @@ public class ClosedXmlExcelParser : IExcelParser
                         Quantity = qty,
                         UnitPrice = unitPrice,
                         DiscountPercent = order.DiscountPercent
-                    });
+                    };
+                    pos.PositionText = FormatPositionText(_options.PositionTextTemplate, pos);
+                    order.Positions.Add(pos);
                 }
             }
         }
@@ -153,14 +155,14 @@ public class ClosedXmlExcelParser : IExcelParser
     {
         if (string.IsNullOrWhiteSpace(rawCategory)) return null;
 
-        // 1. Exakter Match
+        // 1. Exact match
         foreach (var reg in registeredCategories)
         {
             if (reg.Equals(rawCategory, StringComparison.OrdinalIgnoreCase))
                 return reg;
         }
 
-        // 2. Robustes Mapping
+        // 2. Category mapping rules
         if (rawCategory.Contains("Hat", StringComparison.OrdinalIgnoreCase) ||
             rawCategory.Contains("Neck", StringComparison.OrdinalIgnoreCase))
             return "Hats/Necks";
@@ -179,7 +181,7 @@ public class ClosedXmlExcelParser : IExcelParser
         if (rawCategory.Contains("Shoes 20", StringComparison.OrdinalIgnoreCase))
             return "Shoes 20-31";
 
-        // 3. Fallback auf StartsWith/Contains
+        // 3. Fallback to StartsWith/Contains
         foreach (var reg in registeredCategories)
         {
             if (reg.StartsWith(rawCategory, StringComparison.OrdinalIgnoreCase) ||
@@ -200,5 +202,18 @@ public class ClosedXmlExcelParser : IExcelParser
     {
         var parts = rawZipCity.Split(' ', 2);
         return parts.Length > 1 ? parts[1] : string.Empty;
+    }
+
+    private string FormatPositionText(string template, OrderPosition pos)
+    {
+        if (string.IsNullOrEmpty(template))
+        {
+            return $"Farbe: {pos.Color}, Grösse: {pos.Size}";
+        }
+        return template
+            .Replace("{Color}", pos.Color)
+            .Replace("{Size}", pos.Size)
+            .Replace("{ArticleNumber}", pos.ArticleNumber)
+            .Replace("{ArticleName}", pos.ArticleName);
     }
 }

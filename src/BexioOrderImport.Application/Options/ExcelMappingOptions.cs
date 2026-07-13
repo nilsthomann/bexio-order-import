@@ -3,6 +3,7 @@ namespace BexioOrderImport.Application.Options;
 public class ExcelMappingOptions
 {
     public int WorksheetIndex { get; set; } = 1;
+    public string PositionTextTemplate { get; set; } = "Color: {Color}, Size: {Size}";
     public HeaderMapping Header { get; set; } = new();
     public SizeMatrixMapping SizeMatrix { get; set; } = new();
     public DataMapping Data { get; set; } = new();

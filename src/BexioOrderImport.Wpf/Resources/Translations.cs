@@ -47,6 +47,8 @@ public static class Translations
     public static string Settings_Header => ResourceManager.GetString(nameof(Settings_Header)) ?? "";
     public static string Settings_ApiSection => ResourceManager.GetString(nameof(Settings_ApiSection)) ?? "";
     public static string Settings_TokenLabel => ResourceManager.GetString(nameof(Settings_TokenLabel)) ?? "";
+    public static string Settings_TokenHintPrefix => ResourceManager.GetString(nameof(Settings_TokenHintPrefix)) ?? "";
+    public static string Settings_TokenHintSuffix => ResourceManager.GetString(nameof(Settings_TokenHintSuffix)) ?? "";
     public static string Settings_AccountLabel => ResourceManager.GetString(nameof(Settings_AccountLabel)) ?? "";
     public static string Settings_TaxLabel => ResourceManager.GetString(nameof(Settings_TaxLabel)) ?? "";
     public static string Settings_ExcelSection => ResourceManager.GetString(nameof(Settings_ExcelSection)) ?? "";
@@ -148,4 +150,8 @@ public static class Translations
     public static string Update_Installing => ResourceManager.GetString(nameof(Update_Installing)) ?? "";
     public static string Update_Error => ResourceManager.GetString(nameof(Update_Error)) ?? "";
     public static string Import_NoDeliveryDate => ResourceManager.GetString(nameof(Import_NoDeliveryDate)) ?? "";
+    public static string Settings_PositionTextTemplateLabel => ResourceManager.GetString(nameof(Settings_PositionTextTemplateLabel)) ?? "";
+    public static string Settings_PositionTextTemplateHint => ResourceManager.GetString(nameof(Settings_PositionTextTemplateHint)) ?? "";
+    public static string Settings_PositionTextTemplateSection => ResourceManager.GetString(nameof(Settings_PositionTextTemplateSection)) ?? "";
+    public static string Error_SelectAccountAndTax => ResourceManager.GetString(nameof(Error_SelectAccountAndTax)) ?? "";
 }

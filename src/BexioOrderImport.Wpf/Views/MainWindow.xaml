@@ -398,14 +398,34 @@
                                             <RowDefinition Height="Auto"/>
                                         </Grid.RowDefinitions>
                                         
-                                        <TextBlock Text="{x:Static lex:Translations.Settings_TokenLabel}" VerticalAlignment="Center" Grid.Row="0" Grid.Column="0" Margin="0,6,16,6"/>
-                                        <TextBox Text="{Binding BexioTokenDisplay, UpdateSourceTrigger=PropertyChanged}" GotFocus="TokenTextBox_GotFocus" LostFocus="TokenTextBox_LostFocus" Grid.Row="0" Grid.Column="1" VerticalAlignment="Center" Margin="0,6,0,6"/>
+                                        <TextBlock Text="{x:Static lex:Translations.Settings_TokenLabel}" VerticalAlignment="Top" Grid.Row="0" Grid.Column="0" Margin="0,15,16,6"/>
+                                        <StackPanel Grid.Row="0" Grid.Column="1" VerticalAlignment="Center" Margin="0,6,0,6">
+                                            <TextBox Text="{Binding BexioTokenDisplay, UpdateSourceTrigger=PropertyChanged}" GotFocus="TokenTextBox_GotFocus" LostFocus="TokenTextBox_LostFocus" Margin="0,0,0,4"/>
+                                            <TextBlock FontSize="11" Foreground="{StaticResource TextMutedBrush}" TextWrapping="Wrap">
+                                                <Run Text="{x:Static lex:Translations.Settings_TokenHintPrefix}"/><Hyperlink NavigateUri="https://developer.bexio.com/pat" RequestNavigate="Hyperlink_RequestNavigate" Foreground="{StaticResource AccentBrush}">
+                                                    <Run Text="https://developer.bexio.com/pat"/>
+                                                </Hyperlink><Run Text="{x:Static lex:Translations.Settings_TokenHintSuffix}"/>
+                                            </TextBlock>
+                                        </StackPanel>
                                         
                                         <TextBlock Text="{x:Static lex:Translations.Settings_AccountLabel}" VerticalAlignment="Center" Grid.Row="1" Grid.Column="0" Margin="0,6,16,6"/>
-                                        <TextBox Text="{Binding DefaultAccountId, UpdateSourceTrigger=PropertyChanged}" Grid.Row="1" Grid.Column="1" VerticalAlignment="Center" Width="100" HorizontalAlignment="Left" Margin="0,6,0,6"/>
+                                        <ComboBox ItemsSource="{Binding AccountsList}" SelectedValue="{Binding AccountId}" SelectedValuePath="Id" IsEnabled="{Binding IsConnectionSuccessful}" Grid.Row="1" Grid.Column="1" VerticalAlignment="Center" Width="300" HorizontalAlignment="Left" Margin="0,6,0,6" Height="32">
+                                            <ComboBox.ItemTemplate>
+                                                <DataTemplate>
+                                                    <TextBlock>
+                                                        <TextBlock.Text>
+                                                            <MultiBinding StringFormat="{}{0} - {1}">
+                                                                <Binding Path="AccountNo"/>
+                                                                <Binding Path="Name"/>
+                                                            </MultiBinding>
+                                                        </TextBlock.Text>
+                                                    </TextBlock>
+                                                </DataTemplate>
+                                            </ComboBox.ItemTemplate>
+                                        </ComboBox>
                                         
                                         <TextBlock Text="{x:Static lex:Translations.Settings_TaxLabel}" VerticalAlignment="Center" Grid.Row="2" Grid.Column="0" Margin="0,6,16,6"/>
-                                        <TextBox Text="{Binding DefaultTaxId, UpdateSourceTrigger=PropertyChanged}" Grid.Row="2" Grid.Column="1" VerticalAlignment="Center" Width="100" HorizontalAlignment="Left" Margin="0,6,0,6"/>
+                                            <ComboBox ItemsSource="{Binding TaxesList}" SelectedValue="{Binding TaxId}" SelectedValuePath="Id" DisplayMemberPath="DisplayName" IsEnabled="{Binding IsConnectionSuccessful}" Grid.Row="2" Grid.Column="1" VerticalAlignment="Center" Width="300" HorizontalAlignment="Left" Margin="0,6,0,6" Height="32"/>
                                     </Grid>
                                 </StackPanel>
                             </Border>

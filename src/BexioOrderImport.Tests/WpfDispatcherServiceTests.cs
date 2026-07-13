@@ -68,8 +68,8 @@ public class WpfDispatcherServiceTests
         // Act
         service.BeginInvoke(() => executed = true);
 
-        // Process dispatcher queue on the current thread
-        System.Windows.Threading.Dispatcher.CurrentDispatcher.Invoke(() => { }, System.Windows.Threading.DispatcherPriority.Background);
+        // Process dispatcher queue on the thread owning Application.Current
+        System.Windows.Application.Current?.Dispatcher?.Invoke(() => { }, System.Windows.Threading.DispatcherPriority.Background);
 
         // Assert
         executed.Should().BeTrue();

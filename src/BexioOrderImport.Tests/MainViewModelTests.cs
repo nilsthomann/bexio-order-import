@@ -1,20 +1,24 @@
+using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 using BexioOrderImport.Application.Interfaces;
 using BexioOrderImport.Domain.Models;
 using BexioOrderImport.Wpf.Services;
 using BexioOrderImport.Wpf.ViewModels;
 using FluentAssertions;
+using Moq;
 
 namespace BexioOrderImport.Tests;
 
-public class MainViewModelTests
+public class MainViewModelTests : IDisposable
 {
-    private static MainViewModel CreateVm()
-        => new(
-            new MockUpdateService(),
-            new MockBexioClientFactory(),
-            new MockDialogService(),
-            new MockDispatcherService(),
-            new MockEncryptionService());
+    private readonly Mock<IUpdateService> _updateServiceMock;
+    private readonly Mock<IBexioClientFactory> _clientFactoryMock;
+    private readonly Mock<IBexioClient> _clientMock;
+    private readonly Mock<IDialogService> _dialogServiceMock;
+    private readonly Mock<IDispatcherService> _dispatcherServiceMock;
+    private readonly Mock<IEncryptionService> _encryptionServiceMock;
+    private readonly string _tempFilePath;
 
     public MainViewModelTests()
     {
@@ -23,6 +27,44 @@ public class MainViewModelTests
         {
             _ = new System.Windows.Application();
         }
+
+        _tempFilePath = System.IO.Path.Combine(System.IO.Path.GetTempPath(), Guid.NewGuid().ToString() + "_appsettings.json");
+
+        _updateServiceMock = new Mock<IUpdateService>();
+        _clientMock = new Mock<IBexioClient>();
+        _clientFactoryMock = new Mock<IBexioClientFactory>();
+        _clientFactoryMock.Setup(f => f.Create(It.IsAny<string>(), It.IsAny<int?>(), It.IsAny<int?>())).Returns(_clientMock.Object);
+        _dialogServiceMock = new Mock<IDialogService>();
+        _dispatcherServiceMock = new Mock<IDispatcherService>();
+        // Mock dispatcher service to execute actions immediately
+        _dispatcherServiceMock.Setup(d => d.Invoke(It.IsAny<Action>())).Callback<Action>(a => a());
+        _dispatcherServiceMock.Setup(d => d.BeginInvoke(It.IsAny<Action>())).Callback<Action>(a => a());
+        _encryptionServiceMock = new Mock<IEncryptionService>();
+        _encryptionServiceMock.Setup(e => e.Encrypt(It.IsAny<string>())).Returns<string>(s => s);
+        _encryptionServiceMock.Setup(e => e.Decrypt(It.IsAny<string>())).Returns<string>(s => s);
+    }
+
+    public void Dispose()
+    {
+        try
+        {
+            if (System.IO.File.Exists(_tempFilePath))
+            {
+                System.IO.File.Delete(_tempFilePath);
+            }
+        }
+        catch { }
+    }
+
+    private MainViewModel CreateVm()
+    {
+        return new MainViewModel(
+            _updateServiceMock.Object,
+            _clientFactoryMock.Object,
+            _dialogServiceMock.Object,
+            _dispatcherServiceMock.Object,
+            _encryptionServiceMock.Object,
+            _tempFilePath);
     }
 
     [Fact]
@@ -137,51 +179,60 @@ public class MainViewModelTests
         vm.BexioToken.Should().Be("old-token");
     }
 
-    // Mock stubs for DI dependencies
-    private class MockUpdateService : IUpdateService
+    [Fact]
+    public void ImportCommand_WhenAccountOrTaxIdNull_ShouldShowErrorDialogAndAbort()
     {
-        public Task<UpdateInfo?> CheckForUpdatesAsync() => Task.FromResult<UpdateInfo?>(null);
-        public Task DownloadAndInstallUpdateAsync(string downloadUrl, Action<double> progressCallback) => Task.CompletedTask;
-        public bool IsNewerVersion(string rawTag, Version? currentVersion) => false;
+        // Arrange
+        var vm = CreateVm();
+        vm.AccountId = null; // null triggers error
+        vm.TaxId = 1;
+        
+        // Simulating a loaded order so the command can execute
+        typeof(MainViewModel).GetField("_loadedOrder", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)
+            ?.SetValue(vm, new Order { Customer = new Customer { CompanyName = "Test customer" } });
+        
+        vm.ImportCommand.RaiseCanExecuteChanged();
+
+        // Act
+        vm.ImportCommand.Execute(null);
+
+        // Assert
+        _dialogServiceMock.Verify(d => d.ShowErrorDialog(
+            It.IsAny<string>(),
+            It.IsAny<string>()),
+            Times.Once);
+        vm.IsImporting.Should().BeFalse();
     }
 
-    private class MockBexioClientFactory : IBexioClientFactory
+    [Fact]
+    public async Task CheckBexioConnectionAsync_ShouldTriggerConnectionCheckAndPopulateLists()
     {
-        public IBexioClient Create(string apiToken, int accountId, int taxId) => new MockBexioClient();
-    }
+        // Arrange
+        var vm = CreateVm();
+        vm.BexioToken = "some-token";
+        
+        var accounts = new List<BexioAccount>
+        {
+            new BexioAccount { Id = 100, AccountNo = "1000", Name = "Cash Account", IsActive = true }
+        };
+        var taxes = new List<BexioTax>
+        {
+            new BexioTax { Id = 5, DisplayName = "MwSt 8.1%", Percentage = 8.1m, IsActive = true }
+        };
+        
+        _clientMock.Setup(c => c.CheckConnectionAsync()).ReturnsAsync(true);
+        _clientMock.Setup(c => c.GetAccountsAsync()).ReturnsAsync(accounts);
+        _clientMock.Setup(c => c.GetTaxesAsync()).ReturnsAsync(taxes);
 
-    private class MockBexioClient : IBexioClient
-    {
-        public Task<int?> FindContactIdAsync(string email) => Task.FromResult<int?>(null);
-        public Task<int> CreateContactAsync(Customer customer) => Task.FromResult(0);
-        public Task<int> CreateOrderAsync(int contactId, Order order) => Task.FromResult(0);
-        public Task<int?> FindArticleIdAsync(string articleNumber, string articleName) => Task.FromResult<int?>(null);
-        public Task AddArticlePositionAsync(int orderId, int articleId, OrderPosition position) => Task.CompletedTask;
-        public Task AddCustomPositionAsync(int orderId, OrderPosition position) => Task.CompletedTask;
-        public Task<bool> CheckConnectionAsync() => Task.FromResult(true);
-    }
+        // Act
+        await vm.CheckBexioConnectionAsync();
 
-    private class MockDialogService : IDialogService
-    {
-        public string? ShowProfileCreateDialog(bool isClone) => null;
-        public bool ShowProfileEditDialog(Wpf.Models.MappingProfile profile) => false;
-        public string? ShowOpenFileDialog(string filter, string defaultExt) => null;
-        public string? ShowSaveFileDialog(string filter, string defaultExt, string defaultFileName) => null;
-        public bool ShowConfirmDialog(string message, string title) => false;
-        public bool ShowCustomerConfirmDialog(Customer customer) => false;
-        public void ShowErrorDialog(string message, string title) { }
-        public void ShowInfoDialog(string message) { }
-    }
-
-    private class MockDispatcherService : IDispatcherService
-    {
-        public void Invoke(Action action) => action();
-        public void BeginInvoke(Action action) => action();
-    }
-
-    private class MockEncryptionService : IEncryptionService
-    {
-        public string Encrypt(string clearText) => clearText;
-        public string Decrypt(string encryptedText) => encryptedText;
+        // Assert
+        vm.IsConnectionSuccessful.Should().BeTrue();
+        vm.ConnectionStatusColor.Should().Be("#10B981"); // Green success
+        vm.AccountsList.Count.Should().Be(1);
+        vm.AccountsList[0].Id.Should().Be(100);
+        vm.TaxesList.Count.Should().Be(1);
+        vm.TaxesList[0].Id.Should().Be(5);
     }
 }

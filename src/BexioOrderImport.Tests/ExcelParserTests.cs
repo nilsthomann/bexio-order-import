@@ -81,7 +81,7 @@ public class ExcelParserTests
         order.Customer.Street.Should().Be("Musterstrasse 12");
         order.Customer.ZipCode.Should().Be("8000");
         order.Customer.City.Should().Be("Zürich");
-        order.Customer.Email.Should().Be("orders@musterfashion.ch");
+        order.Customer.Email.Should().Be("chris@peakmile.com");
         order.Customer.BuyerName.Should().Be("Hans Muster");
 
         // 2. Delivery & payment terms assertions
@@ -89,27 +89,23 @@ public class ExcelParserTests
         order.PaymentTerms.Should().Be("10 Tage 4% Skonto, 30 Tage netto");
 
         // 3. Totals assertions
-        order.TotalQuantity.Should().Be(103);
-        // Verify gross total
-        order.TotalAmount.Should().Be(2228.00m);
-        // Using approximate comparison for decimals due to rounding differences (global Excel discount vs position-level rounding)
-        order.TotalNetAmount.Should().BeApproximately(2049.76m, 0.01m);
-        order.Positions.Should().HaveCount(101);
+        order.TotalQuantity.Should().Be(4);
+        order.TotalAmount.Should().Be(72.8m);
+        order.TotalNetAmount.Should().BeApproximately(66.98m, 0.01m);
+        order.Positions.Should().HaveCount(4);
 
-        // 4. Detail assertion for a specific order item (e.g. Baby Sandals row 400)
-        // Col 1: 760403, Col 2: Baby Sandals (now Anonymized Sandals), Col 3: 4202 Zephyr (now Anonymized 4202 Zephyr), Col 4: Shoes 20-31
-        // Qty in Col 5 (Size 20) is 1. Qty in Col 6 (Size 21) is 1.
-        var sandalPos = order.Positions.FirstOrDefault(p =>
-            p.ArticleNumber == "760403" &&
+        // 4. Detail assertion for a specific order item
+        var itemPos = order.Positions.FirstOrDefault(p =>
+            p.ArticleNumber == "1234" &&
             p.Color == "Anonymized 4202 Zephyr" &&
-            p.Size == "20");
+            p.Size == "74");
 
-        sandalPos.Should().NotBeNull();
-        sandalPos!.ArticleName.Should().Be("Anonymized Sandals");
-        sandalPos.SizeCategory.Should().Be("Shoes 20-31");
-        sandalPos.Quantity.Should().Be(1);
-        sandalPos.UnitPrice.Should().Be(9.10m);
-        sandalPos.TotalPrice.Should().Be(9.10m);
+        itemPos.Should().NotBeNull();
+        itemPos!.ArticleName.Should().Be("T-Shirt");
+        itemPos.SizeCategory.Should().Be("Mini");
+        itemPos.Quantity.Should().Be(1);
+        itemPos.UnitPrice.Should().Be(18.2m);
+        itemPos.TotalPrice.Should().Be(18.2m);
     }
 
     [Fact]
