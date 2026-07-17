@@ -180,7 +180,7 @@ public partial class MainViewModel
         profile.Mapping.Header.ZipCityCell = ZipCityCell;
         profile.Mapping.Header.BuyerEmailCell = BuyerEmailCell;
         profile.Mapping.Header.BuyerNameCell = BuyerNameCell;
-        profile.Mapping.Header.DeliveryDateCell = DeliveryDateCell;
+        profile.Mapping.Header.OrderIdCell = OrderIdCell;
         profile.Mapping.Header.PaymentTermsCell = PaymentTermsCell;
         profile.Mapping.Header.DiscountCell = DiscountCell;
 
@@ -198,6 +198,8 @@ public partial class MainViewModel
         profile.Mapping.Data.StartQtyColumn = ColStartQty;
         profile.Mapping.Data.EndQtyColumn = ColEndQty;
         profile.Mapping.Data.UnitPriceColumn = ColUnitPrice;
+        profile.Mapping.DefaultOrderName = DefaultOrderName;
+        profile.Mapping.SeasonCode = SeasonCode;
         profile.Mapping.PositionTextTemplate = PositionTextTemplate;
     }
 
@@ -208,7 +210,7 @@ public partial class MainViewModel
         ZipCityCell = profile.Mapping.Header.ZipCityCell;
         BuyerEmailCell = profile.Mapping.Header.BuyerEmailCell;
         BuyerNameCell = profile.Mapping.Header.BuyerNameCell;
-        DeliveryDateCell = profile.Mapping.Header.DeliveryDateCell;
+        OrderIdCell = profile.Mapping.Header.OrderIdCell;
         PaymentTermsCell = profile.Mapping.Header.PaymentTermsCell;
         DiscountCell = profile.Mapping.Header.DiscountCell;
 
@@ -226,6 +228,8 @@ public partial class MainViewModel
         ColStartQty = profile.Mapping.Data.StartQtyColumn;
         ColEndQty = profile.Mapping.Data.EndQtyColumn;
         ColUnitPrice = profile.Mapping.Data.UnitPriceColumn;
+        DefaultOrderName = profile.Mapping.DefaultOrderName;
+        SeasonCode = profile.Mapping.SeasonCode;
         PositionTextTemplate = profile.Mapping.PositionTextTemplate;
     }
 
@@ -244,6 +248,8 @@ public partial class MainViewModel
         return new ExcelMappingOptions
         {
             WorksheetIndex = dto.WorksheetIndex,
+            DefaultOrderName = dto.DefaultOrderName,
+            SeasonCode = dto.SeasonCode,
             PositionTextTemplate = dto.PositionTextTemplate,
             Header = new HeaderMapping
             {
@@ -252,7 +258,7 @@ public partial class MainViewModel
                 ZipCityCell = dto.Header.ZipCityCell,
                 BuyerEmailCell = dto.Header.BuyerEmailCell,
                 BuyerNameCell = dto.Header.BuyerNameCell,
-                DeliveryDateCell = dto.Header.DeliveryDateCell,
+                OrderIdCell = dto.Header.OrderIdCell,
                 PaymentTermsCell = dto.Header.PaymentTermsCell,
                 DiscountCell = dto.Header.DiscountCell
             },
@@ -283,6 +289,8 @@ public partial class MainViewModel
         return new Models.ExcelMappingDto
         {
             WorksheetIndex = opts.WorksheetIndex,
+            DefaultOrderName = opts.DefaultOrderName,
+            SeasonCode = opts.SeasonCode,
             PositionTextTemplate = opts.PositionTextTemplate,
             Header = new Models.HeaderMappingDto
             {
@@ -291,7 +299,7 @@ public partial class MainViewModel
                 ZipCityCell = opts.Header.ZipCityCell,
                 BuyerEmailCell = opts.Header.BuyerEmailCell,
                 BuyerNameCell = opts.Header.BuyerNameCell,
-                DeliveryDateCell = opts.Header.DeliveryDateCell,
+                OrderIdCell = opts.Header.OrderIdCell,
                 PaymentTermsCell = opts.Header.PaymentTermsCell,
                 DiscountCell = opts.Header.DiscountCell
             },

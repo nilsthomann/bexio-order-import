@@ -2,8 +2,9 @@ namespace BexioOrderImport.Domain.Models;
 
 public class Order
 {
+    public string Title { get; set; } = string.Empty;
     public Customer Customer { get; set; } = new();
-    public DateTime? DeliveryDate { get; set; }
+    public int? OrderId { get; set; }
     public string PaymentTerms { get; set; } = string.Empty;
     public decimal DiscountPercent { get; set; }
     public List<OrderPosition> Positions { get; set; } = [];

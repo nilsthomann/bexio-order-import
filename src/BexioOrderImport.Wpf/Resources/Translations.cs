@@ -22,7 +22,7 @@ public static class Translations
     public static string Import_Address => ResourceManager.GetString(nameof(Import_Address)) ?? "";
     public static string Import_Email => ResourceManager.GetString(nameof(Import_Email)) ?? "";
     public static string Import_Buyer => ResourceManager.GetString(nameof(Import_Buyer)) ?? "";
-    public static string Import_DeliveryDate => ResourceManager.GetString(nameof(Import_DeliveryDate)) ?? "";
+    public static string Import_OrderId => ResourceManager.GetString(nameof(Import_OrderId)) ?? "";
     public static string Import_Conditions => ResourceManager.GetString(nameof(Import_Conditions)) ?? "";
     public static string Import_PositionsHeader => ResourceManager.GetString(nameof(Import_PositionsHeader)) ?? "";
     public static string Import_ColArtNum => ResourceManager.GetString(nameof(Import_ColArtNum)) ?? "";
@@ -59,7 +59,7 @@ public static class Translations
     public static string Settings_CellCity => ResourceManager.GetString(nameof(Settings_CellCity)) ?? "";
     public static string Settings_CellEmail => ResourceManager.GetString(nameof(Settings_CellEmail)) ?? "";
     public static string Settings_CellBuyerName => ResourceManager.GetString(nameof(Settings_CellBuyerName)) ?? "";
-    public static string Settings_CellDeliveryDate => ResourceManager.GetString(nameof(Settings_CellDeliveryDate)) ?? "";
+    public static string Settings_CellOrderId => ResourceManager.GetString(nameof(Settings_CellOrderId)) ?? "";
     public static string Settings_CellPaymentTerms => ResourceManager.GetString(nameof(Settings_CellPaymentTerms)) ?? "";
     public static string Settings_CellDiscount => ResourceManager.GetString(nameof(Settings_CellDiscount)) ?? "";
     public static string Settings_MatrixSection => ResourceManager.GetString(nameof(Settings_MatrixSection)) ?? "";
@@ -149,9 +149,16 @@ public static class Translations
     public static string Update_Downloading => ResourceManager.GetString(nameof(Update_Downloading)) ?? "";
     public static string Update_Installing => ResourceManager.GetString(nameof(Update_Installing)) ?? "";
     public static string Update_Error => ResourceManager.GetString(nameof(Update_Error)) ?? "";
-    public static string Import_NoDeliveryDate => ResourceManager.GetString(nameof(Import_NoDeliveryDate)) ?? "";
+    public static string Import_NoOrderId => ResourceManager.GetString(nameof(Import_NoOrderId)) ?? "";
+    public static string Settings_DefaultOrderNameLabel => ResourceManager.GetString(nameof(Settings_DefaultOrderNameLabel)) ?? "";
+    public static string Settings_DefaultOrderNameHint => ResourceManager.GetString(nameof(Settings_DefaultOrderNameHint)) ?? "";
+    public static string Settings_DefaultOrderNameSection => ResourceManager.GetString(nameof(Settings_DefaultOrderNameSection)) ?? "";
+    public static string Settings_SeasonCodeLabel => ResourceManager.GetString(nameof(Settings_SeasonCodeLabel)) ?? "";
     public static string Settings_PositionTextTemplateLabel => ResourceManager.GetString(nameof(Settings_PositionTextTemplateLabel)) ?? "";
     public static string Settings_PositionTextTemplateHint => ResourceManager.GetString(nameof(Settings_PositionTextTemplateHint)) ?? "";
     public static string Settings_PositionTextTemplateSection => ResourceManager.GetString(nameof(Settings_PositionTextTemplateSection)) ?? "";
     public static string Error_SelectAccountAndTax => ResourceManager.GetString(nameof(Error_SelectAccountAndTax)) ?? "";
+    public static string Import_EmailMismatchTitle => ResourceManager.GetString(nameof(Import_EmailMismatchTitle)) ?? "";
+    public static string Import_EmailMismatchMessage => ResourceManager.GetString(nameof(Import_EmailMismatchMessage)) ?? "";
+    public static string Error_MultipleArticlesFound => ResourceManager.GetString(nameof(Error_MultipleArticlesFound)) ?? "";
 }

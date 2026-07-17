@@ -145,7 +145,7 @@ Configuration is stored in `%LocalAppData%\BexioOrderImport\appsettings.json`. I
           "ZipCityCell": "B6",
           "BuyerEmailCell": "E5",
           "BuyerNameCell": "E4",
-          "DeliveryDateCell": "T7",
+          "OrderIdCell": "E6",
           "PaymentTermsCell": "A9",
           "DiscountCell": "V12"
         },

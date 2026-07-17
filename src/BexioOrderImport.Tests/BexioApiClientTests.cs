@@ -1,4 +1,5 @@
 using BexioOrderImport.Domain.Models;
+using BexioOrderImport.Domain.Models.Bexio;
 using BexioOrderImport.Infrastructure.Bexio;
 using BexioOrderImport.Tests.Utils;
 using FluentAssertions;
@@ -122,7 +123,7 @@ public class BexioApiClientTests
     }
 
     [Fact]
-    public async Task FindArticleIdAsync_WithKnownArticle_ReturnsId()
+    public async Task FindArticleAsync_WithKnownArticle_ReturnsArticle()
     {
         // Arrange
         var handler = new MockHttpMessageHandler
@@ -131,7 +132,7 @@ public class BexioApiClientTests
             {
                 var response = new HttpResponseMessage(HttpStatusCode.OK)
                 {
-                    Content = new StringContent("[{\"id\": 77777}]", System.Text.Encoding.UTF8, "application/json")
+                    Content = new StringContent("[{\"id\": 77777, \"text\": \"Sample Product Description\"}]", System.Text.Encoding.UTF8, "application/json")
                 };
                 return Task.FromResult(response);
             }
@@ -141,14 +142,43 @@ public class BexioApiClientTests
         var client = new BexioApiClient(httpClient, "dummy-token", 1, 1);
 
         // Act
-        var result = await client.FindArticleIdAsync("ART-001"); ;
+        var result = await client.FindArticleAsync("ART-001"); ;
 
         // Assert
-        result.Should().Be(77777);
+        result.Should().NotBeNull();
+        result!.Id.Should().Be(77777);
+        result.Text.Should().Be("Sample Product Description");
     }
 
     [Fact]
-    public async Task FindArticleIdAsync_WithUnknownArticle_ReturnsNull()
+    public async Task FindArticleAsync_WithDuplicateArticles_ThrowsDuplicateArticleException()
+    {
+        // Arrange
+        var handler = new MockHttpMessageHandler
+        {
+            SendAsyncFunc = (req, token) =>
+            {
+                var response = new HttpResponseMessage(HttpStatusCode.OK)
+                {
+                    Content = new StringContent("[{\"id\": 11}, {\"id\": 22}]", System.Text.Encoding.UTF8, "application/json")
+                };
+                return Task.FromResult(response);
+            }
+        };
+
+        var httpClient = new HttpClient(handler);
+        var client = new BexioApiClient(httpClient, "dummy-token", 1, 1);
+
+        // Act
+        Func<Task> act = () => client.FindArticleAsync("DUPLICATE");
+
+        // Assert
+        await act.Should().ThrowAsync<DuplicateArticleException>()
+            .Where(e => e.SearchQuery == "DUPLICATE" && e.MatchCount == 2);
+    }
+
+    [Fact]
+    public async Task FindArticleAsync_WithUnknownArticle_ReturnsNull()
     {
         // Arrange
         var handler = new MockHttpMessageHandler
@@ -167,7 +197,7 @@ public class BexioApiClientTests
         var client = new BexioApiClient(httpClient, "dummy-token", 1, 1);
 
         // Act
-        var result = await client.FindArticleIdAsync("UNKNOWN");
+        var result = await client.FindArticleAsync("UNKNOWN");
 
         // Assert
         result.Should().BeNull();

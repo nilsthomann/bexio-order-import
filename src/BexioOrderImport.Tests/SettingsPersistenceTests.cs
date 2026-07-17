@@ -6,6 +6,7 @@ using Xunit;
 using FluentAssertions;
 using BexioOrderImport.Application.Interfaces;
 using BexioOrderImport.Domain.Models;
+using BexioOrderImport.Domain.Models.Bexio;
 using BexioOrderImport.Wpf.Services;
 using BexioOrderImport.Wpf.ViewModels;
 using BexioOrderImport.Wpf.Models;
@@ -245,7 +246,7 @@ public class SettingsPersistenceTests : IDisposable
             vm.ZipCityCell = "A3";
             vm.BuyerEmailCell = "A4";
             vm.BuyerNameCell = "A5";
-            vm.DeliveryDateCell = "A6";
+            vm.OrderIdCell = "A6";
             vm.PaymentTermsCell = "A7";
             vm.DiscountCell = "A8";
 
@@ -263,6 +264,9 @@ public class SettingsPersistenceTests : IDisposable
             vm.ColStartQty = 5;
             vm.ColEndQty = 15;
             vm.ColUnitPrice = 16;
+            vm.DefaultOrderName = "Order Template";
+            vm.SeasonCode = "FS27";
+            vm.PositionTextTemplate = "Template Text";
 
             var copyVmToProfileMethod = typeof(MainViewModel).GetMethod("CopyVmToProfile", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
             var copyProfileToVmMethod = typeof(MainViewModel).GetMethod("CopyProfileToVm", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
@@ -274,7 +278,7 @@ public class SettingsPersistenceTests : IDisposable
             profile.Mapping.Header.ZipCityCell.Should().Be("A3");
             profile.Mapping.Header.BuyerEmailCell.Should().Be("A4");
             profile.Mapping.Header.BuyerNameCell.Should().Be("A5");
-            profile.Mapping.Header.DeliveryDateCell.Should().Be("A6");
+            profile.Mapping.Header.OrderIdCell.Should().Be("A6");
             profile.Mapping.Header.PaymentTermsCell.Should().Be("A7");
             profile.Mapping.Header.DiscountCell.Should().Be("A8");
 
@@ -292,17 +296,26 @@ public class SettingsPersistenceTests : IDisposable
             profile.Mapping.Data.StartQtyColumn.Should().Be(5);
             profile.Mapping.Data.EndQtyColumn.Should().Be(15);
             profile.Mapping.Data.UnitPriceColumn.Should().Be(16);
+            profile.Mapping.DefaultOrderName.Should().Be("Order Template");
+            profile.Mapping.SeasonCode.Should().Be("FS27");
+            profile.Mapping.PositionTextTemplate.Should().Be("Template Text");
 
             // Act & Assert 2: Profile to VM
             profile.Mapping.Header.CompanyNameCell = "B1";
             profile.Mapping.SizeMatrix.StartRow = 50;
             profile.Mapping.Data.StartRow = 60;
+            profile.Mapping.DefaultOrderName = "Another Order Template";
+            profile.Mapping.SeasonCode = "HW27";
+            profile.Mapping.PositionTextTemplate = "Another Template Text";
 
             copyProfileToVmMethod!.Invoke(vm, [profile]);
 
             vm.CompanyNameCell.Should().Be("B1");
             vm.MatrixStartRow.Should().Be(50);
             vm.DataStartRow.Should().Be(60);
+            vm.DefaultOrderName.Should().Be("Another Order Template");
+            vm.SeasonCode.Should().Be("HW27");
+            vm.PositionTextTemplate.Should().Be("Another Template Text");
         });
     }
 
@@ -389,7 +402,7 @@ public class SettingsPersistenceTests : IDisposable
             var mockClient = new Mock<IBexioClient>();
             mockClient.Setup(c => c.CheckConnectionAsync()).ReturnsAsync(true);
             mockClient.Setup(c => c.CreateOrderAsync(It.IsAny<int>(), It.IsAny<Order>())).ReturnsAsync(12345);
-            mockClient.Setup(c => c.FindArticleIdAsync(It.IsAny<string>())).ReturnsAsync(999);
+            mockClient.Setup(c => c.FindArticleAsync(It.IsAny<string>())).ReturnsAsync(new BexioArticle { Id = 999, Text = "Product Description", InternName = "Product Name" });
             mockFactory.Setup(f => f.Create(It.IsAny<string>(), It.IsAny<int?>(), It.IsAny<int?>())).Returns(mockClient.Object);
 
             var vm = CreateVm(mockUpdate.Object, mockFactory.Object, _tempFilePath);
@@ -583,14 +596,17 @@ public class SettingsPersistenceTests : IDisposable
             vm.BuyerNameCell = "A5";
             vm.BuyerNameCell.Should().Be("A5");
 
-            vm.DeliveryDateCell = "A6";
-            vm.DeliveryDateCell.Should().Be("A6");
+            vm.OrderIdCell = "A6";
+            vm.OrderIdCell.Should().Be("A6");
 
             vm.PaymentTermsCell = "A7";
             vm.PaymentTermsCell.Should().Be("A7");
 
             vm.DiscountCell = "A8";
             vm.DiscountCell.Should().Be("A8");
+
+            vm.PositionTextTemplate = "Template";
+            vm.PositionTextTemplate.Should().Be("Template");
 
             vm.MatrixStartRow = 15;
             vm.MatrixStartRow.Should().Be(15);
@@ -643,8 +659,8 @@ public class SettingsPersistenceTests : IDisposable
             vm.Address = "Test Address";
             vm.Address.Should().Be("Test Address");
 
-            vm.DeliveryDate = "01.01.2026";
-            vm.DeliveryDate.Should().Be("01.01.2026");
+            vm.OrderId = "12345";
+            vm.OrderId.Should().Be("12345");
 
             vm.PaymentTerms = "30 Days";
             vm.PaymentTerms.Should().Be("30 Days");

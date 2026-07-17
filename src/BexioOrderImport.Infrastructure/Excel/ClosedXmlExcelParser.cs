@@ -27,7 +27,7 @@ public class ClosedXmlExcelParser : IExcelParser
         {
             // 1. Parse header data
             Customer = ParseCustomerHeader(sheet),
-            DeliveryDate = ParseDeliveryDate(sheet)
+            OrderId = ParseOrderId(sheet)
         };
 
         string paymentTermsVal = sheet.Cell(_options.Header.PaymentTermsCell).Value.ToString().Trim();
@@ -91,7 +91,6 @@ public class ClosedXmlExcelParser : IExcelParser
                         UnitPrice = unitPrice,
                         DiscountPercent = order.DiscountPercent
                     };
-                    pos.PositionText = FormatPositionText(_options.PositionTextTemplate, pos);
                     order.Positions.Add(pos);
                 }
             }
@@ -119,10 +118,10 @@ public class ClosedXmlExcelParser : IExcelParser
         };
     }
 
-    private DateTime? ParseDeliveryDate(IXLWorksheet sheet)
+    private int? ParseOrderId(IXLWorksheet sheet)
     {
-        string val = sheet.Cell(_options.Header.DeliveryDateCell).Value.ToString();
-        if (DateTime.TryParse(val, out DateTime dt)) return dt;
+        string val = sheet.Cell(_options.Header.OrderIdCell).Value.ToString().Trim();
+        if (int.TryParse(val, out int id)) return id;
         return null;
     }
 
@@ -204,16 +203,4 @@ public class ClosedXmlExcelParser : IExcelParser
         return parts.Length > 1 ? parts[1] : string.Empty;
     }
 
-    private string FormatPositionText(string template, OrderPosition pos)
-    {
-        if (string.IsNullOrEmpty(template))
-        {
-            return $"Farbe: {pos.Color}, Grösse: {pos.Size}";
-        }
-        return template
-            .Replace("{Color}", pos.Color)
-            .Replace("{Size}", pos.Size)
-            .Replace("{ArticleNumber}", pos.ArticleNumber)
-            .Replace("{ArticleName}", pos.ArticleName);
-    }
 }

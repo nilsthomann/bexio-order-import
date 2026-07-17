@@ -21,7 +21,7 @@ Welcome to the **Bexio Order Importer** user manual. This document provides a co
 
 The **Bexio Order Importer** is a tool designed to bridge the gap between traditional Excel-based order sheets (frequently used in wholesale, fashion, or retail distribution) and the Bexio REST API.
 
-It parses complex spreadsheet files containing customer headers, delivery dates, special discounts, and matrix-based size/quantity layouts, and automatically:
+It parses complex spreadsheet files containing customer headers, order IDs, special discounts, and matrix-based size/quantity layouts, and automatically:
 
 - Checks if the customer exists in Bexio (by email).
 - Prompts you to confirm or create a new contact in Bexio.
@@ -83,7 +83,7 @@ Below is a typical order template layout showing how the parser reads the metada
   - **ZIP & City** [Cell `B6`]: Formatted as `[ZIP] [City]` (e.g., `7000 Chur`). The parser automatically splits this cell into separate postal code and city values.
   - **Email** [Cell `E5`]: Used to search for existing contacts in Bexio.
   - **Buyer Name** [Cell `E4`]: Mapped primary contact person.
-  - **Delivery Date** [Cell `T7`]: Date of planned delivery.
+  - **Order ID** [Cell `E6`]: ID of an existing Bexio order (optional). If provided and valid, the importer will append positions directly to this existing order instead of creating a new customer and order.
   - **Payment Terms** [Cell `A9`]: Plain text terms of payment.
   - **Discount %** [Cell `V12`]: The general discount rate applied to the whole order.
 - **Size Matrix Mapping**:
@@ -112,7 +112,7 @@ Below is a typical order template layout showing how the parser reads the metada
 
 ### Step 2: Review Mapped Data & Preview
 
-1. The **Header Details** card displays the extracted customer metadata, delivery dates, and payment conditions.
+1. The **Header Details** card displays the extracted customer metadata, Order ID (if provided), and payment conditions.
 2. The **Positions preview grid** displays all parsed item rows. Only sizes with a quantity greater than zero will generate a row.
 3. You can double-click cells in the DataGrid to manually override quantities or prices before uploading.
 4. The bottom totals bar dynamically reflects the gross amount, discounts, and net total.
@@ -123,10 +123,17 @@ Below is a typical order template layout showing how the parser reads the metada
 2. **Confirm Upload**:
    - A confirmation dialog asks if you want to push the order to Bexio.
    - Click **Yes** to proceed.
-3. **Customer Checking**:
+3. **Existing Order Flow (if Order ID provided)**:
+   - The application fetches the existing order from Bexio. If the order is not found, the import is aborted with an error.
+   - The contact email associated with the existing order in Bexio is matched against the email in the Excel sheet.
+   - **If emails match**: It proceeds to add the positions directly to that order.
+   - **If emails mismatch**: A warning dialog pops up, prompting the user to either ignore the mismatch and proceed with importing positions, or abort the import.
+4. **New Order Flow (if no Order ID provided)**:
    - The application checks your Bexio database for a contact matching the customer's email.
    - **If found**: It proceeds automatically using that contact's ID.
    - **If NOT found**: A dialog pops up showing the new customer details. You can review, correct errors (e.g., misspelled street names), and click **Create** to insert them directly into Bexio. If you click **Cancel**, the import is aborted and the file remains loaded in your view.
+   - A new order is created in Bexio under the matched/created contact.
+5. Once the target order ID is resolved (either existing or newly created), the positions are uploaded, a full-screen loading card covers the interface, and a success dialog displays the Bexio order number.
 4. During upload, a full-screen loading card covers the interface. Once completed, a success dialog displays the created Bexio order number.
 
 ---

@@ -1,5 +1,6 @@
 using BexioOrderImport.Application.Interfaces;
 using BexioOrderImport.Domain.Models;
+using BexioOrderImport.Domain.Models.Bexio;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Text;
@@ -74,10 +75,11 @@ public class BexioApiClient : IBexioClient
         {
             contact_type_id = 1, // 1 = Company, 2 = Person
             name_1 = customer.CompanyName,
-            address = customer.Street,
+            mail = customer.Email,
+            street_name = customer.Street,
             postcode = customer.ZipCode,
             city = customer.City,
-            mail = customer.Email,
+            user_id = 1, // Default userid
             owner_id = 1 // Default owner
         };
 
@@ -95,7 +97,7 @@ public class BexioApiClient : IBexioClient
         {
             contact_id = contactId,
             user_id = 1, // Default user
-            title = $"Order: {order.Customer.CompanyName}",
+            title = string.IsNullOrEmpty(order.Title) ? $"Order: {order.Customer.CompanyName}" : order.Title,
             mwst_type = 0, // 0 = excl. VAT, 1 = incl. VAT
             currency_id = 1, // 1 = CHF
             payment_type_id = 1, // Default
@@ -112,12 +114,33 @@ public class BexioApiClient : IBexioClient
         return createdOrder?.Id ?? throw new Exception("Error creating order in Bexio.");
     }
 
-    public async Task<int?> FindArticleIdAsync(string articleNumber)
+    public async Task<string?> GetOrderContactEmailAsync(int orderId)
+    {
+        var response = await _httpClient.SendAsync(CreateRequest(HttpMethod.Get, $"2.0/kb_order/{orderId}"));
+        if (!response.IsSuccessStatusCode)
+        {
+            return null;
+        }
+
+        var order = await response.Content.ReadFromJsonAsync<BexioOrder>();
+        if (order == null) return null;
+
+        var contactResponse = await _httpClient.SendAsync(CreateRequest(HttpMethod.Get, $"2.0/contact/{order.ContactId}"));
+        if (!contactResponse.IsSuccessStatusCode)
+        {
+            return null;
+        }
+
+        var contact = await contactResponse.Content.ReadFromJsonAsync<BexioContact>();
+        return contact?.EMail;
+    }
+
+    public async Task<BexioArticle?> FindArticleAsync(string searchQuery)
     {
         // 1. Search by intern_code (article number, e.g. "743097")
         var searchPayload = new[]
         {
-            new { field = "intern_code", value = articleNumber, criteria = "=" }
+            new { field = "intern_name", value = searchQuery, criteria = "like" }
         };
 
         var body = new StringContent(JsonSerializer.Serialize(searchPayload), Encoding.UTF8, "application/json");
@@ -126,9 +149,17 @@ public class BexioApiClient : IBexioClient
         if (response.IsSuccessStatusCode)
         {
             var articles = await response.Content.ReadFromJsonAsync<List<BexioArticle>>();
-            if (articles != null && articles.Count > 0)
+            if (articles != null)
             {
-                return articles[0].Id;
+                if (articles.Count > 1)
+                {
+                    // ponytail: throw custom exception to trigger dialog warning on duplicates
+                    throw new DuplicateArticleException(searchQuery, articles.Count);
+                }
+                if (articles.Count == 1)
+                {
+                    return articles[0];
+                }
             }
         }
 
@@ -192,8 +223,4 @@ public class BexioApiClient : IBexioClient
         return _cachedTaxes;
     }
 
-    // Helper classes for JSON deserialization
-    private class BexioContact { public int Id { get; set; } }
-    private class BexioOrder { public int Id { get; set; } }
-    private class BexioArticle { public int Id { get; set; } }
 }

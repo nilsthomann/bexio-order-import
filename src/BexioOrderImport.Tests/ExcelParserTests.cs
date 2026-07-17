@@ -23,7 +23,7 @@ public class ExcelParserTests
                 ZipCityCell = "B6",
                 BuyerEmailCell = "E5",
                 BuyerNameCell = "E4",
-                DeliveryDateCell = "T7",
+                OrderIdCell = "E6",
                 PaymentTermsCell = "A9",
                 DiscountCell = "V12"
             },
@@ -85,7 +85,7 @@ public class ExcelParserTests
         order.Customer.BuyerName.Should().Be("Hans Muster");
 
         // 2. Delivery & payment terms assertions
-        order.DeliveryDate.Should().Be(new DateTime(2026, 5, 28));
+        order.OrderId.Should().BeNull();
         order.PaymentTerms.Should().Be("10 Tage 4% Skonto, 30 Tage netto");
 
         // 3. Totals assertions
@@ -185,7 +185,7 @@ public class ExcelParserTests
         extractCity.Invoke(_parser, ["8000"]).Should().Be("");
     }
 
-    private static string CreateTemporaryExcelFile(string deliveryDateStr, string discountStr)
+    private static string CreateTemporaryExcelFile(string orderIdStr, string discountStr)
     {
         using var workbook = new ClosedXML.Excel.XLWorkbook();
         var sheet = workbook.Worksheets.Add("Order Form");
@@ -196,7 +196,7 @@ public class ExcelParserTests
         sheet.Cell("B6").Value = "8000 Zurich";
         sheet.Cell("E5").Value = "test@test.com";
         sheet.Cell("E4").Value = "Buyer Name";
-        sheet.Cell("T7").Value = deliveryDateStr;
+        sheet.Cell("E6").Value = orderIdStr;
         sheet.Cell("A9").Value = "30 Days";
         sheet.Cell("V12").Value = discountStr;
 
@@ -221,7 +221,7 @@ public class ExcelParserTests
     public void ParseOrderForm_WithDecimalDiscount_ShouldScaleToPercentage()
     {
         // Arrange
-        string filePath = CreateTemporaryExcelFile("2026-05-28", "0.05");
+        string filePath = CreateTemporaryExcelFile("123", "0.05");
 
         try
         {
@@ -238,10 +238,10 @@ public class ExcelParserTests
     }
 
     [Fact]
-    public void ParseOrderForm_WithInvalidDeliveryDate_ShouldReturnNullDeliveryDate()
+    public void ParseOrderForm_WithInvalidOrderId_ShouldReturnNullOrderId()
     {
         // Arrange
-        string filePath = CreateTemporaryExcelFile("invalid-date-value", "5%");
+        string filePath = CreateTemporaryExcelFile("invalid-id-value", "5%");
 
         try
         {
@@ -249,7 +249,27 @@ public class ExcelParserTests
             var order = _parser.ParseOrderForm(filePath);
 
             // Assert
-            order.DeliveryDate.Should().BeNull();
+            order.OrderId.Should().BeNull();
+        }
+        finally
+        {
+            try { File.Delete(filePath); } catch { }
+        }
+    }
+
+    [Fact]
+    public void ParseOrderForm_WithValidOrderId_ShouldParseOrderIdCorrectly()
+    {
+        // Arrange
+        string filePath = CreateTemporaryExcelFile("12345", "5%");
+
+        try
+        {
+            // Act
+            var order = _parser.ParseOrderForm(filePath);
+
+            // Assert
+            order.OrderId.Should().Be(12345);
         }
         finally
         {

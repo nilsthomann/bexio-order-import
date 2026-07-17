@@ -238,8 +238,8 @@
                                     <TextBlock Text="{Binding BuyerName}" FontWeight="SemiBold"/>
                                 </StackPanel>
                                 <StackPanel Grid.Column="1" Grid.Row="1" Margin="0,4">
-                                    <TextBlock Text="{x:Static lex:Translations.Import_DeliveryDate}" Style="{StaticResource MutedTextBlockStyle}"/>
-                                    <TextBlock Text="{Binding DeliveryDate}" FontWeight="SemiBold"/>
+                                    <TextBlock Text="{x:Static lex:Translations.Import_OrderId}" Style="{StaticResource MutedTextBlockStyle}"/>
+                                    <TextBlock Text="{Binding OrderId}" FontWeight="SemiBold"/>
                                 </StackPanel>
                                 <StackPanel Grid.Column="2" Grid.Row="1" Margin="0,4">
                                     <TextBlock Text="{x:Static lex:Translations.Import_Conditions}" Style="{StaticResource MutedTextBlockStyle}"/>

@@ -60,7 +60,7 @@ public partial class ProfileEditWindow : Window
         ZipCityCellInput.Text = _profile.Mapping.Header.ZipCityCell;
         BuyerEmailCellInput.Text = _profile.Mapping.Header.BuyerEmailCell;
         BuyerNameCellInput.Text = _profile.Mapping.Header.BuyerNameCell;
-        DeliveryDateCellInput.Text = _profile.Mapping.Header.DeliveryDateCell;
+        OrderIdCellInput.Text = _profile.Mapping.Header.OrderIdCell;
         PaymentTermsCellInput.Text = _profile.Mapping.Header.PaymentTermsCell;
         DiscountCellInput.Text = _profile.Mapping.Header.DiscountCell;
 
@@ -78,6 +78,8 @@ public partial class ProfileEditWindow : Window
         ColStartQtyInput.Text = _profile.Mapping.Data.StartQtyColumn.ToString();
         ColEndQtyInput.Text = _profile.Mapping.Data.EndQtyColumn.ToString();
         ColUnitPriceInput.Text = _profile.Mapping.Data.UnitPriceColumn.ToString();
+        DefaultOrderNameInput.Text = _profile.Mapping.DefaultOrderName;
+        SeasonCodeInput.Text = _profile.Mapping.SeasonCode;
         PositionTextTemplateInput.Text = _profile.Mapping.PositionTextTemplate;
     }
 
@@ -93,7 +95,7 @@ public partial class ProfileEditWindow : Window
             _profile.Mapping.Header.ZipCityCell = ZipCityCellInput.Text.Trim();
             _profile.Mapping.Header.BuyerEmailCell = BuyerEmailCellInput.Text.Trim();
             _profile.Mapping.Header.BuyerNameCell = BuyerNameCellInput.Text.Trim();
-            _profile.Mapping.Header.DeliveryDateCell = DeliveryDateCellInput.Text.Trim();
+            _profile.Mapping.Header.OrderIdCell = OrderIdCellInput.Text.Trim();
             _profile.Mapping.Header.PaymentTermsCell = PaymentTermsCellInput.Text.Trim();
             _profile.Mapping.Header.DiscountCell = DiscountCellInput.Text.Trim();
 
@@ -111,6 +113,8 @@ public partial class ProfileEditWindow : Window
             _profile.Mapping.Data.StartQtyColumn = int.Parse(ColStartQtyInput.Text.Trim());
             _profile.Mapping.Data.EndQtyColumn = int.Parse(ColEndQtyInput.Text.Trim());
             _profile.Mapping.Data.UnitPriceColumn = int.Parse(ColUnitPriceInput.Text.Trim());
+            _profile.Mapping.DefaultOrderName = DefaultOrderNameInput.Text.Trim();
+            _profile.Mapping.SeasonCode = SeasonCodeInput.Text.Trim();
             _profile.Mapping.PositionTextTemplate = PositionTextTemplateInput.Text.Trim();
 
             DialogResult = true;

@@ -37,7 +37,7 @@ Please help maintain a professional, respectful, and welcoming environment for e
 
 ### Coding Style
 - Follow standard C# styling conventions.
-- Keep implementation simple and direct (KISS/Ponytail principles). Prefer standard library features over custom utilities, and keep external dependencies to a minimum.
+- Keep implementation simple and direct. Prefer standard library features over custom utilities, and keep external dependencies to a minimum.
 
 ### Testing Changes
 - Extend or modify tests inside the `src/BexioOrderImport.Tests/` directory if you modify parsing or business workflows.

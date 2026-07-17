@@ -57,7 +57,7 @@ public partial class MainViewModel : ViewModelBase
     private string _buyerName = string.Empty;
     private string _email = string.Empty;
     private string _address = string.Empty;
-    private string _deliveryDate = string.Empty;
+    private string _orderId = string.Empty;
     private string _paymentTerms = string.Empty;
     private string _totalsSummary = string.Empty;
 
@@ -113,14 +113,16 @@ public partial class MainViewModel : ViewModelBase
     private string _bexioToken = string.Empty;
     private int? _AccountId = null;
     private int? _TaxId = null;
-    private string _positionTextTemplate = "Color: {Color}, Size: {Size}";
+    private string _defaultOrderName = "Order: {CustomerName} {SeasonCode}";
+    private string _seasonCode = string.Empty;
+    private string _positionTextTemplate = "<strong>{BexioArticleName} Size {Size}</strong><br />{BexioArticleDescription}";
     
     private string _companyNameCell = "B4";
     private string _streetCell = "B5";
     private string _zipCityCell = "B6";
     private string _buyerEmailCell = "E5";
     private string _buyerNameCell = "E4";
-    private string _deliveryDateCell = "T7";
+    private string _orderIdCell = "E6";
     private string _paymentTermsCell = "A9";
     private string _discountCell = "V12";
 
@@ -339,10 +341,10 @@ public partial class MainViewModel : ViewModelBase
         set => SetProperty(ref _address, value);
     }
 
-    public string DeliveryDate
+    public string OrderId
     {
-        get => _deliveryDate;
-        set => SetProperty(ref _deliveryDate, value);
+        get => _orderId;
+        set => SetProperty(ref _orderId, value);
     }
 
     public string PaymentTerms
@@ -499,6 +501,18 @@ public partial class MainViewModel : ViewModelBase
         }
     }
 
+    public string DefaultOrderName
+    {
+        get => _defaultOrderName;
+        set => SetProperty(ref _defaultOrderName, value);
+    }
+
+    public string SeasonCode
+    {
+        get => _seasonCode;
+        set => SetProperty(ref _seasonCode, value);
+    }
+
     public string PositionTextTemplate
     {
         get => _positionTextTemplate;
@@ -535,10 +549,10 @@ public partial class MainViewModel : ViewModelBase
         set => SetProperty(ref _buyerNameCell, value);
     }
 
-    public string DeliveryDateCell
+    public string OrderIdCell
     {
-        get => _deliveryDateCell;
-        set => SetProperty(ref _deliveryDateCell, value);
+        get => _orderIdCell;
+        set => SetProperty(ref _orderIdCell, value);
     }
 
     public string PaymentTermsCell

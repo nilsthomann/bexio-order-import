@@ -118,7 +118,7 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="MainWindow_Title" xml:space="preserve">
-    <value>Bexio Bestellungs-Importeur</value>
+    <value>Bexio Auftrags Import</value>
   </data>
   <data name="Nav_Import" xml:space="preserve">
     <value>Excel Auftrags Import</value>
@@ -136,16 +136,16 @@
     <value>Bexio-Verbindung: Prüfe...</value>
   </data>
   <data name="Import_DragDropText" xml:space="preserve">
-    <value>Excel-Bestellformular hierher ziehen oder Datei auswählen</value>
+    <value>Excel-Auftragsformular hierher ziehen oder Datei auswählen</value>
   </data>
   <data name="Import_BrowseButton" xml:space="preserve">
     <value>Datei auswählen</value>
   </data>
   <data name="Import_SelectFileTitle" xml:space="preserve">
-    <value>Excel Bestellformular auswählen</value>
+    <value>Excel Auftragsformular auswählen</value>
   </data>
   <data name="Import_OrderHeader" xml:space="preserve">
-    <value>Bestellungs-Kopfdaten</value>
+    <value>Auftrags-Kopfdaten</value>
   </data>
   <data name="Import_Customer" xml:space="preserve">
     <value>Kunde / Firma</value>
@@ -159,14 +159,14 @@
   <data name="Import_Buyer" xml:space="preserve">
     <value>Einkäufer</value>
   </data>
-  <data name="Import_DeliveryDate" xml:space="preserve">
-    <value>Datum</value>
+  <data name="Import_OrderId" xml:space="preserve">
+    <value>Auftrags-ID</value>
   </data>
   <data name="Import_Conditions" xml:space="preserve">
     <value>Konditionen</value>
   </data>
   <data name="Import_PositionsHeader" xml:space="preserve">
-    <value>Bestellpositionen</value>
+    <value>Aufragspositionen</value>
   </data>
   <data name="Import_ColArtNum" xml:space="preserve">
     <value>Art. Nr.</value>
@@ -208,7 +208,7 @@
     <value>In Bexio importieren</value>
   </data>
   <data name="Import_NoPositions" xml:space="preserve">
-    <value>Keine Bestellpositionen mit Menge &gt; 0 gefunden.</value>
+    <value>Keine Auftragspositionen mit Menge &gt; 0 gefunden.</value>
   </data>
   <data name="Import_SelectFileFirst" xml:space="preserve">
     <value>Bitte wählen Sie zuerst eine Excel-Datei aus.</value>
@@ -270,8 +270,8 @@
   <data name="Settings_CellBuyerName" xml:space="preserve">
     <value>Zelle Einkäufer</value>
   </data>
-  <data name="Settings_CellDeliveryDate" xml:space="preserve">
-    <value>Zelle Datum</value>
+  <data name="Settings_CellOrderId" xml:space="preserve">
+    <value>Zelle Auftrags-ID</value>
   </data>
   <data name="Settings_CellPaymentTerms" xml:space="preserve">
     <value>Zelle Konditionen</value>
@@ -349,10 +349,10 @@
     <value>E-Mail</value>
   </data>
   <data name="Import_ConfirmTitle" xml:space="preserve">
-    <value>Bestellung übermitteln?</value>
+    <value>Auftrag übermitteln?</value>
   </data>
   <data name="Import_ConfirmMessage" xml:space="preserve">
-    <value>Möchten Sie diese Bestellung jetzt an Bexio übermitteln?</value>
+    <value>Möchten Sie diese Auftrag jetzt an Bexio übermitteln?</value>
   </data>
   <data name="Settings_ErrorLoad" xml:space="preserve">
     <value>Fehler beim Laden der Einstellungen</value>
@@ -520,7 +520,7 @@
     <value>Excel-Datei wird geladen...</value>
   </data>
   <data name="Import_Importing" xml:space="preserve">
-    <value>Importiere Bestellung in Bexio...</value>
+    <value>Importiere Auftrag in Bexio...</value>
   </data>
   <data name="Import_PleaseWait" xml:space="preserve">
     <value>Bitte warten...</value>
@@ -540,19 +540,40 @@
   <data name="Update_Error" xml:space="preserve">
     <value>Fehler beim Aktualisieren: {0}</value>
   </data>
-  <data name="Import_NoDeliveryDate" xml:space="preserve">
-    <value>Nicht definiert</value>
+  <data name="Import_NoOrderId" xml:space="preserve">
+    <value>Keine Auftrags-ID</value>
+  </data>
+  <data name="Settings_DefaultOrderNameLabel" xml:space="preserve">
+    <value>Standard-Bestellname:</value>
+  </data>
+  <data name="Settings_DefaultOrderNameHint" xml:space="preserve">
+    <value>Platzhalter: {CustomerName}, {SeasonCode}. Beispiel: Order: {CustomerName} {SeasonCode}</value>
+  </data>
+  <data name="Settings_DefaultOrderNameSection" xml:space="preserve">
+    <value>Standard-Bestellname</value>
+  </data>
+  <data name="Settings_SeasonCodeLabel" xml:space="preserve">
+    <value>Saison-Code:</value>
   </data>
   <data name="Settings_PositionTextTemplateLabel" xml:space="preserve">
     <value>Positions-Text Template:</value>
   </data>
   <data name="Settings_PositionTextTemplateHint" xml:space="preserve">
-    <value>Verfügbare Platzhalter: {Color}, {Size}, {ArticleNumber}, {ArticleName}. Standard: Color: {Color}, Size: {Size}</value>
+    <value>Platzhalter: {Color}, {Size}, {ArticleNumber}, {ArticleName}, {BexioArticleName}, {BexioArticleDescription}</value>
   </data>
   <data name="Settings_PositionTextTemplateSection" xml:space="preserve">
     <value>Positions-Text Template</value>
   </data>
   <data name="Error_SelectAccountAndTax" xml:space="preserve">
     <value>Bitte wählen Sie ein Standard-Konto und einen Standard-Steuersatz in den Einstellungen.</value>
+  </data>
+  <data name="Import_EmailMismatchTitle" xml:space="preserve">
+    <value>E-Mail Abweichung</value>
+  </data>
+  <data name="Import_EmailMismatchMessage" xml:space="preserve">
+    <value>Die E-Mail-Adresse des existierenden Auftrags in Bexio ('{0}') stimmt nicht mit der E-Mail-Adresse im Excel-Sheet ('{1}') überein. Möchten Sie den Import trotzdem fortsetzen?</value>
+  </data>
+  <data name="Error_MultipleArticlesFound" xml:space="preserve">
+    <value>Mehrere Artikel ({1} gefunden) entsprechen der Suchanfrage '{0}'. Die Suche muss eindeutig sein.</value>
   </data>
 </root>

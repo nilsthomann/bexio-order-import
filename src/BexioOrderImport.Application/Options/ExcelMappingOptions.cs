@@ -3,7 +3,9 @@ namespace BexioOrderImport.Application.Options;
 public class ExcelMappingOptions
 {
     public int WorksheetIndex { get; set; } = 1;
-    public string PositionTextTemplate { get; set; } = "Color: {Color}, Size: {Size}";
+    public string DefaultOrderName { get; set; } = "Order: {CustomerName} {SeasonCode}";
+    public string SeasonCode { get; set; } = string.Empty;
+    public string PositionTextTemplate { get; set; } = "<strong>{BexioArticleName} Size {Size}</strong><br />{BexioArticleDescription}";
     public HeaderMapping Header { get; set; } = new();
     public SizeMatrixMapping SizeMatrix { get; set; } = new();
     public DataMapping Data { get; set; } = new();
@@ -16,7 +18,7 @@ public class HeaderMapping
     public string ZipCityCell { get; set; } = "B6";
     public string BuyerEmailCell { get; set; } = "E5";
     public string BuyerNameCell { get; set; } = "E4";
-    public string DeliveryDateCell { get; set; } = "T7";
+    public string OrderIdCell { get; set; } = "E6";
     public string PaymentTermsCell { get; set; } = "A9";
     public string DiscountCell { get; set; } = "V12";
 }

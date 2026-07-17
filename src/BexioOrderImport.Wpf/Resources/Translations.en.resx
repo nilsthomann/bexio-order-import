@@ -159,8 +159,8 @@
   <data name="Import_Buyer" xml:space="preserve">
     <value>Buyer</value>
   </data>
-  <data name="Import_DeliveryDate" xml:space="preserve">
-    <value>Date</value>
+  <data name="Import_OrderId" xml:space="preserve">
+    <value>Order ID</value>
   </data>
   <data name="Import_Conditions" xml:space="preserve">
     <value>Terms</value>
@@ -270,8 +270,8 @@
   <data name="Settings_CellBuyerName" xml:space="preserve">
     <value>Buyer Name cell</value>
   </data>
-  <data name="Settings_CellDeliveryDate" xml:space="preserve">
-    <value>Date cell</value>
+  <data name="Settings_CellOrderId" xml:space="preserve">
+    <value>Order ID cell</value>
   </data>
   <data name="Settings_CellPaymentTerms" xml:space="preserve">
     <value>Payment Terms cell</value>
@@ -540,19 +540,40 @@
   <data name="Update_Error" xml:space="preserve">
     <value>Update error: {0}</value>
   </data>
-  <data name="Import_NoDeliveryDate" xml:space="preserve">
-    <value>Not defined</value>
+  <data name="Import_NoOrderId" xml:space="preserve">
+    <value>No Order ID</value>
+  </data>
+  <data name="Settings_DefaultOrderNameLabel" xml:space="preserve">
+    <value>Default Order Name:</value>
+  </data>
+  <data name="Settings_DefaultOrderNameHint" xml:space="preserve">
+    <value>Placeholders: {CustomerName}, {SeasonCode}. Example: Order: {CustomerName} {SeasonCode}</value>
+  </data>
+  <data name="Settings_DefaultOrderNameSection" xml:space="preserve">
+    <value>Default Order Name</value>
+  </data>
+  <data name="Settings_SeasonCodeLabel" xml:space="preserve">
+    <value>Season Code:</value>
   </data>
   <data name="Settings_PositionTextTemplateLabel" xml:space="preserve">
     <value>Position Text Template:</value>
   </data>
   <data name="Settings_PositionTextTemplateHint" xml:space="preserve">
-    <value>Available placeholders: {Color}, {Size}, {ArticleNumber}, {ArticleName}. Default: Color: {Color}, Size: {Size}</value>
+    <value>Placeholders: {Color}, {Size}, {ArticleNumber}, {ArticleName}, {BexioArticleName}, {BexioArticleDescription}</value>
   </data>
   <data name="Settings_PositionTextTemplateSection" xml:space="preserve">
     <value>Position Text Template</value>
   </data>
   <data name="Error_SelectAccountAndTax" xml:space="preserve">
     <value>Please select a default account and a default tax rate in the settings.</value>
+  </data>
+  <data name="Import_EmailMismatchTitle" xml:space="preserve">
+    <value>Email Mismatch</value>
+  </data>
+  <data name="Import_EmailMismatchMessage" xml:space="preserve">
+    <value>The email of the existing order in Bexio ('{0}') does not match the email in the Excel sheet ('{1}'). Do you want to proceed with the import anyway?</value>
+  </data>
+  <data name="Error_MultipleArticlesFound" xml:space="preserve">
+    <value>Multiple articles ({1} found) matched the search query '{0}'. The search must be unique.</value>
   </data>
 </root>

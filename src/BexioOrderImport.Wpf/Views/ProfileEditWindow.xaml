@@ -117,8 +117,8 @@
                                         <TextBox x:Name="BuyerNameCellInput" Height="32"/>
                                     </StackPanel>
                                     <StackPanel Grid.Row="1" Grid.Column="1" Margin="0,0,8,0">
-                                        <TextBlock Text="{x:Static lex:Translations.Settings_CellDeliveryDate}" Style="{StaticResource MutedTextBlockStyle}"/>
-                                        <TextBox x:Name="DeliveryDateCellInput" Height="32"/>
+                                        <TextBlock Text="{x:Static lex:Translations.Settings_CellOrderId}" Style="{StaticResource MutedTextBlockStyle}"/>
+                                        <TextBox x:Name="OrderIdCellInput" Height="32"/>
                                     </StackPanel>
                                     <StackPanel Grid.Row="1" Grid.Column="2" Margin="0,0,8,0">
                                         <TextBlock Text="{x:Static lex:Translations.Settings_CellPaymentTerms}" Style="{StaticResource MutedTextBlockStyle}"/>
@@ -219,6 +219,34 @@
                                         <TextBlock Text="{x:Static lex:Translations.Settings_ColUnitPrice}" Style="{StaticResource MutedTextBlockStyle}"/>
                                         <TextBox x:Name="ColUnitPriceInput" Height="32"/>
                                     </StackPanel>
+                                </Grid>
+                            </StackPanel>
+                        </Border>
+
+                        <!-- Default Order Name Section -->
+                        <Border Style="{StaticResource CardBorderStyle}" Margin="0,0,0,16">
+                            <StackPanel>
+                                <TextBlock Text="{x:Static lex:Translations.Settings_DefaultOrderNameSection}" Style="{StaticResource SectionHeaderTextBlockStyle}"/>
+                                <Grid Margin="0,8,0,0">
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="Auto"/>
+                                    </Grid.RowDefinitions>
+                                    <TextBox x:Name="DefaultOrderNameInput" Height="32" Grid.Row="0" Margin="0,0,0,4"/>
+                                    <TextBlock Text="{x:Static lex:Translations.Settings_DefaultOrderNameHint}" 
+                                               Style="{StaticResource MutedTextBlockStyle}" 
+                                               Grid.Row="1" 
+                                               FontStyle="Italic"/>
+                                </Grid>
+                            </StackPanel>
+                        </Border>
+
+                        <!-- Season Code Section -->
+                        <Border Style="{StaticResource CardBorderStyle}" Margin="0,0,0,16">
+                            <StackPanel>
+                                <TextBlock Text="{x:Static lex:Translations.Settings_SeasonCodeLabel}" Style="{StaticResource SectionHeaderTextBlockStyle}"/>
+                                <Grid Margin="0,8,0,0">
+                                    <TextBox x:Name="SeasonCodeInput" Height="32"/>
                                 </Grid>
                             </StackPanel>
                         </Border>

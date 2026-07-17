@@ -17,16 +17,20 @@ public class AppSettingsDto
     // Legacy single-profile key (read-only migration path)
     [JsonPropertyName("ExcelMapping")]
     public ExcelMappingDto? ExcelMapping { get; set; }
+      
 }
 
 public class BexioSettingsDto
 {
     [JsonPropertyName("ApiToken")]
     public string ApiToken { get; set; } = "bexio_api_token_here";
+
     [JsonPropertyName("AccountId")]
     public int? AccountId { get; set; } = null;
+
     [JsonPropertyName("TaxId")]
     public int? TaxId { get; set; } = null;
+
     [JsonPropertyName("Language")]
     public string Language { get; set; } = "de";
 }
@@ -35,6 +39,7 @@ public class MappingProfileDto
 {
     [JsonPropertyName("Name")]
     public string Name { get; set; } = "Default";
+
     [JsonPropertyName("ExcelMapping")]
     public ExcelMappingDto ExcelMapping { get; set; } = new();
 }
@@ -43,26 +48,52 @@ public class ExcelMappingDto
 {
     [JsonPropertyName("WorksheetIndex")]
     public int WorksheetIndex { get; set; } = 1;
+
+    [JsonPropertyName("DefaultOrderName")]
+    public string DefaultOrderName { get; set; } = "Order: {CustomerName} {SeasonCode}";
+
+    [JsonPropertyName("SeasonCode")]
+    public string SeasonCode { get; set; } = string.Empty;
+
     [JsonPropertyName("PositionTextTemplate")]
-    public string PositionTextTemplate { get; set; } = "Color: {Color}, Size: {Size}";
+    public string PositionTextTemplate { get; set; } = "<strong>{BexioArticleName} Size {Size}</strong><br />{BexioArticleDescription}";
+  
     [JsonPropertyName("Header")]
     public HeaderMappingDto Header { get; set; } = new();
+   
     [JsonPropertyName("SizeMatrix")]
     public SizeMatrixDto SizeMatrix { get; set; } = new();
+   
     [JsonPropertyName("Data")]
     public DataMappingDto Data { get; set; } = new();
 }
 
 public class HeaderMappingDto
 {
-    [JsonPropertyName("CompanyNameCell")] public string CompanyNameCell { get; set; } = "B4";
-    [JsonPropertyName("StreetCell")] public string StreetCell { get; set; } = "B5";
-    [JsonPropertyName("ZipCityCell")] public string ZipCityCell { get; set; } = "B6";
-    [JsonPropertyName("BuyerEmailCell")] public string BuyerEmailCell { get; set; } = "E5";
-    [JsonPropertyName("BuyerNameCell")] public string BuyerNameCell { get; set; } = "E4";
-    [JsonPropertyName("DeliveryDateCell")] public string DeliveryDateCell { get; set; } = "T7";
-    [JsonPropertyName("PaymentTermsCell")] public string PaymentTermsCell { get; set; } = "A9";
-    [JsonPropertyName("DiscountCell")] public string DiscountCell { get; set; } = "V12";
+    [JsonPropertyName("CompanyNameCell")]
+    public string CompanyNameCell { get; set; } = "B4";
+
+    [JsonPropertyName("StreetCell")] 
+    public string StreetCell { get; set; } = "B5";
+
+    [JsonPropertyName("ZipCityCell")]
+    public string ZipCityCell { get; set; } = "B6";
+
+    [JsonPropertyName("BuyerEmailCell")]
+    public string BuyerEmailCell { get; set; } = "E5";
+
+    [JsonPropertyName("BuyerNameCell")] 
+    public string BuyerNameCell { get; set; } = "E4";
+
+    [JsonPropertyName("OrderIdCell")]
+    public string OrderIdCell { get; set; } = "E6";
+
+    [JsonPropertyName("PaymentTermsCell")] 
+    public string PaymentTermsCell { get; set; } = "A9";
+
+    [JsonPropertyName("DiscountCell")] 
+    public string DiscountCell { get; set; } = "V12";
+
 }
 
 public class SizeMatrixDto
@@ -82,6 +113,6 @@ public class DataMappingDto
     [JsonPropertyName("ColorColumn")] public int ColorColumn { get; set; } = 3;
     [JsonPropertyName("CategoryColumn")] public int CategoryColumn { get; set; } = 4;
     [JsonPropertyName("StartQtyColumn")] public int StartQtyColumn { get; set; } = 5;
-    [JsonPropertyName("EndQtyColumn")] public int EndQtyColumn { get; set; } = 18;
-    [JsonPropertyName("UnitPriceColumn")] public int UnitPriceColumn { get; set; } = 20;
+    [JsonPropertyName("EndQtyColumn")]public int EndQtyColumn { get; set; } = 18;
+    [JsonPropertyName("UnitPriceColumn")]public int UnitPriceColumn { get; set; } = 20;
 }

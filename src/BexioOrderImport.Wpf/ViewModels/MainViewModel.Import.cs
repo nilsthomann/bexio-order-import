@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using BexioOrderImport.Application.Interfaces;
 using BexioOrderImport.Application.Services;
 using BexioOrderImport.Domain.Models;
+using BexioOrderImport.Domain.Models.Bexio;
 using BexioOrderImport.Infrastructure.Excel;
 using Microsoft.Extensions.Options;
 
@@ -45,7 +46,7 @@ public partial class MainViewModel
             BuyerName = _loadedOrder.Customer.BuyerName;
             Email = _loadedOrder.Customer.Email;
             Address = $"{_loadedOrder.Customer.Street}, {_loadedOrder.Customer.ZipCode} {_loadedOrder.Customer.City}";
-            DeliveryDate = _loadedOrder.DeliveryDate?.ToString("dd.MM.yyyy") ?? Resources.Translations.Import_NoDeliveryDate;
+            OrderId = _loadedOrder.OrderId?.ToString() ?? Resources.Translations.Import_NoOrderId;
             PaymentTerms = _loadedOrder.PaymentTerms;
 
             OrderPositions.Clear();
@@ -105,7 +106,7 @@ public partial class MainViewModel
         BuyerName = string.Empty;
         Email = string.Empty;
         Address = string.Empty;
-        DeliveryDate = string.Empty;
+        OrderId = string.Empty;
         PaymentTerms = string.Empty;
         OrderPositions.Clear();
         UpdateTotalsSummary();
@@ -147,6 +148,7 @@ public partial class MainViewModel
                 showPreviewCallback: order => { }, // Already shown in UI
                 confirmUploadCallback: ConfirmUploadAsync,
                 confirmCustomerCreationCallback: ConfirmCustomerCreationAsync,
+                confirmEmailMismatchCallback: ConfirmEmailMismatchAsync,
                 logInfoCallback: message =>
                 {
                     InvokeOnUi(() =>
@@ -167,7 +169,10 @@ public partial class MainViewModel
                             createdOrderId = id;
                         }
                     });
-                }
+                },
+                defaultOrderName: DefaultOrderName,
+                seasonCode: SeasonCode,
+                positionTextTemplate: PositionTextTemplate
             );
 
             if (success)
@@ -184,6 +189,12 @@ public partial class MainViewModel
                 ProgressPercentage = 0;
                 AppendLog("Import cancelled. File remains loaded.");
             }
+        }
+        catch (DuplicateArticleException ex)
+        {
+            string localizedMsg = string.Format(Resources.Translations.Error_MultipleArticlesFound, ex.SearchQuery, ex.MatchCount);
+            AppendLog($"[Error] Error during import: {localizedMsg}");
+            _dialogService.ShowErrorDialog(localizedMsg, Resources.Translations.Dialog_ErrorTitle);
         }
         catch (Exception ex)
         {
@@ -218,6 +229,20 @@ public partial class MainViewModel
         try
         {
             return _dialogService.ShowCustomerConfirmDialog(customer);
+        }
+        finally
+        {
+            if (IsImporting) IsImportingActive = true;
+        }
+    }
+
+    private async Task<bool> ConfirmEmailMismatchAsync(string existingEmail, string excelEmail)
+    {
+        IsImportingActive = false;
+        try
+        {
+            string message = string.Format(Resources.Translations.Import_EmailMismatchMessage, existingEmail, excelEmail);
+            return _dialogService.ShowConfirmDialog(message, Resources.Translations.Import_EmailMismatchTitle);
         }
         finally
         {

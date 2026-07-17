@@ -19,7 +19,11 @@ public class ImportOrderUseCase
         Action<Order> showPreviewCallback,
         Func<Task<bool>> confirmUploadCallback,
         Func<Customer, Task<bool>> confirmCustomerCreationCallback,
-        Action<string> logInfoCallback)
+        Func<string, string, Task<bool>> confirmEmailMismatchCallback,
+        Action<string> logInfoCallback,
+        string defaultOrderName = "Order: {CustomerName} {SeasonCode}",
+        string seasonCode = "",
+        string positionTextTemplate = "<strong>{BexioArticleName} Size {Size}</strong><br />{BexioArticleDescription}")
     {
         logInfoCallback($"Reading Excel file: {Path.GetFileName(filePath)}...");
         var order = _excelParser.ParseOrderForm(filePath);
@@ -43,32 +47,78 @@ public class ImportOrderUseCase
 
         // 3. Start API upload
         logInfoCallback("Connecting to Bexio API...");
-        int? contactId = await _bexioClient.FindContactIdAsync(order.Customer.Email);
-        if (!contactId.HasValue)
+        int orderId;
+
+        if (order.OrderId.HasValue)
         {
-            bool createCustomerConfirmed = await confirmCustomerCreationCallback(order.Customer);
-            if (!createCustomerConfirmed)
+            logInfoCallback($"Checking existing order {order.OrderId.Value} in Bexio...");
+            string? existingEmail = await _bexioClient.GetOrderContactEmailAsync(order.OrderId.Value);
+            if (existingEmail == null)
             {
-                logInfoCallback("Order import cancelled (customer was not created).");
+                logInfoCallback($"[red]Error:[/] Order with ID {order.OrderId.Value} not found in Bexio.");
                 return false;
             }
-            logInfoCallback("Creating new customer in Bexio...");
-            contactId = await _bexioClient.CreateContactAsync(order.Customer);
-        }
-        logInfoCallback($"Customer matched (Bexio ID: {contactId.Value}). Creating order...");
 
-        int orderId = await _bexioClient.CreateOrderAsync(contactId.Value, order);
-        logInfoCallback($"Order created successfully (Bexio ID: {orderId}). Uploading positions...");
+            if (!string.Equals(existingEmail, order.Customer.Email, StringComparison.OrdinalIgnoreCase))
+            {
+                bool ignoreMismatch = await confirmEmailMismatchCallback(existingEmail, order.Customer.Email);
+                if (!ignoreMismatch)
+                {
+                    logInfoCallback("Order import cancelled due to email mismatch.");
+                    return false;
+                }
+                logInfoCallback("Email mismatch ignored by user. Proceeding with existing order...");
+            }
+
+            orderId = order.OrderId.Value;
+            logInfoCallback($"Existing order matched (Bexio ID: {orderId}). Uploading positions...");
+        }
+        else
+        {
+            int? contactId = await _bexioClient.FindContactIdAsync(order.Customer.Email);
+            if (!contactId.HasValue)
+            {
+                bool createCustomerConfirmed = await confirmCustomerCreationCallback(order.Customer);
+                if (!createCustomerConfirmed)
+                {
+                    logInfoCallback("Order import cancelled (customer was not created).");
+                    return false;
+                }
+                logInfoCallback("Creating new customer in Bexio...");
+                contactId = await _bexioClient.CreateContactAsync(order.Customer);
+            }
+            logInfoCallback($"Customer matched (Bexio ID: {contactId.Value}). Creating order...");
+
+            string titleTemplate = defaultOrderName ?? "Order: {CustomerName} {SeasonCode}";
+            order.Title = titleTemplate
+                .Replace("{CustomerName}", order.Customer.CompanyName ?? "")
+                .Replace("{SeasonCode}", seasonCode ?? "");
+
+            orderId = await _bexioClient.CreateOrderAsync(contactId.Value, order);
+            logInfoCallback($"Order created successfully (Bexio ID: {orderId}). Uploading positions...");
+        }
 
         int count = 0;
         for (int i = 0; i < order.Positions.Count; i++)
         {
             OrderPosition pos = order.Positions[i];
             
-            var articleId = await _bexioClient.FindArticleIdAsync(pos.ArticleNumber);
-            if (articleId.HasValue)
+            // ponytail: format search query as "{SeasonCode} {ArticleNo} {Color}"
+            string searchQuery = $"{seasonCode} {pos.ArticleNumber} {pos.Color}".Trim();
+            var article = await _bexioClient.FindArticleAsync(searchQuery);
+            if (article != null)
             {
-                await _bexioClient.AddArticlePositionAsync(orderId, articleId.Value, pos);
+                // ponytail: inline placeholder replacement instead of complex regex compiler
+                pos.PositionText = (positionTextTemplate ?? string.Empty)
+                    .Replace("{Color}", pos.Color ?? string.Empty)
+                    .Replace("{Size}", pos.Size ?? string.Empty)
+                    .Replace("{ArticleNumber}", pos.ArticleNumber ?? string.Empty)
+                    .Replace("{ArticleName}", pos.ArticleName ?? string.Empty)
+                    .Replace("{BexioArticleName}", article.InternName ?? string.Empty)
+                    .Replace("{BexioArticleDescription}", article.Text ?? string.Empty);
+
+
+                await _bexioClient.AddArticlePositionAsync(orderId, article.Id, pos);
             }
             else
             {
