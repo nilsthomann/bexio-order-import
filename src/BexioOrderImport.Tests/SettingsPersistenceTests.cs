@@ -402,7 +402,7 @@ public class SettingsPersistenceTests : IDisposable
             var mockClient = new Mock<IBexioClient>();
             mockClient.Setup(c => c.CheckConnectionAsync()).ReturnsAsync(true);
             mockClient.Setup(c => c.CreateOrderAsync(It.IsAny<int>(), It.IsAny<Order>())).ReturnsAsync(12345);
-            mockClient.Setup(c => c.FindArticleAsync(It.IsAny<string>())).ReturnsAsync(new BexioArticle { Id = 999, Text = "Product Description", InternName = "Product Name" });
+            mockClient.Setup(c => c.FindArticleAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>())).ReturnsAsync(new BexioArticle { Id = 999, Description = "Product Description", Name = "Product Name" });
             mockFactory.Setup(f => f.Create(It.IsAny<string>(), It.IsAny<int?>(), It.IsAny<int?>())).Returns(mockClient.Object);
 
             var vm = CreateVm(mockUpdate.Object, mockFactory.Object, _tempFilePath);
@@ -574,7 +574,7 @@ public class SettingsPersistenceTests : IDisposable
             // Test other fields
             vm.AccountId = 1;
             vm.AccountId.Should().Be(1);
- 
+
             vm.TaxId = 1;
             vm.TaxId.Should().Be(1);
 

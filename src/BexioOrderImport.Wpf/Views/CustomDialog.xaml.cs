@@ -105,7 +105,7 @@ public partial class CustomDialog : Window
             _isUnitTest = false;
             foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies())
             {
-                string name = assembly.FullName?.ToLowerInvariant() ?? "";
+                string name = assembly.FullName?.ToLowerInvariant() ?? string.Empty;
                 if (name.Contains("xunit") || name.Contains("test") || name.Contains("nunit") || name.Contains("runner"))
                 {
                     _isUnitTest = true;

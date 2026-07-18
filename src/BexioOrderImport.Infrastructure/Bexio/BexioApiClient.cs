@@ -5,6 +5,8 @@ using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Text;
 using System.Text.Json;
+using System.Text.RegularExpressions;
+using System.Linq;
 
 namespace BexioOrderImport.Infrastructure.Bexio;
 
@@ -18,6 +20,7 @@ public class BexioApiClient : IBexioClient
 
     private List<BexioAccount>? _cachedAccounts;
     private List<BexioTax>? _cachedTaxes;
+    private List<BexioArticle> _cachedArticles = [];
 
     public BexioApiClient(HttpClient httpClient, string apiToken, int? accountId, int? taxId, string language = "de")
     {
@@ -135,13 +138,54 @@ public class BexioApiClient : IBexioClient
         return contact?.EMail;
     }
 
-    public async Task<BexioArticle?> FindArticleAsync(string searchQuery)
+    public async Task<BexioArticle?> FindArticleAsync(string articleNumber, string color, string seasonCode)
     {
-        // 1. Search by intern_code (article number, e.g. "743097")
+        // Color can be "Black" or eg. "140 Black", we need only the Color Name
+        string cleanColor = Regex.Replace(color, @"^\d+", "").Trim();
+
+        var articles = await FindArticlesByInternCodeAsync(articleNumber, cleanColor, seasonCode);
+
+        if (articles?.Count == 1)
+        {
+            return articles[0];
+        }
+
+        // Fallback 
+        return await FindArticleByArticleNumberAndFilterAsync(articleNumber, cleanColor, seasonCode);
+    }
+
+    private async Task<List<BexioArticle>?> FindArticlesByInternCodeAsync(string articleNumber, string cleanColor, string seasonCode)
+    {
+        string internCode = $"{seasonCode?.Trim() ?? string.Empty}{articleNumber.Trim()}{cleanColor}".Trim();
+
         var searchPayload = new[]
         {
-            new { field = "intern_name", value = searchQuery, criteria = "like" }
+            new { field = "intern_code", value = internCode, criteria = "=" }
         };
+
+        if (_cachedArticles.Any(x => x.Code == internCode))
+            return [.. _cachedArticles.Where(x => x.Code == internCode)];
+
+        var body = new StringContent(JsonSerializer.Serialize(searchPayload), Encoding.UTF8, "application/json");
+        var response = await _httpClient.SendAsync(CreateRequest(HttpMethod.Post, "2.0/article/search", body));
+
+        if (response.IsSuccessStatusCode)
+        {
+            return await response.Content.ReadFromJsonAsync<List<BexioArticle>>();
+        }
+
+        return null;
+    }
+
+    private async Task<BexioArticle?> FindArticleByArticleNumberAndFilterAsync(string articleNumber, string cleanColor, string seasonCode)
+    {
+        var searchPayload = new[]
+        {
+            new { field = "intern_code", value = articleNumber.Trim(), criteria = "like" }
+        };
+
+        var cachedArticle = _cachedArticles.SingleOrDefault(x => x.Code.Contains(articleNumber.Trim(), StringComparison.InvariantCulture) && x.Name.Contains(cleanColor, StringComparison.InvariantCulture) && x.Name.Contains(seasonCode, StringComparison.InvariantCulture));
+        if (cachedArticle != null) return cachedArticle;
 
         var body = new StringContent(JsonSerializer.Serialize(searchPayload), Encoding.UTF8, "application/json");
         var response = await _httpClient.SendAsync(CreateRequest(HttpMethod.Post, "2.0/article/search", body));
@@ -151,20 +195,22 @@ public class BexioApiClient : IBexioClient
             var articles = await response.Content.ReadFromJsonAsync<List<BexioArticle>>();
             if (articles != null)
             {
-                if (articles.Count > 1)
-                {
-                    // ponytail: throw custom exception to trigger dialog warning on duplicates
-                    throw new DuplicateArticleException(searchQuery, articles.Count);
-                }
+                _cachedArticles = [.. _cachedArticles.UnionBy(articles, x => x.Id)];
+
                 if (articles.Count == 1)
                 {
                     return articles[0];
+                }
+                else if (articles.Count > 1)
+                {
+                    return articles.SingleOrDefault(x => x.Name.Contains(cleanColor, StringComparison.OrdinalIgnoreCase) && x.Name.Contains(seasonCode, StringComparison.OrdinalIgnoreCase));
                 }
             }
         }
 
         return null;
     }
+
 
     public async Task AddArticlePositionAsync(int orderId, int articleId, OrderPosition position)
     {

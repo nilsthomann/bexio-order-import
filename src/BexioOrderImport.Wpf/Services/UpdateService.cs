@@ -63,7 +63,7 @@ public class UpdateService : IUpdateService
             {
                 if (asset.TryGetProperty("name", out var nameProp))
                 {
-                    string name = nameProp.GetString() ?? "";
+                    string name = nameProp.GetString() ?? string.Empty;
                     if (name.Equals("BexioOrderImportSetup.exe", StringComparison.OrdinalIgnoreCase))
                     {
                         return asset.GetProperty("browser_download_url").GetString();
@@ -97,7 +97,7 @@ public class UpdateService : IUpdateService
             var root = doc.RootElement;
 
             if (!root.TryGetProperty("tag_name", out var tagProp)) return null;
-            string rawTag = tagProp.GetString() ?? "";
+            string rawTag = tagProp.GetString() ?? string.Empty;
 
             var currentVersion = Assembly.GetExecutingAssembly().GetName().Version;
             if (!IsNewerVersion(rawTag, currentVersion)) return null;
@@ -105,7 +105,7 @@ public class UpdateService : IUpdateService
             string? downloadUrl = FindInstallerDownloadUrl(root);
             if (string.IsNullOrEmpty(downloadUrl)) return null;
 
-            string body = root.TryGetProperty("body", out var bodyProp) ? bodyProp.GetString() ?? "" : "";
+            string body = root.TryGetProperty("body", out var bodyProp) ? bodyProp.GetString() ?? string.Empty : "";
 
             return new UpdateInfo
             {

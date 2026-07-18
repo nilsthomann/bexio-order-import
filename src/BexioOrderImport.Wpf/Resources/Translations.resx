@@ -573,7 +573,4 @@
   <data name="Import_EmailMismatchMessage" xml:space="preserve">
     <value>Die E-Mail-Adresse des existierenden Auftrags in Bexio ('{0}') stimmt nicht mit der E-Mail-Adresse im Excel-Sheet ('{1}') überein. Möchten Sie den Import trotzdem fortsetzen?</value>
   </data>
-  <data name="Error_MultipleArticlesFound" xml:space="preserve">
-    <value>Mehrere Artikel ({1} gefunden) entsprechen der Suchanfrage '{0}'. Die Suche muss eindeutig sein.</value>
-  </data>
 </root>

@@ -132,7 +132,7 @@ public class BexioApiClientTests
             {
                 var response = new HttpResponseMessage(HttpStatusCode.OK)
                 {
-                    Content = new StringContent("[{\"id\": 77777, \"text\": \"Sample Product Description\"}]", System.Text.Encoding.UTF8, "application/json")
+                    Content = new StringContent("[{\"id\": 77777, \"internal_name\": \"Sample Product Name\",\"internal_description\": \"Sample Product Description\"}]", System.Text.Encoding.UTF8, "application/json")
                 };
                 return Task.FromResult(response);
             }
@@ -142,16 +142,17 @@ public class BexioApiClientTests
         var client = new BexioApiClient(httpClient, "dummy-token", 1, 1);
 
         // Act
-        var result = await client.FindArticleAsync("ART-001"); ;
+        var result = await client.FindArticleAsync("ART-001", "Black", "FS27"); ;
 
         // Assert
         result.Should().NotBeNull();
         result!.Id.Should().Be(77777);
-        result.Text.Should().Be("Sample Product Description");
+        result.Name.Should().Be("Sample Product Name");
+        result.Description.Should().Be("Sample Product Description");
     }
 
     [Fact]
-    public async Task FindArticleAsync_WithDuplicateArticles_ThrowsDuplicateArticleException()
+    public async Task FindArticleAsync_WithDuplicateArticles_Fallback_To_Filter_ReturnsArticle()
     {
         // Arrange
         var handler = new MockHttpMessageHandler
@@ -160,7 +161,10 @@ public class BexioApiClientTests
             {
                 var response = new HttpResponseMessage(HttpStatusCode.OK)
                 {
-                    Content = new StringContent("[{\"id\": 11}, {\"id\": 22}]", System.Text.Encoding.UTF8, "application/json")
+                    Content = new StringContent("[" +
+                    "{\"id\": 77777, \"internal_name\": \"FS27 Sample Product Name Black\",\"internal_description\": \"Sample Product Description\"}," +
+                    "{\"id\": 77778, \"internal_name\": \"FS27 Sample Product Name White\",\"internal_description\": \"Sample Product Description\"}]"
+                    , System.Text.Encoding.UTF8, "application/json")
                 };
                 return Task.FromResult(response);
             }
@@ -170,11 +174,13 @@ public class BexioApiClientTests
         var client = new BexioApiClient(httpClient, "dummy-token", 1, 1);
 
         // Act
-        Func<Task> act = () => client.FindArticleAsync("DUPLICATE");
+        var result = await client.FindArticleAsync("ART-001", "Black", "FS27"); ;
 
         // Assert
-        await act.Should().ThrowAsync<DuplicateArticleException>()
-            .Where(e => e.SearchQuery == "DUPLICATE" && e.MatchCount == 2);
+        result.Should().NotBeNull();
+        result!.Id.Should().Be(77777);
+        result.Name.Should().Be("Sample Product Name Black");
+        result.Description.Should().Be("Sample Product Description");
     }
 
     [Fact]
@@ -197,7 +203,7 @@ public class BexioApiClientTests
         var client = new BexioApiClient(httpClient, "dummy-token", 1, 1);
 
         // Act
-        var result = await client.FindArticleAsync("UNKNOWN");
+        var result = await client.FindArticleAsync("ART-01","Black", "FS27");
 
         // Assert
         result.Should().BeNull();

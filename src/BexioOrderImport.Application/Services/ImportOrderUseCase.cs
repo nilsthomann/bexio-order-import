@@ -1,5 +1,6 @@
 using BexioOrderImport.Application.Interfaces;
 using BexioOrderImport.Domain.Models;
+using System.Resources;
 
 namespace BexioOrderImport.Application.Services;
 
@@ -55,7 +56,7 @@ public class ImportOrderUseCase
             string? existingEmail = await _bexioClient.GetOrderContactEmailAsync(order.OrderId.Value);
             if (existingEmail == null)
             {
-                logInfoCallback($"[red]Error:[/] Order with ID {order.OrderId.Value} not found in Bexio.");
+                logInfoCallback($"⛔ Order with ID {order.OrderId.Value} not found in Bexio.");
                 return false;
             }
 
@@ -91,8 +92,8 @@ public class ImportOrderUseCase
 
             string titleTemplate = defaultOrderName ?? "Order: {CustomerName} {SeasonCode}";
             order.Title = titleTemplate
-                .Replace("{CustomerName}", order.Customer.CompanyName ?? "")
-                .Replace("{SeasonCode}", seasonCode ?? "");
+                .Replace("{CustomerName}", order.Customer.CompanyName ?? string.Empty)
+                .Replace("{SeasonCode}", seasonCode ?? string.Empty);
 
             orderId = await _bexioClient.CreateOrderAsync(contactId.Value, order);
             logInfoCallback($"Order created successfully (Bexio ID: {orderId}). Uploading positions...");
@@ -102,28 +103,25 @@ public class ImportOrderUseCase
         for (int i = 0; i < order.Positions.Count; i++)
         {
             OrderPosition pos = order.Positions[i];
-            
-            // ponytail: format search query as "{SeasonCode} {ArticleNo} {Color}"
-            string searchQuery = $"{seasonCode} {pos.ArticleNumber} {pos.Color}".Trim();
-            var article = await _bexioClient.FindArticleAsync(searchQuery);
+
+            var article = await _bexioClient.FindArticleAsync(pos.ArticleNumber, pos.Color, seasonCode ?? string.Empty);
             if (article != null)
             {
-                // ponytail: inline placeholder replacement instead of complex regex compiler
                 pos.PositionText = (positionTextTemplate ?? string.Empty)
                     .Replace("{Color}", pos.Color ?? string.Empty)
                     .Replace("{Size}", pos.Size ?? string.Empty)
                     .Replace("{ArticleNumber}", pos.ArticleNumber ?? string.Empty)
                     .Replace("{ArticleName}", pos.ArticleName ?? string.Empty)
-                    .Replace("{BexioArticleName}", article.InternName ?? string.Empty)
-                    .Replace("{BexioArticleDescription}", article.Text ?? string.Empty);
+                    .Replace("{BexioArticleName}", article.Name ?? string.Empty)
+                    .Replace("{BexioArticleDescription}", article.Description ?? string.Empty);
 
 
                 await _bexioClient.AddArticlePositionAsync(orderId, article.Id, pos);
             }
             else
             {
-                logInfoCallback($"[red]Error:[/] Article '{pos.ArticleNumber}' ({pos.ArticleName}) not found in Bexio.");
-                throw new InvalidOperationException($"Article '{pos.ArticleNumber}' ({pos.ArticleName}) not found in Bexio.");
+                logInfoCallback($"⛔ Article '{pos.ArticleNumber}' with color '{pos.Color}' and season code '{seasonCode}' not found in Bexio.");
+                throw new InvalidOperationException($"Article '{pos.ArticleNumber}' with color '{pos.Color}' and season code '{seasonCode}' not found in Bexio.");
             }
 
             count++;

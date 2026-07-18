@@ -190,12 +190,6 @@ public partial class MainViewModel
                 AppendLog("Import cancelled. File remains loaded.");
             }
         }
-        catch (DuplicateArticleException ex)
-        {
-            string localizedMsg = string.Format(Resources.Translations.Error_MultipleArticlesFound, ex.SearchQuery, ex.MatchCount);
-            AppendLog($"[Error] Error during import: {localizedMsg}");
-            _dialogService.ShowErrorDialog(localizedMsg, Resources.Translations.Dialog_ErrorTitle);
-        }
         catch (Exception ex)
         {
             AppendLog($"[Error] Error during import: {ex.Message}");
@@ -305,7 +299,7 @@ public partial class MainViewModel
         }
         catch (Exception ex)
         {
-            AppendLog($"[Warning] Could not load accounts: {ex.Message}");
+            AppendLog($"⚠️ Could not load accounts: {ex.Message}");
             if (AccountsList.Count == 0 && !AccountId.HasValue)
             {
                 AccountsList.Add(new BexioAccount { AccountNo = string.Empty, Name = string.Empty });
@@ -335,7 +329,7 @@ public partial class MainViewModel
         }
         catch (Exception ex)
         {
-            AppendLog($"[Warning] Could not load tax rates: {ex.Message}");
+            AppendLog($"⚠️ Could not load tax rates: {ex.Message}");
             if (TaxesList.Count == 0 && !TaxId.HasValue)
             {
                 TaxesList.Add(new BexioTax { DisplayName = string.Empty });

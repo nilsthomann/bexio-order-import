@@ -29,7 +29,7 @@ public partial class MainViewModel
                 }
                 catch (Exception ex)
                 {
-                    AppendLog($"[Warning] Could not copy appsettings.json template: {ex.Message}");
+                    AppendLog($"⚠️ Could not copy appsettings.json template: {ex.Message}");
                 }
             }
 

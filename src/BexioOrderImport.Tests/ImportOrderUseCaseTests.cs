@@ -28,7 +28,7 @@ public class ImportOrderUseCaseTests
         _parserMock.Setup(p => p.ParseOrderForm(It.IsAny<string>())).Returns(order);
         _clientMock.Setup(c => c.FindContactIdAsync(order.Customer.Email)).ReturnsAsync(123);
         _clientMock.Setup(c => c.CreateOrderAsync(123, order)).ReturnsAsync(456);
-        _clientMock.Setup(c => c.FindArticleAsync("123")).ReturnsAsync(new BexioArticle { Id = 789, Text = "Product Description Text", InternName = "Product Name Text" });
+        _clientMock.Setup(c => c.FindArticleAsync("123", "Black", "FS27")).ReturnsAsync(new BexioArticle { Id = 789, Description = "Product Description Text", Name = "Product Name Text" });
 
         var loggedMessages = new List<string>();
 
@@ -61,7 +61,7 @@ public class ImportOrderUseCaseTests
         _clientMock.Setup(c => c.FindContactIdAsync(order.Customer.Email)).ReturnsAsync((int?)null);
         _clientMock.Setup(c => c.CreateContactAsync(order.Customer)).ReturnsAsync(123);
         _clientMock.Setup(c => c.CreateOrderAsync(123, order)).ReturnsAsync(456);
-        _clientMock.Setup(c => c.FindArticleAsync("123")).ReturnsAsync(new BexioArticle { Id = 789, Text = "Product Description Text", InternName = "Product Name Text" });
+        _clientMock.Setup(c => c.FindArticleAsync("123", "Black", "FS27")).ReturnsAsync(new BexioArticle { Id = 789, Description = "Product Description Text", Name = "Product Name Text" });
 
         var loggedMessages = new List<string>();
 
@@ -162,7 +162,7 @@ public class ImportOrderUseCaseTests
         _parserMock.Setup(p => p.ParseOrderForm(It.IsAny<string>())).Returns(order);
         _clientMock.Setup(c => c.FindContactIdAsync(order.Customer.Email)).ReturnsAsync(123);
         _clientMock.Setup(c => c.CreateOrderAsync(123, order)).ReturnsAsync(456);
-        _clientMock.Setup(c => c.FindArticleAsync("UNKNOWN")).ReturnsAsync((BexioArticle?)null);
+        _clientMock.Setup(c => c.FindArticleAsync("123", "Black", "FS27")).ReturnsAsync((BexioArticle?)null);
 
         // Act
         Func<Task> act = () => _useCase.ExecuteAsync(
@@ -182,7 +182,7 @@ public class ImportOrderUseCaseTests
         order.OrderId = 456;
         _parserMock.Setup(p => p.ParseOrderForm(It.IsAny<string>())).Returns(order);
         _clientMock.Setup(c => c.GetOrderContactEmailAsync(456)).ReturnsAsync(order.Customer.Email);
-        _clientMock.Setup(c => c.FindArticleAsync("123")).ReturnsAsync(new BexioArticle { Id = 789, Text = "Product Description Text", InternName = "Product Name Text" });
+        _clientMock.Setup(c => c.FindArticleAsync("123", "Black", "FS27")).ReturnsAsync(new BexioArticle { Id = 789, Description = "Product Description Text", Name = "Product Name Text" });
 
         var loggedMessages = new List<string>();
 
@@ -212,7 +212,7 @@ public class ImportOrderUseCaseTests
         order.OrderId = 456;
         _parserMock.Setup(p => p.ParseOrderForm(It.IsAny<string>())).Returns(order);
         _clientMock.Setup(c => c.GetOrderContactEmailAsync(456)).ReturnsAsync("different@domain.com");
-        _clientMock.Setup(c => c.FindArticleAsync("123")).ReturnsAsync(new BexioArticle { Id = 789, Text = "Product Description Text", InternName = "Product Name Text" });
+        _clientMock.Setup(c => c.FindArticleAsync("123", "Black", "FS27")).ReturnsAsync(new BexioArticle { Id = 789, Description = "Product Description Text", Name = "Product Name Text" });
 
         var loggedMessages = new List<string>();
         bool mismatchCallbackCalled = false;
@@ -223,7 +223,8 @@ public class ImportOrderUseCaseTests
             showPreviewCallback: o => { },
             confirmUploadCallback: () => Task.FromResult(true),
             confirmCustomerCreationCallback: c => Task.FromResult(true),
-            confirmEmailMismatchCallback: (ex, el) => {
+            confirmEmailMismatchCallback: (ex, el) =>
+            {
                 mismatchCallbackCalled = true;
                 return Task.FromResult(true);
             },
@@ -300,10 +301,10 @@ public class ImportOrderUseCaseTests
         _parserMock.Setup(p => p.ParseOrderForm(It.IsAny<string>())).Returns(order);
         _clientMock.Setup(c => c.FindContactIdAsync(order.Customer.Email)).ReturnsAsync(123);
         _clientMock.Setup(c => c.CreateOrderAsync(123, order)).ReturnsAsync(456);
-        
+
         // The expected search query should be "FS27 123 Black"
-        _clientMock.Setup(c => c.FindArticleAsync("FS27 123 Black"))
-            .ReturnsAsync(new BexioArticle { Id = 789, Text = "Product Description", InternName = "Product Name" });
+        _clientMock.Setup(c => c.FindArticleAsync("123", "Black", "FS27"))
+            .ReturnsAsync(new BexioArticle { Id = 789, Description = "Product Description", Name = "Product Name" });
 
         // Act
         await _useCase.ExecuteAsync(
@@ -317,7 +318,7 @@ public class ImportOrderUseCaseTests
         );
 
         // Assert
-        _clientMock.Verify(c => c.FindArticleAsync("FS27 123 Black"), Times.Once);
+        _clientMock.Verify(c => c.FindArticleAsync("123", "Black", "FS27"), Times.Once);
     }
 
     private static Order CreateSampleOrder()
@@ -334,6 +335,7 @@ public class ImportOrderUseCaseTests
         {
             ArticleNumber = "123",
             ArticleName = "Test Artikel",
+            Color = "Black",
             Quantity = 2,
             UnitPrice = 10.0m
         });
