@@ -48,7 +48,13 @@ public partial class App : System.Windows.Application
 
         // Build DI container
         var services = new ServiceCollection();
-        services.AddHttpClient("BexioApi");
+        services.AddHttpClient("BexioApi")
+        .ConfigurePrimaryHttpMessageHandler(() => new SocketsHttpHandler
+         {
+             EnableMultipleHttp2Connections = true,
+             PooledConnectionLifetime = TimeSpan.FromMinutes(15),
+             KeepAlivePingDelay = TimeSpan.FromSeconds(30)
+         });
         services.AddSingleton<IBexioClientFactory, BexioClientFactory>();
         services.AddSingleton<IEncryptionService, DpapiEncryptionService>();
         services.AddSingleton<IDispatcherService, WpfDispatcherService>();

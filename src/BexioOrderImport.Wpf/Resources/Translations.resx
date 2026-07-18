@@ -225,6 +225,20 @@
   <data name="Import_SuccessMessage" xml:space="preserve">
     <value>Auftrag #{0} wurde erfolgreich in Bexio erstellt!</value>
   </data>
+  <data name="Import_SuccessDuration" xml:space="preserve">
+    <value>Benötigte Zeit: {0}</value>
+  </data>
+  <data name="Import_DoneButton" xml:space="preserve">
+    <value>Fertig</value>
+  </data>
+  <data name="Import_FileLockedTitle" xml:space="preserve">
+    <value>Datei wird verwendet</value>
+  </data>
+  <data name="Import_FileLockedMessage" xml:space="preserve">
+    <value>Die Datei "{0}" kann nicht geöffnet werden, da sie von einem anderen Programm (z.B. Microsoft Excel) verwendet wird.
+
+Bitte schliessen Sie die Datei in Excel und versuchen Sie es erneut.</value>
+  </data>
   <data name="Settings_Header" xml:space="preserve">
     <value>Konfigurations-Einstellungen</value>
   </data>
@@ -570,7 +584,16 @@
   <data name="Import_EmailMismatchTitle" xml:space="preserve">
     <value>E-Mail Abweichung</value>
   </data>
-  <data name="Import_EmailMismatchMessage" xml:space="preserve">
-    <value>Die E-Mail-Adresse des existierenden Auftrags in Bexio ('{0}') stimmt nicht mit der E-Mail-Adresse im Excel-Sheet ('{1}') überein. Möchten Sie den Import trotzdem fortsetzen?</value>
+  <data name="Import_RemainingTime" xml:space="preserve">
+    <value>Verbleibende Zeit: {0}</value>
+  </data>
+  <data name="Import_EstimatingTime" xml:space="preserve">
+    <value>Berechne...</value>
+  </data>
+  <data name="Import_ProgressTime" xml:space="preserve">
+    <value>Verstrichen: {0} | Verbleibend: {1}</value>
+  </data>
+  <data name="Import_ProgressTimeElapsedOnly" xml:space="preserve">
+    <value>Verstrichen: {0}</value>
   </data>
 </root>

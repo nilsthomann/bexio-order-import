@@ -22,6 +22,7 @@ public class ImportOrderUseCase
         Func<Customer, Task<bool>> confirmCustomerCreationCallback,
         Func<string, string, Task<bool>> confirmEmailMismatchCallback,
         Action<string> logInfoCallback,
+        Action<int, int>? progressCallback = null,
         string defaultOrderName = "Order: {CustomerName} {SeasonCode}",
         string seasonCode = "",
         string positionTextTemplate = "<strong>{BexioArticleName} Size {Size}</strong><br />{BexioArticleDescription}")
@@ -99,6 +100,12 @@ public class ImportOrderUseCase
             logInfoCallback($"Order created successfully (Bexio ID: {orderId}). Uploading positions...");
         }
 
+        logInfoCallback("Pre-fetching article data from Bexio...");
+        var uniqueArticleNumbers = order.Positions.Select(p => p.ArticleNumber).Distinct();
+        await _bexioClient.PreFetchArticlesAsync(seasonCode ?? string.Empty, uniqueArticleNumbers);
+
+        logInfoCallback($"Uploading {order.Positions.Count} positions to Bexio...");
+
         int count = 0;
         for (int i = 0; i < order.Positions.Count; i++)
         {
@@ -115,7 +122,6 @@ public class ImportOrderUseCase
                     .Replace("{BexioArticleName}", article.Name ?? string.Empty)
                     .Replace("{BexioArticleDescription}", article.Description ?? string.Empty);
 
-
                 await _bexioClient.AddArticlePositionAsync(orderId, article.Id, pos);
             }
             else
@@ -125,6 +131,7 @@ public class ImportOrderUseCase
             }
 
             count++;
+            progressCallback?.Invoke(count, order.Positions.Count);
             if (count % 5 == 0 || count == order.Positions.Count)
             {
                 logInfoCallback($"Positions uploaded: {count}/{order.Positions.Count}");

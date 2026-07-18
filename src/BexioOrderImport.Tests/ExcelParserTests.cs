@@ -123,6 +123,42 @@ public class ExcelParserTests
     }
 
     [Fact]
+    public void ParseOrderForm_WithFileStreamOpenWithReadWriteShare_ShouldSucceed()
+    {
+        // Arrange
+        string filePath = Path.Combine(Path.GetTempPath(), $"test_share_{Guid.NewGuid():N}.xlsx");
+        try
+        {
+            using (var wb = new ClosedXML.Excel.XLWorkbook())
+            {
+                var ws = wb.Worksheets.Add("Bestellformular");
+                ws.Cell("B4").Value = "Test Company";
+                ws.Cell("B5").Value = "Test Street";
+                ws.Cell("B6").Value = "8000 Zurich";
+                ws.Cell("E5").Value = "test@example.com";
+                ws.Cell("E4").Value = "Test Buyer";
+                ws.Cell("E6").Value = "1001";
+                ws.Cell("A9").Value = "30 Tage netto";
+                wb.SaveAs(filePath);
+            }
+
+            // Open file with FileShare.ReadWrite to simulate Excel open in read share
+            using var fileLockStream = new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
+
+            // Act
+            var order = _parser.ParseOrderForm(filePath);
+
+            // Assert
+            order.Should().NotBeNull();
+            order.Customer.CompanyName.Should().Be("Test Company");
+        }
+        finally
+        {
+            if (File.Exists(filePath)) File.Delete(filePath);
+        }
+    }
+
+    [Fact]
     public void InMemoryExcelParser_ShouldReturnProvidedOrder()
     {
         // Arrange

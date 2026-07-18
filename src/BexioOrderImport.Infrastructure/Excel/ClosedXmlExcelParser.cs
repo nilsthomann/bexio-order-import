@@ -20,7 +20,8 @@ public class ClosedXmlExcelParser : IExcelParser
         if (!File.Exists(filePath))
             throw new FileNotFoundException($"Excel file not found: {filePath}");
 
-        using var workbook = new XLWorkbook(filePath);
+        using var stream = new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
+        using var workbook = new XLWorkbook(stream);
         var sheet = workbook.Worksheet(_options.WorksheetIndex);
 
         var order = new Order

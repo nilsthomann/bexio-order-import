@@ -13,10 +13,6 @@ public class AppSettingsDto
 
     [JsonPropertyName("Profiles")]
     public List<MappingProfileDto> Profiles { get; set; } = new();
-
-    // Legacy single-profile key (read-only migration path)
-    [JsonPropertyName("ExcelMapping")]
-    public ExcelMappingDto? ExcelMapping { get; set; }
       
 }
 
@@ -50,10 +46,10 @@ public class ExcelMappingDto
     public int WorksheetIndex { get; set; } = 1;
 
     [JsonPropertyName("DefaultOrderName")]
-    public string DefaultOrderName { get; set; } = "Order: {CustomerName} {SeasonCode}";
+    public string DefaultOrderName { get; set; } = "Vororder {CustomerName} {SeasonCode}";
 
     [JsonPropertyName("SeasonCode")]
-    public string SeasonCode { get; set; } = string.Empty;
+    public string SeasonCode { get; set; } = "FS27";
 
     [JsonPropertyName("PositionTextTemplate")]
     public string PositionTextTemplate { get; set; } = "<strong>{BexioArticleName} Size {Size}</strong><br />{BexioArticleDescription}";

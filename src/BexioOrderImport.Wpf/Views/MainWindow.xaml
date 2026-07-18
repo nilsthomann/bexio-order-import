@@ -304,7 +304,14 @@
                     
                     <!-- Progress & Actions -->
                     <StackPanel Grid.Row="4" Margin="0,16,0,0" Orientation="Vertical">
-                        <ProgressBar Value="{Binding ProgressPercentage}" Visibility="{Binding IsImporting, Converter={StaticResource BooleanToVisibilityConverter}}" Margin="0,0,0,16"/>
+                        <Grid Visibility="{Binding IsImporting, Converter={StaticResource BooleanToVisibilityConverter}}" Margin="0,0,0,16">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                            </Grid.RowDefinitions>
+                            <ProgressBar Value="{Binding ProgressPercentage}" Height="6" Grid.Row="0" Margin="0,0,0,6"/>
+                            <TextBlock Text="{Binding RemainingTimeText}" Style="{StaticResource MutedTextBlockStyle}" FontSize="12" HorizontalAlignment="Right" Grid.Row="1"/>
+                        </Grid>
                         
                         <Grid>
                             <Grid.ColumnDefinitions>
@@ -675,47 +682,189 @@
             </StatusBarItem>
             </StatusBar>
 
-        <!-- Full Screen Loading Overlay for Bexio API Import (Pushes data to API) -->
+        <!-- Full Screen Loading & Success Modal Overlay for Bexio API Import -->
         <Grid Grid.Column="0" Grid.ColumnSpan="2" Grid.Row="0" Grid.RowSpan="2"
               Visibility="{Binding IsImportingActive, Converter={StaticResource BooleanToVisibilityConverter}}">
             <!-- Semi-transparent backdrop -->
-            <Rectangle Fill="#99000000"/>
+            <Rectangle Fill="#A8000000"/>
             
-            <!-- Loading Card -->
-            <Border Width="420" Height="220"
+            <!-- Modal Card -->
+            <Border Width="440" MinHeight="260"
                     HorizontalAlignment="Center"
                     VerticalAlignment="Center"
                     Background="{StaticResource BackgroundBrush}"
-                    CornerRadius="12"
+                    CornerRadius="16"
                     BorderBrush="{StaticResource BorderBrush}"
-                    BorderThickness="1">
+                    BorderThickness="1"
+                    Padding="28">
                 <Border.Effect>
-                    <DropShadowEffect Color="#000000" Opacity="0.25" BlurRadius="32" ShadowDepth="8" Direction="270"/>
+                    <DropShadowEffect Color="#000000" Opacity="0.35" BlurRadius="40" ShadowDepth="12" Direction="270"/>
                 </Border.Effect>
-                <Grid Margin="24">
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="*"/>
-                    </Grid.RowDefinitions>
-                    
-                    <!-- Spinner -->
-                    <Control Style="{StaticResource SpinnerStyle}" HorizontalAlignment="Center" Margin="0,0,0,16" Grid.Row="0"/>
-                    
-                    <!-- Title -->
-                    <TextBlock Text="{x:Static lex:Translations.Import_Importing}" 
-                               FontWeight="SemiBold" FontSize="15" 
-                               Foreground="{StaticResource TextBrush}"
-                               HorizontalAlignment="Center" Margin="0,0,0,8" Grid.Row="1"/>
-                    
-                    <!-- Subtext -->
-                    <TextBlock Text="{x:Static lex:Translations.Import_PleaseWait}" 
-                               Style="{StaticResource MutedTextBlockStyle}" 
-                               HorizontalAlignment="Center" Margin="0,0,0,24" Grid.Row="2"/>
-                    
-                    <!-- Progress Bar -->
-                    <ProgressBar Value="{Binding ProgressPercentage}" Height="6" Grid.Row="3" VerticalAlignment="Bottom"/>
+                
+                <Grid>
+                    <!-- STATE 1: IN PROGRESS (IsImportSuccess == False) -->
+                    <Grid Visibility="{Binding IsImportSuccess, Converter={StaticResource InverseBooleanToVisibilityConverter}}">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+                        
+                        <!-- Spinner -->
+                        <Control Style="{StaticResource SpinnerStyle}" HorizontalAlignment="Center" Margin="0,0,0,20" Grid.Row="0"/>
+                        
+                        <!-- Title -->
+                        <TextBlock Text="{x:Static lex:Translations.Import_Importing}" 
+                                   FontWeight="SemiBold" FontSize="16" 
+                                   Foreground="{StaticResource TextBrush}"
+                                   HorizontalAlignment="Center" Margin="0,0,0,8" Grid.Row="1"/>
+                        
+                        <!-- Subtext -->
+                        <TextBlock Text="{x:Static lex:Translations.Import_PleaseWait}" 
+                                   Style="{StaticResource MutedTextBlockStyle}" 
+                                   HorizontalAlignment="Center" Margin="0,0,0,8" Grid.Row="2"/>
+
+                        <!-- Remaining Time Text -->
+                        <TextBlock Text="{Binding RemainingTimeText}" 
+                                   Style="{StaticResource MutedTextBlockStyle}" 
+                                   FontSize="12" FontWeight="Medium"
+                                   Foreground="{StaticResource AccentBrush}"
+                                   HorizontalAlignment="Center" Margin="0,0,0,20" Grid.Row="3"
+                                   Visibility="{Binding RemainingTimeText, Converter={StaticResource NullToVisibilityConverter}}"/>
+                        
+                        <!-- Progress Bar -->
+                        <ProgressBar Value="{Binding ProgressPercentage}" Height="6" Grid.Row="4" VerticalAlignment="Bottom"/>
+                    </Grid>
+
+                    <!-- STATE 2: SUCCESS STATE (IsImportSuccess == True) -->
+                    <Grid Visibility="{Binding IsImportSuccess, Converter={StaticResource BooleanToVisibilityConverter}}">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+
+                        <!-- Animated Celebration Graphic Container -->
+                        <Grid Grid.Row="0" HorizontalAlignment="Center" Margin="0,0,0,20" Width="100" Height="100">
+                            <!-- Sprinkle Particles Burst -->
+                            <Canvas x:Name="SprinklesCanvas" Width="100" Height="100" RenderTransformOrigin="0.5,0.5">
+                                <Canvas.RenderTransform>
+                                    <ScaleTransform ScaleX="1" ScaleY="1"/>
+                                </Canvas.RenderTransform>
+                                <Canvas.Style>
+                                    <Style TargetType="Canvas">
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding IsImportSuccess}" Value="True">
+                                                <DataTrigger.EnterActions>
+                                                    <BeginStoryboard>
+                                                        <Storyboard>
+                                                            <DoubleAnimation Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleX)"
+                                                                             From="0.2" To="1.25" Duration="0:0:0.65"/>
+                                                            <DoubleAnimation Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleY)"
+                                                                             From="0.2" To="1.25" Duration="0:0:0.65"/>
+                                                            <DoubleAnimation Storyboard.TargetProperty="Opacity"
+                                                                             From="0.0" To="1.0" Duration="0:0:0.3" AutoReverse="True"/>
+                                                        </Storyboard>
+                                                    </BeginStoryboard>
+                                                </DataTrigger.EnterActions>
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </Canvas.Style>
+                                <Ellipse Width="6" Height="6" Fill="#10B981" Canvas.Left="47" Canvas.Top="6"/>
+                                <Ellipse Width="7" Height="7" Fill="#3B82F6" Canvas.Left="76" Canvas.Top="18"/>
+                                <Ellipse Width="6" Height="6" Fill="#F59E0B" Canvas.Left="86" Canvas.Top="47"/>
+                                <Ellipse Width="7" Height="7" Fill="#10B981" Canvas.Left="74" Canvas.Top="76"/>
+                                <Ellipse Width="6" Height="6" Fill="#EC4899" Canvas.Left="47" Canvas.Top="86"/>
+                                <Ellipse Width="7" Height="7" Fill="#8B5CF6" Canvas.Left="18" Canvas.Top="76"/>
+                                <Ellipse Width="6" Height="6" Fill="#10B981" Canvas.Left="8" Canvas.Top="47"/>
+                                <Ellipse Width="7" Height="7" Fill="#3B82F6" Canvas.Left="18" Canvas.Top="18"/>
+                            </Canvas>
+
+                            <!-- Green Filled Circle with Masked Checkmark -->
+                            <Grid Width="64" Height="64" HorizontalAlignment="Center" VerticalAlignment="Center" RenderTransformOrigin="0.5,0.5">
+                                <Grid.RenderTransform>
+                                    <ScaleTransform ScaleX="1" ScaleY="1"/>
+                                </Grid.RenderTransform>
+                                <Grid.Style>
+                                    <Style TargetType="Grid">
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding IsImportSuccess}" Value="True">
+                                                <DataTrigger.EnterActions>
+                                                    <BeginStoryboard>
+                                                        <Storyboard>
+                                                            <DoubleAnimation Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleX)"
+                                                                             From="0.2" To="1.0" Duration="0:0:0.5">
+                                                                <DoubleAnimation.EasingFunction>
+                                                                    <BackEase EasingMode="EaseOut" Amplitude="0.7"/>
+                                                                </DoubleAnimation.EasingFunction>
+                                                            </DoubleAnimation>
+                                                            <DoubleAnimation Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleY)"
+                                                                             From="0.2" To="1.0" Duration="0:0:0.5">
+                                                                <DoubleAnimation.EasingFunction>
+                                                                    <BackEase EasingMode="EaseOut" Amplitude="0.7"/>
+                                                                </DoubleAnimation.EasingFunction>
+                                                            </DoubleAnimation>
+                                                        </Storyboard>
+                                                    </BeginStoryboard>
+                                                </DataTrigger.EnterActions>
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </Grid.Style>
+
+                                <Ellipse Width="64" Height="64">
+                                    <Ellipse.Fill>
+                                        <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                                            <GradientStop Color="#8B5CF6" Offset="0.0"/>
+                                            <GradientStop Color="#6D28D9" Offset="1.0"/>
+                                        </LinearGradientBrush>
+                                    </Ellipse.Fill>
+                                    <Ellipse.Effect>
+                                        <DropShadowEffect Color="#7C3AED" Opacity="0.45" BlurRadius="20" ShadowDepth="4" Direction="270"/>
+                                    </Ellipse.Effect>
+                                </Ellipse>
+
+                                <!-- Perfectly Centered White Masked Checkmark Path -->
+                                <Canvas Width="64" Height="64" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                    <Path Data="M19,33 L27,41 L45,23" 
+                                          Stroke="White" 
+                                          StrokeThickness="4.5" 
+                                          StrokeStartLineCap="Round" 
+                                          StrokeEndLineCap="Round" 
+                                          StrokeLineJoin="Round"/>
+                                </Canvas>
+                            </Grid>
+                        </Grid>
+
+                        <!-- Title -->
+                        <TextBlock Text="{Binding ImportSuccessTitle}" 
+                                   FontWeight="Bold" FontSize="18" 
+                                   Foreground="{StaticResource TextBrush}"
+                                   HorizontalAlignment="Center" Margin="0,0,0,8" Grid.Row="1"/>
+                        
+                        <!-- Success Message -->
+                        <TextBlock Text="{Binding ImportSuccessMessage}" 
+                                   Style="{StaticResource MutedTextBlockStyle}" 
+                                   FontSize="13" TextWrapping="Wrap" TextAlignment="Center"
+                                   HorizontalAlignment="Center" Margin="0,0,0,8" Grid.Row="2"/>
+
+                        <!-- Duration Text -->
+                        <TextBlock Text="{Binding ImportDurationText}" 
+                                   FontWeight="SemiBold" FontSize="13"
+                                   Foreground="{StaticResource AccentBrush}"
+                                   HorizontalAlignment="Center" Margin="0,0,0,24" Grid.Row="3"/>
+                        
+                        <!-- Done Button -->
+                        <Button Content="{x:Static lex:Translations.Import_DoneButton}" 
+                                Command="{Binding CloseImportSuccessCommand}"
+                                Style="{StaticResource ModernButtonStyle}" 
+                                Width="140" HorizontalAlignment="Center" Grid.Row="4"/>
+                    </Grid>
                 </Grid>
             </Border>
         </Grid>

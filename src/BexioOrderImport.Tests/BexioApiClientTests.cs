@@ -179,7 +179,7 @@ public class BexioApiClientTests
         // Assert
         result.Should().NotBeNull();
         result!.Id.Should().Be(77777);
-        result.Name.Should().Be("Sample Product Name Black");
+        result.Name.Should().Be("FS27 Sample Product Name Black");
         result.Description.Should().Be("Sample Product Description");
     }
 
@@ -414,5 +414,76 @@ public class BexioApiClientTests
         result[0].Code.Should().Be("MWST_77");
         result[0].DisplayName.Should().Be("MwSt 7.7");
         result[0].Type.Should().Be("sales_tax");
+    }
+
+    [Fact]
+    public async Task GetOrderContactEmailAsync_WhenOrderAndContactExist_ReturnsEmail()
+    {
+        // Arrange
+        var handler = new MockHttpMessageHandler
+        {
+            SendAsyncFunc = (req, token) =>
+            {
+                var uri = req.RequestUri!.ToString();
+                if (uri.Contains("kb_order/456"))
+                {
+                    return Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK)
+                    {
+                        Content = new StringContent("{\"id\": 456, \"contact_id\": 999}", System.Text.Encoding.UTF8, "application/json")
+                    });
+                }
+                if (uri.Contains("contact/999"))
+                {
+                    return Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK)
+                    {
+                        Content = new StringContent("{\"id\": 999, \"mail\": \"client@domain.com\"}", System.Text.Encoding.UTF8, "application/json")
+                    });
+                }
+                return Task.FromResult(new HttpResponseMessage(HttpStatusCode.NotFound));
+            }
+        };
+
+        var httpClient = new HttpClient(handler);
+        var client = new BexioApiClient(httpClient, "dummy-token", 1, 1);
+
+        // Act
+        var email = await client.GetOrderContactEmailAsync(456);
+
+        // Assert
+        email.Should().Be("client@domain.com");
+    }
+
+    [Fact]
+    public async Task PreFetchArticlesAsync_CachesArticles_SubsequentLookupsUseCache()
+    {
+        // Arrange
+        int apiCallCount = 0;
+        var handler = new MockHttpMessageHandler
+        {
+            SendAsyncFunc = (req, token) =>
+            {
+                apiCallCount++;
+                var response = new HttpResponseMessage(HttpStatusCode.OK)
+                {
+                    Content = new StringContent("[{\"id\": 500, \"intern_code\": \"FS27ART-100Black\", \"intern_name\": \"FS27 Sample Black\"}]", System.Text.Encoding.UTF8, "application/json")
+                };
+                return Task.FromResult(response);
+            }
+        };
+
+        var httpClient = new HttpClient(handler);
+        var client = new BexioApiClient(httpClient, "dummy-token", 1, 1);
+
+        // Act - PreFetch
+        await client.PreFetchArticlesAsync("FS27", ["ART-100"]);
+        int initialCallCount = apiCallCount;
+
+        // Act - Find Article (should hit cache)
+        var article = await client.FindArticleAsync("ART-100", "140 Black", "FS27");
+
+        // Assert
+        article.Should().NotBeNull();
+        article!.Id.Should().Be(500);
+        apiCallCount.Should().Be(initialCallCount); // No additional API calls made
     }
 }

@@ -434,10 +434,13 @@ public class SettingsPersistenceTests : IDisposable
 
             // Assert
             vm.IsImporting.Should().BeFalse();
+            vm.IsImportSuccess.Should().BeTrue();
+            vm.ImportSuccessMessage.Should().Contain("12345");
+
+            // Close success modal dialog
+            vm.CloseImportSuccessCommand.Execute(null);
             vm.HasLoadedFile.Should().BeFalse();
-            vm.LogText.Should().Contain("Import completed successfully");
-            infoMessage.Should().NotBeNull();
-            infoMessage.Should().Contain("12345");
+            vm.IsImportSuccess.Should().BeFalse();
         });
     }
 
@@ -960,12 +963,16 @@ public class SettingsPersistenceTests : IDisposable
                     ""TaxId"": 1,
                     ""Language"": ""de""
                 },
-                ""ExcelMapping"": {
-                    ""WorksheetIndex"": 1,
-                    ""Header"": { ""CompanyNameCell"": ""B4"" },
-                    ""SizeMatrix"": { ""StartRow"": 10 },
-                    ""Data"": { ""StartRow"": 18 }
-                }
+                ""ActiveProfileName"": ""Default"",
+                ""Profiles"": [
+                    {
+                        ""Name"": ""Default"",
+                        ""ExcelMapping"": {
+                            ""WorksheetIndex"": 1,
+                            ""Header"": { ""CompanyNameCell"": ""B4"" }
+                        }
+                    }
+                ]
             }";
             string path = Path.Combine(Path.GetTempPath(), $"{Guid.NewGuid()}.json");
             File.WriteAllText(path, legacyJson);

@@ -66,7 +66,7 @@ public partial class MainViewModel
             ApplyLanguage(SelectedLanguage);
 
             Profiles.Clear();
-            if (dto.Profiles.Count > 0)
+            if (dto.Profiles != null && dto.Profiles.Count > 0)
             {
                 foreach (var p in dto.Profiles)
                 {
@@ -75,10 +75,9 @@ public partial class MainViewModel
             }
             else
             {
-                // Legacy single-profile migration
-                var mapping = dto.ExcelMapping != null ? MapDtoToOptions(dto.ExcelMapping) : new ExcelMappingOptions();
-                Profiles.Add(new Models.MappingProfile { Name = "Default", Mapping = mapping });
+                Profiles.Add(new Models.MappingProfile { Name = "Default", Mapping = new ExcelMappingOptions() });
             }
+
 
             var active = Profiles.FirstOrDefault(p => p.Name.Equals(dto.ActiveProfileName, StringComparison.OrdinalIgnoreCase)) ?? Profiles[0];
             _activeProfile = active;
@@ -122,7 +121,7 @@ public partial class MainViewModel
             };
 
             File.WriteAllText(_configFilePath, JsonSerializer.Serialize(settingsObj, new JsonSerializerOptions { WriteIndented = true }));
-            
+
             _ = CheckBexioConnectionAsync();
 
             if (!string.IsNullOrEmpty(SelectedFilePath) && File.Exists(SelectedFilePath))
@@ -134,7 +133,7 @@ public partial class MainViewModel
             bool languageChanged = SelectedLanguage != _initialLanguage;
 
             HandleLanguageReload(languageChanged);
-            
+
             AppendLog("Settings saved successfully and active Excel file reloaded.");
             IsModified = false;
             SaveSettingsCommand.RaiseCanExecuteChanged();

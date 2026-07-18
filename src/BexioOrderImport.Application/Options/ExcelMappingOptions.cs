@@ -3,8 +3,8 @@ namespace BexioOrderImport.Application.Options;
 public class ExcelMappingOptions
 {
     public int WorksheetIndex { get; set; } = 1;
-    public string DefaultOrderName { get; set; } = "Order: {CustomerName} {SeasonCode}";
-    public string SeasonCode { get; set; } = string.Empty;
+    public string DefaultOrderName { get; set; } = "Vororder: {CustomerName} {SeasonCode}";
+    public string SeasonCode { get; set; } = "FS27";
     public string PositionTextTemplate { get; set; } = "<strong>{BexioArticleName} Size {Size}</strong><br />{BexioArticleDescription}";
     public HeaderMapping Header { get; set; } = new();
     public SizeMatrixMapping SizeMatrix { get; set; } = new();

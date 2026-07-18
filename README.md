@@ -2,7 +2,7 @@
 
 An automated, enterprise-ready utility to parse complex Excel order forms, transform the data, and import customer metadata and order positions directly into the Bexio REST API.
 
-The project features a modern, clean **WPF Desktop Application** built following MVVM principles (using a custom Nordic Minimalist style, blur backdrops, and interactive animations), as well as a **Command Line Interface (CLI)** for automated batch processing.
+The project features a modern, clean **WPF Desktop Application** built following MVVM principles (using a custom Nordic Minimalist style, blur backdrops, and interactive animations).
 
 ---
 
@@ -29,7 +29,9 @@ The project features a modern, clean **WPF Desktop Application** built following
 - **Bexio API Integration**:
   - Searches contacts dynamically by email.
   - Interactive validation card to review and update new customer details before automatic DB insertion.
-  - Generates draft orders mapping correct catalog articles, accounting books, and tax rates.
+  - Appends positions directly to existing Bexio order IDs if present, with email mismatch confirmation.
+  - Pre-fetches articles in bulk and uploads positions concurrently for maximum performance.
+  - Customizable position text templates supporting `{Color}`, `{Size}`, `{ArticleNumber}`, `{ArticleName}`, `{BexioArticleName}`, and `{BexioArticleDescription}`.
   - Strict article validation: If an article is not found by article number in Bexio, the import is immediately aborted and an error is shown.
 - **Auto-Updater & Settings Preservation**:
   - Automatically queries the GitHub Releases API on launch.
@@ -61,12 +63,11 @@ The solution is built following Clean Architecture practices and separated into:
 
 ```
 src/
-├── BexioOrderImport.Domain/          # Domain models (Order, Customer, OrderPosition)
+├── BexioOrderImport.Domain/          # Domain models (Order, Customer, OrderPosition, Bexio models)
 ├── BexioOrderImport.Application/     # Core business logic & interfaces (UseCases, Interfaces)
 ├── BexioOrderImport.Infrastructure/  # External integrations (Bexio REST Client, ClosedXML Parser)
-├── BexioOrderImport.Cli/             # Console CLI application
 ├── BexioOrderImport.Wpf/             # WPF Desktop App (MVVM views, custom dialogs, styles)
-└── BexioOrderImport.Tests/           # Unit and VM tests (28 test cases, xUnit & Coverlet)
+└── BexioOrderImport.Tests/           # Unit and VM tests (xUnit & Coverlet)
 ```
 
 ---

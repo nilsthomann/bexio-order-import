@@ -14,6 +14,8 @@ namespace BexioOrderImport.Wpf.ViewModels;
 
 public partial class MainViewModel
 {
+    private readonly System.Collections.Generic.List<(DateTime Timestamp, double UploadedCount)> _progressSamples = new();
+
     public async Task LoadExcelFileAsync(string? filePath = null)
     {
         if (filePath == null)
@@ -61,10 +63,22 @@ public partial class MainViewModel
         }
         catch (Exception ex)
         {
-            AppendLog($"[Error] Error reading Excel file: {ex.Message}");
+            AppendLog($"⛔ Error reading Excel file: {ex.Message}");
             _loadedOrder = null;
             HasLoadedFile = false;
             ImportCommand.RaiseCanExecuteChanged();
+
+            if (IsFileLockedException(ex))
+            {
+                string fileName = !string.IsNullOrEmpty(filePath) ? Path.GetFileName(filePath) : "Excel";
+                string title = Resources.Translations.Import_FileLockedTitle;
+                string message = string.Format(Resources.Translations.Import_FileLockedMessage, fileName);
+                _dialogService.ShowErrorDialog(message, title);
+            }
+            else
+            {
+                _dialogService.ShowErrorDialog(ex.Message, Resources.Translations.Dialog_ErrorTitle);
+            }
         }
         finally
         {
@@ -132,7 +146,24 @@ public partial class MainViewModel
         IsImportingActive = true;
         LogText = string.Empty;
         ProgressPercentage = 0;
+        RemainingTimeText = string.Empty;
         AppendLog("Starting import process...");
+
+        _progressSamples.Clear();
+        var importStopwatch = System.Diagnostics.Stopwatch.StartNew();
+        double currentUploaded = 0;
+        double currentTotal = 0;
+
+        // Periodic timer to tick elapsed time every second on UI
+        var uiTimer = new System.Windows.Threading.DispatcherTimer
+        {
+            Interval = TimeSpan.FromSeconds(1)
+        };
+        uiTimer.Tick += (s, e) =>
+        {
+            UpdateRemainingTime(currentUploaded, currentTotal, importStopwatch);
+        };
+        uiTimer.Start();
 
         try
         {
@@ -154,20 +185,27 @@ public partial class MainViewModel
                     InvokeOnUi(() =>
                     {
                         AppendLog(message);
-                        if (message.Contains("Positions uploaded:"))
-                        {
-                            var parts = message.Split(':').Last().Trim().Split('/');
-                            if (parts.Length == 2 && double.TryParse(parts[0], out double uploaded) && double.TryParse(parts[1], out double total))
-                            {
-                                ProgressPercentage = (uploaded / total) * 100;
-                            }
-                        }
-                        
                         var match = System.Text.RegularExpressions.Regex.Match(message, @"Bexio ID:\s*(\d+)");
                         if (match.Success && int.TryParse(match.Groups[1].Value, out var id))
                         {
                             createdOrderId = id;
                         }
+                    });
+                },
+                progressCallback: (uploaded, total) =>
+                {
+                    InvokeOnUi(() =>
+                    {
+                        currentUploaded = uploaded;
+                        currentTotal = total;
+                        ProgressPercentage = ((double)uploaded / total) * 100;
+                        _progressSamples.Add((DateTime.UtcNow, uploaded));
+
+                        // Keep samples from the last 3 minutes to maintain memory efficiency
+                        var cutoff = DateTime.UtcNow.AddMinutes(-3);
+                        _progressSamples.RemoveAll(s => s.Timestamp < cutoff);
+
+                        UpdateRemainingTime(currentUploaded, currentTotal, importStopwatch);
                     });
                 },
                 defaultOrderName: DefaultOrderName,
@@ -177,32 +215,138 @@ public partial class MainViewModel
 
             if (success)
             {
+                importStopwatch.Stop();
+                TimeSpan duration = importStopwatch.Elapsed;
+                string formattedDuration = string.Format("{0:D2}:{1:D2} Min", (int)duration.TotalMinutes, duration.Seconds);
+
                 ProgressPercentage = 100;
+                RemainingTimeText = string.Empty;
                 InvokeOnUi(() =>
                 {
-                    ClearLoadedFileInternal("Import completed successfully. File selection reset.");
-                    _dialogService.ShowInfoDialog(string.Format(Resources.Translations.Import_SuccessMessage, createdOrderId > 0 ? createdOrderId.ToString() : "?"));
+                    ImportSuccessTitle = Resources.Translations.Import_SuccessTitle;
+                    ImportSuccessMessage = string.Format(Resources.Translations.Import_SuccessMessage, createdOrderId > 0 ? createdOrderId.ToString() : "?");
+                    ImportDurationText = string.Format(Resources.Translations.Import_SuccessDuration, formattedDuration);
+                    IsImportSuccess = true;
                 });
             }
             else
             {
                 ProgressPercentage = 0;
+                RemainingTimeText = string.Empty;
                 AppendLog("Import cancelled. File remains loaded.");
             }
         }
         catch (Exception ex)
         {
-            AppendLog($"[Error] Error during import: {ex.Message}");
-            _dialogService.ShowErrorDialog(ex.Message, Resources.Translations.Dialog_ErrorTitle);
+            AppendLog($"⛔ Error during import: {ex.Message}");
+            if (IsFileLockedException(ex))
+            {
+                string fileName = !string.IsNullOrEmpty(SelectedFilePath) ? Path.GetFileName(SelectedFilePath) : "Excel";
+                string title = Resources.Translations.Import_FileLockedTitle;
+                string message = string.Format(Resources.Translations.Import_FileLockedMessage, fileName);
+                _dialogService.ShowErrorDialog(message, title);
+            }
+            else
+            {
+                _dialogService.ShowErrorDialog(ex.Message, Resources.Translations.Dialog_ErrorTitle);
+            }
         }
         finally
         {
+            uiTimer.Stop();
             IsImporting = false;
-            IsImportingActive = false;
+            if (!IsImportSuccess)
+            {
+                IsImportingActive = false;
+            }
+            RemainingTimeText = string.Empty;
         }
     }
 
+    private static bool IsFileLockedException(Exception ex)
+    {
+        Exception? current = ex;
+        while (current != null)
+        {
+            if (current is System.IO.IOException ioEx)
+            {
+                int hr = System.Runtime.InteropServices.Marshal.GetHRForException(ioEx) & 0xFFFF;
+                if (hr == 32 || hr == 33) return true; // ERROR_SHARING_VIOLATION or ERROR_LOCK_VIOLATION
 
+                string msg = ioEx.Message;
+                if (msg.Contains("being used by another process", StringComparison.OrdinalIgnoreCase) ||
+                    msg.Contains("wird von einem anderen Prozess verwendet", StringComparison.OrdinalIgnoreCase) ||
+                    msg.Contains("cannot access the file", StringComparison.OrdinalIgnoreCase) ||
+                    msg.Contains("Prozess kann nicht auf die Datei zugreifen", StringComparison.OrdinalIgnoreCase))
+                {
+                    return true;
+                }
+            }
+            current = current.InnerException;
+        }
+        return false;
+    }
+
+    private void UpdateRemainingTime(double uploaded, double total, System.Diagnostics.Stopwatch stopwatch)
+    {
+        TimeSpan elapsedTs = stopwatch.Elapsed;
+        string elapsedStr = string.Format("{0:D2}:{1:D2}", (int)elapsedTs.TotalMinutes, elapsedTs.Seconds);
+
+        if (uploaded <= 0 || total <= 0 || uploaded >= total)
+        {
+            RemainingTimeText = string.Format(Resources.Translations.Import_ProgressTimeElapsedOnly, elapsedStr);
+            return;
+        }
+
+        // If we have fewer than 2 samples or fewer than 3 items uploaded, show estimating
+        if (_progressSamples.Count < 2 || uploaded < 3)
+        {
+            RemainingTimeText = string.Format(Resources.Translations.Import_ProgressTime, elapsedStr, Resources.Translations.Import_EstimatingTime);
+            return;
+        }
+
+        DateTime now = DateTime.UtcNow;
+
+        // Take a reference sample from ~15-20 positions ago (or at least 5 seconds ago)
+        // to calculate the current rolling velocity per position rather than the overall average.
+        var referenceSample = _progressSamples
+            .Where(s => s.UploadedCount <= uploaded - 10 && (now - s.Timestamp).TotalSeconds >= 5)
+            .LastOrDefault();
+
+        if (referenceSample.UploadedCount == 0 && _progressSamples.Count > 0)
+        {
+            referenceSample = _progressSamples.First();
+        }
+
+        double deltaItems = uploaded - referenceSample.UploadedCount;
+        double deltaSeconds = (now - referenceSample.Timestamp).TotalSeconds;
+
+        double secondsPerItem;
+        if (deltaItems > 0 && deltaSeconds > 0)
+        {
+            secondsPerItem = deltaSeconds / deltaItems;
+        }
+        else
+        {
+            secondsPerItem = elapsedTs.TotalSeconds / uploaded;
+        }
+
+        double remainingItems = total - uploaded;
+        double remainingSeconds = Math.Max(0, remainingItems * secondsPerItem);
+
+        TimeSpan remainingTs = TimeSpan.FromSeconds(remainingSeconds);
+        string formattedRemaining;
+        if (remainingTs.TotalMinutes < 1)
+        {
+            formattedRemaining = $"~{Math.Max(1, (int)Math.Ceiling(remainingSeconds))}s";
+        }
+        else
+        {
+            formattedRemaining = $"~{(int)remainingTs.TotalMinutes}m {remainingTs.Seconds}s";
+        }
+
+        RemainingTimeText = string.Format(Resources.Translations.Import_ProgressTime, elapsedStr, formattedRemaining);
+    }
 
     private async Task<bool> ConfirmUploadAsync()
     {

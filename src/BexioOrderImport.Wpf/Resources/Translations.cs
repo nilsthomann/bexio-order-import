@@ -160,4 +160,12 @@ public static class Translations
     public static string Error_SelectAccountAndTax => ResourceManager.GetString(nameof(Error_SelectAccountAndTax)) ?? string.Empty;
     public static string Import_EmailMismatchTitle => ResourceManager.GetString(nameof(Import_EmailMismatchTitle)) ?? string.Empty;
     public static string Import_EmailMismatchMessage => ResourceManager.GetString(nameof(Import_EmailMismatchMessage)) ?? string.Empty;
+    public static string Import_RemainingTime => ResourceManager.GetString(nameof(Import_RemainingTime)) ?? string.Empty;
+    public static string Import_EstimatingTime => ResourceManager.GetString(nameof(Import_EstimatingTime)) ?? string.Empty;
+    public static string Import_ProgressTime => ResourceManager.GetString(nameof(Import_ProgressTime)) ?? string.Empty;
+    public static string Import_ProgressTimeElapsedOnly => ResourceManager.GetString(nameof(Import_ProgressTimeElapsedOnly)) ?? string.Empty;
+    public static string Import_SuccessDuration => ResourceManager.GetString(nameof(Import_SuccessDuration)) ?? string.Empty;
+    public static string Import_DoneButton => ResourceManager.GetString(nameof(Import_DoneButton)) ?? string.Empty;
+    public static string Import_FileLockedTitle => ResourceManager.GetString(nameof(Import_FileLockedTitle)) ?? string.Empty;
+    public static string Import_FileLockedMessage => ResourceManager.GetString(nameof(Import_FileLockedMessage)) ?? string.Empty;
 }

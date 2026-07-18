@@ -225,6 +225,20 @@
   <data name="Import_SuccessMessage" xml:space="preserve">
     <value>Order #{0} was successfully created in Bexio!</value>
   </data>
+  <data name="Import_SuccessDuration" xml:space="preserve">
+    <value>Total duration: {0}</value>
+  </data>
+  <data name="Import_DoneButton" xml:space="preserve">
+    <value>Done</value>
+  </data>
+  <data name="Import_FileLockedTitle" xml:space="preserve">
+    <value>File In Use</value>
+  </data>
+  <data name="Import_FileLockedMessage" xml:space="preserve">
+    <value>The file "{0}" cannot be opened because it is currently being used by another process (e.g. Microsoft Excel).
+
+Please close the file in Excel and try again.</value>
+  </data>
   <data name="Settings_Header" xml:space="preserve">
     <value>Configuration Settings</value>
   </data>
@@ -570,7 +584,16 @@
   <data name="Import_EmailMismatchTitle" xml:space="preserve">
     <value>Email Mismatch</value>
   </data>
-  <data name="Import_EmailMismatchMessage" xml:space="preserve">
-    <value>The email of the existing order in Bexio ('{0}') does not match the email in the Excel sheet ('{1}'). Do you want to proceed with the import anyway?</value>
+  <data name="Import_RemainingTime" xml:space="preserve">
+    <value>Remaining time: {0}</value>
+  </data>
+  <data name="Import_EstimatingTime" xml:space="preserve">
+    <value>Estimating...</value>
+  </data>
+  <data name="Import_ProgressTime" xml:space="preserve">
+    <value>Elapsed: {0} | Remaining: {1}</value>
+  </data>
+  <data name="Import_ProgressTimeElapsedOnly" xml:space="preserve">
+    <value>Elapsed: {0}</value>
   </data>
 </root>

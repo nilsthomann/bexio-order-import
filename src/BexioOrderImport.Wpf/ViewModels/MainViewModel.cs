@@ -20,6 +20,7 @@ public partial class MainViewModel : ViewModelBase
     private string _connectionStatusText = Translations.Status_BexioDisconnected;
     private string _connectionStatusColor = "#EF4444"; // Red
     private double _progressPercentage;
+    private string _remainingTimeText = string.Empty;
     private string _logText = string.Empty;
     private bool _isImporting;
     private bool _isImportingActive;
@@ -178,6 +179,7 @@ public partial class MainViewModel : ViewModelBase
         ExportProfilesCommand = new RelayCommand(ExportProfiles);
         ImportProfilesCommand = new RelayCommand(ImportProfiles);
         InstallUpdateCommand = new RelayCommand(async () => await InstallUpdateAsync(), () => !string.IsNullOrEmpty(_updateDownloadUrl) && !_isDownloadingUpdate);
+        CloseImportSuccessCommand = new RelayCommand(CloseImportSuccess);
 
         // Path to CLI appsettings.json or WPF appsettings.json.
         // We will store settings in user LocalAppData so updates do not delete them.
@@ -216,6 +218,43 @@ public partial class MainViewModel : ViewModelBase
     public RelayCommand ExportProfilesCommand { get; }
     public RelayCommand ImportProfilesCommand { get; }
     public RelayCommand InstallUpdateCommand { get; }
+    public RelayCommand CloseImportSuccessCommand { get; }
+
+    private bool _isImportSuccess;
+    private string _importSuccessTitle = string.Empty;
+    private string _importSuccessMessage = string.Empty;
+    private string _importDurationText = string.Empty;
+
+    public bool IsImportSuccess
+    {
+        get => _isImportSuccess;
+        set => SetProperty(ref _isImportSuccess, value);
+    }
+
+    public string ImportSuccessTitle
+    {
+        get => _importSuccessTitle;
+        set => SetProperty(ref _importSuccessTitle, value);
+    }
+
+    public string ImportSuccessMessage
+    {
+        get => _importSuccessMessage;
+        set => SetProperty(ref _importSuccessMessage, value);
+    }
+
+    public string ImportDurationText
+    {
+        get => _importDurationText;
+        set => SetProperty(ref _importDurationText, value);
+    }
+
+    private void CloseImportSuccess()
+    {
+        IsImportingActive = false;
+        IsImportSuccess = false;
+        ClearLoadedFileInternal("Import completed successfully. File selection reset.");
+    }
 
     // Properties for UI
     public ObservableCollection<OrderPosition> OrderPositions { get; } = new();
@@ -246,6 +285,12 @@ public partial class MainViewModel : ViewModelBase
     {
         get => _progressPercentage;
         set => SetProperty(ref _progressPercentage, value);
+    }
+
+    public string RemainingTimeText
+    {
+        get => _remainingTimeText;
+        set => SetProperty(ref _remainingTimeText, value);
     }
 
     public string LogText
