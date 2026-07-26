@@ -197,6 +197,8 @@ public partial class MainViewModel
         profile.Mapping.Data.StartQtyColumn = ColStartQty;
         profile.Mapping.Data.EndQtyColumn = ColEndQty;
         profile.Mapping.Data.UnitPriceColumn = ColUnitPrice;
+        profile.Mapping.Data.EnableRowDiscount = EnableRowDiscount;
+        profile.Mapping.Data.RowDiscountColumn = ColRowDiscount;
         profile.Mapping.DefaultOrderName = DefaultOrderName;
         profile.Mapping.SeasonCode = SeasonCode;
         profile.Mapping.PositionTextTemplate = PositionTextTemplate;
@@ -227,6 +229,8 @@ public partial class MainViewModel
         ColStartQty = profile.Mapping.Data.StartQtyColumn;
         ColEndQty = profile.Mapping.Data.EndQtyColumn;
         ColUnitPrice = profile.Mapping.Data.UnitPriceColumn;
+        EnableRowDiscount = profile.Mapping.Data.EnableRowDiscount;
+        ColRowDiscount = profile.Mapping.Data.RowDiscountColumn;
         DefaultOrderName = profile.Mapping.DefaultOrderName;
         SeasonCode = profile.Mapping.SeasonCode;
         PositionTextTemplate = profile.Mapping.PositionTextTemplate;
@@ -278,7 +282,9 @@ public partial class MainViewModel
                 CategoryColumn = dto.Data.CategoryColumn,
                 StartQtyColumn = dto.Data.StartQtyColumn,
                 EndQtyColumn = dto.Data.EndQtyColumn,
-                UnitPriceColumn = dto.Data.UnitPriceColumn
+                UnitPriceColumn = dto.Data.UnitPriceColumn,
+                EnableRowDiscount = dto.Data.EnableRowDiscount,
+                RowDiscountColumn = dto.Data.RowDiscountColumn
             }
         };
     }
@@ -319,7 +325,9 @@ public partial class MainViewModel
                 CategoryColumn = opts.Data.CategoryColumn,
                 StartQtyColumn = opts.Data.StartQtyColumn,
                 EndQtyColumn = opts.Data.EndQtyColumn,
-                UnitPriceColumn = opts.Data.UnitPriceColumn
+                UnitPriceColumn = opts.Data.UnitPriceColumn,
+                EnableRowDiscount = opts.Data.EnableRowDiscount,
+                RowDiscountColumn = opts.Data.RowDiscountColumn
             }
         };
     }

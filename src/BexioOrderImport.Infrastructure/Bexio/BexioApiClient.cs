@@ -295,10 +295,10 @@ public class BexioApiClient : IBexioClient
             amount = position.Quantity,
             article_id = articleId,
             text,
-            unit_price = position.UnitPrice,
+            unit_price = position.GrossUnitPrice,
             account_id = _accountId,
             tax_id = _taxId,
-            discount_in_percent = position.DiscountPercent
+            discount_in_percent = position.DiscountPercent ?? 0m
         };
 
         var body = new StringContent(JsonSerializer.Serialize(positionPayload), Encoding.UTF8, "application/json");
@@ -309,6 +309,26 @@ public class BexioApiClient : IBexioClient
         {
             var errorContent = await response.Content.ReadAsStringAsync();
             throw new Exception($"Error adding position: {errorContent}");
+        }
+    }
+
+    public async Task AddDiscountPositionAsync(int orderId, decimal discountPercent, string text = "Rabatt")
+    {
+        var discountPayload = new
+        {
+            text = string.IsNullOrEmpty(text) ? "Rabatt" : text,
+            value = discountPercent,
+            is_percentual = true
+        };
+
+        var body = new StringContent(JsonSerializer.Serialize(discountPayload), Encoding.UTF8, "application/json");
+        var request = CreateRequest(HttpMethod.Post, $"2.0/kb_order/{orderId}/kb_position_discount", body);
+        var response = await SendWithRateLimitCheckAsync(request);
+
+        if (!response.IsSuccessStatusCode)
+        {
+            var errorContent = await response.Content.ReadAsStringAsync();
+            throw new Exception($"Error adding discount position: {errorContent}");
         }
     }
 

@@ -78,6 +78,8 @@ public partial class ProfileEditWindow : Window
         ColStartQtyInput.Text = _profile.Mapping.Data.StartQtyColumn.ToString();
         ColEndQtyInput.Text = _profile.Mapping.Data.EndQtyColumn.ToString();
         ColUnitPriceInput.Text = _profile.Mapping.Data.UnitPriceColumn.ToString();
+        EnableRowDiscountCheckBox.IsChecked = _profile.Mapping.Data.EnableRowDiscount;
+        ColRowDiscountInput.Text = _profile.Mapping.Data.RowDiscountColumn.ToString();
         DefaultOrderNameInput.Text = _profile.Mapping.DefaultOrderName;
         SeasonCodeInput.Text = _profile.Mapping.SeasonCode;
         PositionTextTemplateInput.Text = _profile.Mapping.PositionTextTemplate;
@@ -113,6 +115,8 @@ public partial class ProfileEditWindow : Window
             _profile.Mapping.Data.StartQtyColumn = int.Parse(ColStartQtyInput.Text.Trim());
             _profile.Mapping.Data.EndQtyColumn = int.Parse(ColEndQtyInput.Text.Trim());
             _profile.Mapping.Data.UnitPriceColumn = int.Parse(ColUnitPriceInput.Text.Trim());
+            _profile.Mapping.Data.EnableRowDiscount = EnableRowDiscountCheckBox.IsChecked == true;
+            _profile.Mapping.Data.RowDiscountColumn = int.Parse(ColRowDiscountInput.Text.Trim());
             _profile.Mapping.DefaultOrderName = DefaultOrderNameInput.Text.Trim();
             _profile.Mapping.SeasonCode = SeasonCodeInput.Text.Trim();
             _profile.Mapping.PositionTextTemplate = PositionTextTemplateInput.Text.Trim();

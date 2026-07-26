@@ -312,4 +312,104 @@ public class ExcelParserTests
             try { File.Delete(filePath); } catch { }
         }
     }
+
+    [Fact]
+    public void ParseOrderForm_WithRowDiscountEnabled_ShouldSetPositionDiscountPercent()
+    {
+        // Arrange
+        var options = new ExcelMappingOptions();
+        options.Data.EnableRowDiscount = true;
+        options.Data.RowDiscountColumn = 21;
+        var parser = new ClosedXmlExcelParser(Microsoft.Extensions.Options.Options.Create(options));
+
+        using var wb = new ClosedXML.Excel.XLWorkbook();
+        var ws = wb.Worksheets.Add("Bestellformular");
+        ws.Cell("B4").Value = "Firma AG";
+        ws.Cell("B5").Value = "Musterstrasse 1";
+        ws.Cell("B6").Value = "8000 Zurich";
+        ws.Cell("E5").Value = "info@firma.ch";
+
+        // Size matrix
+        ws.Cell(10, 4).Value = "KIDS";
+        ws.Cell(10, 5).Value = "92";
+
+        // Data row
+        ws.Cell(18, 1).Value = "ART-01";
+        ws.Cell(18, 2).Value = "Jacke";
+        ws.Cell(18, 3).Value = "Rot";
+        ws.Cell(18, 4).Value = "KIDS";
+        ws.Cell(18, 5).Value = 2; // Qty
+        ws.Cell(18, 20).Value = 100m; // Unit Price
+        ws.Cell(18, 21).Value = "15%"; // Row discount in Col 21
+
+        string tempPath = Path.Combine(Path.GetTempPath(), $"row_disc_{Guid.NewGuid():N}.xlsx");
+        wb.SaveAs(tempPath);
+
+        try
+        {
+            // Act
+            var order = parser.ParseOrderForm(tempPath);
+
+            // Assert
+            order.Positions.Should().HaveCount(1);
+            order.Positions[0].GrossUnitPrice.Should().Be(100m);
+            order.Positions[0].DiscountPercent.Should().Be(15m);
+            order.Positions[0].NetUnitPrice.Should().Be(85m);
+            order.Positions[0].TotalPrice.Should().Be(170m);
+        }
+        finally
+        {
+            if (File.Exists(tempPath)) File.Delete(tempPath);
+        }
+    }
+
+    [Fact]
+    public void ParseOrderForm_WithRowDiscountDisabled_ShouldKeepPositionDiscountNull()
+    {
+        // Arrange
+        var options = new ExcelMappingOptions();
+        options.Data.EnableRowDiscount = false;
+        options.Data.RowDiscountColumn = 21;
+        var parser = new ClosedXmlExcelParser(Microsoft.Extensions.Options.Options.Create(options));
+
+        using var wb = new ClosedXML.Excel.XLWorkbook();
+        var ws = wb.Worksheets.Add("Bestellformular");
+        ws.Cell("B4").Value = "Firma AG";
+        ws.Cell("B5").Value = "Musterstrasse 1";
+        ws.Cell("B6").Value = "8000 Zurich";
+        ws.Cell("E5").Value = "info@firma.ch";
+
+        // Size matrix
+        ws.Cell(10, 4).Value = "KIDS";
+        ws.Cell(10, 5).Value = "92";
+
+        // Data row
+        ws.Cell(18, 1).Value = "ART-01";
+        ws.Cell(18, 2).Value = "Jacke";
+        ws.Cell(18, 3).Value = "Rot";
+        ws.Cell(18, 4).Value = "KIDS";
+        ws.Cell(18, 5).Value = 2; // Qty
+        ws.Cell(18, 20).Value = 100m; // Unit Price
+        ws.Cell(18, 21).Value = "15%"; // Col 21 ignored because row discount is disabled
+
+        string tempPath = Path.Combine(Path.GetTempPath(), $"row_disc_dis_{Guid.NewGuid():N}.xlsx");
+        wb.SaveAs(tempPath);
+
+        try
+        {
+            // Act
+            var order = parser.ParseOrderForm(tempPath);
+
+            // Assert
+            order.Positions.Should().HaveCount(1);
+            order.Positions[0].GrossUnitPrice.Should().Be(100m);
+            order.Positions[0].DiscountPercent.Should().BeNull();
+            order.Positions[0].NetUnitPrice.Should().Be(100m);
+            order.Positions[0].TotalPrice.Should().Be(200m);
+        }
+        finally
+        {
+            if (File.Exists(tempPath)) File.Delete(tempPath);
+        }
+    }
 }

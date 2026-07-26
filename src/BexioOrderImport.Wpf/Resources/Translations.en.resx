@@ -239,6 +239,21 @@
 
 Please close the file in Excel and try again.</value>
   </data>
+  <data name="Settings_EnableRowDiscount" xml:space="preserve">
+    <value>Enable Row Discount</value>
+  </data>
+  <data name="Settings_ColRowDiscount" xml:space="preserve">
+    <value>Row Discount Column</value>
+  </data>
+  <data name="Import_ColDiscount" xml:space="preserve">
+    <value>Discount %</value>
+  </data>
+  <data name="Import_ColGrossPrice" xml:space="preserve">
+    <value>Gross CHF</value>
+  </data>
+  <data name="Import_ColNetPrice" xml:space="preserve">
+    <value>Net CHF</value>
+  </data>
   <data name="Settings_Header" xml:space="preserve">
     <value>Configuration Settings</value>
   </data>
@@ -274,9 +289,6 @@ Please close the file in Excel and try again.</value>
   </data>
   <data name="Settings_CellZipCode" xml:space="preserve">
     <value>ZIP Code &amp; City cell</value>
-  </data>
-  <data name="Settings_CellCity" xml:space="preserve">
-    <value>City cell</value>
   </data>
   <data name="Settings_CellEmail" xml:space="preserve">
     <value>E-Mail cell</value>

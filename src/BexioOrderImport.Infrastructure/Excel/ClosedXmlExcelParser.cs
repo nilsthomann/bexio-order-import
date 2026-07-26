@@ -66,6 +66,21 @@ public class ClosedXmlExcelParser : IExcelParser
             // Read unit price from column
             _ = decimal.TryParse(row.Cell(_options.Data.UnitPriceColumn).Value.ToString(), out decimal unitPrice);
 
+            // Read row-based discount if enabled
+            decimal? rowDiscount = null;
+            if (_options.Data.EnableRowDiscount)
+            {
+                string discountStr = row.Cell(_options.Data.RowDiscountColumn).Value.ToString().Replace("%", "").Trim();
+                if (decimal.TryParse(discountStr, out decimal parsedRowDiscount))
+                {
+                    if (parsedRowDiscount > 0 && parsedRowDiscount < 1)
+                    {
+                        parsedRowDiscount *= 100;
+                    }
+                    rowDiscount = parsedRowDiscount;
+                }
+            }
+
             // Dynamically assign matrix
             string? matchedCategory = MapCategoryName(rawCategory, sizeMatrices.Keys);
             if (matchedCategory == null || !sizeMatrices.ContainsKey(matchedCategory))
@@ -89,8 +104,8 @@ public class ClosedXmlExcelParser : IExcelParser
                         SizeCategory = rawCategory,
                         Size = sizeName,
                         Quantity = qty,
-                        UnitPrice = unitPrice,
-                        DiscountPercent = order.DiscountPercent
+                        GrossUnitPrice = unitPrice,
+                        DiscountPercent = rowDiscount
                     };
                     order.Positions.Add(pos);
                 }

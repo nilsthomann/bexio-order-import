@@ -56,7 +56,6 @@ public static class Translations
     public static string Settings_CellCustomerName => ResourceManager.GetString(nameof(Settings_CellCustomerName)) ?? string.Empty;
     public static string Settings_CellStreet => ResourceManager.GetString(nameof(Settings_CellStreet)) ?? string.Empty;
     public static string Settings_CellZipCode => ResourceManager.GetString(nameof(Settings_CellZipCode)) ?? string.Empty;
-    public static string Settings_CellCity => ResourceManager.GetString(nameof(Settings_CellCity)) ?? string.Empty;
     public static string Settings_CellEmail => ResourceManager.GetString(nameof(Settings_CellEmail)) ?? string.Empty;
     public static string Settings_CellBuyerName => ResourceManager.GetString(nameof(Settings_CellBuyerName)) ?? string.Empty;
     public static string Settings_CellOrderId => ResourceManager.GetString(nameof(Settings_CellOrderId)) ?? string.Empty;
@@ -168,4 +167,9 @@ public static class Translations
     public static string Import_DoneButton => ResourceManager.GetString(nameof(Import_DoneButton)) ?? string.Empty;
     public static string Import_FileLockedTitle => ResourceManager.GetString(nameof(Import_FileLockedTitle)) ?? string.Empty;
     public static string Import_FileLockedMessage => ResourceManager.GetString(nameof(Import_FileLockedMessage)) ?? string.Empty;
+    public static string Settings_EnableRowDiscount => ResourceManager.GetString(nameof(Settings_EnableRowDiscount)) ?? string.Empty;
+    public static string Settings_ColRowDiscount => ResourceManager.GetString(nameof(Settings_ColRowDiscount)) ?? string.Empty;
+    public static string Import_ColDiscount => ResourceManager.GetString(nameof(Import_ColDiscount)) ?? string.Empty;
+    public static string Import_ColGrossPrice => ResourceManager.GetString(nameof(Import_ColGrossPrice)) ?? string.Empty;
+    public static string Import_ColNetPrice => ResourceManager.GetString(nameof(Import_ColNetPrice)) ?? string.Empty;
 }

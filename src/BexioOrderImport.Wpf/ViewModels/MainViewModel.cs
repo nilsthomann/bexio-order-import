@@ -141,6 +141,8 @@ public partial class MainViewModel : ViewModelBase
     private int _colStartQty = 5;
     private int _colEndQty = 18;
     private int _colUnitPrice = 20;
+    private bool _enableRowDiscount = false;
+    private int _colRowDiscount = 21;
 
     public void InvokeOnUi(Action action)
     {
@@ -688,6 +690,18 @@ public partial class MainViewModel : ViewModelBase
     {
         get => _colUnitPrice;
         set => SetProperty(ref _colUnitPrice, value);
+    }
+
+    public bool EnableRowDiscount
+    {
+        get => _enableRowDiscount;
+        set => SetProperty(ref _enableRowDiscount, value);
+    }
+
+    public int ColRowDiscount
+    {
+        get => _colRowDiscount;
+        set => SetProperty(ref _colRowDiscount, value);
     }
 
     public void AppendLog(string message)

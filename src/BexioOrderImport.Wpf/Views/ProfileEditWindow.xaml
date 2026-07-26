@@ -219,6 +219,14 @@
                                         <TextBlock Text="{x:Static lex:Translations.Settings_ColUnitPrice}" Style="{StaticResource MutedTextBlockStyle}"/>
                                         <TextBox x:Name="ColUnitPriceInput" Height="32"/>
                                     </StackPanel>
+                                    <CheckBox x:Name="EnableRowDiscountCheckBox" Grid.Row="1" Grid.Column="3" 
+                                              Content="{x:Static lex:Translations.Settings_EnableRowDiscount}" 
+                                              VerticalAlignment="Center" Margin="0,16,8,0"
+                                              Foreground="{StaticResource TextBrush}" FontWeight="Medium"/>
+                                    <StackPanel Grid.Row="1" Grid.Column="4" Margin="0,0,0,0">
+                                        <TextBlock Text="{x:Static lex:Translations.Settings_ColRowDiscount}" Style="{StaticResource MutedTextBlockStyle}"/>
+                                        <TextBox x:Name="ColRowDiscountInput" Height="32" IsEnabled="{Binding ElementName=EnableRowDiscountCheckBox, Path=IsChecked}"/>
+                                    </StackPanel>
                                 </Grid>
                             </StackPanel>
                         </Border>

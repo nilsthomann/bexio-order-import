@@ -321,6 +321,58 @@ public class ImportOrderUseCaseTests
         _clientMock.Verify(c => c.FindArticleAsync("123", "Black", "FS27"), Times.Once);
     }
 
+    [Fact]
+    public async Task ExecuteAsync_WhenOrderHasGlobalDiscount_ShouldCallAddDiscountPositionAsync()
+    {
+        // Arrange
+        var order = CreateSampleOrder();
+        order.DiscountPercent = 10m; // 10% global discount
+        _parserMock.Setup(p => p.ParseOrderForm(It.IsAny<string>())).Returns(order);
+        _clientMock.Setup(c => c.FindContactIdAsync(order.Customer.Email)).ReturnsAsync(123);
+        _clientMock.Setup(c => c.CreateOrderAsync(123, order)).ReturnsAsync(456);
+        _clientMock.Setup(c => c.FindArticleAsync("123", "Black", It.IsAny<string>()))
+            .ReturnsAsync(new BexioArticle { Id = 789, Description = "Desc", Name = "Name" });
+
+        // Act
+        await _useCase.ExecuteAsync(
+            "dummy.xlsx",
+            showPreviewCallback: o => { },
+            confirmUploadCallback: () => Task.FromResult(true),
+            confirmCustomerCreationCallback: c => Task.FromResult(true),
+            confirmEmailMismatchCallback: (ex, el) => Task.FromResult(true),
+            logInfoCallback: _ => { }
+        );
+
+        // Assert
+        _clientMock.Verify(c => c.AddDiscountPositionAsync(456, 10m, "Rabatt (10%)"), Times.Once);
+    }
+
+    [Fact]
+    public async Task ExecuteAsync_WhenOrderHasNoGlobalDiscount_ShouldNotCallAddDiscountPositionAsync()
+    {
+        // Arrange
+        var order = CreateSampleOrder();
+        order.DiscountPercent = 0m;
+        _parserMock.Setup(p => p.ParseOrderForm(It.IsAny<string>())).Returns(order);
+        _clientMock.Setup(c => c.FindContactIdAsync(order.Customer.Email)).ReturnsAsync(123);
+        _clientMock.Setup(c => c.CreateOrderAsync(123, order)).ReturnsAsync(456);
+        _clientMock.Setup(c => c.FindArticleAsync("123", "Black", It.IsAny<string>()))
+            .ReturnsAsync(new BexioArticle { Id = 789, Description = "Desc", Name = "Name" });
+
+        // Act
+        await _useCase.ExecuteAsync(
+            "dummy.xlsx",
+            showPreviewCallback: o => { },
+            confirmUploadCallback: () => Task.FromResult(true),
+            confirmCustomerCreationCallback: c => Task.FromResult(true),
+            confirmEmailMismatchCallback: (ex, el) => Task.FromResult(true),
+            logInfoCallback: _ => { }
+        );
+
+        // Assert
+        _clientMock.Verify(c => c.AddDiscountPositionAsync(It.IsAny<int>(), It.IsAny<decimal>(), It.IsAny<string>()), Times.Never);
+    }
+
     private static Order CreateSampleOrder()
     {
         var order = new Order

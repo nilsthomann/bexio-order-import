@@ -44,6 +44,11 @@ public interface IBexioClient
     Task AddArticlePositionAsync(int orderId, int articleId, OrderPosition position);
 
     /// <summary>
+    /// Appends a global discount position to an existing order in Bexio.
+    /// </summary>
+    Task AddDiscountPositionAsync(int orderId, decimal discountPercent, string text = "Rabatt");
+
+    /// <summary>
     /// Verifies API connectivity with Bexio.
     /// </summary>
     Task<bool> CheckConnectionAsync();

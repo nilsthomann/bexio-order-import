@@ -5,6 +5,7 @@ using BexioOrderImport.Tests.Utils;
 using FluentAssertions;
 using Moq;
 using System.Net;
+using System.Text;
 
 namespace BexioOrderImport.Tests;
 
@@ -485,5 +486,42 @@ public class BexioApiClientTests
         article.Should().NotBeNull();
         article!.Id.Should().Be(500);
         apiCallCount.Should().Be(initialCallCount); // No additional API calls made
+    }
+
+    [Fact]
+    public async Task AddDiscountPositionAsync_WhenCalled_SendsCorrectPayloadToBexioApi()
+    {
+        // Arrange
+        string? requestUri = null;
+        string? requestBody = null;
+
+        var handler = new MockHttpMessageHandler
+        {
+            SendAsyncFunc = async (req, token) =>
+            {
+                requestUri = req.RequestUri?.ToString();
+                if (req.Content != null)
+                {
+                    requestBody = await req.Content.ReadAsStringAsync();
+                }
+                return new HttpResponseMessage(HttpStatusCode.Created)
+                {
+                    Content = new StringContent("{\"id\": 999}", Encoding.UTF8, "application/json")
+                };
+            }
+        };
+
+        var httpClient = new HttpClient(handler);
+        var client = new BexioApiClient(httpClient, "dummy-token", 1, 1);
+
+        // Act
+        await client.AddDiscountPositionAsync(12345, 10m, "Sonderrabatt (10%)");
+
+        // Assert
+        requestUri.Should().Be("https://api.bexio.com/2.0/kb_order/12345/kb_position_discount");
+        requestBody.Should().NotBeNull();
+        requestBody.Should().Contain("Sonderrabatt (10%)");
+        requestBody.Should().Contain("\"value\":10");
+        requestBody.Should().Contain("\"is_percentual\":true");
     }
 }

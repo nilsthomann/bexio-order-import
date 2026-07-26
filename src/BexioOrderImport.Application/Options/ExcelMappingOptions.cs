@@ -42,4 +42,6 @@ public class DataMapping
     public int StartQtyColumn { get; set; } = 5;
     public int EndQtyColumn { get; set; } = 18;
     public int UnitPriceColumn { get; set; } = 20;
+    public bool EnableRowDiscount { get; set; } = false;
+    public int RowDiscountColumn { get; set; } = 21;
 }

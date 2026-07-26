@@ -239,6 +239,21 @@
 
 Bitte schliessen Sie die Datei in Excel und versuchen Sie es erneut.</value>
   </data>
+  <data name="Settings_EnableRowDiscount" xml:space="preserve">
+    <value>Zeilenrabatt aktivieren</value>
+  </data>
+  <data name="Settings_ColRowDiscount" xml:space="preserve">
+    <value>Spalte Zeilenrabatt</value>
+  </data>
+  <data name="Import_ColDiscount" xml:space="preserve">
+    <value>Rabatt %</value>
+  </data>
+  <data name="Import_ColGrossPrice" xml:space="preserve">
+    <value>Brutto CHF</value>
+  </data>
+  <data name="Import_ColNetPrice" xml:space="preserve">
+    <value>Netto CHF</value>
+  </data>
   <data name="Settings_Header" xml:space="preserve">
     <value>Konfigurations-Einstellungen</value>
   </data>
@@ -272,8 +287,8 @@ Bitte schliessen Sie die Datei in Excel und versuchen Sie es erneut.</value>
   <data name="Settings_CellStreet" xml:space="preserve">
     <value>Zelle Strasse</value>
   </data>
-  <data name="Settings_CellZipCode" xml:space="preserve">
-    <value>Zelle PLZ</value>
+  <data name="Settings_CellZipCodeCity" xml:space="preserve">
+    <value>Zelle PLZ &amp; Ort</value>
   </data>
   <data name="Settings_CellCity" xml:space="preserve">
     <value>Zelle Ort</value>

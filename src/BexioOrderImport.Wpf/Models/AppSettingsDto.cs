@@ -111,4 +111,6 @@ public class DataMappingDto
     [JsonPropertyName("StartQtyColumn")] public int StartQtyColumn { get; set; } = 5;
     [JsonPropertyName("EndQtyColumn")]public int EndQtyColumn { get; set; } = 18;
     [JsonPropertyName("UnitPriceColumn")]public int UnitPriceColumn { get; set; } = 20;
+    [JsonPropertyName("EnableRowDiscount")] public bool EnableRowDiscount { get; set; } = false;
+    [JsonPropertyName("RowDiscountColumn")] public int RowDiscountColumn { get; set; } = 21;
 }

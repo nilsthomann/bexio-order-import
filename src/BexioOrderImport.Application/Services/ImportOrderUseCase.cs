@@ -138,6 +138,13 @@ public class ImportOrderUseCase
             }
         }
 
+        if (order.DiscountPercent > 0)
+        {
+            logInfoCallback($"Adding global discount position ({order.DiscountPercent:G}%)...");
+            await _bexioClient.AddDiscountPositionAsync(orderId, order.DiscountPercent, $"Rabatt ({order.DiscountPercent:G}%)");
+            logInfoCallback("Global discount position added successfully.");
+        }
+
         logInfoCallback($"Successfully completed! Order #{orderId} has been imported into Bexio.");
         return true;
     }
