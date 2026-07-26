@@ -70,14 +70,18 @@ public class ExcelParserTests
         // Arrange
         string filePath = FindExcelFile("AnonymizedOrder.xlsx");
 
-        // Update AnonymizedOrder.xlsx to have exact matching categories in matrix rows
+        // Restore original AnonymizedOrder.xlsx matrix category names
         using (var wb = new ClosedXML.Excel.XLWorkbook(filePath))
         {
             var ws = wb.Worksheet(1);
-            ws.Cell("D10").Value = "Mittens";
-            ws.Cell("D11").Value = "Hats";
-            ws.Cell("D13").Value = "Socks";
+            ws.Cell("D10").Value = "Mittens/Acc";
+            ws.Cell("D11").Value = "Hats/Necks";
+            ws.Cell("D12").Value = "Shoes";
+            ws.Cell("D13").Value = "Socks/UWear";
+            ws.Cell("D14").Value = "Shoes 20-31";
             ws.Cell("D15").Value = "Shoes 32-41";
+            ws.Cell("D16").Value = "Mini";
+            ws.Cell("D17").Value = "Kids";
             wb.Save();
         }
 
@@ -92,7 +96,7 @@ public class ExcelParserTests
         order.Customer.Street.Should().Be("Musterstrasse 12");
         order.Customer.ZipCode.Should().Be("8000");
         order.Customer.City.Should().Be("Zürich");
-        order.Customer.Email.Should().Be("chris@peakmile.com");
+        order.Customer.Email.Should().Be("test@test.com");
         order.Customer.BuyerName.Should().Be("Hans Muster");
 
         // 2. Delivery & payment terms assertions

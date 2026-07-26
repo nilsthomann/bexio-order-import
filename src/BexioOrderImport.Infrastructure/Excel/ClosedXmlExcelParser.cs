@@ -59,8 +59,11 @@ public class ClosedXmlExcelParser : IExcelParser
             string color = row.Cell(_options.Data.ColorColumn).Value.ToString().Trim();
             string rawCategory = row.Cell(_options.Data.CategoryColumn).Value.ToString().Trim();
 
-            // Stop condition on empty row
+            // Stop condition on empty row or empty category
             if (string.IsNullOrEmpty(artNr) && string.IsNullOrEmpty(artName))
+                continue;
+
+            if (string.IsNullOrEmpty(rawCategory))
                 continue;
 
             // Read unit price from column
@@ -164,6 +167,23 @@ public class ClosedXmlExcelParser : IExcelParser
                 }
             }
             matrices[categoryName] = columns;
+            var subCategories = categoryName.Split('/', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+            foreach (var subCat in subCategories)
+            {
+                matrices[subCat] = columns;
+                if (subCat.StartsWith("Shoes 32", StringComparison.OrdinalIgnoreCase))
+                {
+                    matrices["Shoes 32"] = columns;
+                    matrices["Shoes 32-41"] = columns;
+                    matrices["Shoes 32-42"] = columns;
+                }
+                else if (subCat.StartsWith("Shoes 20", StringComparison.OrdinalIgnoreCase))
+                {
+                    matrices["Shoes 20"] = columns;
+                    matrices["Shoes 20-31"] = columns;
+                    matrices["Shoes 20-32"] = columns;
+                }
+            }
         }
         return matrices;
     }
