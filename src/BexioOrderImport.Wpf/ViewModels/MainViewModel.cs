@@ -15,8 +15,8 @@ namespace BexioOrderImport.Wpf.ViewModels;
 
 public partial class MainViewModel : ViewModelBase
 {
-    private readonly string _configFilePath;
-    private Order? _loadedOrder;
+    internal string _configFilePath;
+    internal Order? _loadedOrder;
     private string _connectionStatusText = Translations.Status_BexioDisconnected;
     private string _connectionStatusColor = "#EF4444"; // Red
     private double _progressPercentage;
@@ -50,7 +50,6 @@ public partial class MainViewModel : ViewModelBase
     private int _totalQuantity;
     private decimal _totalGrossAmount;
     private decimal _discountPercentVal;
-    private decimal _discountAmount;
     private decimal _totalNetAmount;
 
     // Excel Order header properties (bound to UI fields)
@@ -60,7 +59,6 @@ public partial class MainViewModel : ViewModelBase
     private string _address = string.Empty;
     private string _orderId = string.Empty;
     private string _paymentTerms = string.Empty;
-    private string _totalsSummary = string.Empty;
 
     public bool HasLoadedFile
     {
@@ -96,12 +94,6 @@ public partial class MainViewModel : ViewModelBase
     {
         get => _discountPercentVal;
         set => SetProperty(ref _discountPercentVal, value);
-    }
-
-    public decimal DiscountAmount
-    {
-        get => _discountAmount;
-        set => SetProperty(ref _discountAmount, value);
     }
 
     public decimal TotalNetAmount
@@ -399,12 +391,6 @@ public partial class MainViewModel : ViewModelBase
     {
         get => _paymentTerms;
         set => SetProperty(ref _paymentTerms, value);
-    }
-
-    public string TotalsSummary
-    {
-        get => _totalsSummary;
-        set => SetProperty(ref _totalsSummary, value);
     }
 
     public ObservableCollection<Models.MappingProfile> Profiles { get; } = new();

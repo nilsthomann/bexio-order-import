@@ -46,7 +46,7 @@ public partial class MainViewModel
         }
     }
 
-    private void LoadSettings()
+    internal void LoadSettings()
     {
         try
         {
@@ -173,7 +173,7 @@ public partial class MainViewModel
         _initialLanguage = SelectedLanguage;
     }
 
-    private void CopyVmToProfile(Models.MappingProfile profile)
+    internal void CopyVmToProfile(Models.MappingProfile profile)
     {
         profile.Mapping.Header.CompanyNameCell = CompanyNameCell;
         profile.Mapping.Header.StreetCell = StreetCell;
@@ -206,7 +206,7 @@ public partial class MainViewModel
         profile.Mapping.DiscountPositionTextTemplate = DiscountPositionTextTemplate;
     }
 
-    private void CopyProfileToVm(Models.MappingProfile profile)
+    internal void CopyProfileToVm(Models.MappingProfile profile)
     {
         CompanyNameCell = profile.Mapping.Header.CompanyNameCell;
         StreetCell = profile.Mapping.Header.StreetCell;

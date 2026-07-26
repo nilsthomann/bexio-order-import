@@ -59,6 +59,21 @@ Please help maintain a professional, respectful, and welcoming environment for e
   ```
 - Pull requests with failing tests or decreased test coverage cannot be approved.
 
+### Building the Installer
+
+To compile the Windows installer executable (`BexioOrderImportSetup.exe`) locally:
+
+1. Ensure **Inno Setup 6** is installed on your machine.
+2. Publish the WPF application:
+   ```bash
+   dotnet publish src/BexioOrderImport.Wpf/BexioOrderImport.Wpf.csproj -c Release -o publish
+   ```
+3. Compile the Inno Setup script:
+   ```cmd
+   iscc /DAppVersion=1.0.0 build/setup.iss
+   ```
+   The generated setup executable will be created in `build/Output/BexioOrderImportSetup.exe` (or in the working directory).
+
 ### Adding New Excel Field Mappings
 
 When adding a new field from an Excel template, follow these steps in order to keep all layers in sync:

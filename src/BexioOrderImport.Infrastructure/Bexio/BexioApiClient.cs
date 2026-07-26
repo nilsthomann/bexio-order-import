@@ -381,7 +381,7 @@ public class BexioApiClient : IBexioClient
             int delaySeconds = Math.Max(resetSeconds, 1);
             await Task.Delay(TimeSpan.FromSeconds(delaySeconds));
 
-            var clonedRequest = CloneRequest(request);
+            var clonedRequest = await CloneRequestAsync(request);
             return await SendWithRateLimitCheckAsync(clonedRequest);
         }
         else if (remaining <= 0 && resetSeconds > 0)
@@ -433,7 +433,7 @@ public class BexioApiClient : IBexioClient
         return false;
     }
 
-    private static HttpRequestMessage CloneRequest(HttpRequestMessage request)
+    private static async Task<HttpRequestMessage> CloneRequestAsync(HttpRequestMessage request)
     {
         var clone = new HttpRequestMessage(request.Method, request.RequestUri);
         foreach (var header in request.Headers)
@@ -443,7 +443,7 @@ public class BexioApiClient : IBexioClient
         if (request.Content != null)
         {
             var ms = new MemoryStream();
-            request.Content.CopyToAsync(ms).GetAwaiter().GetResult();
+            await request.Content.CopyToAsync(ms);
             ms.Position = 0;
             var contentClone = new StreamContent(ms);
             foreach (var header in request.Content.Headers)

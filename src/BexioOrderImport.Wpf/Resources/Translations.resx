@@ -287,12 +287,6 @@ Bitte schliessen Sie die Datei in Excel und versuchen Sie es erneut.</value>
   <data name="Settings_CellStreet" xml:space="preserve">
     <value>Zelle Strasse</value>
   </data>
-  <data name="Settings_CellZipCodeCity" xml:space="preserve">
-    <value>Zelle PLZ &amp; Ort</value>
-  </data>
-  <data name="Settings_CellCity" xml:space="preserve">
-    <value>Zelle Ort</value>
-  </data>
   <data name="Settings_CellEmail" xml:space="preserve">
     <value>Zelle E-Mail</value>
   </data>
@@ -317,9 +311,6 @@ Bitte schliessen Sie die Datei in Excel und versuchen Sie es erneut.</value>
   <data name="Settings_MatrixEnd" xml:space="preserve">
     <value>Endzeile Matrix</value>
   </data>
-  <data name="Settings_RowsSection" xml:space="preserve">
-    <value>Artikel-Tabellenzeilen</value>
-  </data>
   <data name="Settings_RowStart" xml:space="preserve">
     <value>Erste Artikelzeile</value>
   </data>
@@ -340,9 +331,6 @@ Bitte schliessen Sie die Datei in Excel und versuchen Sie es erneut.</value>
   </data>
   <data name="Settings_SaveButton" xml:space="preserve">
     <value>Einstellungen speichern</value>
-  </data>
-  <data name="Settings_SaveSuccess" xml:space="preserve">
-    <value>Einstellungen erfolgreich gespeichert.</value>
   </data>
   <data name="CustomerConfirm_Title" xml:space="preserve">
     <value>Neuer Kunde in Bexio anlegen?</value>
@@ -403,9 +391,6 @@ Bitte schliessen Sie die Datei in Excel und versuchen Sie es erneut.</value>
   </data>
   <data name="Settings_LanguageEnglish" xml:space="preserve">
     <value>English</value>
-  </data>
-  <data name="Settings_RestartPrompt" xml:space="preserve">
-    <value>Einstellungen gespeichert. Bitte starten Sie die Applikation neu, um die Sprache zu übernehmen.</value>
   </data>
   <data name="Settings_ColStartQty" xml:space="preserve">
     <value>Erste Mengen-Spalte</value>
@@ -637,5 +622,8 @@ Bitte schliessen Sie die Datei in Excel und versuchen Sie es erneut.</value>
   </data>
   <data name="Settings_DiscountPositionTextTemplateHint" xml:space="preserve">
     <value>Verfügbare Platzhalter: {DiscountInPercent}</value>
+  </data>
+  <data name="Settings_CellZipCodeCity" xml:space="preserve">
+    <value>Zelle PLZ &amp; Ort</value>
   </data>
 </root>

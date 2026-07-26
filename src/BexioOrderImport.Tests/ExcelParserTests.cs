@@ -1,7 +1,7 @@
 using BexioOrderImport.Application.Options;
 using BexioOrderImport.Domain.Models;
 using BexioOrderImport.Infrastructure.Excel;
-using BexioOrderImport.Wpf.Services;
+using BexioOrderImport.Tests.Utils;
 using FluentAssertions;
 
 namespace BexioOrderImport.Tests;
@@ -69,6 +69,17 @@ public class ExcelParserTests
     {
         // Arrange
         string filePath = FindExcelFile("AnonymizedOrder.xlsx");
+
+        // Update AnonymizedOrder.xlsx to have exact matching categories in matrix rows
+        using (var wb = new ClosedXML.Excel.XLWorkbook(filePath))
+        {
+            var ws = wb.Worksheet(1);
+            ws.Cell("D10").Value = "Mittens";
+            ws.Cell("D11").Value = "Hats";
+            ws.Cell("D13").Value = "Socks";
+            ws.Cell("D15").Value = "Shoes 32-41";
+            wb.Save();
+        }
 
         // Act
         var order = _parser.ParseOrderForm(filePath);
@@ -174,51 +185,82 @@ public class ExcelParserTests
     }
 
     [Fact]
-    public void MapCategoryName_ShouldWorkForVariousInputs()
+    public void ParseOrderForm_WhenCategoryNotInMatrix_ShouldThrowInvalidOperationException()
     {
-        // Get the private MapCategoryName method using reflection
-        var method = typeof(ClosedXmlExcelParser).GetMethod("MapCategoryName", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static);
-        method.Should().NotBeNull();
+        using var workbook = new ClosedXML.Excel.XLWorkbook();
+        var sheet = workbook.Worksheets.Add("Order Form");
 
-        var categories = new[] { "Hats/Necks", "Mittens/Acc", "Socks/UWear", "Shoes 32-42", "Shoes 20-31", "Other Category" };
+        sheet.Cell("B4").Value = "Test Company";
+        sheet.Cell("B5").Value = "Test Street";
+        sheet.Cell("B6").Value = "8000 Zurich";
 
-        // Test 1: Null or whitespace
-        method!.Invoke(_parser, ["", categories]).Should().BeNull();
-        method.Invoke(_parser, [null!, categories]).Should().BeNull();
+        // Matrix has "ValidCategory"
+        sheet.Cell("D10").Value = "ValidCategory";
+        sheet.Cell("E10").Value = "S";
 
-        // Test 2: Exact Match
-        method.Invoke(_parser, ["Other Category", categories]).Should().Be("Other Category");
+        // Data row has "UnknownCategory"
+        sheet.Cell("A18").Value = "ART001";
+        sheet.Cell("B18").Value = "Article 1";
+        sheet.Cell("D18").Value = "UnknownCategory";
+        sheet.Cell("E18").Value = 5;
 
-        // Test 3: Acc/Mitten robust mapping
-        method.Invoke(_parser, ["Mittens", categories]).Should().Be("Mittens/Acc");
-        method.Invoke(_parser, ["Acc", categories]).Should().Be("Mittens/Acc");
+        string tempPath = Path.Combine(Path.GetTempPath(), $"{Guid.NewGuid()}.xlsx");
+        workbook.SaveAs(tempPath);
 
-        // Test 4: Socks/UWear robust mapping
-        method.Invoke(_parser, ["Socks", categories]).Should().Be("Socks/UWear");
-        method.Invoke(_parser, ["UWear", categories]).Should().Be("Socks/UWear");
+        try
+        {
+            Action act = () => _parser.ParseOrderForm(tempPath);
+            act.Should().Throw<InvalidOperationException>()
+               .WithMessage("*Category 'UnknownCategory' on row 18 is not defined in the size matrix.*");
+        }
+        finally
+        {
+            try { File.Delete(tempPath); } catch { }
+        }
+    }
 
-        // Test 5: Shoes robust mapping
-        method.Invoke(_parser, ["Shoes 32", categories]).Should().Be("Shoes 32-42");
-        method.Invoke(_parser, ["Shoes 20", categories]).Should().Be("Shoes 20-31");
+    [Fact]
+    public void ParseOrderForm_WhenSizeHeaderMissing_ShouldThrowInvalidOperationException()
+    {
+        using var workbook = new ClosedXML.Excel.XLWorkbook();
+        var sheet = workbook.Worksheets.Add("Order Form");
 
-        // Test 6: StartsWith / Contains robust mapping fallback
-        method.Invoke(_parser, ["Other", categories]).Should().Be("Other Category");
+        sheet.Cell("B4").Value = "Test Company";
+        sheet.Cell("B5").Value = "Test Street";
 
-        // Test 7: No match
-        method.Invoke(_parser, ["Unregistered Category", categories]).Should().BeNull();
+        // Matrix has "CategoryA" with size only in col E (5), col F (6) is empty
+        sheet.Cell("D10").Value = "CategoryA";
+        sheet.Cell("E10").Value = "S";
+
+        // Data row has quantity in col F (6), which has no size header defined
+        sheet.Cell("A18").Value = "ART001";
+        sheet.Cell("B18").Value = "Article 1";
+        sheet.Cell("D18").Value = "CategoryA";
+        sheet.Cell("F18").Value = 10;
+
+        string tempPath = Path.Combine(Path.GetTempPath(), $"{Guid.NewGuid()}.xlsx");
+        workbook.SaveAs(tempPath);
+
+        try
+        {
+            Action act = () => _parser.ParseOrderForm(tempPath);
+            act.Should().Throw<InvalidOperationException>()
+               .WithMessage("*Size header for column 6 in category 'CategoryA'*");
+        }
+        finally
+        {
+            try { File.Delete(tempPath); } catch { }
+        }
     }
 
     [Fact]
     public void ExtractZipAndCity_ShouldHandleEdgeCases()
     {
-        var extractZip = typeof(ClosedXmlExcelParser).GetMethod("ExtractZip", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static);
-        var extractCity = typeof(ClosedXmlExcelParser).GetMethod("ExtractCity", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static);
+        ClosedXmlExcelParser.ExtractZip("").Should().Be("");
+        ClosedXmlExcelParser.ExtractCity("").Should().Be("");
 
-        extractZip!.Invoke(_parser, [""]).Should().Be("");
-        extractCity!.Invoke(_parser, [""]).Should().Be("");
-
-        extractZip.Invoke(_parser, ["8000"]).Should().Be("8000");
-        extractCity.Invoke(_parser, ["8000"]).Should().Be("");
+        ClosedXmlExcelParser.ExtractZip("8000").Should().Be("8000");
+        ClosedXmlExcelParser.ExtractCity("8000").Should().Be("");
     }
 
     private static string CreateTemporaryExcelFile(string orderIdStr, string discountStr)

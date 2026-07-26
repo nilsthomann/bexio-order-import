@@ -188,8 +188,7 @@ public class MainViewModelTests : IDisposable
         vm.TaxId = 1;
         
         // Simulating a loaded order so the command can execute
-        typeof(MainViewModel).GetField("_loadedOrder", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)
-            ?.SetValue(vm, new Order { Customer = new Customer { CompanyName = "Test customer" } });
+        vm._loadedOrder = new Order { Customer = new Customer { CompanyName = "Test customer" } };
         
         vm.ImportCommand.RaiseCanExecuteChanged();
 

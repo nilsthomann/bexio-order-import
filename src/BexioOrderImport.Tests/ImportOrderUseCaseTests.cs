@@ -141,10 +141,10 @@ public class ImportOrderUseCaseTests
         var emptyOrder = new Order { Positions = [] };
         _parserMock.Setup(p => p.ParseOrderForm(It.IsAny<string>())).Returns(emptyOrder);
 
-        bool result = await _useCase.ExecuteAsync(
+        var result = await _useCase.ExecuteAsync(
             "test.xlsx", _ => { }, () => Task.FromResult(true), _ => Task.FromResult(true), (ex, el) => Task.FromResult(true), _ => { }
         );
-        result.Should().BeFalse();
+        result.Success.Should().BeFalse();
     }
 
     [Fact]
@@ -187,7 +187,7 @@ public class ImportOrderUseCaseTests
         var loggedMessages = new List<string>();
 
         // Act
-        bool result = await _useCase.ExecuteAsync(
+        var result = await _useCase.ExecuteAsync(
             "dummy.xlsx",
             showPreviewCallback: o => { },
             confirmUploadCallback: () => Task.FromResult(true),
@@ -197,7 +197,7 @@ public class ImportOrderUseCaseTests
         );
 
         // Assert
-        result.Should().BeTrue();
+        result.Success.Should().BeTrue();
         _clientMock.Verify(c => c.FindContactIdAsync(It.IsAny<string>()), Times.Never);
         _clientMock.Verify(c => c.CreateOrderAsync(It.IsAny<int>(), It.IsAny<Order>()), Times.Never);
         _clientMock.Verify(c => c.AddArticlePositionAsync(456, 789, order.Positions[0]), Times.Once);
@@ -218,7 +218,7 @@ public class ImportOrderUseCaseTests
         bool mismatchCallbackCalled = false;
 
         // Act
-        bool result = await _useCase.ExecuteAsync(
+        var result = await _useCase.ExecuteAsync(
             "dummy.xlsx",
             showPreviewCallback: o => { },
             confirmUploadCallback: () => Task.FromResult(true),
@@ -232,7 +232,7 @@ public class ImportOrderUseCaseTests
         );
 
         // Assert
-        result.Should().BeTrue();
+        result.Success.Should().BeTrue();
         mismatchCallbackCalled.Should().BeTrue();
         _clientMock.Verify(c => c.AddArticlePositionAsync(456, 789, order.Positions[0]), Times.Once);
         loggedMessages.Should().Contain(m => m.Contains("Email mismatch ignored by user"));
@@ -250,7 +250,7 @@ public class ImportOrderUseCaseTests
         var loggedMessages = new List<string>();
 
         // Act
-        bool result = await _useCase.ExecuteAsync(
+        var result = await _useCase.ExecuteAsync(
             "dummy.xlsx",
             showPreviewCallback: o => { },
             confirmUploadCallback: () => Task.FromResult(true),
@@ -260,7 +260,7 @@ public class ImportOrderUseCaseTests
         );
 
         // Assert
-        result.Should().BeFalse();
+        result.Success.Should().BeFalse();
         _clientMock.Verify(c => c.AddArticlePositionAsync(It.IsAny<int>(), It.IsAny<int>(), It.IsAny<OrderPosition>()), Times.Never);
         loggedMessages.Should().Contain(m => m.Contains("Order import cancelled due to email mismatch"));
     }
@@ -277,7 +277,7 @@ public class ImportOrderUseCaseTests
         var loggedMessages = new List<string>();
 
         // Act
-        bool result = await _useCase.ExecuteAsync(
+        var result = await _useCase.ExecuteAsync(
             "dummy.xlsx",
             showPreviewCallback: o => { },
             confirmUploadCallback: () => Task.FromResult(true),
@@ -287,7 +287,7 @@ public class ImportOrderUseCaseTests
         );
 
         // Assert
-        result.Should().BeFalse();
+        result.Success.Should().BeFalse();
         _clientMock.Verify(c => c.AddArticlePositionAsync(It.IsAny<int>(), It.IsAny<int>(), It.IsAny<OrderPosition>()), Times.Never);
         loggedMessages.Should().Contain(m => m.Contains("Order with ID 999 not found"));
     }

@@ -195,7 +195,6 @@ public partial class MainViewModel
 
     private ExcelMappingOptions CloneMapping(ExcelMappingOptions source)
     {
-        var json = JsonSerializer.Serialize(source);
-        return JsonSerializer.Deserialize<ExcelMappingOptions>(json) ?? new ExcelMappingOptions();
+        return Application.Services.ExcelMappingEvaluator.CloneOptions(source);
     }
 }

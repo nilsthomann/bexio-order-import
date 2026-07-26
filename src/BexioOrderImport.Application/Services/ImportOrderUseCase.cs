@@ -1,21 +1,26 @@
 using BexioOrderImport.Application.Interfaces;
+using BexioOrderImport.Application.Models;
 using BexioOrderImport.Domain.Models;
-using System.Resources;
 
 namespace BexioOrderImport.Application.Services;
 
 public class ImportOrderUseCase
 {
-    private readonly IExcelParser _excelParser;
+    private readonly IExcelParser? _excelParser;
     private readonly IBexioClient _bexioClient;
 
-    public ImportOrderUseCase(IExcelParser excelParser, IBexioClient bexioClient)
+    public ImportOrderUseCase(IBexioClient bexioClient)
+        : this(null, bexioClient)
+    {
+    }
+
+    public ImportOrderUseCase(IExcelParser? excelParser, IBexioClient bexioClient)
     {
         _excelParser = excelParser;
         _bexioClient = bexioClient;
     }
 
-    public async Task<bool> ExecuteAsync(
+    public async Task<ImportResult> ExecuteAsync(
         string filePath,
         Action<Order> showPreviewCallback,
         Func<Task<bool>> confirmUploadCallback,
@@ -28,27 +33,56 @@ public class ImportOrderUseCase
         string positionTextTemplate = "<strong>{BexioArticleName} Size {Size}</strong><br />{BexioArticleDescription}",
         string discountPositionTextTemplate = "Rabatt ({DiscountInPercent}%)")
     {
+        if (_excelParser == null)
+        {
+            throw new InvalidOperationException("IExcelParser is required to parse order from file path.");
+        }
+
         logInfoCallback($"Reading Excel file: {Path.GetFileName(filePath)}...");
         var order = _excelParser.ParseOrderForm(filePath);
 
+        showPreviewCallback(order);
+
+        return await ExecuteAsync(
+            order,
+            confirmUploadCallback,
+            confirmCustomerCreationCallback,
+            confirmEmailMismatchCallback,
+            logInfoCallback,
+            progressCallback,
+            defaultOrderName,
+            seasonCode,
+            positionTextTemplate,
+            discountPositionTextTemplate);
+    }
+
+    public async Task<ImportResult> ExecuteAsync(
+        Order order,
+        Func<Task<bool>> confirmUploadCallback,
+        Func<Customer, Task<bool>> confirmCustomerCreationCallback,
+        Func<string, string, Task<bool>> confirmEmailMismatchCallback,
+        Action<string> logInfoCallback,
+        Action<int, int>? progressCallback = null,
+        string defaultOrderName = "Order: {CustomerName} {SeasonCode}",
+        string seasonCode = "",
+        string positionTextTemplate = "<strong>{BexioArticleName} Size {Size}</strong><br />{BexioArticleDescription}",
+        string discountPositionTextTemplate = "Rabatt ({DiscountInPercent}%)")
+    {
         if (order.Positions.Count == 0)
         {
             logInfoCallback("No order positions with quantity > 0 found.");
-            return false;
+            return new ImportResult(Success: false, ErrorMessage: "No positions found.");
         }
 
-        // 1. Show preview
-        showPreviewCallback(order);
-
-        // 2. Ask confirmation
+        // 1. Ask confirmation
         bool confirmed = await confirmUploadCallback();
         if (!confirmed)
         {
             logInfoCallback("Order import cancelled.");
-            return false;
+            return new ImportResult(Success: false, ErrorMessage: "Cancelled by user.");
         }
 
-        // 3. Start API upload
+        // 2. Start API upload
         logInfoCallback("Connecting to Bexio API...");
         int orderId;
 
@@ -59,7 +93,7 @@ public class ImportOrderUseCase
             if (existingEmail == null)
             {
                 logInfoCallback($"⛔ Order with ID {order.OrderId.Value} not found in Bexio.");
-                return false;
+                return new ImportResult(Success: false, ErrorMessage: $"Order {order.OrderId.Value} not found.");
             }
 
             if (!string.Equals(existingEmail, order.Customer.Email, StringComparison.OrdinalIgnoreCase))
@@ -68,7 +102,7 @@ public class ImportOrderUseCase
                 if (!ignoreMismatch)
                 {
                     logInfoCallback("Order import cancelled due to email mismatch.");
-                    return false;
+                    return new ImportResult(Success: false, ErrorMessage: "Cancelled due to email mismatch.");
                 }
                 logInfoCallback("Email mismatch ignored by user. Proceeding with existing order...");
             }
@@ -85,7 +119,7 @@ public class ImportOrderUseCase
                 if (!createCustomerConfirmed)
                 {
                     logInfoCallback("Order import cancelled (customer was not created).");
-                    return false;
+                    return new ImportResult(Success: false, ErrorMessage: "Cancelled (customer creation refused).");
                 }
                 logInfoCallback("Creating new customer in Bexio...");
                 contactId = await _bexioClient.CreateContactAsync(order.Customer);
@@ -151,6 +185,9 @@ public class ImportOrderUseCase
         }
 
         logInfoCallback($"Successfully completed! Order #{orderId} has been imported into Bexio.");
-        return true;
+        return new ImportResult(
+            Success: true,
+            OrderId: orderId,
+            UploadedPositionsCount: count);
     }
 }

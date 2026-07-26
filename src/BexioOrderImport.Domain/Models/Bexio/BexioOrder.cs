@@ -22,12 +22,6 @@ namespace BexioOrderImport.Domain.Models.Bexio
         [JsonPropertyName("currency_id")]
         public int CurrencyId { get; set; }
 
-        [JsonPropertyName("payment_type_id")]
-        public int PaymentTypeId { get; set; }
-
-        [JsonPropertyName("language_id")]
-        public int LanguageId { get; set; }
-
         [JsonPropertyName("api_reference")]
         public string? ApiReference { get; set; }
 

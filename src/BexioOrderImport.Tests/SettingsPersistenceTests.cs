@@ -268,10 +268,7 @@ public class SettingsPersistenceTests : IDisposable
             vm.SeasonCode = "FS27";
             vm.PositionTextTemplate = "Template Text";
 
-            var copyVmToProfileMethod = typeof(MainViewModel).GetMethod("CopyVmToProfile", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-            var copyProfileToVmMethod = typeof(MainViewModel).GetMethod("CopyProfileToVm", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-
-            copyVmToProfileMethod!.Invoke(vm, [profile]);
+            vm.CopyVmToProfile(profile);
 
             profile.Mapping.Header.CompanyNameCell.Should().Be("A1");
             profile.Mapping.Header.StreetCell.Should().Be("A2");
@@ -308,7 +305,7 @@ public class SettingsPersistenceTests : IDisposable
             profile.Mapping.SeasonCode = "HW27";
             profile.Mapping.PositionTextTemplate = "Another Template Text";
 
-            copyProfileToVmMethod!.Invoke(vm, [profile]);
+            vm.CopyProfileToVm(profile);
 
             vm.CompanyNameCell.Should().Be("B1");
             vm.MatrixStartRow.Should().Be(50);
@@ -698,14 +695,8 @@ public class SettingsPersistenceTests : IDisposable
             vm.DiscountPercentVal = 10m;
             vm.DiscountPercentVal.Should().Be(10m);
 
-            vm.DiscountAmount = 250m;
-            vm.DiscountAmount.Should().Be(250m);
-
             vm.TotalNetAmount = 2250m;
             vm.TotalNetAmount.Should().Be(2250m);
-
-            vm.TotalsSummary = "Summary";
-            vm.TotalsSummary.Should().Be("Summary");
 
             // Verify remaining getters/setters
             vm.ConnectionStatusText = "Connected";
@@ -1015,7 +1006,7 @@ public class SettingsPersistenceTests : IDisposable
                 _errorDialogAction = (msg, title) => errorCalled = true;
 
                 // Force load
-                typeof(MainViewModel).GetMethod("LoadSettings", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)!.Invoke(vm, null);
+                vm.LoadSettings();
 
                 errorCalled.Should().BeTrue();
             }
@@ -1043,9 +1034,7 @@ public class SettingsPersistenceTests : IDisposable
                 _errorDialogAction = (msg, title) => errorCalled = true;
 
                 // Point the config file path to a directory to force IOException on WriteAllText during Save
-                typeof(MainViewModel)
-                    .GetField("_configFilePath", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)!
-                    .SetValue(vm, Path.GetTempPath());
+                vm._configFilePath = Path.GetTempPath();
 
                 vm.BexioToken = "token";
                 vm.IsModified = true;

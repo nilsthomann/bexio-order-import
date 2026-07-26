@@ -55,7 +55,7 @@ public static class Translations
     public static string Settings_HeaderSection => ResourceManager.GetString(nameof(Settings_HeaderSection)) ?? string.Empty;
     public static string Settings_CellCustomerName => ResourceManager.GetString(nameof(Settings_CellCustomerName)) ?? string.Empty;
     public static string Settings_CellStreet => ResourceManager.GetString(nameof(Settings_CellStreet)) ?? string.Empty;
-    public static string Settings_CellZipCode => ResourceManager.GetString(nameof(Settings_CellZipCode)) ?? string.Empty;
+    public static string Settings_CellZipCodeCity => ResourceManager.GetString(nameof(Settings_CellZipCodeCity)) ?? string.Empty;
     public static string Settings_CellEmail => ResourceManager.GetString(nameof(Settings_CellEmail)) ?? string.Empty;
     public static string Settings_CellBuyerName => ResourceManager.GetString(nameof(Settings_CellBuyerName)) ?? string.Empty;
     public static string Settings_CellOrderId => ResourceManager.GetString(nameof(Settings_CellOrderId)) ?? string.Empty;
@@ -64,7 +64,6 @@ public static class Translations
     public static string Settings_MatrixSection => ResourceManager.GetString(nameof(Settings_MatrixSection)) ?? string.Empty;
     public static string Settings_MatrixStart => ResourceManager.GetString(nameof(Settings_MatrixStart)) ?? string.Empty;
     public static string Settings_MatrixEnd => ResourceManager.GetString(nameof(Settings_MatrixEnd)) ?? string.Empty;
-    public static string Settings_RowsSection => ResourceManager.GetString(nameof(Settings_RowsSection)) ?? string.Empty;
     public static string Settings_RowStart => ResourceManager.GetString(nameof(Settings_RowStart)) ?? string.Empty;
     public static string Settings_ColsSection => ResourceManager.GetString(nameof(Settings_ColsSection)) ?? string.Empty;
     public static string Settings_ColArtNum => ResourceManager.GetString(nameof(Settings_ColArtNum)) ?? string.Empty;
@@ -72,7 +71,6 @@ public static class Translations
     public static string Settings_ColColor => ResourceManager.GetString(nameof(Settings_ColColor)) ?? string.Empty;
     public static string Settings_ColSizeCategory => ResourceManager.GetString(nameof(Settings_ColSizeCategory)) ?? string.Empty;
     public static string Settings_SaveButton => ResourceManager.GetString(nameof(Settings_SaveButton)) ?? string.Empty;
-    public static string Settings_SaveSuccess => ResourceManager.GetString(nameof(Settings_SaveSuccess)) ?? string.Empty;
     public static string CustomerConfirm_Title => ResourceManager.GetString(nameof(CustomerConfirm_Title)) ?? string.Empty;
     public static string CustomerConfirm_Warning => ResourceManager.GetString(nameof(CustomerConfirm_Warning)) ?? string.Empty;
     public static string CustomerConfirm_Field => ResourceManager.GetString(nameof(CustomerConfirm_Field)) ?? string.Empty;
@@ -93,7 +91,6 @@ public static class Translations
     public static string Settings_LanguageLabel => ResourceManager.GetString(nameof(Settings_LanguageLabel)) ?? string.Empty;
     public static string Settings_LanguageGerman => ResourceManager.GetString(nameof(Settings_LanguageGerman)) ?? string.Empty;
     public static string Settings_LanguageEnglish => ResourceManager.GetString(nameof(Settings_LanguageEnglish)) ?? string.Empty;
-    public static string Settings_RestartPrompt => ResourceManager.GetString(nameof(Settings_RestartPrompt)) ?? string.Empty;
     public static string Settings_ColStartQty => ResourceManager.GetString(nameof(Settings_ColStartQty)) ?? string.Empty;
     public static string Settings_ColEndQty => ResourceManager.GetString(nameof(Settings_ColEndQty)) ?? string.Empty;
     public static string Settings_ColUnitPrice => ResourceManager.GetString(nameof(Settings_ColUnitPrice)) ?? string.Empty;

@@ -26,7 +26,7 @@ public class ClosedXmlExcelParser : IExcelParser
 
         var order = new Order
         {
-            // 1. Parse header data
+            // Parse header data
             Customer = ParseCustomerHeader(sheet),
             OrderId = ParseOrderId(sheet)
         };
@@ -46,10 +46,10 @@ public class ClosedXmlExcelParser : IExcelParser
             order.DiscountPercent = parsedDiscount;
         }
 
-        // 2. Read size matrices from rows 10-17
+        // Read size matrices
         var sizeMatrices = ParseSizeMatrices(sheet);
 
-        // 3. Read row data starting from StartRow
+        // Read row data starting from StartRow
         int lastRow = sheet.LastRowUsed()?.RowNumber() ?? _options.Data.StartRow;
         for (int r = _options.Data.StartRow; r <= lastRow; r++)
         {
@@ -82,11 +82,10 @@ public class ClosedXmlExcelParser : IExcelParser
             }
 
             // Dynamically assign matrix
-            string? matchedCategory = MapCategoryName(rawCategory, sizeMatrices.Keys);
-            if (matchedCategory == null || !sizeMatrices.ContainsKey(matchedCategory))
-                continue; // Category not present in matrix definitions
-
-            var sizes = sizeMatrices[matchedCategory];
+            if (!sizeMatrices.TryGetValue(rawCategory, out var sizes))
+            {
+                throw new InvalidOperationException($"Category '{rawCategory}' on row {r} is not defined in the size matrix.");
+            }
 
             // Check size columns for order quantities
             for (int col = _options.Data.StartQtyColumn; col <= _options.Data.EndQtyColumn; col++)
@@ -94,7 +93,10 @@ public class ClosedXmlExcelParser : IExcelParser
                 string qtyStr = row.Cell(col).Value.ToString();
                 if (int.TryParse(qtyStr, out int qty) && qty > 0)
                 {
-                    string sizeName = sizes.TryGetValue(col, out string? value) ? value : $"Col_{col}";
+                    if (!sizes.TryGetValue(col, out string? sizeName) || string.IsNullOrWhiteSpace(sizeName))
+                    {
+                        throw new InvalidOperationException($"Size header for column {col} in category '{rawCategory}' (row {r}) was not defined in the size matrix.");
+                    }
 
                     var pos = new OrderPosition
                     {
@@ -166,54 +168,13 @@ public class ClosedXmlExcelParser : IExcelParser
         return matrices;
     }
 
-    private static string? MapCategoryName(string rawCategory, IEnumerable<string> registeredCategories)
-    {
-        if (string.IsNullOrWhiteSpace(rawCategory)) return null;
-
-        // 1. Exact match
-        foreach (var reg in registeredCategories)
-        {
-            if (reg.Equals(rawCategory, StringComparison.OrdinalIgnoreCase))
-                return reg;
-        }
-
-        // 2. Category mapping rules
-        if (rawCategory.Contains("Hat", StringComparison.OrdinalIgnoreCase) ||
-            rawCategory.Contains("Neck", StringComparison.OrdinalIgnoreCase))
-            return "Hats/Necks";
-
-        if (rawCategory.Contains("Mitten", StringComparison.OrdinalIgnoreCase) ||
-            rawCategory.Contains("Acc", StringComparison.OrdinalIgnoreCase))
-            return "Mittens/Acc";
-
-        if (rawCategory.Contains("Socks", StringComparison.OrdinalIgnoreCase) ||
-            rawCategory.Contains("UWear", StringComparison.OrdinalIgnoreCase))
-            return "Socks/UWear";
-
-        if (rawCategory.Contains("Shoes 32", StringComparison.OrdinalIgnoreCase))
-            return "Shoes 32-42";
-
-        if (rawCategory.Contains("Shoes 20", StringComparison.OrdinalIgnoreCase))
-            return "Shoes 20-31";
-
-        // 3. Fallback to StartsWith/Contains
-        foreach (var reg in registeredCategories)
-        {
-            if (reg.StartsWith(rawCategory, StringComparison.OrdinalIgnoreCase) ||
-                rawCategory.StartsWith(reg, StringComparison.OrdinalIgnoreCase))
-                return reg;
-        }
-
-        return null;
-    }
-
-    private static string ExtractZip(string rawZipCity)
+    internal static string ExtractZip(string rawZipCity)
     {
         var parts = rawZipCity.Split(' ', 2);
         return parts.Length > 0 ? parts[0] : string.Empty;
     }
 
-    private static string ExtractCity(string rawZipCity)
+    internal static string ExtractCity(string rawZipCity)
     {
         var parts = rawZipCity.Split(' ', 2);
         return parts.Length > 1 ? parts[1] : string.Empty;

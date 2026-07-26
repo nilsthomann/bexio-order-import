@@ -524,4 +524,41 @@ public class BexioApiClientTests
         requestBody.Should().Contain("\"value\":10");
         requestBody.Should().Contain("\"is_percentual\":true");
     }
+
+    [Fact]
+    public async Task RateLimit_When429Returned_ShouldWaitAndRetryRequest()
+    {
+        // Arrange
+        int callCount = 0;
+        var handler = new MockHttpMessageHandler
+        {
+            SendAsyncFunc = (req, token) =>
+            {
+                callCount++;
+                if (callCount == 1)
+                {
+                    var rateLimitResp = new HttpResponseMessage((HttpStatusCode)429);
+                    rateLimitResp.Headers.Add("ratelimit-remaining", "0");
+                    rateLimitResp.Headers.Add("ratelimit-reset", "1");
+                    return Task.FromResult(rateLimitResp);
+                }
+
+                var successResp = new HttpResponseMessage(HttpStatusCode.OK)
+                {
+                    Content = new StringContent("[{\"id\": 555}]", Encoding.UTF8, "application/json")
+                };
+                return Task.FromResult(successResp);
+            }
+        };
+
+        var httpClient = new HttpClient(handler);
+        var client = new BexioApiClient(httpClient, "dummy-token", 1, 1);
+
+        // Act
+        var result = await client.FindContactIdAsync("test@retry.com");
+
+        // Assert
+        result.Should().Be(555);
+        callCount.Should().Be(2);
+    }
 }

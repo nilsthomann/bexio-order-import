@@ -90,11 +90,9 @@ public partial class MainViewModel
     {
         if (_loadedOrder == null)
         {
-            TotalsSummary = string.Empty;
             TotalQuantity = 0;
             TotalGrossAmount = 0;
             DiscountPercentVal = 0;
-            DiscountAmount = 0;
             TotalNetAmount = 0;
             return;
         }
@@ -103,10 +101,8 @@ public partial class MainViewModel
         TotalQuantity = OrderPositions.Sum(p => p.Quantity);
         TotalGrossAmount = OrderPositions.Sum(p => p.TotalPrice);
         DiscountPercentVal = _loadedOrder.DiscountPercent;
-        DiscountAmount = TotalGrossAmount * (DiscountPercentVal / 100m);
-        TotalNetAmount = TotalGrossAmount - DiscountAmount;
-
-        TotalsSummary = $"{Resources.Translations.Import_SummaryQuantity}: {TotalQuantity} | {Resources.Translations.Import_SummaryGross}: {TotalGrossAmount:F2} CHF | {Resources.Translations.Import_SummaryDiscount}: {DiscountPercentVal}% | {Resources.Translations.Import_SummaryNet}: {TotalNetAmount:F2} CHF";
+        decimal discountAmount = TotalGrossAmount * (DiscountPercentVal / 100m);
+        TotalNetAmount = TotalGrossAmount - discountAmount;
     }
 
     private void ClearLoadedFileInternal(string logMessage)
@@ -171,26 +167,16 @@ public partial class MainViewModel
             _loadedOrder.Positions = OrderPositions.ToList();
 
             var bexioClient = _bexioClientFactory.Create(BexioToken, AccountId, TaxId, SelectedLanguage);
-            var useCase = new ImportOrderUseCase(new Services.InMemoryExcelParser(_loadedOrder), bexioClient);
+            var useCase = new ImportOrderUseCase(bexioClient);
 
-            int createdOrderId = 0;
-            bool success = await useCase.ExecuteAsync(
-                filePath: SelectedFilePath!,
-                showPreviewCallback: order => { }, // Already shown in UI
+            var result = await useCase.ExecuteAsync(
+                order: _loadedOrder,
                 confirmUploadCallback: ConfirmUploadAsync,
                 confirmCustomerCreationCallback: ConfirmCustomerCreationAsync,
                 confirmEmailMismatchCallback: ConfirmEmailMismatchAsync,
                 logInfoCallback: message =>
                 {
-                    InvokeOnUi(() =>
-                    {
-                        AppendLog(message);
-                        var match = System.Text.RegularExpressions.Regex.Match(message, @"Bexio ID:\s*(\d+)");
-                        if (match.Success && int.TryParse(match.Groups[1].Value, out var id))
-                        {
-                            createdOrderId = id;
-                        }
-                    });
+                    InvokeOnUi(() => AppendLog(message));
                 },
                 progressCallback: (uploaded, total) =>
                 {
@@ -214,8 +200,9 @@ public partial class MainViewModel
                 discountPositionTextTemplate: DiscountPositionTextTemplate
             );
 
-            if (success)
+            if (result.Success)
             {
+                int createdOrderId = result.OrderId ?? 0;
                 importStopwatch.Stop();
                 TimeSpan duration = importStopwatch.Elapsed;
                 string formattedDuration = string.Format("{0:D2}:{1:D2} Min", (int)duration.TotalMinutes, duration.Seconds);

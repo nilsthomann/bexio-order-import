@@ -126,7 +126,7 @@
                                         <TextBox x:Name="StreetCellInput" Height="32"/>
                                     </StackPanel>
                                     <StackPanel Grid.Row="0" Grid.Column="2" Margin="0,0,8,12">
-                                        <TextBlock Text="{x:Static lex:Translations.Settings_CellZipCode}" Style="{StaticResource MutedTextBlockStyle}"/>
+                                        <TextBlock Text="{x:Static lex:Translations.Settings_CellZipCodeCity}" Style="{StaticResource MutedTextBlockStyle}"/>
                                         <TextBox x:Name="ZipCityCellInput" Height="32"/>
                                     </StackPanel>
                                     <StackPanel Grid.Row="0" Grid.Column="3" Margin="0,0,0,12">
