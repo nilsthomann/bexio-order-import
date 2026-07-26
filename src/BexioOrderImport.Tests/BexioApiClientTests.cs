@@ -561,4 +561,85 @@ public class BexioApiClientTests
         result.Should().Be(555);
         callCount.Should().Be(2);
     }
+
+    [Fact]
+    public async Task CheckConnectionAsync_WhenSuccess_ShouldReturnTrue()
+    {
+        // Arrange
+        var handler = new MockHttpMessageHandler
+        {
+            SendAsyncFunc = (req, token) =>
+            {
+                return Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK)
+                {
+                    Content = new StringContent("[{\"id\":1}]", Encoding.UTF8, "application/json")
+                });
+            }
+        };
+
+        var httpClient = new HttpClient(handler);
+        var client = new BexioApiClient(httpClient, "dummy-token", 1, 1);
+
+        // Act
+        bool result = await client.CheckConnectionAsync();
+
+        // Assert
+        result.Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task CheckConnectionAsync_WhenExceptionThrown_ShouldReturnFalse()
+    {
+        // Arrange
+        var handler = new MockHttpMessageHandler
+        {
+            SendAsyncFunc = (req, token) => throw new HttpRequestException("Network failure")
+        };
+
+        var httpClient = new HttpClient(handler);
+        var client = new BexioApiClient(httpClient, "dummy-token", 1, 1);
+
+        // Act
+        bool result = await client.CheckConnectionAsync();
+
+        // Assert
+        result.Should().BeFalse();
+    }
+
+    [Fact]
+    public async Task GetOrderContactEmailAsync_WhenContactFound_ShouldReturnEmail()
+    {
+        // Arrange
+        var handler = new MockHttpMessageHandler
+        {
+            SendAsyncFunc = (req, token) =>
+            {
+                var uri = req.RequestUri!.ToString();
+                if (uri.Contains("kb_order/99"))
+                {
+                    return Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK)
+                    {
+                        Content = new StringContent("{\"id\":99, \"contact_id\":123}", Encoding.UTF8, "application/json")
+                    });
+                }
+                if (uri.Contains("contact/123"))
+                {
+                    return Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK)
+                    {
+                        Content = new StringContent("{\"id\":123, \"mail\":\"buyer@bexio.com\"}", Encoding.UTF8, "application/json")
+                    });
+                }
+                return Task.FromResult(new HttpResponseMessage(HttpStatusCode.NotFound));
+            }
+        };
+
+        var httpClient = new HttpClient(handler);
+        var client = new BexioApiClient(httpClient, "dummy-token", 1, 1);
+
+        // Act
+        string? email = await client.GetOrderContactEmailAsync(99);
+
+        // Assert
+        email.Should().Be("buyer@bexio.com");
+    }
 }

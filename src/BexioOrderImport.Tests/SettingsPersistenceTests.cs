@@ -382,7 +382,7 @@ public class SettingsPersistenceTests : IDisposable
             vm.HasLoadedFile.Should().BeTrue();
             vm.CompanyName.Should().Be("Muster Fashion AG");
             vm.BuyerName.Should().Be("Hans Muster");
-            vm.Email.Should().Be("test@test.com");
+            vm.Email.Should().Be("chris@peakmile.com");
             vm.TotalQuantity.Should().Be(4);
             vm.TotalGrossAmount.Should().Be(72.8m);
         });

@@ -81,7 +81,7 @@ public class ExcelParserTests
             ws.Cell("D14").Value = "Shoes 20-31";
             ws.Cell("D15").Value = "Shoes 32-41";
             ws.Cell("D16").Value = "Mini";
-            ws.Cell("D17").Value = "Kids";
+            ws.Cell("E5").Value = "chris@peakmile.com";
             wb.Save();
         }
 
@@ -96,7 +96,7 @@ public class ExcelParserTests
         order.Customer.Street.Should().Be("Musterstrasse 12");
         order.Customer.ZipCode.Should().Be("8000");
         order.Customer.City.Should().Be("Zürich");
-        order.Customer.Email.Should().Be("test@test.com");
+        order.Customer.Email.Should().Be("chris@peakmile.com");
         order.Customer.BuyerName.Should().Be("Hans Muster");
 
         // 2. Delivery & payment terms assertions
@@ -452,6 +452,86 @@ public class ExcelParserTests
             order.Positions[0].DiscountPercent.Should().BeNull();
             order.Positions[0].NetUnitPrice.Should().Be(100m);
             order.Positions[0].TotalPrice.Should().Be(200m);
+        }
+        finally
+        {
+            if (File.Exists(tempPath)) File.Delete(tempPath);
+        }
+    }
+
+    [Fact]
+    [Trait("Category", "Unit")]
+    public void ParseOrderForm_WithRowDiscountEnabled_ShouldCalculateNetUnitPriceAndTotalCorrectly()
+    {
+        // Arrange
+        var options = new ExcelMappingOptions
+        {
+            Header = new HeaderMapping
+            {
+                CompanyNameCell = "A1",
+                StreetCell = "A2",
+                ZipCityCell = "A3",
+                BuyerEmailCell = "A4",
+                BuyerNameCell = "A5",
+                OrderIdCell = "A6",
+                PaymentTermsCell = "A7",
+                DiscountCell = "A8"
+            },
+            SizeMatrix = new SizeMatrixMapping
+            {
+                StartRow = 10,
+                EndRow = 10,
+                CategoryColumn = 4,
+                StartSizeColumn = 5,
+                EndSizeColumn = 5
+            },
+            Data = new DataMapping
+            {
+                StartRow = 18,
+                ArticleNumberColumn = 1,
+                ArticleNameColumn = 2,
+                ColorColumn = 3,
+                CategoryColumn = 4,
+                StartQtyColumn = 5,
+                EndQtyColumn = 5,
+                UnitPriceColumn = 6,
+                EnableRowDiscount = true,
+                RowDiscountColumn = 7
+            }
+        };
+
+        var parser = new ClosedXmlExcelParser(Microsoft.Extensions.Options.Options.Create(options));
+
+        using var wb = new ClosedXML.Excel.XLWorkbook();
+        var ws = wb.Worksheets.Add("Sheet1");
+
+        ws.Cell("A1").Value = "Test AG";
+        ws.Cell(10, 4).Value = "KIDS";
+        ws.Cell(10, 5).Value = "92";
+
+        ws.Cell(18, 1).Value = "ART-02";
+        ws.Cell(18, 2).Value = "Hose";
+        ws.Cell(18, 3).Value = "Blau";
+        ws.Cell(18, 4).Value = "KIDS";
+        ws.Cell(18, 5).Value = 2; // Qty
+        ws.Cell(18, 6).Value = 100m; // Unit Price
+        ws.Cell(18, 7).Value = "20%"; // 20% discount
+
+        string tempPath = Path.Combine(Path.GetTempPath(), $"row_disc_enabled_{Guid.NewGuid():N}.xlsx");
+        wb.SaveAs(tempPath);
+
+        try
+        {
+            // Act
+            var order = parser.ParseOrderForm(tempPath);
+
+            // Assert
+            order.Should().NotBeNull();
+            order.Positions.Should().HaveCount(1);
+            order.Positions[0].GrossUnitPrice.Should().Be(100m);
+            order.Positions[0].DiscountPercent.Should().Be(20m);
+            order.Positions[0].NetUnitPrice.Should().Be(80m);
+            order.Positions[0].TotalPrice.Should().Be(160m);
         }
         finally
         {
