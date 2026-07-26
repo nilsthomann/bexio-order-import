@@ -174,10 +174,11 @@ public partial class MainViewModel : ViewModelBase
         ImportCommand = new RelayCommand(async () => await ImportToBexioAsync(), () => _loadedOrder != null && !_isImporting);
         SaveSettingsCommand = new RelayCommand(SaveSettings, () => IsModified);
         CreateProfileCommand = new RelayCommand(CreateProfile);
+        RenameProfileCommand = new RelayCommand<Models.MappingProfile>(RenameProfile);
         EditProfileCommand = new RelayCommand<Models.MappingProfile>(EditProfile);
         CloneProfileCommand = new RelayCommand<Models.MappingProfile>(CloneProfile);
         SetActiveProfileCommand = new RelayCommand<Models.MappingProfile>(SetActiveProfile);
-        DeleteProfileCommand = new RelayCommand<Models.MappingProfile>(DeleteProfile, p => p != null && p.Name != "Default");
+        DeleteProfileCommand = new RelayCommand<Models.MappingProfile>(DeleteProfile, p => p != null && Profiles.Count > 1);
         ExportProfilesCommand = new RelayCommand(ExportProfiles);
         ImportProfilesCommand = new RelayCommand(ImportProfiles);
         InstallUpdateCommand = new RelayCommand(async () => await InstallUpdateAsync(), () => !string.IsNullOrEmpty(_updateDownloadUrl) && !_isDownloadingUpdate);
@@ -213,6 +214,7 @@ public partial class MainViewModel : ViewModelBase
     public RelayCommand ImportCommand { get; }
     public RelayCommand SaveSettingsCommand { get; }
     public RelayCommand CreateProfileCommand { get; }
+    public RelayCommand<Models.MappingProfile> RenameProfileCommand { get; }
     public RelayCommand<Models.MappingProfile> EditProfileCommand { get; }
     public RelayCommand<Models.MappingProfile> CloneProfileCommand { get; }
     public RelayCommand<Models.MappingProfile> SetActiveProfileCommand { get; }
@@ -430,16 +432,42 @@ public partial class MainViewModel : ViewModelBase
         }
     }
 
+    private int _selectedTabIndex;
+    public int SelectedTabIndex
+    {
+        get => _selectedTabIndex;
+        set
+        {
+            if (_selectedTabIndex != value)
+            {
+                if (IsModified)
+                {
+                    bool discard = _dialogService.ShowPendingChangesDialog();
+                    if (discard)
+                    {
+                        LoadSettings();
+                    }
+                    else
+                    {
+                        OnPropertyChanged(nameof(SelectedTabIndex));
+                        return;
+                    }
+                }
+                SetProperty(ref _selectedTabIndex, value);
+            }
+        }
+    }
+
+    public bool IsActiveRowDiscountEnabled => ActiveProfile?.Mapping.Data.EnableRowDiscount ?? false;
+
     public Models.MappingProfile? ActiveProfile
     {
         get => _activeProfile;
         set
         {
-            SetProperty(ref _activeProfile, value);
-            // Trigger reload of loaded file if active profile changes
-            if (_activeProfile != null && !string.IsNullOrEmpty(SelectedFilePath) && File.Exists(SelectedFilePath))
+            if (SetProperty(ref _activeProfile, value))
             {
-                _ = LoadExcelFileAsync(SelectedFilePath);
+                OnPropertyChanged(nameof(IsActiveRowDiscountEnabled));
             }
         }
     }

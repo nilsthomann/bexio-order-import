@@ -123,6 +123,7 @@ public partial class MainViewModel
             File.WriteAllText(_configFilePath, JsonSerializer.Serialize(settingsObj, new JsonSerializerOptions { WriteIndented = true }));
 
             _ = CheckBexioConnectionAsync();
+            OnPropertyChanged(nameof(IsActiveRowDiscountEnabled));
 
             if (!string.IsNullOrEmpty(SelectedFilePath) && File.Exists(SelectedFilePath))
             {

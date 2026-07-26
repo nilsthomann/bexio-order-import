@@ -60,8 +60,8 @@ public class OrderPositionTests
         // Arrange & Act
         var pos1 = new OrderPosition
         {
-            GrossUnitPrice = 36.40m,
-            DiscountPercent = 12m, // 36.40 * 0.88 = 32.032 -> 32.0m
+            GrossUnitPrice = 36.36m,
+            DiscountPercent = 12m, // 36.36 * 0.88 = 31.9968 -> RoundUp to 1 decimal place = 32.0m
             Quantity = 1
         };
 

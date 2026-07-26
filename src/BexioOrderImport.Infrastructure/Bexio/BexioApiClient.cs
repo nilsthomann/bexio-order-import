@@ -318,6 +318,7 @@ public class BexioApiClient : IBexioClient
         {
             text = string.IsNullOrEmpty(text) ? "Rabatt" : text,
             value = discountPercent,
+            
             is_percentual = true
         };
 

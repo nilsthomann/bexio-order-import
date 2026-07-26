@@ -611,4 +611,22 @@ Bitte schliessen Sie die Datei in Excel und versuchen Sie es erneut.</value>
   <data name="Import_ProgressTimeElapsedOnly" xml:space="preserve">
     <value>Verstrichen: {0}</value>
   </data>
+  <data name="Settings_ProfilesRenameTitle" xml:space="preserve">
+    <value>Profil umbenennen</value>
+  </data>
+  <data name="Settings_ProfilesRenameButton" xml:space="preserve">
+    <value>Profil umbenennen</value>
+  </data>
+  <data name="Settings_UnsavedChangesWarning" xml:space="preserve">
+    <value>Sie haben ungespeicherte Änderungen in den Einstellungen. Bitte speichern Sie Ihre Einstellungen, bevor Sie den Tab wechseln.</value>
+  </data>
+  <data name="Dialog_DiscardChanges" xml:space="preserve">
+    <value>Änderungen verwerfen</value>
+  </data>
+  <data name="Dialog_PendingChangesTitle" xml:space="preserve">
+    <value>Ungespeicherte Änderungen</value>
+  </data>
+  <data name="Dialog_PendingChangesMessage" xml:space="preserve">
+    <value>Sie haben ungespeicherte Änderungen in den Einstellungen. Möchten Sie diese verwerfen?</value>
+  </data>
 </root>

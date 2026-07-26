@@ -3,7 +3,7 @@ using BexioOrderImport.Wpf.Resources;
 
 namespace BexioOrderImport.Wpf.Views;
 
-public enum CustomDialogType { Info, Warning, Error, Confirm }
+public enum CustomDialogType { Info, Warning, Error, Confirm, PendingChanges }
 
 [System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
 public partial class CustomDialog : Window
@@ -49,7 +49,7 @@ public partial class CustomDialog : Window
     {
         TitleText.Text = title;
         MessageText.Text = message;
-        _isConfirm = type == CustomDialogType.Confirm;
+        _isConfirm = type == CustomDialogType.Confirm || type == CustomDialogType.PendingChanges;
 
         switch (type)
         {
@@ -72,6 +72,13 @@ public partial class CustomDialog : Window
                 OkButton.Content = Translations.Dialog_Yes;
                 OkButton.Style = (Style)FindResource("ModernButtonStyle");
                 CancelButton.Content = Translations.Dialog_No;
+                CancelButton.Visibility = Visibility.Visible;
+                break;
+            case CustomDialogType.PendingChanges:
+                OkButton.Content = Translations.Dialog_DiscardChanges;
+                OkButton.Style = (Style)FindResource("ModernButtonStyle");
+                OkButton.Width = 160;
+                CancelButton.Content = Translations.Dialog_Cancel;
                 CancelButton.Visibility = Visibility.Visible;
                 break;
         }
@@ -141,6 +148,16 @@ public partial class CustomDialog : Window
     {
         if (IsUnitTest()) return true;
         var dlg = CreateDialog(CustomDialogType.Confirm, title ?? Translations.Dialog_ConfirmTitle, message);
+        return dlg.ShowDialog() == true;
+    }
+
+    public static bool ShowPendingChanges(string? message = null, string? title = null)
+    {
+        if (IsUnitTest()) return true;
+        var dlg = CreateDialog(
+            CustomDialogType.PendingChanges,
+            title ?? Translations.Dialog_PendingChangesTitle,
+            message ?? Translations.Dialog_PendingChangesMessage);
         return dlg.ShowDialog() == true;
     }
 

@@ -608,4 +608,22 @@ Please close the file in Excel and try again.</value>
   <data name="Import_ProgressTimeElapsedOnly" xml:space="preserve">
     <value>Elapsed: {0}</value>
   </data>
+  <data name="Settings_ProfilesRenameTitle" xml:space="preserve">
+    <value>Rename Profile</value>
+  </data>
+  <data name="Settings_ProfilesRenameButton" xml:space="preserve">
+    <value>Rename Profile</value>
+  </data>
+  <data name="Settings_UnsavedChangesWarning" xml:space="preserve">
+    <value>You have unsaved changes in Settings. Please save your settings before switching tabs.</value>
+  </data>
+  <data name="Dialog_DiscardChanges" xml:space="preserve">
+    <value>Discard Changes</value>
+  </data>
+  <data name="Dialog_PendingChangesTitle" xml:space="preserve">
+    <value>Unsaved Changes</value>
+  </data>
+  <data name="Dialog_PendingChangesMessage" xml:space="preserve">
+    <value>You have unsaved changes in Settings. Do you want to discard them?</value>
+  </data>
 </root>

@@ -61,7 +61,7 @@ public partial class MainViewModel
 
     private bool ShowProfileEditDialog(Models.MappingProfile profile)
     {
-        return _dialogService.ShowProfileEditDialog(profile);
+        return _dialogService.ShowProfileEditDialog(profile, Profiles);
     }
 
     private void EditProfile(Models.MappingProfile profile)
@@ -74,17 +74,31 @@ public partial class MainViewModel
             {
                 CopyProfileToVm(profile);
             }
-            if (profile == ActiveProfile && !string.IsNullOrEmpty(SelectedFilePath) && File.Exists(SelectedFilePath))
+            OnPropertyChanged(nameof(ActiveProfile));
+            SetModified();
+        }
+    }
+
+    private void RenameProfile(Models.MappingProfile profile)
+    {
+        if (profile == null) return;
+        string? newName = _dialogService.ShowProfileRenameDialog(profile.Name);
+        if (!string.IsNullOrWhiteSpace(newName) && !newName.Equals(profile.Name, StringComparison.OrdinalIgnoreCase))
+        {
+            if (Profiles.Any(p => p.Name.Equals(newName, StringComparison.OrdinalIgnoreCase)))
             {
-                _ = LoadExcelFileAsync(SelectedFilePath);
+                _dialogService.ShowErrorDialog(Resources.Translations.Dialog_ProfileNameExists, Resources.Translations.Dialog_ErrorTitle);
+                return;
             }
+            profile.Name = newName;
+            OnPropertyChanged(nameof(ActiveProfile));
             SetModified();
         }
     }
 
     private void DeleteProfile(Models.MappingProfile profile)
     {
-        if (profile == null || profile.Name == "Default" || Profiles.Count <= 1) return;
+        if (profile == null || Profiles.Count <= 1) return;
 
         string message = string.Format(Resources.Translations.Confirm_DeleteProfileMessage, profile.Name);
         bool confirmed = _dialogService.ShowConfirmDialog(message, Resources.Translations.Confirm_DeleteProfileTitle);
@@ -179,10 +193,6 @@ public partial class MainViewModel
                 if (existing == SelectedProfile)
                 {
                     CopyProfileToVm(existing);
-                }
-                if (existing == ActiveProfile && !string.IsNullOrEmpty(SelectedFilePath) && File.Exists(SelectedFilePath))
-                {
-                    _ = LoadExcelFileAsync(SelectedFilePath);
                 }
             }
             else

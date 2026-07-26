@@ -9,11 +9,13 @@ namespace BexioOrderImport.Wpf.Views;
 public partial class ProfileEditWindow : Window
 {
     private readonly MappingProfile _profile;
+    private readonly System.Collections.Generic.IEnumerable<MappingProfile>? _existingProfiles;
 
-    public ProfileEditWindow(MappingProfile profile)
+    public ProfileEditWindow(MappingProfile profile, System.Collections.Generic.IEnumerable<MappingProfile>? existingProfiles = null)
     {
         InitializeComponent();
         _profile = profile ?? throw new ArgumentNullException(nameof(profile));
+        _existingProfiles = existingProfiles;
 
         Title = $"{Translations.Settings_ProfilesEditTitle}: {profile.Name}";
         TitleTextBlock.Text = $"{Translations.Settings_ProfilesEditTitle}: {profile.Name}";
@@ -53,6 +55,7 @@ public partial class ProfileEditWindow : Window
 
     private void LoadProfileData()
     {
+        ProfileNameInput.Text = _profile.Name;
         WorksheetIndexInput.Text = _profile.Mapping.WorksheetIndex.ToString();
 
         CompanyNameCellInput.Text = _profile.Mapping.Header.CompanyNameCell;
@@ -89,6 +92,24 @@ public partial class ProfileEditWindow : Window
     {
         try
         {
+            string newName = ProfileNameInput.Text.Trim();
+            if (string.IsNullOrWhiteSpace(newName))
+            {
+                Views.CustomDialog.ShowWarning(Translations.Dialog_ProfileNameRequired);
+                return;
+            }
+
+            if (!newName.Equals(_profile.Name, StringComparison.OrdinalIgnoreCase))
+            {
+                if (_existingProfiles != null && System.Linq.Enumerable.Any(_existingProfiles, p => p != _profile && p.Name.Equals(newName, StringComparison.OrdinalIgnoreCase)))
+                {
+                    Views.CustomDialog.ShowError(Translations.Dialog_ProfileNameExists, Translations.Dialog_ErrorTitle);
+                    return;
+                }
+            }
+
+            _profile.Name = newName;
+
             // Parse and Validate inputs
             _profile.Mapping.WorksheetIndex = int.Parse(WorksheetIndexInput.Text.Trim());
 

@@ -235,4 +235,142 @@ public class MainViewModelTests : IDisposable
         vm.TaxesList.Count.Should().Be(1);
         vm.TaxesList[0].Id.Should().Be(5);
     }
+
+    [Fact]
+    public void RenameProfile_ShouldRenameDefaultProfile_AndSetIsModified()
+    {
+        // Arrange
+        var vm = CreateVm();
+        var defaultProfile = vm.Profiles[0];
+        _dialogServiceMock.Setup(d => d.ShowProfileRenameDialog("Default")).Returns("Custom Default");
+
+        // Act
+        vm.RenameProfileCommand.Execute(defaultProfile);
+
+        // Assert
+        defaultProfile.Name.Should().Be("Custom Default");
+        vm.IsModified.Should().BeTrue();
+    }
+
+    [Fact]
+    public void DeleteProfile_ShouldAllowDeletingDefault_WhenMultipleProfilesExist()
+    {
+        // Arrange
+        var vm = CreateVm();
+        var secondProfile = new BexioOrderImport.Wpf.Models.MappingProfile { Name = "Profile2" };
+        vm.Profiles.Add(secondProfile);
+        _dialogServiceMock.Setup(d => d.ShowConfirmDialog(It.IsAny<string>(), It.IsAny<string>())).Returns(true);
+
+        // Act
+        var defaultProfile = vm.Profiles[0];
+        vm.DeleteProfileCommand.CanExecute(defaultProfile).Should().BeTrue();
+        vm.DeleteProfileCommand.Execute(defaultProfile);
+
+        // Assert
+        vm.Profiles.Should().NotContain(defaultProfile);
+        vm.Profiles.Count.Should().Be(1);
+        vm.IsModified.Should().BeTrue();
+    }
+
+    [Fact]
+    public void DeleteProfile_ShouldNotAllowDeleting_WhenOnlyOneProfileExists()
+    {
+        // Arrange
+        var vm = CreateVm();
+        vm.Profiles.Count.Should().Be(1);
+
+        // Act & Assert
+        vm.DeleteProfileCommand.CanExecute(vm.Profiles[0]).Should().BeFalse();
+    }
+
+    [Fact]
+    public void SelectedTabIndex_WhenUserDiscardsChanges_ShouldReloadSettingsAndSwitchTab()
+    {
+        // Arrange
+        var vm = CreateVm();
+        vm.SelectedTabIndex = 1; // Settings tab
+        vm.BexioToken = "unsaved-token"; // Modifies VM state
+        vm.IsModified.Should().BeTrue();
+        _dialogServiceMock.Setup(d => d.ShowPendingChangesDialog()).Returns(true); // User selects "Discard Changes"
+
+        // Act
+        vm.SelectedTabIndex = 0; // Try switching to Import tab
+
+        // Assert
+        vm.SelectedTabIndex.Should().Be(0); // Tab successfully switched to Import tab
+        vm.IsModified.Should().BeFalse(); // Settings reloaded, unsaved state cleared
+    }
+
+    [Fact]
+    public void SelectedTabIndex_WhenUserCancelsPendingChanges_ShouldRemainOnSettingsTab()
+    {
+        // Arrange
+        var vm = CreateVm();
+        vm.SelectedTabIndex = 1; // Settings tab
+        vm.IsModified = true;
+        _dialogServiceMock.Setup(d => d.ShowPendingChangesDialog()).Returns(false); // User selects "Cancel"
+
+        // Act
+        vm.SelectedTabIndex = 0; // Try switching to Import tab
+
+        // Assert
+        vm.SelectedTabIndex.Should().Be(1); // User remains on Settings tab
+    }
+
+    [Fact]
+    public void EditProfile_WhenProfileRenamedInDialog_ShouldUpdateNameAndSetModified()
+    {
+        // Arrange
+        var vm = CreateVm();
+        var profile = vm.Profiles[0];
+        _dialogServiceMock
+            .Setup(d => d.ShowProfileEditDialog(profile, vm.Profiles))
+            .Callback<BexioOrderImport.Wpf.Models.MappingProfile, IEnumerable<BexioOrderImport.Wpf.Models.MappingProfile>>((p, list) => p.Name = "Renamed Profile")
+            .Returns(true);
+
+        // Act
+        vm.EditProfileCommand.Execute(profile);
+
+        // Assert
+        profile.Name.Should().Be("Renamed Profile");
+        vm.IsModified.Should().BeTrue();
+    }
+
+    [Fact]
+    public void SetActiveProfile_ShouldSetIsModified_AndNotReloadExcelImmediately()
+    {
+        // Arrange
+        var vm = CreateVm();
+        var newProfile = new BexioOrderImport.Wpf.Models.MappingProfile { Name = "Profile2" };
+        vm.Profiles.Add(newProfile);
+        vm.IsModified = false;
+
+        // Act
+        vm.SetActiveProfileCommand.Execute(newProfile);
+
+        // Assert
+        vm.ActiveProfile.Should().Be(newProfile);
+        vm.IsModified.Should().BeTrue();
+    }
+
+    [Fact]
+    public void IsActiveRowDiscountEnabled_ShouldReflectActiveProfileMapping()
+    {
+        // Arrange
+        var vm = CreateVm();
+        var profileWithDiscount = new BexioOrderImport.Wpf.Models.MappingProfile
+        {
+            Name = "DiscountProfile",
+            Mapping = new BexioOrderImport.Application.Options.ExcelMappingOptions
+            {
+                Data = new BexioOrderImport.Application.Options.DataMapping { EnableRowDiscount = true }
+            }
+        };
+
+        // Act
+        vm.ActiveProfile = profileWithDiscount;
+
+        // Assert
+        vm.IsActiveRowDiscountEnabled.Should().BeTrue();
+    }
 }

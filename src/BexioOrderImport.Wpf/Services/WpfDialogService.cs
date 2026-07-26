@@ -36,14 +36,29 @@ public class WpfDialogService : IDialogService
         });
     }
 
-    public bool ShowProfileEditDialog(Models.MappingProfile profile)
+    public string? ShowProfileRenameDialog(string currentName)
     {
         return InvokeOnDispatcher(() =>
         {
-            var editWindow = new Views.ProfileEditWindow(profile);
+            var dialog = new Views.ProfileCreateDialog(Views.ProfileDialogMode.Rename, currentName);
+            dialog.Owner = System.Windows.Application.Current?.MainWindow;
+            return dialog.ShowDialog() == true ? dialog.ProfileName : null;
+        });
+    }
+
+    public bool ShowProfileEditDialog(Models.MappingProfile profile, System.Collections.Generic.IEnumerable<Models.MappingProfile>? existingProfiles = null)
+    {
+        return InvokeOnDispatcher(() =>
+        {
+            var editWindow = new Views.ProfileEditWindow(profile, existingProfiles);
             editWindow.Owner = System.Windows.Application.Current?.MainWindow;
             return editWindow.ShowDialog() == true;
         });
+    }
+
+    public bool ShowPendingChangesDialog()
+    {
+        return InvokeOnDispatcher(() => Views.CustomDialog.ShowPendingChanges());
     }
 
     public string? ShowOpenFileDialog(string filter, string defaultExt)

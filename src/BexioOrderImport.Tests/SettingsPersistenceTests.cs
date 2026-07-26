@@ -110,8 +110,8 @@ public class SettingsPersistenceTests : IDisposable
         _dialogServiceMock = new Mock<IDialogService>();
         _dialogServiceMock.Setup(d => d.ShowProfileCreateDialog(It.IsAny<bool>()))
             .Returns((bool isClone) => _profileCreateDialogFunc != null ? _profileCreateDialogFunc(isClone) : "MockProfile");
-        _dialogServiceMock.Setup(d => d.ShowProfileEditDialog(It.IsAny<MappingProfile>()))
-            .Returns((MappingProfile p) => _profileEditDialogFunc == null || _profileEditDialogFunc(p));
+        _dialogServiceMock.Setup(d => d.ShowProfileEditDialog(It.IsAny<MappingProfile>(), It.IsAny<IEnumerable<MappingProfile>>()))
+            .Returns((MappingProfile p, IEnumerable<MappingProfile> list) => _profileEditDialogFunc == null || _profileEditDialogFunc(p));
         _dialogServiceMock.Setup(d => d.ShowOpenFileDialog(It.IsAny<string>(), It.IsAny<string>()))
             .Returns((string filter, string ext) => _openFileDialogFunc != null ? _openFileDialogFunc(filter, ext) : "mock_file.xlsx");
         _dialogServiceMock.Setup(d => d.ShowSaveFileDialog(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()))

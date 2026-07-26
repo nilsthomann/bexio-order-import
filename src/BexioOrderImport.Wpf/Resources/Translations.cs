@@ -172,4 +172,10 @@ public static class Translations
     public static string Import_ColDiscount => ResourceManager.GetString(nameof(Import_ColDiscount)) ?? string.Empty;
     public static string Import_ColGrossPrice => ResourceManager.GetString(nameof(Import_ColGrossPrice)) ?? string.Empty;
     public static string Import_ColNetPrice => ResourceManager.GetString(nameof(Import_ColNetPrice)) ?? string.Empty;
+    public static string Settings_ProfilesRenameTitle => ResourceManager.GetString(nameof(Settings_ProfilesRenameTitle)) ?? string.Empty;
+    public static string Settings_ProfilesRenameButton => ResourceManager.GetString(nameof(Settings_ProfilesRenameButton)) ?? string.Empty;
+    public static string Settings_UnsavedChangesWarning => ResourceManager.GetString(nameof(Settings_UnsavedChangesWarning)) ?? string.Empty;
+    public static string Dialog_DiscardChanges => ResourceManager.GetString(nameof(Dialog_DiscardChanges)) ?? string.Empty;
+    public static string Dialog_PendingChangesTitle => ResourceManager.GetString(nameof(Dialog_PendingChangesTitle)) ?? string.Empty;
+    public static string Dialog_PendingChangesMessage => ResourceManager.GetString(nameof(Dialog_PendingChangesMessage)) ?? string.Empty;
 }
