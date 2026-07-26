@@ -590,21 +590,6 @@
                                                 </DataGridTemplateColumn.CellTemplate>
                                             </DataGridTemplateColumn>
 
-                                             <!-- Rename Column -->
-                                             <DataGridTemplateColumn Width="50" IsReadOnly="True">
-                                                 <DataGridTemplateColumn.CellTemplate>
-                                                     <DataTemplate>
-                                                         <Button Command="{Binding DataContext.RenameProfileCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
-                                                                 CommandParameter="{Binding}"
-                                                                 ToolTip="{x:Static lex:Translations.Settings_ProfilesRenameButton}"
-                                                                 Style="{StaticResource SecondaryButtonStyle}" 
-                                                                 Width="32" Height="32" Padding="0" BorderThickness="0" VerticalAlignment="Center" HorizontalAlignment="Center">
-                                                             <Path Data="M17.71 7.71L16.3 6.3c-.39-.39-1.02-.39-1.41 0L3 18.17V21h2.83L17.71 9.12c.39-.39.39-1.02 0-1.41zM5.92 19H5v-.92l9.06-9.06.92.92L5.92 19zM20.71 5.63l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83c.39-.39.39-1.02 0-1.41z" Fill="{StaticResource TextMutedBrush}" Stretch="Uniform" Width="14" Height="14" HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                                                         </Button>
-                                                     </DataTemplate>
-                                                 </DataGridTemplateColumn.CellTemplate>
-                                             </DataGridTemplateColumn>
-
                                              <!-- Edit Column -->
                                              <DataGridTemplateColumn Width="50" IsReadOnly="True">
                                                  <DataGridTemplateColumn.CellTemplate>

@@ -210,7 +210,8 @@ public partial class MainViewModel
                 },
                 defaultOrderName: DefaultOrderName,
                 seasonCode: SeasonCode,
-                positionTextTemplate: PositionTextTemplate
+                positionTextTemplate: PositionTextTemplate,
+                discountPositionTextTemplate: DiscountPositionTextTemplate
             );
 
             if (success)

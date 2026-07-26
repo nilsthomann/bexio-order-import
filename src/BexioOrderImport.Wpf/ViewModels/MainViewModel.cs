@@ -115,8 +115,9 @@ public partial class MainViewModel : ViewModelBase
     private int? _AccountId = null;
     private int? _TaxId = null;
     private string _defaultOrderName = "Order: {CustomerName} {SeasonCode}";
-    private string _seasonCode = string.Empty;
+    private string _seasonCode = "FS27";
     private string _positionTextTemplate = "<strong>{BexioArticleName} Size {Size}</strong><br />{BexioArticleDescription}";
+    private string _discountPositionTextTemplate = "Rabatt ({DiscountInPercent}%)";
     
     private string _companyNameCell = "B4";
     private string _streetCell = "B5";
@@ -174,7 +175,6 @@ public partial class MainViewModel : ViewModelBase
         ImportCommand = new RelayCommand(async () => await ImportToBexioAsync(), () => _loadedOrder != null && !_isImporting);
         SaveSettingsCommand = new RelayCommand(SaveSettings, () => IsModified);
         CreateProfileCommand = new RelayCommand(CreateProfile);
-        RenameProfileCommand = new RelayCommand<Models.MappingProfile>(RenameProfile);
         EditProfileCommand = new RelayCommand<Models.MappingProfile>(EditProfile);
         CloneProfileCommand = new RelayCommand<Models.MappingProfile>(CloneProfile);
         SetActiveProfileCommand = new RelayCommand<Models.MappingProfile>(SetActiveProfile);
@@ -214,7 +214,6 @@ public partial class MainViewModel : ViewModelBase
     public RelayCommand ImportCommand { get; }
     public RelayCommand SaveSettingsCommand { get; }
     public RelayCommand CreateProfileCommand { get; }
-    public RelayCommand<Models.MappingProfile> RenameProfileCommand { get; }
     public RelayCommand<Models.MappingProfile> EditProfileCommand { get; }
     public RelayCommand<Models.MappingProfile> CloneProfileCommand { get; }
     public RelayCommand<Models.MappingProfile> SetActiveProfileCommand { get; }
@@ -592,6 +591,12 @@ public partial class MainViewModel : ViewModelBase
     {
         get => _positionTextTemplate;
         set => SetProperty(ref _positionTextTemplate, value);
+    }
+
+    public string DiscountPositionTextTemplate
+    {
+        get => _discountPositionTextTemplate;
+        set => SetProperty(ref _discountPositionTextTemplate, value);
     }
 
     public string CompanyNameCell

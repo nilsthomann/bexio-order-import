@@ -79,23 +79,6 @@ public partial class MainViewModel
         }
     }
 
-    private void RenameProfile(Models.MappingProfile profile)
-    {
-        if (profile == null) return;
-        string? newName = _dialogService.ShowProfileRenameDialog(profile.Name);
-        if (!string.IsNullOrWhiteSpace(newName) && !newName.Equals(profile.Name, StringComparison.OrdinalIgnoreCase))
-        {
-            if (Profiles.Any(p => p.Name.Equals(newName, StringComparison.OrdinalIgnoreCase)))
-            {
-                _dialogService.ShowErrorDialog(Resources.Translations.Dialog_ProfileNameExists, Resources.Translations.Dialog_ErrorTitle);
-                return;
-            }
-            profile.Name = newName;
-            OnPropertyChanged(nameof(ActiveProfile));
-            SetModified();
-        }
-    }
-
     private void DeleteProfile(Models.MappingProfile profile)
     {
         if (profile == null || Profiles.Count <= 1) return;

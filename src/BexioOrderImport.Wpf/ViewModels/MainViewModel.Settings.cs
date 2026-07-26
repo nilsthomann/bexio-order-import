@@ -203,6 +203,7 @@ public partial class MainViewModel
         profile.Mapping.DefaultOrderName = DefaultOrderName;
         profile.Mapping.SeasonCode = SeasonCode;
         profile.Mapping.PositionTextTemplate = PositionTextTemplate;
+        profile.Mapping.DiscountPositionTextTemplate = DiscountPositionTextTemplate;
     }
 
     private void CopyProfileToVm(Models.MappingProfile profile)
@@ -235,6 +236,7 @@ public partial class MainViewModel
         DefaultOrderName = profile.Mapping.DefaultOrderName;
         SeasonCode = profile.Mapping.SeasonCode;
         PositionTextTemplate = profile.Mapping.PositionTextTemplate;
+        DiscountPositionTextTemplate = profile.Mapping.DiscountPositionTextTemplate;
     }
 
     private ExcelMappingOptions BuildMappingOptions()
@@ -255,6 +257,7 @@ public partial class MainViewModel
             DefaultOrderName = dto.DefaultOrderName,
             SeasonCode = dto.SeasonCode,
             PositionTextTemplate = dto.PositionTextTemplate,
+            DiscountPositionTextTemplate = dto.DiscountPositionTextTemplate,
             Header = new HeaderMapping
             {
                 CompanyNameCell = dto.Header.CompanyNameCell,
@@ -298,6 +301,7 @@ public partial class MainViewModel
             DefaultOrderName = opts.DefaultOrderName,
             SeasonCode = opts.SeasonCode,
             PositionTextTemplate = opts.PositionTextTemplate,
+            DiscountPositionTextTemplate = opts.DiscountPositionTextTemplate,
             Header = new Models.HeaderMappingDto
             {
                 CompanyNameCell = opts.Header.CompanyNameCell,

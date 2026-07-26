@@ -6,6 +6,7 @@ public class ExcelMappingOptions
     public string DefaultOrderName { get; set; } = "Vororder: {CustomerName} {SeasonCode}";
     public string SeasonCode { get; set; } = "FS27";
     public string PositionTextTemplate { get; set; } = "<strong>{BexioArticleName} Size {Size}</strong><br />{BexioArticleDescription}";
+    public string DiscountPositionTextTemplate { get; set; } = "Rabatt ({DiscountInPercent}%)";
     public HeaderMapping Header { get; set; } = new();
     public SizeMatrixMapping SizeMatrix { get; set; } = new();
     public DataMapping Data { get; set; } = new();

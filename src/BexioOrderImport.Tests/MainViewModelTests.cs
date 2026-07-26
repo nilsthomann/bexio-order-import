@@ -237,22 +237,6 @@ public class MainViewModelTests : IDisposable
     }
 
     [Fact]
-    public void RenameProfile_ShouldRenameDefaultProfile_AndSetIsModified()
-    {
-        // Arrange
-        var vm = CreateVm();
-        var defaultProfile = vm.Profiles[0];
-        _dialogServiceMock.Setup(d => d.ShowProfileRenameDialog("Default")).Returns("Custom Default");
-
-        // Act
-        vm.RenameProfileCommand.Execute(defaultProfile);
-
-        // Assert
-        defaultProfile.Name.Should().Be("Custom Default");
-        vm.IsModified.Should().BeTrue();
-    }
-
-    [Fact]
     public void DeleteProfile_ShouldAllowDeletingDefault_WhenMultipleProfilesExist()
     {
         // Arrange

@@ -53,6 +53,9 @@ public class ExcelMappingDto
 
     [JsonPropertyName("PositionTextTemplate")]
     public string PositionTextTemplate { get; set; } = "<strong>{BexioArticleName} Size {Size}</strong><br />{BexioArticleDescription}";
+
+    [JsonPropertyName("DiscountPositionTextTemplate")]
+    public string DiscountPositionTextTemplate { get; set; } = "Rabatt ({DiscountInPercent}%)";
   
     [JsonPropertyName("Header")]
     public HeaderMappingDto Header { get; set; } = new();

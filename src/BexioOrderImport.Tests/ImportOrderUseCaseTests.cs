@@ -348,6 +348,33 @@ public class ImportOrderUseCaseTests
     }
 
     [Fact]
+    public async Task ExecuteAsync_WithCustomDiscountPositionTextTemplate_ShouldFormatTextCorrectly()
+    {
+        // Arrange
+        var order = CreateSampleOrder();
+        order.DiscountPercent = 15m;
+        _parserMock.Setup(p => p.ParseOrderForm(It.IsAny<string>())).Returns(order);
+        _clientMock.Setup(c => c.FindContactIdAsync(order.Customer.Email)).ReturnsAsync(123);
+        _clientMock.Setup(c => c.CreateOrderAsync(123, order)).ReturnsAsync(456);
+        _clientMock.Setup(c => c.FindArticleAsync("123", "Black", It.IsAny<string>()))
+            .ReturnsAsync(new BexioArticle { Id = 789, Description = "Desc", Name = "Name" });
+
+        // Act
+        await _useCase.ExecuteAsync(
+            "dummy.xlsx",
+            showPreviewCallback: o => { },
+            confirmUploadCallback: () => Task.FromResult(true),
+            confirmCustomerCreationCallback: c => Task.FromResult(true),
+            confirmEmailMismatchCallback: (ex, el) => Task.FromResult(true),
+            logInfoCallback: _ => { },
+            discountPositionTextTemplate: "Sonderrabatt ({DiscountInPercent}%)"
+        );
+
+        // Assert
+        _clientMock.Verify(c => c.AddDiscountPositionAsync(456, 15m, "Sonderrabatt (15%)"), Times.Once);
+    }
+
+    [Fact]
     public async Task ExecuteAsync_WhenOrderHasNoGlobalDiscount_ShouldNotCallAddDiscountPositionAsync()
     {
         // Arrange

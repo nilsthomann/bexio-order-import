@@ -25,7 +25,8 @@ public class ImportOrderUseCase
         Action<int, int>? progressCallback = null,
         string defaultOrderName = "Order: {CustomerName} {SeasonCode}",
         string seasonCode = "",
-        string positionTextTemplate = "<strong>{BexioArticleName} Size {Size}</strong><br />{BexioArticleDescription}")
+        string positionTextTemplate = "<strong>{BexioArticleName} Size {Size}</strong><br />{BexioArticleDescription}",
+        string discountPositionTextTemplate = "Rabatt ({DiscountInPercent}%)")
     {
         logInfoCallback($"Reading Excel file: {Path.GetFileName(filePath)}...");
         var order = _excelParser.ParseOrderForm(filePath);
@@ -141,7 +142,11 @@ public class ImportOrderUseCase
         if (order.DiscountPercent > 0)
         {
             logInfoCallback($"Adding global discount position ({order.DiscountPercent:G}%)...");
-            await _bexioClient.AddDiscountPositionAsync(orderId, order.DiscountPercent, $"Rabatt ({order.DiscountPercent:G}%)");
+            string textTemplate = string.IsNullOrWhiteSpace(discountPositionTextTemplate)
+                ? "Rabatt ({DiscountInPercent}%)"
+                : discountPositionTextTemplate;
+            string discountText = textTemplate.Replace("{DiscountInPercent}", order.DiscountPercent.ToString("G"));
+            await _bexioClient.AddDiscountPositionAsync(orderId, order.DiscountPercent, discountText);
             logInfoCallback("Global discount position added successfully.");
         }
 

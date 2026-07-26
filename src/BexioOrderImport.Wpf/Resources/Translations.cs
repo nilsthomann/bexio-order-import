@@ -178,4 +178,6 @@ public static class Translations
     public static string Dialog_DiscardChanges => ResourceManager.GetString(nameof(Dialog_DiscardChanges)) ?? string.Empty;
     public static string Dialog_PendingChangesTitle => ResourceManager.GetString(nameof(Dialog_PendingChangesTitle)) ?? string.Empty;
     public static string Dialog_PendingChangesMessage => ResourceManager.GetString(nameof(Dialog_PendingChangesMessage)) ?? string.Empty;
+    public static string Settings_DiscountPositionTextTemplateLabel => ResourceManager.GetString(nameof(Settings_DiscountPositionTextTemplateLabel)) ?? string.Empty;
+    public static string Settings_DiscountPositionTextTemplateHint => ResourceManager.GetString(nameof(Settings_DiscountPositionTextTemplateHint)) ?? string.Empty;
 }

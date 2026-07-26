@@ -86,6 +86,7 @@ public partial class ProfileEditWindow : Window
         DefaultOrderNameInput.Text = _profile.Mapping.DefaultOrderName;
         SeasonCodeInput.Text = _profile.Mapping.SeasonCode;
         PositionTextTemplateInput.Text = _profile.Mapping.PositionTextTemplate;
+        DiscountPositionTextTemplateInput.Text = _profile.Mapping.DiscountPositionTextTemplate;
     }
 
     private void Save_Click(object sender, RoutedEventArgs e)
@@ -141,6 +142,7 @@ public partial class ProfileEditWindow : Window
             _profile.Mapping.DefaultOrderName = DefaultOrderNameInput.Text.Trim();
             _profile.Mapping.SeasonCode = SeasonCodeInput.Text.Trim();
             _profile.Mapping.PositionTextTemplate = PositionTextTemplateInput.Text.Trim();
+            _profile.Mapping.DiscountPositionTextTemplate = DiscountPositionTextTemplateInput.Text.Trim();
 
             DialogResult = true;
             Close();

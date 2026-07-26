@@ -6,8 +6,7 @@ namespace BexioOrderImport.Wpf.Views;
 public enum ProfileDialogMode
 {
     Create,
-    Clone,
-    Rename
+    Clone
 }
 
 [System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
@@ -19,7 +18,7 @@ public partial class ProfileCreateDialog : Window
     {
     }
 
-    public ProfileCreateDialog(ProfileDialogMode mode = ProfileDialogMode.Create, string defaultName = "")
+    public ProfileCreateDialog(ProfileDialogMode mode = ProfileDialogMode.Create)
     {
         InitializeComponent();
         if (mode == ProfileDialogMode.Clone)
@@ -27,14 +26,6 @@ public partial class ProfileCreateDialog : Window
             Title = Translations.Settings_ProfilesCloneTitle;
             TitleTextBlock.Text = Translations.Settings_ProfilesCloneTitle;
             ActionButton.Content = Translations.Settings_ProfilesCloneButton;
-        }
-        else if (mode == ProfileDialogMode.Rename)
-        {
-            Title = Translations.Settings_ProfilesRenameTitle;
-            TitleTextBlock.Text = Translations.Settings_ProfilesRenameTitle;
-            ActionButton.Content = Translations.Settings_ProfilesRenameButton;
-            ProfileNameInput.Text = defaultName;
-            ProfileNameInput.SelectAll();
         }
         ProfileNameInput.Focus();
     }

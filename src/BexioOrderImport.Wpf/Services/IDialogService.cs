@@ -5,7 +5,6 @@ namespace BexioOrderImport.Wpf.Services;
 public interface IDialogService
 {
     string? ShowProfileCreateDialog(bool isClone);
-    string? ShowProfileRenameDialog(string currentName);
     bool ShowProfileEditDialog(Models.MappingProfile profile, System.Collections.Generic.IEnumerable<Models.MappingProfile>? existingProfiles = null);
     bool ShowPendingChangesDialog();
     string? ShowOpenFileDialog(string filter, string defaultExt);

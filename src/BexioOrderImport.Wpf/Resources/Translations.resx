@@ -629,4 +629,10 @@ Bitte schliessen Sie die Datei in Excel und versuchen Sie es erneut.</value>
   <data name="Dialog_PendingChangesMessage" xml:space="preserve">
     <value>Sie haben ungespeicherte Änderungen in den Einstellungen. Möchten Sie diese verwerfen?</value>
   </data>
+  <data name="Settings_DiscountPositionTextTemplateLabel" xml:space="preserve">
+    <value>Text-Vorlage Rabatt-Position</value>
+  </data>
+  <data name="Settings_DiscountPositionTextTemplateHint" xml:space="preserve">
+    <value>Verfügbare Platzhalter: {DiscountInPercent}</value>
+  </data>
 </root>
