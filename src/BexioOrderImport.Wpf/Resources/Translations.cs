@@ -139,6 +139,7 @@ public static class Translations
     public static string Dialog_InfoTitle => ResourceManager.GetString(nameof(Dialog_InfoTitle)) ?? string.Empty;
     public static string Dialog_ConfirmTitle => ResourceManager.GetString(nameof(Dialog_ConfirmTitle)) ?? string.Empty;
     public static string Settings_WorksheetSection => ResourceManager.GetString(nameof(Settings_WorksheetSection)) ?? string.Empty;
+    public static string Settings_TextTemplatesSection => ResourceManager.GetString(nameof(Settings_TextTemplatesSection)) ?? string.Empty;
     public static string Settings_WorksheetLabel => ResourceManager.GetString(nameof(Settings_WorksheetLabel)) ?? string.Empty;
     public static string Import_LoadingExcel => ResourceManager.GetString(nameof(Import_LoadingExcel)) ?? string.Empty;
     public static string Import_Importing => ResourceManager.GetString(nameof(Import_Importing)) ?? string.Empty;

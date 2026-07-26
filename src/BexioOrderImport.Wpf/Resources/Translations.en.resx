@@ -537,7 +537,10 @@ Please close the file in Excel and try again.</value>
     <value>Confirmation</value>
   </data>
   <data name="Settings_WorksheetSection" xml:space="preserve">
-    <value>Excel Worksheet</value>
+    <value>Profile Information</value>
+  </data>
+  <data name="Settings_TextTemplatesSection" xml:space="preserve">
+    <value>Text Templates &amp; Formatting</value>
   </data>
   <data name="Settings_WorksheetLabel" xml:space="preserve">
     <value>Excel Worksheet Index:</value>
@@ -570,13 +573,13 @@ Please close the file in Excel and try again.</value>
     <value>No Order ID</value>
   </data>
   <data name="Settings_DefaultOrderNameLabel" xml:space="preserve">
-    <value>Default Order Name:</value>
+    <value>Order Name Template:</value>
   </data>
   <data name="Settings_DefaultOrderNameHint" xml:space="preserve">
     <value>Placeholders: {CustomerName}, {SeasonCode}. Example: Order: {CustomerName} {SeasonCode}</value>
   </data>
   <data name="Settings_DefaultOrderNameSection" xml:space="preserve">
-    <value>Default Order Name</value>
+    <value>Order Name Template</value>
   </data>
   <data name="Settings_SeasonCodeLabel" xml:space="preserve">
     <value>Season Code:</value>
@@ -627,7 +630,7 @@ Please close the file in Excel and try again.</value>
     <value>You have unsaved changes in Settings. Do you want to discard them?</value>
   </data>
   <data name="Settings_DiscountPositionTextTemplateLabel" xml:space="preserve">
-    <value>Discount Position Text Template</value>
+    <value>Discount Line Text Template:</value>
   </data>
   <data name="Settings_DiscountPositionTextTemplateHint" xml:space="preserve">
     <value>Available placeholders: {DiscountInPercent}</value>

@@ -540,7 +540,10 @@ Bitte schliessen Sie die Datei in Excel und versuchen Sie es erneut.</value>
     <value>Bestätigung</value>
   </data>
   <data name="Settings_WorksheetSection" xml:space="preserve">
-    <value>Excel-Arbeitsblatt</value>
+    <value>Profil-Informationen</value>
+  </data>
+  <data name="Settings_TextTemplatesSection" xml:space="preserve">
+    <value>Texte &amp; Vorlagen</value>
   </data>
   <data name="Settings_WorksheetLabel" xml:space="preserve">
     <value>Excel Arbeitsblatt Index:</value>
@@ -573,25 +576,25 @@ Bitte schliessen Sie die Datei in Excel und versuchen Sie es erneut.</value>
     <value>Keine Auftrags-ID</value>
   </data>
   <data name="Settings_DefaultOrderNameLabel" xml:space="preserve">
-    <value>Standard-Bestellname:</value>
+    <value>Auftragsname-Vorlage:</value>
   </data>
   <data name="Settings_DefaultOrderNameHint" xml:space="preserve">
     <value>Platzhalter: {CustomerName}, {SeasonCode}. Beispiel: Order: {CustomerName} {SeasonCode}</value>
   </data>
   <data name="Settings_DefaultOrderNameSection" xml:space="preserve">
-    <value>Standard-Bestellname</value>
+    <value>Auftragsname-Vorlage</value>
   </data>
   <data name="Settings_SeasonCodeLabel" xml:space="preserve">
     <value>Saison-Code:</value>
   </data>
   <data name="Settings_PositionTextTemplateLabel" xml:space="preserve">
-    <value>Positions-Text Template:</value>
+    <value>Positions-Text Vorlage:</value>
   </data>
   <data name="Settings_PositionTextTemplateHint" xml:space="preserve">
     <value>Platzhalter: {Color}, {Size}, {ArticleNumber}, {ArticleName}, {BexioArticleName}, {BexioArticleDescription}</value>
   </data>
   <data name="Settings_PositionTextTemplateSection" xml:space="preserve">
-    <value>Positions-Text Template</value>
+    <value>Positions-Text Vorlage</value>
   </data>
   <data name="Error_SelectAccountAndTax" xml:space="preserve">
     <value>Bitte wählen Sie ein Standard-Konto und einen Standard-Steuersatz in den Einstellungen.</value>
@@ -630,7 +633,7 @@ Bitte schliessen Sie die Datei in Excel und versuchen Sie es erneut.</value>
     <value>Sie haben ungespeicherte Änderungen in den Einstellungen. Möchten Sie diese verwerfen?</value>
   </data>
   <data name="Settings_DiscountPositionTextTemplateLabel" xml:space="preserve">
-    <value>Text-Vorlage Rabatt-Position</value>
+    <value>Rabatt-Positions-Text Vorlage:</value>
   </data>
   <data name="Settings_DiscountPositionTextTemplateHint" xml:space="preserve">
     <value>Verfügbare Platzhalter: {DiscountInPercent}</value>
