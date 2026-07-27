@@ -138,9 +138,6 @@
   <data name="Import_DragDropText" xml:space="preserve">
     <value>Excel-Auftragsformular hierher ziehen oder Datei auswählen</value>
   </data>
-  <data name="Import_BrowseButton" xml:space="preserve">
-    <value>Datei auswählen</value>
-  </data>
   <data name="Import_OrderHeader" xml:space="preserve">
     <value>Auftrags-Kopfdaten</value>
   </data>
@@ -189,26 +186,11 @@
   <data name="Import_ColTotalPrice" xml:space="preserve">
     <value>Betrag (CHF)</value>
   </data>
-  <data name="Import_SummaryQuantity" xml:space="preserve">
-    <value>Gesamtsumme Artikel</value>
-  </data>
-  <data name="Import_SummaryGross" xml:space="preserve">
-    <value>Bruttobetrag</value>
-  </data>
-  <data name="Import_SummaryDiscount" xml:space="preserve">
-    <value>Rabatt</value>
-  </data>
-  <data name="Import_SummaryNet" xml:space="preserve">
-    <value>Nettobetrag (exkl. MwSt.)</value>
-  </data>
   <data name="Import_UploadButton" xml:space="preserve">
     <value>In Bexio importieren</value>
   </data>
   <data name="Import_LogHeader" xml:space="preserve">
     <value>Import Protokoll</value>
-  </data>
-  <data name="Import_ProgressText" xml:space="preserve">
-    <value>Hochgeladen: {0} / {1} Positionen</value>
   </data>
   <data name="Import_SuccessTitle" xml:space="preserve">
     <value>Erfolgreich</value>
@@ -265,9 +247,6 @@ Bitte schliessen Sie die Datei in Excel und versuchen Sie es erneut.</value>
   </data>
   <data name="Settings_TaxLabel" xml:space="preserve">
     <value>Steuersatz</value>
-  </data>
-  <data name="Settings_ExcelSection" xml:space="preserve">
-    <value>Excel Mapping Konfiguration</value>
   </data>
   <data name="Settings_HeaderSection" xml:space="preserve">
     <value>Excel-Header Zellen</value>
@@ -536,9 +515,6 @@ Bitte schliessen Sie die Datei in Excel und versuchen Sie es erneut.</value>
   <data name="Settings_DefaultOrderNameHint" xml:space="preserve">
     <value>Platzhalter: {CustomerName}, {SeasonCode}. Beispiel: Order: {CustomerName} {SeasonCode}</value>
   </data>
-  <data name="Settings_DefaultOrderNameSection" xml:space="preserve">
-    <value>Auftragsname-Vorlage</value>
-  </data>
   <data name="Settings_SeasonCodeLabel" xml:space="preserve">
     <value>Saison-Code:</value>
   </data>
@@ -547,9 +523,6 @@ Bitte schliessen Sie die Datei in Excel und versuchen Sie es erneut.</value>
   </data>
   <data name="Settings_PositionTextTemplateHint" xml:space="preserve">
     <value>Platzhalter: {Color}, {Size}, {ArticleNumber}, {ArticleName}, {BexioArticleName}, {BexioArticleDescription}</value>
-  </data>
-  <data name="Settings_PositionTextTemplateSection" xml:space="preserve">
-    <value>Positions-Text Vorlage</value>
   </data>
   <data name="Error_SelectAccountAndTax" xml:space="preserve">
     <value>Bitte wählen Sie ein Standard-Konto und einen Standard-Steuersatz in den Einstellungen.</value>
@@ -569,12 +542,6 @@ Bitte schliessen Sie die Datei in Excel und versuchen Sie es erneut.</value>
   <data name="Import_ProgressTimeElapsedOnly" xml:space="preserve">
     <value>Verstrichen: {0}</value>
   </data>
-  <data name="Settings_ProfilesRenameTitle" xml:space="preserve">
-    <value>Profil umbenennen</value>
-  </data>
-  <data name="Settings_ProfilesRenameButton" xml:space="preserve">
-    <value>Profil umbenennen</value>
-  </data>
   <data name="Dialog_DiscardChanges" xml:space="preserve">
     <value>Änderungen verwerfen</value>
   </data>
@@ -592,5 +559,8 @@ Bitte schliessen Sie die Datei in Excel und versuchen Sie es erneut.</value>
   </data>
   <data name="Settings_CellZipCodeCity" xml:space="preserve">
     <value>Zelle PLZ &amp; Ort</value>
+  </data>
+  <data name="Update_Installing" xml:space="preserve">
+    <value>Update wird installiert...</value>
   </data>
 </root>

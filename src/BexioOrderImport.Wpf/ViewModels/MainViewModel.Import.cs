@@ -12,6 +12,8 @@ namespace BexioOrderImport.Wpf.ViewModels;
 public partial class MainViewModel
 {
     private readonly System.Collections.Generic.List<(DateTime Timestamp, double UploadedCount)> _progressSamples = new();
+    private double _smoothedSecondsPerItem;
+    private string _lastFormattedRemaining = "-";
 
     private const string ConnectionColorConnected    = "#10B981"; // Green
     private const string ConnectionColorDisconnected = "#EF4444"; // Red
@@ -147,6 +149,8 @@ public partial class MainViewModel
         AppendLog("Starting import process...");
 
         _progressSamples.Clear();
+        _smoothedSecondsPerItem = 0;
+        _lastFormattedRemaining = "-";
         var importStopwatch = System.Diagnostics.Stopwatch.StartNew();
         double currentUploaded = 0;
         double currentTotal = 0;
@@ -171,36 +175,19 @@ public partial class MainViewModel
             var useCase = new ImportOrderUseCase(bexioClient);
 
             var mappingOpts = BuildMappingOptions();
-            var result = await useCase.ExecuteAsync(
-                order: _loadedOrder,
-                confirmUploadCallback: ConfirmUploadAsync,
-                confirmCustomerCreationCallback: ConfirmCustomerCreationAsync,
-                confirmEmailMismatchCallback: ConfirmEmailMismatchAsync,
-                logInfoCallback: message =>
-                {
-                    InvokeOnUi(() => AppendLog(message));
-                },
-                progressCallback: (uploaded, total) =>
-                {
-                    InvokeOnUi(() =>
-                    {
-                        currentUploaded = uploaded;
-                        currentTotal = total;
-                        ProgressPercentage = ((double)uploaded / total) * 100;
-                        _progressSamples.Add((DateTime.UtcNow, uploaded));
+            var interaction = new WpfImportUserInteractionService(
+                this,
+                (uploaded, total, sw) => UpdateRemainingTime(uploaded, total, sw),
+                importStopwatch);
 
-                        // Keep samples from the last 3 minutes to maintain memory efficiency
-                        var cutoff = DateTime.UtcNow.AddMinutes(-3);
-                        _progressSamples.RemoveAll(s => s.Timestamp < cutoff);
-
-                        UpdateRemainingTime(currentUploaded, currentTotal, importStopwatch);
-                    });
-                },
-                defaultOrderName: mappingOpts.DefaultOrderName,
-                seasonCode: mappingOpts.SeasonCode,
-                positionTextTemplate: mappingOpts.PositionTextTemplate,
-                discountPositionTextTemplate: mappingOpts.DiscountPositionTextTemplate
+            var options = new Application.Models.ImportOrderOptions(
+                DefaultOrderName: mappingOpts.DefaultOrderName,
+                SeasonCode: mappingOpts.SeasonCode,
+                PositionTextTemplate: mappingOpts.PositionTextTemplate,
+                DiscountPositionTextTemplate: mappingOpts.DiscountPositionTextTemplate
             );
+
+            var result = await useCase.ExecuteAsync(_loadedOrder, interaction, options);
 
             if (result.Success)
             {
@@ -282,60 +269,64 @@ public partial class MainViewModel
         TimeSpan elapsedTs = stopwatch.Elapsed;
         string elapsedStr = string.Format("{0:D2}:{1:D2}", (int)elapsedTs.TotalMinutes, elapsedTs.Seconds);
 
-        if (uploaded <= 0 || total <= 0 || uploaded >= total)
+        if (total > 0 && uploaded >= total)
         {
             RemainingTimeText = string.Format(Resources.Translations.Import_ProgressTimeElapsedOnly, elapsedStr);
             return;
         }
 
-        // If we have fewer than 2 samples or fewer than 3 items uploaded, show estimating
-        if (_progressSamples.Count < 2 || uploaded < 3)
+        if (uploaded >= 3 && _progressSamples.Count >= 2)
         {
-            RemainingTimeText = string.Format(Resources.Translations.Import_ProgressTime, elapsedStr, Resources.Translations.Import_EstimatingTime);
-            return;
+            DateTime now = DateTime.UtcNow;
+
+            // Calculate overall average seconds per item
+            double overallSecondsPerItem = elapsedTs.TotalSeconds / Math.Max(1, uploaded);
+
+            // Find a reference sample from 4+ seconds ago for rolling velocity
+            var validSamples = _progressSamples
+                .Where(s => (now - s.Timestamp).TotalSeconds >= 4 && s.UploadedCount < uploaded)
+                .ToList();
+
+            double currentInstantSecondsPerItem = overallSecondsPerItem;
+            if (validSamples.Count > 0)
+            {
+                var refSample = validSamples.Last();
+                double dItems = uploaded - refSample.UploadedCount;
+                double dSec = (now - refSample.Timestamp).TotalSeconds;
+                if (dItems > 0 && dSec > 0)
+                {
+                    currentInstantSecondsPerItem = dSec / dItems;
+                }
+            }
+
+            // Blend overall average (40%) and recent velocity (60%) for stability
+            double targetSecondsPerItem = (overallSecondsPerItem * 0.4) + (currentInstantSecondsPerItem * 0.6);
+
+            // Apply Exponential Moving Average (EMA) smoothing to prevent UI flickering
+            if (_smoothedSecondsPerItem <= 0)
+            {
+                _smoothedSecondsPerItem = targetSecondsPerItem;
+            }
+            else
+            {
+                _smoothedSecondsPerItem = (_smoothedSecondsPerItem * 0.85) + (targetSecondsPerItem * 0.15);
+            }
+
+            double remainingItems = total - uploaded;
+            double remainingSeconds = Math.Max(0, remainingItems * _smoothedSecondsPerItem);
+
+            TimeSpan remainingTs = TimeSpan.FromSeconds(remainingSeconds);
+            if (remainingTs.TotalMinutes < 1)
+            {
+                _lastFormattedRemaining = $"~{Math.Max(1, (int)Math.Ceiling(remainingSeconds))}s";
+            }
+            else
+            {
+                _lastFormattedRemaining = $"~{(int)remainingTs.TotalMinutes}m {remainingTs.Seconds}s";
+            }
         }
 
-        DateTime now = DateTime.UtcNow;
-
-        // Take a reference sample from ~15-20 positions ago (or at least 5 seconds ago)
-        // to calculate the current rolling velocity per position rather than the overall average.
-        var referenceSample = _progressSamples
-            .Where(s => s.UploadedCount <= uploaded - 10 && (now - s.Timestamp).TotalSeconds >= 5)
-            .LastOrDefault();
-
-        if (referenceSample.UploadedCount == 0 && _progressSamples.Count > 0)
-        {
-            referenceSample = _progressSamples.First();
-        }
-
-        double deltaItems = uploaded - referenceSample.UploadedCount;
-        double deltaSeconds = (now - referenceSample.Timestamp).TotalSeconds;
-
-        double secondsPerItem;
-        if (deltaItems > 0 && deltaSeconds > 0)
-        {
-            secondsPerItem = deltaSeconds / deltaItems;
-        }
-        else
-        {
-            secondsPerItem = elapsedTs.TotalSeconds / uploaded;
-        }
-
-        double remainingItems = total - uploaded;
-        double remainingSeconds = Math.Max(0, remainingItems * secondsPerItem);
-
-        TimeSpan remainingTs = TimeSpan.FromSeconds(remainingSeconds);
-        string formattedRemaining;
-        if (remainingTs.TotalMinutes < 1)
-        {
-            formattedRemaining = $"~{Math.Max(1, (int)Math.Ceiling(remainingSeconds))}s";
-        }
-        else
-        {
-            formattedRemaining = $"~{(int)remainingTs.TotalMinutes}m {remainingTs.Seconds}s";
-        }
-
-        RemainingTimeText = string.Format(Resources.Translations.Import_ProgressTime, elapsedStr, formattedRemaining);
+        RemainingTimeText = string.Format(Resources.Translations.Import_ProgressTime, elapsedStr, _lastFormattedRemaining);
     }
 
     private async Task<bool> ConfirmUploadAsync()
@@ -491,4 +482,44 @@ public partial class MainViewModel
             TaxesList.Add(selectedTax ?? new BexioTax { Id = TaxId.Value, DisplayName = TaxId.Value.ToString() });
         }
     }
+
+    private class WpfImportUserInteractionService : IImportUserInteractionService
+    {
+        private readonly MainViewModel _vm;
+        private readonly Action<double, double, System.Diagnostics.Stopwatch> _updateProgressAction;
+        private readonly System.Diagnostics.Stopwatch _stopwatch;
+
+        public WpfImportUserInteractionService(
+            MainViewModel vm,
+            Action<double, double, System.Diagnostics.Stopwatch> updateProgressAction,
+            System.Diagnostics.Stopwatch stopwatch)
+        {
+            _vm = vm;
+            _updateProgressAction = updateProgressAction;
+            _stopwatch = stopwatch;
+        }
+
+        public void ShowPreview(Order order) { }
+
+        public Task<bool> ConfirmUploadAsync() => _vm.ConfirmUploadAsync();
+
+        public Task<bool> ConfirmCustomerCreationAsync(Customer customer) => _vm.ConfirmCustomerCreationAsync(customer);
+
+        public Task<bool> ConfirmEmailMismatchAsync(string existingEmail, string excelEmail) => _vm.ConfirmEmailMismatchAsync(existingEmail, excelEmail);
+
+        public void LogInfo(string message) => _vm.InvokeOnUi(() => _vm.AppendLog(message));
+
+        public void ReportProgress(int current, int total)
+        {
+            _vm.InvokeOnUi(() =>
+            {
+                _vm.ProgressPercentage = ((double)current / total) * 100;
+                _vm._progressSamples.Add((DateTime.UtcNow, current));
+                var cutoff = DateTime.UtcNow.AddMinutes(-3);
+                _vm._progressSamples.RemoveAll(s => s.Timestamp < cutoff);
+                _updateProgressAction(current, total, _stopwatch);
+            });
+        }
+    }
 }
+

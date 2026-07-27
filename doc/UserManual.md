@@ -49,7 +49,7 @@ It parses complex spreadsheet files containing customer headers, order IDs, spec
 
 When you first launch the application, you must configure the Bexio API connection and mapping parameters. Go to the **Settings** tab in the sidebar.
 
-![Settings Panel Preview](assets/excel_template_preview.png)
+![Excel Template Coordinate Mapping](assets/excel_template_preview.png)
 _(See section 4 below for mapping detailed coordinates matching the order sheet)_
 
 ### Bexio API Settings
@@ -135,7 +135,6 @@ Below is a typical order template layout showing how the parser reads the metada
    - **If NOT found**: A dialog pops up showing the new customer details. You can review, correct errors (e.g., misspelled street names), and click **Create** to insert them directly into Bexio. If you click **Cancel**, the import is aborted and the file remains loaded in your view.
    - A new order is created in Bexio under the matched/created contact.
 5. Once the target order ID is resolved (either existing or newly created), the positions are uploaded, a full-screen loading card covers the interface, and a success dialog displays the Bexio order number.
-4. During upload, a full-screen loading card covers the interface. Once completed, a success dialog displays the created Bexio order number.
 
 ---
 

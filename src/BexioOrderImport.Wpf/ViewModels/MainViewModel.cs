@@ -39,6 +39,7 @@ public partial class MainViewModel : ViewModelBase
     private readonly IDialogService _dialogService;
     private readonly IDispatcherService _dispatcherService;
     private readonly IEncryptionService _encryptionService;
+    private readonly IProfileManagerService _profileManagerService;
     private readonly StringBuilder _logBuilder = new();
     private string _updateDownloadUrl = string.Empty;
     private bool _isUpdateAvailable;
@@ -124,7 +125,8 @@ public partial class MainViewModel : ViewModelBase
         IDispatcherService dispatcherService,
         IEncryptionService encryptionService,
         IExcelParserFactory excelParserFactory,
-        string? configFilePath = null)
+        string? configFilePath = null,
+        IProfileManagerService? profileManagerService = null)
     {
         _updateService = updateService ?? throw new ArgumentNullException(nameof(updateService));
         _bexioClientFactory = bexioClientFactory ?? throw new ArgumentNullException(nameof(bexioClientFactory));
@@ -132,6 +134,7 @@ public partial class MainViewModel : ViewModelBase
         _dispatcherService = dispatcherService ?? throw new ArgumentNullException(nameof(dispatcherService));
         _encryptionService = encryptionService ?? throw new ArgumentNullException(nameof(encryptionService));
         _excelParserFactory = excelParserFactory ?? throw new ArgumentNullException(nameof(excelParserFactory));
+        _profileManagerService = profileManagerService ?? new ProfileManagerService(_dialogService);
 
         // Commands
         LoadFileCommand = new RelayCommand(async () => await LoadExcelFileAsync());

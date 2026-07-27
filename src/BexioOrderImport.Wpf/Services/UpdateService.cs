@@ -16,16 +16,16 @@ public class UpdateService : IUpdateService
     private const string RepoOwner = "nilsthomann";
     private const string RepoName = "bexio-order-import";
 
-    public UpdateService(IAppLifecycleService appLifecycleService)
+    public UpdateService(IHttpClientFactory httpClientFactory, IAppLifecycleService appLifecycleService)
+        : this(httpClientFactory?.CreateClient("GitHubUpdate"), appLifecycleService) { }
+
+    internal UpdateService(IAppLifecycleService appLifecycleService)
         : this(new HttpClient(), appLifecycleService) { }
 
-    public UpdateService(IHttpClientFactory httpClientFactory, IAppLifecycleService appLifecycleService)
-        : this(httpClientFactory.CreateClient("GitHubUpdate"), appLifecycleService) { }
-
-    public UpdateService(HttpClient httpClient, IAppLifecycleService appLifecycleService)
+    internal UpdateService(HttpClient? httpClient, IAppLifecycleService appLifecycleService)
     {
-        _httpClient = httpClient;
-        _appLifecycleService = appLifecycleService;
+        _httpClient = httpClient ?? new HttpClient();
+        _appLifecycleService = appLifecycleService ?? throw new ArgumentNullException(nameof(appLifecycleService));
         if (!_httpClient.DefaultRequestHeaders.UserAgent.Any())
         {
             _httpClient.DefaultRequestHeaders.UserAgent.Add(new ProductInfoHeaderValue("BexioOrderImporter", "1.0"));

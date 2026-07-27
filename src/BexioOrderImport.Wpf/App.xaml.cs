@@ -65,7 +65,8 @@ public partial class App : System.Windows.Application
         services.AddSingleton<IDispatcherService, WpfDispatcherService>();
         services.AddSingleton<IAppLifecycleService, WpfLifecycleService>();
         services.AddSingleton<IDialogService, WpfDialogService>();
-        services.AddSingleton<IUpdateService, UpdateService>();
+        services.AddSingleton<IProfileManagerService, ProfileManagerService>();
+        services.AddSingleton<IUpdateService>(sp => new UpdateService(sp.GetRequiredService<IHttpClientFactory>(), sp.GetRequiredService<IAppLifecycleService>()));
         services.AddTransient<MainViewModel>();
         Services = services.BuildServiceProvider();
 

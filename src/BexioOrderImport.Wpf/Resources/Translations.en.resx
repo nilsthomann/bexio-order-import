@@ -138,9 +138,6 @@
   <data name="Import_DragDropText" xml:space="preserve">
     <value>Drag Excel order form here or click to browse</value>
   </data>
-  <data name="Import_BrowseButton" xml:space="preserve">
-    <value>Select File</value>
-  </data>
   <data name="Import_OrderHeader" xml:space="preserve">
     <value>Order Header Details</value>
   </data>
@@ -189,26 +186,11 @@
   <data name="Import_ColTotalPrice" xml:space="preserve">
     <value>Total (CHF)</value>
   </data>
-  <data name="Import_SummaryQuantity" xml:space="preserve">
-    <value>Total Quantity</value>
-  </data>
-  <data name="Import_SummaryGross" xml:space="preserve">
-    <value>Gross Amount</value>
-  </data>
-  <data name="Import_SummaryDiscount" xml:space="preserve">
-    <value>Discount</value>
-  </data>
-  <data name="Import_SummaryNet" xml:space="preserve">
-    <value>Net Amount (excl. VAT)</value>
-  </data>
   <data name="Import_UploadButton" xml:space="preserve">
     <value>Import to Bexio</value>
   </data>
   <data name="Import_LogHeader" xml:space="preserve">
     <value>Import Log</value>
-  </data>
-  <data name="Import_ProgressText" xml:space="preserve">
-    <value>Uploaded: {0} / {1} positions</value>
   </data>
   <data name="Import_SuccessTitle" xml:space="preserve">
     <value>Success</value>
@@ -265,9 +247,6 @@ Please close the file in Excel and try again.</value>
   </data>
   <data name="Settings_TaxLabel" xml:space="preserve">
     <value>Tax rate</value>
-  </data>
-  <data name="Settings_ExcelSection" xml:space="preserve">
-    <value>Excel Mapping Configuration</value>
   </data>
   <data name="Settings_HeaderSection" xml:space="preserve">
     <value>Header Coordinates (Cells)</value>
@@ -539,9 +518,6 @@ Please close the file in Excel and try again.</value>
   <data name="Settings_DefaultOrderNameHint" xml:space="preserve">
     <value>Placeholders: {CustomerName}, {SeasonCode}. Example: Order: {CustomerName} {SeasonCode}</value>
   </data>
-  <data name="Settings_DefaultOrderNameSection" xml:space="preserve">
-    <value>Order Name Template</value>
-  </data>
   <data name="Settings_SeasonCodeLabel" xml:space="preserve">
     <value>Season Code:</value>
   </data>
@@ -550,9 +526,6 @@ Please close the file in Excel and try again.</value>
   </data>
   <data name="Settings_PositionTextTemplateHint" xml:space="preserve">
     <value>Placeholders: {Color}, {Size}, {ArticleNumber}, {ArticleName}, {BexioArticleName}, {BexioArticleDescription}</value>
-  </data>
-  <data name="Settings_PositionTextTemplateSection" xml:space="preserve">
-    <value>Position Text Template</value>
   </data>
   <data name="Error_SelectAccountAndTax" xml:space="preserve">
     <value>Please select a default account and a default tax rate in the settings.</value>
@@ -571,12 +544,6 @@ Please close the file in Excel and try again.</value>
   </data>
   <data name="Import_ProgressTimeElapsedOnly" xml:space="preserve">
     <value>Elapsed: {0}</value>
-  </data>
-  <data name="Settings_ProfilesRenameTitle" xml:space="preserve">
-    <value>Rename Profile</value>
-  </data>
-  <data name="Settings_ProfilesRenameButton" xml:space="preserve">
-    <value>Rename Profile</value>
   </data>
   <data name="Dialog_DiscardChanges" xml:space="preserve">
     <value>Discard Changes</value>

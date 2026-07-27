@@ -15,7 +15,6 @@ public static class Translations
     public static string Status_BexioDisconnected => ResourceManager.GetString(nameof(Status_BexioDisconnected)) ?? string.Empty;
     public static string Status_BexioChecking => ResourceManager.GetString(nameof(Status_BexioChecking)) ?? string.Empty;
     public static string Import_DragDropText => ResourceManager.GetString(nameof(Import_DragDropText)) ?? string.Empty;
-    public static string Import_BrowseButton => ResourceManager.GetString(nameof(Import_BrowseButton)) ?? string.Empty;
     public static string Import_OrderHeader => ResourceManager.GetString(nameof(Import_OrderHeader)) ?? string.Empty;
     public static string Import_Customer => ResourceManager.GetString(nameof(Import_Customer)) ?? string.Empty;
     public static string Import_Address => ResourceManager.GetString(nameof(Import_Address)) ?? string.Empty;
@@ -32,13 +31,8 @@ public static class Translations
     public static string Import_ColQuantity => ResourceManager.GetString(nameof(Import_ColQuantity)) ?? string.Empty;
     public static string Import_ColUnitPrice => ResourceManager.GetString(nameof(Import_ColUnitPrice)) ?? string.Empty;
     public static string Import_ColTotalPrice => ResourceManager.GetString(nameof(Import_ColTotalPrice)) ?? string.Empty;
-    public static string Import_SummaryQuantity => ResourceManager.GetString(nameof(Import_SummaryQuantity)) ?? string.Empty;
-    public static string Import_SummaryGross => ResourceManager.GetString(nameof(Import_SummaryGross)) ?? string.Empty;
-    public static string Import_SummaryDiscount => ResourceManager.GetString(nameof(Import_SummaryDiscount)) ?? string.Empty;
-    public static string Import_SummaryNet => ResourceManager.GetString(nameof(Import_SummaryNet)) ?? string.Empty;
     public static string Import_UploadButton => ResourceManager.GetString(nameof(Import_UploadButton)) ?? string.Empty;
     public static string Import_LogHeader => ResourceManager.GetString(nameof(Import_LogHeader)) ?? string.Empty;
-    public static string Import_ProgressText => ResourceManager.GetString(nameof(Import_ProgressText)) ?? string.Empty;
     public static string Import_SuccessTitle => ResourceManager.GetString(nameof(Import_SuccessTitle)) ?? string.Empty;
     public static string Import_SuccessMessage => ResourceManager.GetString(nameof(Import_SuccessMessage)) ?? string.Empty;
     public static string Settings_Header => ResourceManager.GetString(nameof(Settings_Header)) ?? string.Empty;
@@ -48,7 +42,6 @@ public static class Translations
     public static string Settings_TokenHintSuffix => ResourceManager.GetString(nameof(Settings_TokenHintSuffix)) ?? string.Empty;
     public static string Settings_AccountLabel => ResourceManager.GetString(nameof(Settings_AccountLabel)) ?? string.Empty;
     public static string Settings_TaxLabel => ResourceManager.GetString(nameof(Settings_TaxLabel)) ?? string.Empty;
-    public static string Settings_ExcelSection => ResourceManager.GetString(nameof(Settings_ExcelSection)) ?? string.Empty;
     public static string Settings_HeaderSection => ResourceManager.GetString(nameof(Settings_HeaderSection)) ?? string.Empty;
     public static string Settings_CellCustomerName => ResourceManager.GetString(nameof(Settings_CellCustomerName)) ?? string.Empty;
     public static string Settings_CellStreet => ResourceManager.GetString(nameof(Settings_CellStreet)) ?? string.Empty;
@@ -135,15 +128,14 @@ public static class Translations
     public static string Update_Available => ResourceManager.GetString(nameof(Update_Available)) ?? string.Empty;
     public static string Update_InstallNow => ResourceManager.GetString(nameof(Update_InstallNow)) ?? string.Empty;
     public static string Update_Downloading => ResourceManager.GetString(nameof(Update_Downloading)) ?? string.Empty;
+    public static string Update_Installing => ResourceManager.GetString(nameof(Update_Installing)) ?? string.Empty;
     public static string Update_Error => ResourceManager.GetString(nameof(Update_Error)) ?? string.Empty;
     public static string Import_NoOrderId => ResourceManager.GetString(nameof(Import_NoOrderId)) ?? string.Empty;
     public static string Settings_DefaultOrderNameLabel => ResourceManager.GetString(nameof(Settings_DefaultOrderNameLabel)) ?? string.Empty;
     public static string Settings_DefaultOrderNameHint => ResourceManager.GetString(nameof(Settings_DefaultOrderNameHint)) ?? string.Empty;
-    public static string Settings_DefaultOrderNameSection => ResourceManager.GetString(nameof(Settings_DefaultOrderNameSection)) ?? string.Empty;
     public static string Settings_SeasonCodeLabel => ResourceManager.GetString(nameof(Settings_SeasonCodeLabel)) ?? string.Empty;
     public static string Settings_PositionTextTemplateLabel => ResourceManager.GetString(nameof(Settings_PositionTextTemplateLabel)) ?? string.Empty;
     public static string Settings_PositionTextTemplateHint => ResourceManager.GetString(nameof(Settings_PositionTextTemplateHint)) ?? string.Empty;
-    public static string Settings_PositionTextTemplateSection => ResourceManager.GetString(nameof(Settings_PositionTextTemplateSection)) ?? string.Empty;
     public static string Error_SelectAccountAndTax => ResourceManager.GetString(nameof(Error_SelectAccountAndTax)) ?? string.Empty;
     public static string Import_EmailMismatchTitle => ResourceManager.GetString(nameof(Import_EmailMismatchTitle)) ?? string.Empty;
     public static string Import_EmailMismatchMessage => ResourceManager.GetString(nameof(Import_EmailMismatchMessage)) ?? string.Empty;
@@ -159,8 +151,6 @@ public static class Translations
     public static string Import_ColDiscount => ResourceManager.GetString(nameof(Import_ColDiscount)) ?? string.Empty;
     public static string Import_ColGrossPrice => ResourceManager.GetString(nameof(Import_ColGrossPrice)) ?? string.Empty;
     public static string Import_ColNetPrice => ResourceManager.GetString(nameof(Import_ColNetPrice)) ?? string.Empty;
-    public static string Settings_ProfilesRenameTitle => ResourceManager.GetString(nameof(Settings_ProfilesRenameTitle)) ?? string.Empty;
-    public static string Settings_ProfilesRenameButton => ResourceManager.GetString(nameof(Settings_ProfilesRenameButton)) ?? string.Empty;
     public static string Dialog_DiscardChanges => ResourceManager.GetString(nameof(Dialog_DiscardChanges)) ?? string.Empty;
     public static string Dialog_PendingChangesTitle => ResourceManager.GetString(nameof(Dialog_PendingChangesTitle)) ?? string.Empty;
     public static string Dialog_PendingChangesMessage => ResourceManager.GetString(nameof(Dialog_PendingChangesMessage)) ?? string.Empty;
