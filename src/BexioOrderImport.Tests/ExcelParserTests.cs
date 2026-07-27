@@ -81,7 +81,7 @@ public class ExcelParserTests
             ws.Cell("D14").Value = "Shoes 20-31";
             ws.Cell("D15").Value = "Shoes 32-41";
             ws.Cell("D16").Value = "Mini";
-            ws.Cell("E5").Value = "chris@peakmile.com";
+            ws.Cell("E5").Value = "test@test.com";
             wb.Save();
         }
 
@@ -96,7 +96,7 @@ public class ExcelParserTests
         order.Customer.Street.Should().Be("Musterstrasse 12");
         order.Customer.ZipCode.Should().Be("8000");
         order.Customer.City.Should().Be("Zürich");
-        order.Customer.Email.Should().Be("chris@peakmile.com");
+        order.Customer.Email.Should().Be("test@test.com");
         order.Customer.BuyerName.Should().Be("Hans Muster");
 
         // 2. Delivery & payment terms assertions
