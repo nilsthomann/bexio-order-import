@@ -1,15 +1,14 @@
 using System;
 using System.IO;
 using System.Text;
-using System.Reflection;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
-using System.Windows;
 using BexioOrderImport.Application.Interfaces;
 using BexioOrderImport.Domain.Models;
 using BexioOrderImport.Wpf.Resources;
 using BexioOrderImport.Wpf.Services;
+using System.Reflection;
 
 namespace BexioOrderImport.Wpf.ViewModels;
 
@@ -160,7 +159,7 @@ public partial class MainViewModel : ViewModelBase
             string appDataFolder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "BexioOrderImport");
             _configFilePath = Path.Combine(appDataFolder, "appsettings.json");
         }
-        
+
         // Copy appsettings.json from CLI directory if exists, or write default
         EnsureAppSettingsFile();
 

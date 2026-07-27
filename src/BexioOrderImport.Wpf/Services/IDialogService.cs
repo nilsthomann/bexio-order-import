@@ -13,4 +13,5 @@ public interface IDialogService
     bool ShowCustomerConfirmDialog(Customer customer);
     void ShowErrorDialog(string message, string title);
     void ShowInfoDialog(string message);
+    void RestartMainWindow();
 }

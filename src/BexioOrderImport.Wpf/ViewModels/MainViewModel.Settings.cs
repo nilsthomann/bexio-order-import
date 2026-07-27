@@ -154,16 +154,7 @@ public partial class MainViewModel
 
         if (reload)
         {
-            InvokeOnUiAsync(() =>
-            {
-                if (System.Windows.Application.Current is App)
-                {
-                    var newWindow = new Views.MainWindow();
-                    newWindow.Show();
-                    System.Windows.Application.Current.MainWindow.Close();
-                    System.Windows.Application.Current.MainWindow = newWindow;
-                }
-            });
+            _dialogService.RestartMainWindow();
         }
         _initialLanguage = SelectedLanguage;
     }

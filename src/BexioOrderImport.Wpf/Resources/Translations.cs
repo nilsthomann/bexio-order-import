@@ -16,7 +16,6 @@ public static class Translations
     public static string Status_BexioChecking => ResourceManager.GetString(nameof(Status_BexioChecking)) ?? string.Empty;
     public static string Import_DragDropText => ResourceManager.GetString(nameof(Import_DragDropText)) ?? string.Empty;
     public static string Import_BrowseButton => ResourceManager.GetString(nameof(Import_BrowseButton)) ?? string.Empty;
-    public static string Import_SelectFileTitle => ResourceManager.GetString(nameof(Import_SelectFileTitle)) ?? string.Empty;
     public static string Import_OrderHeader => ResourceManager.GetString(nameof(Import_OrderHeader)) ?? string.Empty;
     public static string Import_Customer => ResourceManager.GetString(nameof(Import_Customer)) ?? string.Empty;
     public static string Import_Address => ResourceManager.GetString(nameof(Import_Address)) ?? string.Empty;
@@ -71,8 +70,6 @@ public static class Translations
     public static string Settings_SaveButton => ResourceManager.GetString(nameof(Settings_SaveButton)) ?? string.Empty;
     public static string CustomerConfirm_Title => ResourceManager.GetString(nameof(CustomerConfirm_Title)) ?? string.Empty;
     public static string CustomerConfirm_Warning => ResourceManager.GetString(nameof(CustomerConfirm_Warning)) ?? string.Empty;
-    public static string CustomerConfirm_Field => ResourceManager.GetString(nameof(CustomerConfirm_Field)) ?? string.Empty;
-    public static string CustomerConfirm_Value => ResourceManager.GetString(nameof(CustomerConfirm_Value)) ?? string.Empty;
     public static string CustomerConfirm_CreateButton => ResourceManager.GetString(nameof(CustomerConfirm_CreateButton)) ?? string.Empty;
     public static string CustomerConfirm_CancelButton => ResourceManager.GetString(nameof(CustomerConfirm_CancelButton)) ?? string.Empty;
     public static string Dialog_CustomerName => ResourceManager.GetString(nameof(Dialog_CustomerName)) ?? string.Empty;
@@ -93,9 +90,6 @@ public static class Translations
     public static string Settings_ColEndQty => ResourceManager.GetString(nameof(Settings_ColEndQty)) ?? string.Empty;
     public static string Settings_ColUnitPrice => ResourceManager.GetString(nameof(Settings_ColUnitPrice)) ?? string.Empty;
     public static string Settings_ProfilesSection => ResourceManager.GetString(nameof(Settings_ProfilesSection)) ?? string.Empty;
-    public static string Settings_ProfilesSelectLabel => ResourceManager.GetString(nameof(Settings_ProfilesSelectLabel)) ?? string.Empty;
-    public static string Settings_ProfilesActiveLabel => ResourceManager.GetString(nameof(Settings_ProfilesActiveLabel)) ?? string.Empty;
-    public static string Settings_ProfilesNewNamePlaceholder => ResourceManager.GetString(nameof(Settings_ProfilesNewNamePlaceholder)) ?? string.Empty;
     public static string Settings_ProfilesAddButton => ResourceManager.GetString(nameof(Settings_ProfilesAddButton)) ?? string.Empty;
     public static string Settings_ProfilesDeleteButton => ResourceManager.GetString(nameof(Settings_ProfilesDeleteButton)) ?? string.Empty;
     public static string Settings_ProfilesSetActiveButton => ResourceManager.GetString(nameof(Settings_ProfilesSetActiveButton)) ?? string.Empty;
@@ -103,7 +97,6 @@ public static class Translations
     public static string Settings_ReloadPromptMessage => ResourceManager.GetString(nameof(Settings_ReloadPromptMessage)) ?? string.Empty;
     public static string Settings_ProfilesTableColName => ResourceManager.GetString(nameof(Settings_ProfilesTableColName)) ?? string.Empty;
     public static string Settings_ProfilesTableColActive => ResourceManager.GetString(nameof(Settings_ProfilesTableColActive)) ?? string.Empty;
-    public static string Settings_ProfilesTableColActions => ResourceManager.GetString(nameof(Settings_ProfilesTableColActions)) ?? string.Empty;
     public static string Settings_ProfilesCloneButton => ResourceManager.GetString(nameof(Settings_ProfilesCloneButton)) ?? string.Empty;
     public static string Settings_ProfilesEditButton => ResourceManager.GetString(nameof(Settings_ProfilesEditButton)) ?? string.Empty;
     public static string Settings_ProfilesCreateTitle => ResourceManager.GetString(nameof(Settings_ProfilesCreateTitle)) ?? string.Empty;
@@ -142,7 +135,6 @@ public static class Translations
     public static string Update_Available => ResourceManager.GetString(nameof(Update_Available)) ?? string.Empty;
     public static string Update_InstallNow => ResourceManager.GetString(nameof(Update_InstallNow)) ?? string.Empty;
     public static string Update_Downloading => ResourceManager.GetString(nameof(Update_Downloading)) ?? string.Empty;
-    public static string Update_Installing => ResourceManager.GetString(nameof(Update_Installing)) ?? string.Empty;
     public static string Update_Error => ResourceManager.GetString(nameof(Update_Error)) ?? string.Empty;
     public static string Import_NoOrderId => ResourceManager.GetString(nameof(Import_NoOrderId)) ?? string.Empty;
     public static string Settings_DefaultOrderNameLabel => ResourceManager.GetString(nameof(Settings_DefaultOrderNameLabel)) ?? string.Empty;

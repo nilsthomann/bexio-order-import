@@ -141,9 +141,6 @@
   <data name="Import_BrowseButton" xml:space="preserve">
     <value>Datei auswählen</value>
   </data>
-  <data name="Import_SelectFileTitle" xml:space="preserve">
-    <value>Excel Auftragsformular auswählen</value>
-  </data>
   <data name="Import_OrderHeader" xml:space="preserve">
     <value>Auftrags-Kopfdaten</value>
   </data>
@@ -332,12 +329,6 @@ Bitte schliessen Sie die Datei in Excel und versuchen Sie es erneut.</value>
   <data name="CustomerConfirm_Warning" xml:space="preserve">
     <value>Ein Kunde mit dieser E-Mail wurde in Bexio nicht gefunden. Soll ein neuer Kontakt erstellt werden?</value>
   </data>
-  <data name="CustomerConfirm_Field" xml:space="preserve">
-    <value>Feld</value>
-  </data>
-  <data name="CustomerConfirm_Value" xml:space="preserve">
-    <value>Wert für Neuanlage</value>
-  </data>
   <data name="CustomerConfirm_CreateButton" xml:space="preserve">
     <value>Kunde erstellen &amp; fortfahren</value>
   </data>
@@ -398,15 +389,6 @@ Bitte schliessen Sie die Datei in Excel und versuchen Sie es erneut.</value>
   <data name="Settings_ProfilesSection" xml:space="preserve">
     <value>Excel Mapping Profile</value>
   </data>
-  <data name="Settings_ProfilesSelectLabel" xml:space="preserve">
-    <value>Ausgewähltes Profil</value>
-  </data>
-  <data name="Settings_ProfilesActiveLabel" xml:space="preserve">
-    <value>Aktives Profil</value>
-  </data>
-  <data name="Settings_ProfilesNewNamePlaceholder" xml:space="preserve">
-    <value>Neuer Profilname</value>
-  </data>
   <data name="Settings_ProfilesAddButton" xml:space="preserve">
     <value>Erstellen</value>
   </data>
@@ -427,9 +409,6 @@ Bitte schliessen Sie die Datei in Excel und versuchen Sie es erneut.</value>
   </data>
   <data name="Settings_ProfilesTableColActive" xml:space="preserve">
     <value>Aktiv</value>
-  </data>
-  <data name="Settings_ProfilesTableColActions" xml:space="preserve">
-    <value>Aktionen</value>
   </data>
   <data name="Settings_ProfilesCloneButton" xml:space="preserve">
     <value>Klonen</value>
@@ -545,9 +524,6 @@ Bitte schliessen Sie die Datei in Excel und versuchen Sie es erneut.</value>
   <data name="Update_Downloading" xml:space="preserve">
     <value>Update wird heruntergeladen ({0:0}%)...</value>
   </data>
-  <data name="Update_Installing" xml:space="preserve">
-    <value>Installation wird gestartet...</value>
-  </data>
   <data name="Update_Error" xml:space="preserve">
     <value>Fehler beim Aktualisieren: {0}</value>
   </data>
@@ -580,6 +556,9 @@ Bitte schliessen Sie die Datei in Excel und versuchen Sie es erneut.</value>
   </data>
   <data name="Import_EmailMismatchTitle" xml:space="preserve">
     <value>E-Mail Abweichung</value>
+  </data>
+  <data name="Import_EmailMismatchMessage" xml:space="preserve">
+    <value>Die E-Mail des Bexio-Auftrags ({0}) stimmt nicht mit der E-Mail im Excel ({1}) überein. Möchten Sie den Import trotzdem fortsetzen?</value>
   </data>
   <data name="Import_EstimatingTime" xml:space="preserve">
     <value>Berechne...</value>

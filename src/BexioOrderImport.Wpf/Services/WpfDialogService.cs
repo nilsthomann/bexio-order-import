@@ -102,4 +102,18 @@ public class WpfDialogService : IDialogService
     {
         InvokeOnDispatcher(() => Views.CustomDialog.ShowInfo(message));
     }
+
+    public void RestartMainWindow()
+    {
+        InvokeOnDispatcher(() =>
+        {
+            if (System.Windows.Application.Current is App)
+            {
+                var newWindow = new Views.MainWindow();
+                newWindow.Show();
+                System.Windows.Application.Current.MainWindow?.Close();
+                System.Windows.Application.Current.MainWindow = newWindow;
+            }
+        });
+    }
 }

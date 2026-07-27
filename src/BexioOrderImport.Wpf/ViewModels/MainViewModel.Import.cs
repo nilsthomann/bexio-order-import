@@ -1,13 +1,11 @@
 using System;
 using System.IO;
 using System.Linq;
-using System.Net.Http;
 using System.Threading.Tasks;
 using BexioOrderImport.Application.Interfaces;
 using BexioOrderImport.Application.Services;
 using BexioOrderImport.Domain.Models;
 using BexioOrderImport.Domain.Models.Bexio;
-using Microsoft.Extensions.Options;
 
 namespace BexioOrderImport.Wpf.ViewModels;
 

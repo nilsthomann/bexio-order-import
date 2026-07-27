@@ -67,7 +67,16 @@ public class ClosedXmlExcelParser : IExcelParser
                 continue;
 
             // Read unit price from column
-            _ = decimal.TryParse(row.Cell(_options.Data.UnitPriceColumn).Value.ToString(), out decimal unitPrice);
+            string priceStr = row.Cell(_options.Data.UnitPriceColumn).Value.ToString().Trim();
+            if (!decimal.TryParse(priceStr, System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out decimal unitPrice) &&
+                !decimal.TryParse(priceStr, out unitPrice))
+            {
+                if (!string.IsNullOrWhiteSpace(priceStr))
+                {
+                    throw new FormatException($"Ungültiges Preisformat '{priceStr}' in Zeile {r}, Spalte {_options.Data.UnitPriceColumn}.");
+                }
+                unitPrice = 0m;
+            }
 
             // Read row-based discount if enabled
             decimal? rowDiscount = null;
@@ -125,6 +134,7 @@ public class ClosedXmlExcelParser : IExcelParser
         string companyVal = sheet.Cell(_options.Header.CompanyNameCell).Value.ToString().Trim();
         string streetVal = sheet.Cell(_options.Header.StreetCell).Value.ToString().Trim();
         string zipCityVal = sheet.Cell(_options.Header.ZipCityCell).Value.ToString().Trim();
+        var (zip, city) = ExtractZipAndCity(zipCityVal);
         string emailVal = sheet.Cell(_options.Header.BuyerEmailCell).Value.ToString().Trim();
         string buyerVal = sheet.Cell(_options.Header.BuyerNameCell).Value.ToString().Trim();
 
@@ -132,8 +142,8 @@ public class ClosedXmlExcelParser : IExcelParser
         {
             CompanyName = companyVal,
             Street = streetVal,
-            ZipCode = ExtractZip(zipCityVal),
-            City = ExtractCity(zipCityVal),
+            ZipCode = zip,
+            City = city,
             Email = emailVal,
             BuyerName = buyerVal
         };
@@ -188,16 +198,15 @@ public class ClosedXmlExcelParser : IExcelParser
         return matrices;
     }
 
-    internal static string ExtractZip(string rawZipCity)
+    internal static (string Zip, string City) ExtractZipAndCity(string rawZipCity)
     {
-        var parts = rawZipCity.Split(' ', 2);
-        return parts.Length > 0 ? parts[0] : string.Empty;
+        if (string.IsNullOrWhiteSpace(rawZipCity)) return (string.Empty, string.Empty);
+        var parts = rawZipCity.Trim().Split(' ', 2, StringSplitOptions.RemoveEmptyEntries);
+        return parts.Length switch
+        {
+            0 => (string.Empty, string.Empty),
+            1 => (parts[0], string.Empty),
+            _ => (parts[0], parts[1].Trim())
+        };
     }
-
-    internal static string ExtractCity(string rawZipCity)
-    {
-        var parts = rawZipCity.Split(' ', 2);
-        return parts.Length > 1 ? parts[1] : string.Empty;
-    }
-
 }

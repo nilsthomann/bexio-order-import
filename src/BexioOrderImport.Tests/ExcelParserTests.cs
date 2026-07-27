@@ -260,11 +260,11 @@ public class ExcelParserTests
     [Fact]
     public void ExtractZipAndCity_ShouldHandleEdgeCases()
     {
-        ClosedXmlExcelParser.ExtractZip("").Should().Be("");
-        ClosedXmlExcelParser.ExtractCity("").Should().Be("");
+        ClosedXmlExcelParser.ExtractZipAndCity("").City.Should().Be("");
+        ClosedXmlExcelParser.ExtractZipAndCity("").Zip.Should().Be("");
 
-        ClosedXmlExcelParser.ExtractZip("8000").Should().Be("8000");
-        ClosedXmlExcelParser.ExtractCity("8000").Should().Be("");
+        ClosedXmlExcelParser.ExtractZipAndCity("8000").Zip.Should().Be("8000");
+        ClosedXmlExcelParser.ExtractZipAndCity("8000").City.Should().Be("");
     }
 
     private static string CreateTemporaryExcelFile(string orderIdStr, string discountStr)

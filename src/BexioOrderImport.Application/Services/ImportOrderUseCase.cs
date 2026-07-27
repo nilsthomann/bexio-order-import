@@ -10,14 +10,14 @@ public class ImportOrderUseCase
     private readonly IBexioClient _bexioClient;
 
     public ImportOrderUseCase(IBexioClient bexioClient)
-        : this(null, bexioClient)
+        : this(excelParser: null, bexioClient: bexioClient)
     {
     }
 
     public ImportOrderUseCase(IExcelParser? excelParser, IBexioClient bexioClient)
     {
         _excelParser = excelParser;
-        _bexioClient = bexioClient;
+        _bexioClient = bexioClient ?? throw new ArgumentNullException(nameof(bexioClient));
     }
 
     public async Task<ImportResult> ExecuteAsync(
