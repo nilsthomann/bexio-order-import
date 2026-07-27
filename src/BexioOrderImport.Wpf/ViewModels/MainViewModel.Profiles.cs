@@ -70,10 +70,6 @@ public partial class MainViewModel
 
         if (ShowProfileEditDialog(profile))
         {
-            if (profile == SelectedProfile)
-            {
-                CopyProfileToVm(profile);
-            }
             OnPropertyChanged(nameof(ActiveProfile));
             SetModified();
         }
@@ -121,7 +117,7 @@ public partial class MainViewModel
                 var exportList = Profiles.Select(p => new Models.MappingProfileDto
                 {
                     Name = p.Name,
-                    ExcelMapping = MapOptionsToDto(p.Mapping)
+                    ExcelMapping = p.Mapping
                 }).ToList();
 
                 string json = JsonSerializer.Serialize(exportList, new JsonSerializerOptions { WriteIndented = true });
@@ -167,16 +163,12 @@ public partial class MainViewModel
         {
             if (string.IsNullOrEmpty(dto.Name)) continue;
 
-            ExcelMappingOptions mapping = MapDtoToOptions(dto.ExcelMapping);
+            ExcelMappingOptions mapping = dto.ExcelMapping;
 
             var existing = Profiles.FirstOrDefault(p => p.Name.Equals(dto.Name, StringComparison.OrdinalIgnoreCase));
             if (existing != null)
             {
                 existing.Mapping = mapping;
-                if (existing == SelectedProfile)
-                {
-                    CopyProfileToVm(existing);
-                }
             }
             else
             {

@@ -207,12 +207,6 @@
   <data name="Import_UploadButton" xml:space="preserve">
     <value>Import to Bexio</value>
   </data>
-  <data name="Import_NoPositions" xml:space="preserve">
-    <value>No order positions with quantity &gt; 0 found.</value>
-  </data>
-  <data name="Import_SelectFileFirst" xml:space="preserve">
-    <value>Please select an Excel file first.</value>
-  </data>
   <data name="Import_LogHeader" xml:space="preserve">
     <value>Import Log</value>
   </data>
@@ -587,9 +581,6 @@ Please close the file in Excel and try again.</value>
   <data name="Import_EmailMismatchTitle" xml:space="preserve">
     <value>Email Mismatch</value>
   </data>
-  <data name="Import_RemainingTime" xml:space="preserve">
-    <value>Remaining time: {0}</value>
-  </data>
   <data name="Import_EstimatingTime" xml:space="preserve">
     <value>Estimating...</value>
   </data>
@@ -604,9 +595,6 @@ Please close the file in Excel and try again.</value>
   </data>
   <data name="Settings_ProfilesRenameButton" xml:space="preserve">
     <value>Rename Profile</value>
-  </data>
-  <data name="Settings_UnsavedChangesWarning" xml:space="preserve">
-    <value>You have unsaved changes in Settings. Please save your settings before switching tabs.</value>
   </data>
   <data name="Dialog_DiscardChanges" xml:space="preserve">
     <value>Discard Changes</value>

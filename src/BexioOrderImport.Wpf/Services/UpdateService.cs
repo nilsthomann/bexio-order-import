@@ -13,17 +13,23 @@ public class UpdateService : IUpdateService
 {
     private readonly HttpClient _httpClient;
     private readonly IAppLifecycleService _appLifecycleService;
-    private const string RepoOwner = "nils-thomann";
+    private const string RepoOwner = "nilsthomann";
     private const string RepoName = "bexio-order-import";
 
-    public UpdateService(IAppLifecycleService appLifecycleService) : this(new HttpClient(), appLifecycleService) { }
+    public UpdateService(IAppLifecycleService appLifecycleService)
+        : this(new HttpClient(), appLifecycleService) { }
+
+    public UpdateService(IHttpClientFactory httpClientFactory, IAppLifecycleService appLifecycleService)
+        : this(httpClientFactory.CreateClient("GitHubUpdate"), appLifecycleService) { }
 
     public UpdateService(HttpClient httpClient, IAppLifecycleService appLifecycleService)
     {
         _httpClient = httpClient;
         _appLifecycleService = appLifecycleService;
-        // GitHub API requires a User-Agent header
-        _httpClient.DefaultRequestHeaders.UserAgent.Add(new ProductInfoHeaderValue("BexioOrderImporter", "1.0"));
+        if (!_httpClient.DefaultRequestHeaders.UserAgent.Any())
+        {
+            _httpClient.DefaultRequestHeaders.UserAgent.Add(new ProductInfoHeaderValue("BexioOrderImporter", "1.0"));
+        }
     }
 
     private bool IsUpdateCheckCached(string cacheFilePath)

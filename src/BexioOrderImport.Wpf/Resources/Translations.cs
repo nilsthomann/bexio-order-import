@@ -38,8 +38,6 @@ public static class Translations
     public static string Import_SummaryDiscount => ResourceManager.GetString(nameof(Import_SummaryDiscount)) ?? string.Empty;
     public static string Import_SummaryNet => ResourceManager.GetString(nameof(Import_SummaryNet)) ?? string.Empty;
     public static string Import_UploadButton => ResourceManager.GetString(nameof(Import_UploadButton)) ?? string.Empty;
-    public static string Import_NoPositions => ResourceManager.GetString(nameof(Import_NoPositions)) ?? string.Empty;
-    public static string Import_SelectFileFirst => ResourceManager.GetString(nameof(Import_SelectFileFirst)) ?? string.Empty;
     public static string Import_LogHeader => ResourceManager.GetString(nameof(Import_LogHeader)) ?? string.Empty;
     public static string Import_ProgressText => ResourceManager.GetString(nameof(Import_ProgressText)) ?? string.Empty;
     public static string Import_SuccessTitle => ResourceManager.GetString(nameof(Import_SuccessTitle)) ?? string.Empty;
@@ -157,7 +155,6 @@ public static class Translations
     public static string Error_SelectAccountAndTax => ResourceManager.GetString(nameof(Error_SelectAccountAndTax)) ?? string.Empty;
     public static string Import_EmailMismatchTitle => ResourceManager.GetString(nameof(Import_EmailMismatchTitle)) ?? string.Empty;
     public static string Import_EmailMismatchMessage => ResourceManager.GetString(nameof(Import_EmailMismatchMessage)) ?? string.Empty;
-    public static string Import_RemainingTime => ResourceManager.GetString(nameof(Import_RemainingTime)) ?? string.Empty;
     public static string Import_EstimatingTime => ResourceManager.GetString(nameof(Import_EstimatingTime)) ?? string.Empty;
     public static string Import_ProgressTime => ResourceManager.GetString(nameof(Import_ProgressTime)) ?? string.Empty;
     public static string Import_ProgressTimeElapsedOnly => ResourceManager.GetString(nameof(Import_ProgressTimeElapsedOnly)) ?? string.Empty;
@@ -172,7 +169,6 @@ public static class Translations
     public static string Import_ColNetPrice => ResourceManager.GetString(nameof(Import_ColNetPrice)) ?? string.Empty;
     public static string Settings_ProfilesRenameTitle => ResourceManager.GetString(nameof(Settings_ProfilesRenameTitle)) ?? string.Empty;
     public static string Settings_ProfilesRenameButton => ResourceManager.GetString(nameof(Settings_ProfilesRenameButton)) ?? string.Empty;
-    public static string Settings_UnsavedChangesWarning => ResourceManager.GetString(nameof(Settings_UnsavedChangesWarning)) ?? string.Empty;
     public static string Dialog_DiscardChanges => ResourceManager.GetString(nameof(Dialog_DiscardChanges)) ?? string.Empty;
     public static string Dialog_PendingChangesTitle => ResourceManager.GetString(nameof(Dialog_PendingChangesTitle)) ?? string.Empty;
     public static string Dialog_PendingChangesMessage => ResourceManager.GetString(nameof(Dialog_PendingChangesMessage)) ?? string.Empty;

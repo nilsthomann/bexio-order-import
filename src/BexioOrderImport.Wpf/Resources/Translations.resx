@@ -207,12 +207,6 @@
   <data name="Import_UploadButton" xml:space="preserve">
     <value>In Bexio importieren</value>
   </data>
-  <data name="Import_NoPositions" xml:space="preserve">
-    <value>Keine Auftragspositionen mit Menge &gt; 0 gefunden.</value>
-  </data>
-  <data name="Import_SelectFileFirst" xml:space="preserve">
-    <value>Bitte wählen Sie zuerst eine Excel-Datei aus.</value>
-  </data>
   <data name="Import_LogHeader" xml:space="preserve">
     <value>Import Protokoll</value>
   </data>
@@ -587,9 +581,6 @@ Bitte schliessen Sie die Datei in Excel und versuchen Sie es erneut.</value>
   <data name="Import_EmailMismatchTitle" xml:space="preserve">
     <value>E-Mail Abweichung</value>
   </data>
-  <data name="Import_RemainingTime" xml:space="preserve">
-    <value>Verbleibende Zeit: {0}</value>
-  </data>
   <data name="Import_EstimatingTime" xml:space="preserve">
     <value>Berechne...</value>
   </data>
@@ -604,9 +595,6 @@ Bitte schliessen Sie die Datei in Excel und versuchen Sie es erneut.</value>
   </data>
   <data name="Settings_ProfilesRenameButton" xml:space="preserve">
     <value>Profil umbenennen</value>
-  </data>
-  <data name="Settings_UnsavedChangesWarning" xml:space="preserve">
-    <value>Sie haben ungespeicherte Änderungen in den Einstellungen. Bitte speichern Sie Ihre Einstellungen, bevor Sie den Tab wechseln.</value>
   </data>
   <data name="Dialog_DiscardChanges" xml:space="preserve">
     <value>Änderungen verwerfen</value>

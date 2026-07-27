@@ -5,6 +5,7 @@ using BexioOrderImport.Application.Interfaces;
 using BexioOrderImport.Domain.Models;
 using BexioOrderImport.Wpf.Services;
 using BexioOrderImport.Wpf.ViewModels;
+using BexioOrderImport.Tests.Utils;
 using FluentAssertions;
 using Moq;
 
@@ -22,11 +23,8 @@ public class MainViewModelTests : IDisposable
 
     public MainViewModelTests()
     {
-        // Initialize WPF Application context for unit tests to prevent null refs on App.Current
-        if (System.Windows.Application.Current == null)
-        {
-            _ = new System.Windows.Application();
-        }
+        // Initialize WPF Application context for unit tests on a pumping STA thread
+        WpfTestApplication.EnsureInitialized();
 
         _tempFilePath = System.IO.Path.Combine(System.IO.Path.GetTempPath(), Guid.NewGuid().ToString() + "_appsettings.json");
 
@@ -42,7 +40,13 @@ public class MainViewModelTests : IDisposable
         _encryptionServiceMock = new Mock<IEncryptionService>();
         _encryptionServiceMock.Setup(e => e.Encrypt(It.IsAny<string>())).Returns<string>(s => s);
         _encryptionServiceMock.Setup(e => e.Decrypt(It.IsAny<string>())).Returns<string>(s => s);
+        var realParserFactory = new BexioOrderImport.Infrastructure.Excel.ClosedXmlExcelParserFactory();
+        _excelParserFactoryMock = new Mock<IExcelParserFactory>();
+        _excelParserFactoryMock.Setup(f => f.Create(It.IsAny<BexioOrderImport.Application.Options.ExcelMappingOptions>()))
+            .Returns((BexioOrderImport.Application.Options.ExcelMappingOptions opts) => realParserFactory.Create(opts));
     }
+
+    private readonly Mock<IExcelParserFactory> _excelParserFactoryMock;
 
     public void Dispose()
     {
@@ -64,6 +68,7 @@ public class MainViewModelTests : IDisposable
             _dialogServiceMock.Object,
             _dispatcherServiceMock.Object,
             _encryptionServiceMock.Object,
+            _excelParserFactoryMock.Object,
             _tempFilePath);
     }
 

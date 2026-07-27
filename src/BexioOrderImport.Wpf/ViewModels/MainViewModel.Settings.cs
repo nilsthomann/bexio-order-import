@@ -39,7 +39,7 @@ public partial class MainViewModel
                 ActiveProfileName = "Default",
                 Profiles = new System.Collections.Generic.List<Models.MappingProfileDto>
                 {
-                    new Models.MappingProfileDto { Name = "Default", ExcelMapping = new Models.ExcelMappingDto() }
+                    new Models.MappingProfileDto { Name = "Default", ExcelMapping = new Application.Options.ExcelMappingOptions() }
                 }
             };
             File.WriteAllText(_configFilePath, JsonSerializer.Serialize(defaultSettings, new JsonSerializerOptions { WriteIndented = true }));
@@ -70,7 +70,7 @@ public partial class MainViewModel
             {
                 foreach (var p in dto.Profiles)
                 {
-                    Profiles.Add(new Models.MappingProfile { Name = p.Name, Mapping = MapDtoToOptions(p.ExcelMapping) });
+                    Profiles.Add(new Models.MappingProfile { Name = p.Name, Mapping = p.ExcelMapping });
                 }
             }
             else
@@ -96,11 +96,6 @@ public partial class MainViewModel
     {
         try
         {
-            if (SelectedProfile != null)
-            {
-                CopyVmToProfile(SelectedProfile);
-            }
-
             string encryptedToken = _encryptionService.Encrypt(BexioToken);
 
             var settingsObj = new Models.AppSettingsDto
@@ -116,7 +111,7 @@ public partial class MainViewModel
                 Profiles = Profiles.Select(p => new Models.MappingProfileDto
                 {
                     Name = p.Name,
-                    ExcelMapping = MapOptionsToDto(p.Mapping)
+                    ExcelMapping = p.Mapping
                 }).ToList()
             };
 
@@ -173,72 +168,6 @@ public partial class MainViewModel
         _initialLanguage = SelectedLanguage;
     }
 
-    internal void CopyVmToProfile(Models.MappingProfile profile)
-    {
-        profile.Mapping.Header.CompanyNameCell = CompanyNameCell;
-        profile.Mapping.Header.StreetCell = StreetCell;
-        profile.Mapping.Header.ZipCityCell = ZipCityCell;
-        profile.Mapping.Header.BuyerEmailCell = BuyerEmailCell;
-        profile.Mapping.Header.BuyerNameCell = BuyerNameCell;
-        profile.Mapping.Header.OrderIdCell = OrderIdCell;
-        profile.Mapping.Header.PaymentTermsCell = PaymentTermsCell;
-        profile.Mapping.Header.DiscountCell = DiscountCell;
-
-        profile.Mapping.SizeMatrix.StartRow = MatrixStartRow;
-        profile.Mapping.SizeMatrix.EndRow = MatrixEndRow;
-        profile.Mapping.SizeMatrix.CategoryColumn = MatrixCategoryCol;
-        profile.Mapping.SizeMatrix.StartSizeColumn = MatrixStartSizeCol;
-        profile.Mapping.SizeMatrix.EndSizeColumn = MatrixEndSizeCol;
-
-        profile.Mapping.Data.StartRow = DataStartRow;
-        profile.Mapping.Data.ArticleNumberColumn = ColArtNum;
-        profile.Mapping.Data.ArticleNameColumn = ColArtName;
-        profile.Mapping.Data.ColorColumn = ColColor;
-        profile.Mapping.Data.CategoryColumn = ColSizeCategory;
-        profile.Mapping.Data.StartQtyColumn = ColStartQty;
-        profile.Mapping.Data.EndQtyColumn = ColEndQty;
-        profile.Mapping.Data.UnitPriceColumn = ColUnitPrice;
-        profile.Mapping.Data.EnableRowDiscount = EnableRowDiscount;
-        profile.Mapping.Data.RowDiscountColumn = ColRowDiscount;
-        profile.Mapping.DefaultOrderName = DefaultOrderName;
-        profile.Mapping.SeasonCode = SeasonCode;
-        profile.Mapping.PositionTextTemplate = PositionTextTemplate;
-        profile.Mapping.DiscountPositionTextTemplate = DiscountPositionTextTemplate;
-    }
-
-    internal void CopyProfileToVm(Models.MappingProfile profile)
-    {
-        CompanyNameCell = profile.Mapping.Header.CompanyNameCell;
-        StreetCell = profile.Mapping.Header.StreetCell;
-        ZipCityCell = profile.Mapping.Header.ZipCityCell;
-        BuyerEmailCell = profile.Mapping.Header.BuyerEmailCell;
-        BuyerNameCell = profile.Mapping.Header.BuyerNameCell;
-        OrderIdCell = profile.Mapping.Header.OrderIdCell;
-        PaymentTermsCell = profile.Mapping.Header.PaymentTermsCell;
-        DiscountCell = profile.Mapping.Header.DiscountCell;
-
-        MatrixStartRow = profile.Mapping.SizeMatrix.StartRow;
-        MatrixEndRow = profile.Mapping.SizeMatrix.EndRow;
-        MatrixCategoryCol = profile.Mapping.SizeMatrix.CategoryColumn;
-        MatrixStartSizeCol = profile.Mapping.SizeMatrix.StartSizeColumn;
-        MatrixEndSizeCol = profile.Mapping.SizeMatrix.EndSizeColumn;
-
-        DataStartRow = profile.Mapping.Data.StartRow;
-        ColArtNum = profile.Mapping.Data.ArticleNumberColumn;
-        ColArtName = profile.Mapping.Data.ArticleNameColumn;
-        ColColor = profile.Mapping.Data.ColorColumn;
-        ColSizeCategory = profile.Mapping.Data.CategoryColumn;
-        ColStartQty = profile.Mapping.Data.StartQtyColumn;
-        ColEndQty = profile.Mapping.Data.EndQtyColumn;
-        ColUnitPrice = profile.Mapping.Data.UnitPriceColumn;
-        EnableRowDiscount = profile.Mapping.Data.EnableRowDiscount;
-        ColRowDiscount = profile.Mapping.Data.RowDiscountColumn;
-        DefaultOrderName = profile.Mapping.DefaultOrderName;
-        SeasonCode = profile.Mapping.SeasonCode;
-        PositionTextTemplate = profile.Mapping.PositionTextTemplate;
-        DiscountPositionTextTemplate = profile.Mapping.DiscountPositionTextTemplate;
-    }
-
     private ExcelMappingOptions BuildMappingOptions()
     {
         return ActiveProfile != null ? ActiveProfile.Mapping : new ExcelMappingOptions();
@@ -249,91 +178,4 @@ public partial class MainViewModel
         Helpers.LanguageHelper.Apply(lang);
     }
 
-    private ExcelMappingOptions MapDtoToOptions(Models.ExcelMappingDto dto)
-    {
-        return new ExcelMappingOptions
-        {
-            WorksheetIndex = dto.WorksheetIndex,
-            DefaultOrderName = dto.DefaultOrderName,
-            SeasonCode = dto.SeasonCode,
-            PositionTextTemplate = dto.PositionTextTemplate,
-            DiscountPositionTextTemplate = dto.DiscountPositionTextTemplate,
-            Header = new HeaderMapping
-            {
-                CompanyNameCell = dto.Header.CompanyNameCell,
-                StreetCell = dto.Header.StreetCell,
-                ZipCityCell = dto.Header.ZipCityCell,
-                BuyerEmailCell = dto.Header.BuyerEmailCell,
-                BuyerNameCell = dto.Header.BuyerNameCell,
-                OrderIdCell = dto.Header.OrderIdCell,
-                PaymentTermsCell = dto.Header.PaymentTermsCell,
-                DiscountCell = dto.Header.DiscountCell
-            },
-            SizeMatrix = new SizeMatrixMapping
-            {
-                StartRow = dto.SizeMatrix.StartRow,
-                EndRow = dto.SizeMatrix.EndRow,
-                CategoryColumn = dto.SizeMatrix.CategoryColumn,
-                StartSizeColumn = dto.SizeMatrix.StartSizeColumn,
-                EndSizeColumn = dto.SizeMatrix.EndSizeColumn
-            },
-            Data = new DataMapping
-            {
-                StartRow = dto.Data.StartRow,
-                ArticleNumberColumn = dto.Data.ArticleNumberColumn,
-                ArticleNameColumn = dto.Data.ArticleNameColumn,
-                ColorColumn = dto.Data.ColorColumn,
-                CategoryColumn = dto.Data.CategoryColumn,
-                StartQtyColumn = dto.Data.StartQtyColumn,
-                EndQtyColumn = dto.Data.EndQtyColumn,
-                UnitPriceColumn = dto.Data.UnitPriceColumn,
-                EnableRowDiscount = dto.Data.EnableRowDiscount,
-                RowDiscountColumn = dto.Data.RowDiscountColumn
-            }
-        };
-    }
-
-    private Models.ExcelMappingDto MapOptionsToDto(ExcelMappingOptions opts)
-    {
-        return new Models.ExcelMappingDto
-        {
-            WorksheetIndex = opts.WorksheetIndex,
-            DefaultOrderName = opts.DefaultOrderName,
-            SeasonCode = opts.SeasonCode,
-            PositionTextTemplate = opts.PositionTextTemplate,
-            DiscountPositionTextTemplate = opts.DiscountPositionTextTemplate,
-            Header = new Models.HeaderMappingDto
-            {
-                CompanyNameCell = opts.Header.CompanyNameCell,
-                StreetCell = opts.Header.StreetCell,
-                ZipCityCell = opts.Header.ZipCityCell,
-                BuyerEmailCell = opts.Header.BuyerEmailCell,
-                BuyerNameCell = opts.Header.BuyerNameCell,
-                OrderIdCell = opts.Header.OrderIdCell,
-                PaymentTermsCell = opts.Header.PaymentTermsCell,
-                DiscountCell = opts.Header.DiscountCell
-            },
-            SizeMatrix = new Models.SizeMatrixDto
-            {
-                StartRow = opts.SizeMatrix.StartRow,
-                EndRow = opts.SizeMatrix.EndRow,
-                CategoryColumn = opts.SizeMatrix.CategoryColumn,
-                StartSizeColumn = opts.SizeMatrix.StartSizeColumn,
-                EndSizeColumn = opts.SizeMatrix.EndSizeColumn
-            },
-            Data = new Models.DataMappingDto
-            {
-                StartRow = opts.Data.StartRow,
-                ArticleNumberColumn = opts.Data.ArticleNumberColumn,
-                ArticleNameColumn = opts.Data.ArticleNameColumn,
-                ColorColumn = opts.Data.ColorColumn,
-                CategoryColumn = opts.Data.CategoryColumn,
-                StartQtyColumn = opts.Data.StartQtyColumn,
-                EndQtyColumn = opts.Data.EndQtyColumn,
-                UnitPriceColumn = opts.Data.UnitPriceColumn,
-                EnableRowDiscount = opts.Data.EnableRowDiscount,
-                RowDiscountColumn = opts.Data.RowDiscountColumn
-            }
-        };
-    }
 }

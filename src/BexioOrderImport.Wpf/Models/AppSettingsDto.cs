@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
+using BexioOrderImport.Application.Options;
 
 namespace BexioOrderImport.Wpf.Models;
 
@@ -13,7 +14,6 @@ public class AppSettingsDto
 
     [JsonPropertyName("Profiles")]
     public List<MappingProfileDto> Profiles { get; set; } = new();
-      
 }
 
 public class BexioSettingsDto
@@ -37,83 +37,5 @@ public class MappingProfileDto
     public string Name { get; set; } = "Default";
 
     [JsonPropertyName("ExcelMapping")]
-    public ExcelMappingDto ExcelMapping { get; set; } = new();
-}
-
-public class ExcelMappingDto
-{
-    [JsonPropertyName("WorksheetIndex")]
-    public int WorksheetIndex { get; set; } = 1;
-
-    [JsonPropertyName("DefaultOrderName")]
-    public string DefaultOrderName { get; set; } = "Vororder {CustomerName} {SeasonCode}";
-
-    [JsonPropertyName("SeasonCode")]
-    public string SeasonCode { get; set; } = "FS27";
-
-    [JsonPropertyName("PositionTextTemplate")]
-    public string PositionTextTemplate { get; set; } = "<strong>{BexioArticleName} Size {Size}</strong><br />{BexioArticleDescription}";
-
-    [JsonPropertyName("DiscountPositionTextTemplate")]
-    public string DiscountPositionTextTemplate { get; set; } = "Rabatt ({DiscountInPercent}%)";
-  
-    [JsonPropertyName("Header")]
-    public HeaderMappingDto Header { get; set; } = new();
-   
-    [JsonPropertyName("SizeMatrix")]
-    public SizeMatrixDto SizeMatrix { get; set; } = new();
-   
-    [JsonPropertyName("Data")]
-    public DataMappingDto Data { get; set; } = new();
-}
-
-public class HeaderMappingDto
-{
-    [JsonPropertyName("CompanyNameCell")]
-    public string CompanyNameCell { get; set; } = "B4";
-
-    [JsonPropertyName("StreetCell")] 
-    public string StreetCell { get; set; } = "B5";
-
-    [JsonPropertyName("ZipCityCell")]
-    public string ZipCityCell { get; set; } = "B6";
-
-    [JsonPropertyName("BuyerEmailCell")]
-    public string BuyerEmailCell { get; set; } = "E5";
-
-    [JsonPropertyName("BuyerNameCell")] 
-    public string BuyerNameCell { get; set; } = "E4";
-
-    [JsonPropertyName("OrderIdCell")]
-    public string OrderIdCell { get; set; } = "E6";
-
-    [JsonPropertyName("PaymentTermsCell")] 
-    public string PaymentTermsCell { get; set; } = "A9";
-
-    [JsonPropertyName("DiscountCell")] 
-    public string DiscountCell { get; set; } = "V12";
-
-}
-
-public class SizeMatrixDto
-{
-    [JsonPropertyName("StartRow")] public int StartRow { get; set; } = 10;
-    [JsonPropertyName("EndRow")] public int EndRow { get; set; } = 17;
-    [JsonPropertyName("CategoryColumn")] public int CategoryColumn { get; set; } = 4;
-    [JsonPropertyName("StartSizeColumn")] public int StartSizeColumn { get; set; } = 5;
-    [JsonPropertyName("EndSizeColumn")] public int EndSizeColumn { get; set; } = 18;
-}
-
-public class DataMappingDto
-{
-    [JsonPropertyName("StartRow")] public int StartRow { get; set; } = 18;
-    [JsonPropertyName("ArticleNumberColumn")] public int ArticleNumberColumn { get; set; } = 1;
-    [JsonPropertyName("ArticleNameColumn")] public int ArticleNameColumn { get; set; } = 2;
-    [JsonPropertyName("ColorColumn")] public int ColorColumn { get; set; } = 3;
-    [JsonPropertyName("CategoryColumn")] public int CategoryColumn { get; set; } = 4;
-    [JsonPropertyName("StartQtyColumn")] public int StartQtyColumn { get; set; } = 5;
-    [JsonPropertyName("EndQtyColumn")]public int EndQtyColumn { get; set; } = 18;
-    [JsonPropertyName("UnitPriceColumn")]public int UnitPriceColumn { get; set; } = 20;
-    [JsonPropertyName("EnableRowDiscount")] public bool EnableRowDiscount { get; set; } = false;
-    [JsonPropertyName("RowDiscountColumn")] public int RowDiscountColumn { get; set; } = 21;
+    public ExcelMappingOptions ExcelMapping { get; set; } = new();
 }

@@ -310,7 +310,7 @@ public class BexioApiClientTests
         var customer = new Customer { CompanyName = "New Partner", Email = "partner@domain.com" };
 
         // Act & Assert
-        await Assert.ThrowsAsync<Exception>(() => client.CreateContactAsync(customer));
+        await Assert.ThrowsAsync<InvalidOperationException>(() => client.CreateContactAsync(customer));
     }
 
     [Fact]
@@ -334,7 +334,7 @@ public class BexioApiClientTests
         var order = new Order { Customer = new Customer { CompanyName = "Test AG" } };
 
         // Act & Assert
-        await Assert.ThrowsAsync<Exception>(() => client.CreateOrderAsync(12345, order));
+        await Assert.ThrowsAsync<InvalidOperationException>(() => client.CreateOrderAsync(12345, order));
     }
 
     [Fact]
@@ -641,5 +641,165 @@ public class BexioApiClientTests
 
         // Assert
         email.Should().Be("buyer@bexio.com");
+    }
+
+    [Fact]
+    public async Task FindContactIdAsync_WhenRateLimited429_ShouldRetryAndSucceed()
+    {
+        // Arrange
+        int attempt = 0;
+        var handler = new MockHttpMessageHandler
+        {
+            SendAsyncFunc = (req, token) =>
+            {
+                attempt++;
+                if (attempt == 1)
+                {
+                    var response429 = new HttpResponseMessage((HttpStatusCode)429);
+                    response429.Headers.Add("ratelimit-remaining", "0");
+                    response429.Headers.Add("ratelimit-reset", "1");
+                    return Task.FromResult(response429);
+                }
+                var response200 = new HttpResponseMessage(HttpStatusCode.OK)
+                {
+                    Content = new StringContent("[{\"id\": 555}]", Encoding.UTF8, "application/json")
+                };
+                return Task.FromResult(response200);
+            }
+        };
+
+        var httpClient = new HttpClient(handler);
+        var client = new BexioApiClient(httpClient, "dummy-token", 1, 1);
+
+        // Act
+        var result = await client.FindContactIdAsync("retry@company.com");
+
+        // Assert
+        attempt.Should().Be(2);
+        result.Should().Be(555);
+    }
+
+    [Fact]
+    public async Task GetAccountsAsync_ShouldCacheResultsOnConsecutiveCalls()
+    {
+        int callCount = 0;
+        var handler = new MockHttpMessageHandler
+        {
+            SendAsyncFunc = (req, token) =>
+            {
+                callCount++;
+                var response = new HttpResponseMessage(HttpStatusCode.OK)
+                {
+                    Content = new StringContent("[{\"id\": 1, \"account_type\": 1, \"is_active\": true}]", Encoding.UTF8, "application/json")
+                };
+                return Task.FromResult(response);
+            }
+        };
+
+        var httpClient = new HttpClient(handler);
+        var client = new BexioApiClient(httpClient, "dummy-token", 1, 1);
+
+        var firstCall = await client.GetAccountsAsync();
+        var secondCall = await client.GetAccountsAsync();
+
+        callCount.Should().Be(1);
+        firstCall.Should().BeSameAs(secondCall);
+        firstCall.Should().HaveCount(1);
+    }
+
+    [Fact]
+    public async Task GetTaxesAsync_ShouldCacheResultsOnConsecutiveCalls()
+    {
+        int callCount = 0;
+        var handler = new MockHttpMessageHandler
+        {
+            SendAsyncFunc = (req, token) =>
+            {
+                callCount++;
+                var response = new HttpResponseMessage(HttpStatusCode.OK)
+                {
+                    Content = new StringContent("[{\"id\": 10, \"type\": \"sales_tax\", \"is_active\": true}]", Encoding.UTF8, "application/json")
+                };
+                return Task.FromResult(response);
+            }
+        };
+
+        var httpClient = new HttpClient(handler);
+        var client = new BexioApiClient(httpClient, "dummy-token", 1, 1);
+
+        var firstCall = await client.GetTaxesAsync();
+        var secondCall = await client.GetTaxesAsync();
+
+        callCount.Should().Be(1);
+        firstCall.Should().BeSameAs(secondCall);
+        firstCall.Should().HaveCount(1);
+    }
+
+    [Fact]
+    public async Task CreateContactAsync_WhenApiReturnsEmptyJson_ShouldThrowInvalidOperationException()
+    {
+        var handler = new MockHttpMessageHandler
+        {
+            SendAsyncFunc = (req, token) => Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK)
+            {
+                Content = new StringContent("null", Encoding.UTF8, "application/json")
+            })
+        };
+
+        var httpClient = new HttpClient(handler);
+        var client = new BexioApiClient(httpClient, "dummy-token", 1, 1);
+        var customer = new Customer { CompanyName = "Test Co", Email = "test@co.com" };
+
+        Func<Task> act = async () => await client.CreateContactAsync(customer);
+        await act.Should().ThrowAsync<InvalidOperationException>()
+            .WithMessage("Bexio returned an empty response when creating a contact.");
+    }
+
+    [Fact]
+    public async Task CreateOrderAsync_WhenApiReturnsEmptyJson_ShouldThrowInvalidOperationException()
+    {
+        var handler = new MockHttpMessageHandler
+        {
+            SendAsyncFunc = (req, token) => Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK)
+            {
+                Content = new StringContent("null", Encoding.UTF8, "application/json")
+            })
+        };
+
+        var httpClient = new HttpClient(handler);
+        var client = new BexioApiClient(httpClient, "dummy-token", 1, 1);
+        var order = new Order { Customer = new Customer { CompanyName = "Test Co" } };
+
+        Func<Task> act = async () => await client.CreateOrderAsync(1, order);
+        await act.Should().ThrowAsync<InvalidOperationException>()
+            .WithMessage("Bexio returned an empty response when creating an order.");
+    }
+
+    [Fact]
+    public async Task FindContactIdAsync_WhenRateLimitHeaderUsesUnixTimestamp_ShouldHandleCorrectly()
+    {
+        int callCount = 0;
+        var handler = new MockHttpMessageHandler
+        {
+            SendAsyncFunc = (req, token) =>
+            {
+                callCount++;
+                var response = new HttpResponseMessage(HttpStatusCode.OK)
+                {
+                    Content = new StringContent("[{\"id\": 888}]", Encoding.UTF8, "application/json")
+                };
+                long futureUnix = DateTimeOffset.UtcNow.ToUnixTimeSeconds() + 1;
+                response.Headers.Add("ratelimit-remaining", "0");
+                response.Headers.Add("ratelimit-reset", futureUnix.ToString());
+                return Task.FromResult(response);
+            }
+        };
+
+        var httpClient = new HttpClient(handler);
+        var client = new BexioApiClient(httpClient, "dummy-token", 1, 1);
+
+        var id = await client.FindContactIdAsync("unix@test.com");
+        id.Should().Be(888);
+        callCount.Should().Be(1);
     }
 }

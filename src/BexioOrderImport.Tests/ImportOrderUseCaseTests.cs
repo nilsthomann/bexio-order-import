@@ -45,9 +45,8 @@ public class ImportOrderUseCaseTests
         // Assert
         _clientMock.Verify(c => c.CreateContactAsync(It.IsAny<Customer>()), Times.Never);
         _clientMock.Verify(c => c.CreateOrderAsync(123, order), Times.Once);
-        _clientMock.Verify(c => c.AddArticlePositionAsync(456, 789, order.Positions[0]), Times.Once);
+        _clientMock.Verify(c => c.AddArticlePositionAsync(456, 789, order.Positions[0], It.IsAny<string?>()), Times.Once);
 
-        order.Positions[0].PositionText.Should().Be("<strong>Product Name Text Size </strong><br />Product Description Text");
         loggedMessages.Should().Contain(m => m.Contains("Order created successfully"));
         loggedMessages.Should().Contain(m => m.Contains("Successfully completed"));
     }
@@ -78,7 +77,7 @@ public class ImportOrderUseCaseTests
         // Assert
         _clientMock.Verify(c => c.CreateContactAsync(order.Customer), Times.Once);
         _clientMock.Verify(c => c.CreateOrderAsync(123, order), Times.Once);
-        _clientMock.Verify(c => c.AddArticlePositionAsync(456, 789, order.Positions[0]), Times.Once);
+        _clientMock.Verify(c => c.AddArticlePositionAsync(456, 789, order.Positions[0], It.IsAny<string?>()), Times.Once);
 
         loggedMessages.Should().Contain(m => m.Contains("Creating new customer in Bexio"));
         loggedMessages.Should().Contain(m => m.Contains("Successfully completed"));
@@ -171,7 +170,7 @@ public class ImportOrderUseCaseTests
 
         // Assert
         await act.Should().ThrowAsync<InvalidOperationException>().WithMessage("*UNKNOWN*");
-        _clientMock.Verify(c => c.AddArticlePositionAsync(It.IsAny<int>(), It.IsAny<int>(), It.IsAny<OrderPosition>()), Times.Never);
+        _clientMock.Verify(c => c.AddArticlePositionAsync(It.IsAny<int>(), It.IsAny<int>(), It.IsAny<OrderPosition>(), It.IsAny<string?>()), Times.Never);
     }
 
     [Fact]
@@ -200,7 +199,7 @@ public class ImportOrderUseCaseTests
         result.Success.Should().BeTrue();
         _clientMock.Verify(c => c.FindContactIdAsync(It.IsAny<string>()), Times.Never);
         _clientMock.Verify(c => c.CreateOrderAsync(It.IsAny<int>(), It.IsAny<Order>()), Times.Never);
-        _clientMock.Verify(c => c.AddArticlePositionAsync(456, 789, order.Positions[0]), Times.Once);
+        _clientMock.Verify(c => c.AddArticlePositionAsync(456, 789, order.Positions[0], It.IsAny<string?>()), Times.Once);
         loggedMessages.Should().Contain(m => m.Contains("Existing order matched"));
     }
 
@@ -234,7 +233,7 @@ public class ImportOrderUseCaseTests
         // Assert
         result.Success.Should().BeTrue();
         mismatchCallbackCalled.Should().BeTrue();
-        _clientMock.Verify(c => c.AddArticlePositionAsync(456, 789, order.Positions[0]), Times.Once);
+        _clientMock.Verify(c => c.AddArticlePositionAsync(456, 789, order.Positions[0], It.IsAny<string?>()), Times.Once);
         loggedMessages.Should().Contain(m => m.Contains("Email mismatch ignored by user"));
     }
 
@@ -261,7 +260,7 @@ public class ImportOrderUseCaseTests
 
         // Assert
         result.Success.Should().BeFalse();
-        _clientMock.Verify(c => c.AddArticlePositionAsync(It.IsAny<int>(), It.IsAny<int>(), It.IsAny<OrderPosition>()), Times.Never);
+        _clientMock.Verify(c => c.AddArticlePositionAsync(It.IsAny<int>(), It.IsAny<int>(), It.IsAny<OrderPosition>(), It.IsAny<string?>()), Times.Never);
         loggedMessages.Should().Contain(m => m.Contains("Order import cancelled due to email mismatch"));
     }
 
@@ -288,7 +287,7 @@ public class ImportOrderUseCaseTests
 
         // Assert
         result.Success.Should().BeFalse();
-        _clientMock.Verify(c => c.AddArticlePositionAsync(It.IsAny<int>(), It.IsAny<int>(), It.IsAny<OrderPosition>()), Times.Never);
+        _clientMock.Verify(c => c.AddArticlePositionAsync(It.IsAny<int>(), It.IsAny<int>(), It.IsAny<OrderPosition>(), It.IsAny<string?>()), Times.Never);
         loggedMessages.Should().Contain(m => m.Contains("Order with ID 999 not found"));
     }
 

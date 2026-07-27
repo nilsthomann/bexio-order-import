@@ -7,7 +7,6 @@ using BexioOrderImport.Application.Interfaces;
 using BexioOrderImport.Application.Services;
 using BexioOrderImport.Domain.Models;
 using BexioOrderImport.Domain.Models.Bexio;
-using BexioOrderImport.Infrastructure.Excel;
 using Microsoft.Extensions.Options;
 
 namespace BexioOrderImport.Wpf.ViewModels;
@@ -15,6 +14,10 @@ namespace BexioOrderImport.Wpf.ViewModels;
 public partial class MainViewModel
 {
     private readonly System.Collections.Generic.List<(DateTime Timestamp, double UploadedCount)> _progressSamples = new();
+
+    private const string ConnectionColorConnected    = "#10B981"; // Green
+    private const string ConnectionColorDisconnected = "#EF4444"; // Red
+    private const string ConnectionColorChecking     = "#F59E0B"; // Amber
 
     public async Task LoadExcelFileAsync(string? filePath = null)
     {
@@ -32,7 +35,7 @@ public partial class MainViewModel
         try
         {
             var options = BuildMappingOptions();
-            var parser = new ClosedXmlExcelParser(Options.Create(options));
+            var parser = _excelParserFactory.Create(options);
 
             // Parse on background thread to keep UI responsive and allow spinner animation
             _loadedOrder = await Task.Run(() => parser.ParseOrderForm(filePath));
@@ -169,6 +172,7 @@ public partial class MainViewModel
             var bexioClient = _bexioClientFactory.Create(BexioToken, AccountId, TaxId, SelectedLanguage);
             var useCase = new ImportOrderUseCase(bexioClient);
 
+            var mappingOpts = BuildMappingOptions();
             var result = await useCase.ExecuteAsync(
                 order: _loadedOrder,
                 confirmUploadCallback: ConfirmUploadAsync,
@@ -194,10 +198,10 @@ public partial class MainViewModel
                         UpdateRemainingTime(currentUploaded, currentTotal, importStopwatch);
                     });
                 },
-                defaultOrderName: DefaultOrderName,
-                seasonCode: SeasonCode,
-                positionTextTemplate: PositionTextTemplate,
-                discountPositionTextTemplate: DiscountPositionTextTemplate
+                defaultOrderName: mappingOpts.DefaultOrderName,
+                seasonCode: mappingOpts.SeasonCode,
+                positionTextTemplate: mappingOpts.PositionTextTemplate,
+                discountPositionTextTemplate: mappingOpts.DiscountPositionTextTemplate
             );
 
             if (result.Success)
@@ -379,7 +383,7 @@ public partial class MainViewModel
     public async Task CheckBexioConnectionAsync()
     {
         ConnectionStatusText = Resources.Translations.Status_BexioChecking;
-        ConnectionStatusColor = "#F59E0B"; // Yellow warning
+        ConnectionStatusColor = ConnectionColorChecking;
 
         try
         {
@@ -391,13 +395,13 @@ public partial class MainViewModel
             if (isConnected)
             {
                 ConnectionStatusText = Resources.Translations.Status_BexioConnected;
-                ConnectionStatusColor = "#10B981"; // Green success
+                ConnectionStatusColor = ConnectionColorConnected;
                 await LoadBexioOptionsAsync(client);
             }
             else
             {
                 ConnectionStatusText = Resources.Translations.Status_BexioDisconnected;
-                ConnectionStatusColor = "#EF4444"; // Red error
+                ConnectionStatusColor = ConnectionColorDisconnected;
                 ClearBexioOptionsKeepSelected();
             }
         }
@@ -405,7 +409,7 @@ public partial class MainViewModel
         {
             IsConnectionSuccessful = false;
             ConnectionStatusText = Resources.Translations.Status_BexioDisconnected;
-            ConnectionStatusColor = "#EF4444"; // Red error
+            ConnectionStatusColor = ConnectionColorDisconnected;
             ClearBexioOptionsKeepSelected();
         }
     }

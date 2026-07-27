@@ -41,7 +41,8 @@ public interface IBexioClient
     /// <summary>
     /// Appends an article position to an existing order in Bexio.
     /// </summary>
-    Task AddArticlePositionAsync(int orderId, int articleId, OrderPosition position);
+    /// <param name="positionText">The rendered position text to use. If null or empty, falls back to a default format.</param>
+    Task AddArticlePositionAsync(int orderId, int articleId, OrderPosition position, string? positionText = null);
 
     /// <summary>
     /// Appends a global discount position to an existing order in Bexio.

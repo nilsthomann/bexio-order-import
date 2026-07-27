@@ -12,12 +12,13 @@ using BexioOrderImport.Wpf.ViewModels;
 using BexioOrderImport.Wpf.Models;
 using BexioOrderImport.Application.Options;
 using Moq;
+using BexioOrderImport.Tests.Utils;
 
 [assembly: Xunit.CollectionBehavior(DisableTestParallelization = true)]
 
 namespace BexioOrderImport.Tests;
 
-public class SettingsPersistenceTests : IDisposable
+public class SettingsPersistenceTests : StaTestBase, IDisposable
 {
     private readonly string _tempFilePath;
 
@@ -32,46 +33,6 @@ public class SettingsPersistenceTests : IDisposable
         {
             try { File.Delete(_tempFilePath); } catch { }
         }
-    }
-
-    private static void RunInSta(Action action)
-    {
-        var tcs = new TaskCompletionSource<bool>();
-        var thread = new System.Threading.Thread(() =>
-        {
-            try
-            {
-                action();
-                tcs.SetResult(true);
-            }
-            catch (Exception ex)
-            {
-                tcs.SetException(ex);
-            }
-        });
-        thread.SetApartmentState(System.Threading.ApartmentState.STA);
-        thread.Start();
-        tcs.Task.GetAwaiter().GetResult();
-    }
-
-    private static void RunInSta(Func<Task> action)
-    {
-        var tcs = new TaskCompletionSource<bool>();
-        var thread = new System.Threading.Thread(() =>
-        {
-            try
-            {
-                action().GetAwaiter().GetResult();
-                tcs.SetResult(true);
-            }
-            catch (Exception ex)
-            {
-                tcs.SetException(ex);
-            }
-        });
-        thread.SetApartmentState(System.Threading.ApartmentState.STA);
-        thread.Start();
-        tcs.Task.GetAwaiter().GetResult();
     }
 
     private Mock<IDialogService> _dialogServiceMock = null!;
@@ -133,12 +94,18 @@ public class SettingsPersistenceTests : IDisposable
         encryptionMock.Setup(e => e.Encrypt(It.IsAny<string>())).Returns((string clearText) => clearText);
         encryptionMock.Setup(e => e.Decrypt(It.IsAny<string>())).Returns((string encryptedText) => encryptedText);
 
+        var realParserFactory = new BexioOrderImport.Infrastructure.Excel.ClosedXmlExcelParserFactory();
+        var excelParserFactoryMock = new Mock<IExcelParserFactory>();
+        excelParserFactoryMock.Setup(f => f.Create(It.IsAny<BexioOrderImport.Application.Options.ExcelMappingOptions>()))
+            .Returns((BexioOrderImport.Application.Options.ExcelMappingOptions opts) => realParserFactory.Create(opts));
+
         var vm = new MainViewModel(
             updateService,
             clientFactory,
             _dialogServiceMock.Object,
             dispatcherMock.Object,
             encryptionMock.Object,
+            excelParserFactoryMock.Object,
             configFilePath);
         if (vm.AccountId == null) vm.AccountId = 1;
         if (vm.TaxId == null) vm.TaxId = 1;
@@ -181,10 +148,10 @@ public class SettingsPersistenceTests : IDisposable
                 [
                     new() {
                         Name = "CustomProfile",
-                        ExcelMapping = new ExcelMappingDto
+                        ExcelMapping = new ExcelMappingOptions
                         {
                             WorksheetIndex = 2,
-                            Header = new HeaderMappingDto { CompanyNameCell = "C10" }
+                            Header = new HeaderMapping { CompanyNameCell = "C10" }
                         }
                     }
                 ]
@@ -201,7 +168,7 @@ public class SettingsPersistenceTests : IDisposable
             vm.SelectedLanguage.Should().Be("en");
             vm.ActiveProfile.Should().NotBeNull();
             vm.ActiveProfile!.Name.Should().Be("CustomProfile");
-            vm.CompanyNameCell.Should().Be("C10");
+            vm.ActiveProfile.Mapping.Header.CompanyNameCell.Should().Be("C10");
         });
     }
 
@@ -228,91 +195,6 @@ public class SettingsPersistenceTests : IDisposable
             dto!.Bexio.AccountId.Should().Be(1);
             dto.Bexio.TaxId.Should().Be(1);
             dto.Bexio.Language.Should().Be("de");
-        });
-    }
-
-    [Fact]
-    public void CopyVmToProfile_And_CopyProfileToVm_ShouldWorkCorrectly()
-    {
-        RunInSta(() =>
-        {
-            // Arrange
-            var vm = CreateVm();
-            var profile = new MappingProfile { Name = "Test", Mapping = new Application.Options.ExcelMappingOptions() };
-
-            // Act & Assert 1: VM to Profile
-            vm.CompanyNameCell = "A1";
-            vm.StreetCell = "A2";
-            vm.ZipCityCell = "A3";
-            vm.BuyerEmailCell = "A4";
-            vm.BuyerNameCell = "A5";
-            vm.OrderIdCell = "A6";
-            vm.PaymentTermsCell = "A7";
-            vm.DiscountCell = "A8";
-
-            vm.MatrixStartRow = 100;
-            vm.MatrixEndRow = 105;
-            vm.MatrixCategoryCol = 10;
-            vm.MatrixStartSizeCol = 11;
-            vm.MatrixEndSizeCol = 20;
-
-            vm.DataStartRow = 200;
-            vm.ColArtNum = 1;
-            vm.ColArtName = 2;
-            vm.ColColor = 3;
-            vm.ColSizeCategory = 4;
-            vm.ColStartQty = 5;
-            vm.ColEndQty = 15;
-            vm.ColUnitPrice = 16;
-            vm.DefaultOrderName = "Order Template";
-            vm.SeasonCode = "FS27";
-            vm.PositionTextTemplate = "Template Text";
-
-            vm.CopyVmToProfile(profile);
-
-            profile.Mapping.Header.CompanyNameCell.Should().Be("A1");
-            profile.Mapping.Header.StreetCell.Should().Be("A2");
-            profile.Mapping.Header.ZipCityCell.Should().Be("A3");
-            profile.Mapping.Header.BuyerEmailCell.Should().Be("A4");
-            profile.Mapping.Header.BuyerNameCell.Should().Be("A5");
-            profile.Mapping.Header.OrderIdCell.Should().Be("A6");
-            profile.Mapping.Header.PaymentTermsCell.Should().Be("A7");
-            profile.Mapping.Header.DiscountCell.Should().Be("A8");
-
-            profile.Mapping.SizeMatrix.StartRow.Should().Be(100);
-            profile.Mapping.SizeMatrix.EndRow.Should().Be(105);
-            profile.Mapping.SizeMatrix.CategoryColumn.Should().Be(10);
-            profile.Mapping.SizeMatrix.StartSizeColumn.Should().Be(11);
-            profile.Mapping.SizeMatrix.EndSizeColumn.Should().Be(20);
-
-            profile.Mapping.Data.StartRow.Should().Be(200);
-            profile.Mapping.Data.ArticleNumberColumn.Should().Be(1);
-            profile.Mapping.Data.ArticleNameColumn.Should().Be(2);
-            profile.Mapping.Data.ColorColumn.Should().Be(3);
-            profile.Mapping.Data.CategoryColumn.Should().Be(4);
-            profile.Mapping.Data.StartQtyColumn.Should().Be(5);
-            profile.Mapping.Data.EndQtyColumn.Should().Be(15);
-            profile.Mapping.Data.UnitPriceColumn.Should().Be(16);
-            profile.Mapping.DefaultOrderName.Should().Be("Order Template");
-            profile.Mapping.SeasonCode.Should().Be("FS27");
-            profile.Mapping.PositionTextTemplate.Should().Be("Template Text");
-
-            // Act & Assert 2: Profile to VM
-            profile.Mapping.Header.CompanyNameCell = "B1";
-            profile.Mapping.SizeMatrix.StartRow = 50;
-            profile.Mapping.Data.StartRow = 60;
-            profile.Mapping.DefaultOrderName = "Another Order Template";
-            profile.Mapping.SeasonCode = "HW27";
-            profile.Mapping.PositionTextTemplate = "Another Template Text";
-
-            vm.CopyProfileToVm(profile);
-
-            vm.CompanyNameCell.Should().Be("B1");
-            vm.MatrixStartRow.Should().Be(50);
-            vm.DataStartRow.Should().Be(60);
-            vm.DefaultOrderName.Should().Be("Another Order Template");
-            vm.SeasonCode.Should().Be("HW27");
-            vm.PositionTextTemplate.Should().Be("Another Template Text");
         });
     }
 
@@ -495,7 +377,7 @@ public class SettingsPersistenceTests : IDisposable
     }
 
     [Fact]
-    public void EditProfile_ShouldModifyProfileAndCopyVm()
+    public void EditProfile_ShouldModifyProfile()
     {
         RunInSta(() =>
         {
@@ -511,7 +393,6 @@ public class SettingsPersistenceTests : IDisposable
             vm.EditProfileCommand.Execute(profile);
 
             profile.Mapping.Header.CompanyNameCell.Should().Be("X12");
-            vm.CompanyNameCell.Should().Be("X12");
         });
     }
 
@@ -571,7 +452,7 @@ public class SettingsPersistenceTests : IDisposable
             vm.BexioToken.Should().Be("test_token");
             raised.Should().BeTrue();
 
-            // Test other fields
+            // Test other Bexio-related fields
             vm.AccountId = 1;
             vm.AccountId.Should().Be(1);
 
@@ -581,83 +462,7 @@ public class SettingsPersistenceTests : IDisposable
             vm.SelectedLanguage = "en";
             vm.SelectedLanguage.Should().Be("en");
 
-            vm.CompanyNameCell = "A1";
-            vm.CompanyNameCell.Should().Be("A1");
-
-            vm.StreetCell = "A2";
-            vm.StreetCell.Should().Be("A2");
-
-            vm.ZipCityCell = "A3";
-            vm.ZipCityCell.Should().Be("A3");
-
-            vm.BuyerEmailCell = "A4";
-            vm.BuyerEmailCell.Should().Be("A4");
-
-            vm.BuyerNameCell = "A5";
-            vm.BuyerNameCell.Should().Be("A5");
-
-            vm.OrderIdCell = "A6";
-            vm.OrderIdCell.Should().Be("A6");
-
-            vm.PaymentTermsCell = "A7";
-            vm.PaymentTermsCell.Should().Be("A7");
-
-            vm.DiscountCell = "A8";
-            vm.DiscountCell.Should().Be("A8");
-
-            vm.PositionTextTemplate = "Template";
-            vm.PositionTextTemplate.Should().Be("Template");
-
-            vm.MatrixStartRow = 15;
-            vm.MatrixStartRow.Should().Be(15);
-
-            vm.MatrixEndRow = 20;
-            vm.MatrixEndRow.Should().Be(20);
-
-            vm.MatrixCategoryCol = 6;
-            vm.MatrixCategoryCol.Should().Be(6);
-
-            vm.MatrixStartSizeCol = 7;
-            vm.MatrixStartSizeCol.Should().Be(7);
-
-            vm.MatrixEndSizeCol = 12;
-            vm.MatrixEndSizeCol.Should().Be(12);
-
-            vm.DataStartRow = 21;
-            vm.DataStartRow.Should().Be(21);
-
-            vm.ColArtNum = 8;
-            vm.ColArtNum.Should().Be(8);
-
-            vm.ColArtName = 9;
-            vm.ColArtName.Should().Be(9);
-
-            vm.ColColor = 10;
-            vm.ColColor.Should().Be(10);
-
-            vm.ColSizeCategory = 11;
-            vm.ColSizeCategory.Should().Be(11);
-
-            vm.ColStartQty = 12;
-            vm.ColStartQty.Should().Be(12);
-
-            vm.ColEndQty = 17;
-            vm.ColEndQty.Should().Be(17);
-
-            vm.ColUnitPrice = 18;
-            vm.ColUnitPrice.Should().Be(18);
-
-            vm.CompanyName = "Test Company";
-            vm.CompanyName.Should().Be("Test Company");
-
-            vm.BuyerName = "Test Buyer";
-            vm.BuyerName.Should().Be("Test Buyer");
-
-            vm.Email = "test@test.com";
-            vm.Email.Should().Be("test@test.com");
-
-            vm.Address = "Test Address";
-            vm.Address.Should().Be("Test Address");
+            // Import runtime fields
 
             vm.OrderId = "12345";
             vm.OrderId.Should().Be("12345");

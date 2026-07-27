@@ -149,7 +149,7 @@ public class ImportOrderUseCase
             var article = await _bexioClient.FindArticleAsync(pos.ArticleNumber, pos.Color, seasonCode ?? string.Empty);
             if (article != null)
             {
-                pos.PositionText = (positionTextTemplate ?? string.Empty)
+                string positionText = (positionTextTemplate ?? string.Empty)
                     .Replace("{Color}", pos.Color ?? string.Empty)
                     .Replace("{Size}", pos.Size ?? string.Empty)
                     .Replace("{ArticleNumber}", pos.ArticleNumber ?? string.Empty)
@@ -157,7 +157,7 @@ public class ImportOrderUseCase
                     .Replace("{BexioArticleName}", article.Name ?? string.Empty)
                     .Replace("{BexioArticleDescription}", article.Description ?? string.Empty);
 
-                await _bexioClient.AddArticlePositionAsync(orderId, article.Id, pos);
+                await _bexioClient.AddArticlePositionAsync(orderId, article.Id, pos, positionText);
             }
             else
             {

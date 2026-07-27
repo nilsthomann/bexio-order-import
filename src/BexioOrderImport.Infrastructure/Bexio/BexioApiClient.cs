@@ -18,6 +18,7 @@ public class BexioApiClient : IBexioClient
     private readonly int? _taxId;
     private readonly string _language;
 
+    private readonly object _cacheLock = new();
     private List<BexioAccount>? _cachedAccounts;
     private List<BexioTax>? _cachedTaxes;
     private List<BexioArticle> _cachedArticles = [];
@@ -91,7 +92,7 @@ public class BexioApiClient : IBexioClient
         createResponse.EnsureSuccessStatusCode();
 
         var newContact = await createResponse.Content.ReadFromJsonAsync<BexioContact>();
-        return newContact?.Id ?? throw new Exception("Error creating contact in Bexio.");
+        return newContact?.Id ?? throw new InvalidOperationException("Bexio returned an empty response when creating a contact.");
     }
 
     public async Task<int> CreateOrderAsync(int contactId, Order order)
@@ -114,7 +115,7 @@ public class BexioApiClient : IBexioClient
         response.EnsureSuccessStatusCode();
 
         var createdOrder = await response.Content.ReadFromJsonAsync<BexioOrder>();
-        return createdOrder?.Id ?? throw new Exception("Error creating order in Bexio.");
+        return createdOrder?.Id ?? throw new InvalidOperationException("Bexio returned an empty response when creating an order.");
     }
 
     public async Task<string?> GetOrderContactEmailAsync(int orderId)
@@ -186,8 +187,12 @@ public class BexioApiClient : IBexioClient
         {
             foreach (var artNo in distinctNumbers)
             {
-                if (_cachedArticles.Any(a => a.Code.Contains(artNo, StringComparison.OrdinalIgnoreCase)))
-                    continue;
+                bool isCached;
+                lock (_cacheLock)
+                {
+                    isCached = _cachedArticles.Any(a => a.Code.Contains(artNo, StringComparison.OrdinalIgnoreCase));
+                }
+                if (isCached) continue;
 
                 var searchPayload = new[]
                 {
@@ -203,7 +208,10 @@ public class BexioApiClient : IBexioClient
                     if (articles != null && articles.Count > 0)
                     {
                         var relevant = articles.Where(a => distinctNumbers.Any(num => a.Code.Contains(num, StringComparison.OrdinalIgnoreCase)));
-                        _cachedArticles = [.. _cachedArticles.UnionBy(relevant, x => x.Id)];
+                        lock (_cacheLock)
+                        {
+                            _cachedArticles = [.. _cachedArticles.UnionBy(relevant, x => x.Id)];
+                        }
                     }
                 }
             }
@@ -214,7 +222,10 @@ public class BexioApiClient : IBexioClient
         var matchingArticles = fetchedArticles.Where(a =>
             distinctNumbers.Any(num => a.Code.Contains(num, StringComparison.OrdinalIgnoreCase)));
 
-        _cachedArticles = [.. _cachedArticles.UnionBy(matchingArticles, x => x.Id)];
+        lock (_cacheLock)
+        {
+            _cachedArticles = [.. _cachedArticles.UnionBy(matchingArticles, x => x.Id)];
+        }
     }
 
     private async Task<List<BexioArticle>?> FindArticlesByInternCodeAsync(string articleNumber, string cleanColor, string seasonCode)
@@ -226,8 +237,11 @@ public class BexioApiClient : IBexioClient
             new { field = "intern_code", value = internCode, criteria = "=" }
         };
 
-        if (_cachedArticles.Any(x => x.Code.Equals(internCode, StringComparison.OrdinalIgnoreCase)))
-            return [.. _cachedArticles.Where(x => x.Code.Equals(internCode, StringComparison.OrdinalIgnoreCase))];
+        lock (_cacheLock)
+        {
+            if (_cachedArticles.Any(x => x.Code.Equals(internCode, StringComparison.OrdinalIgnoreCase)))
+                return [.. _cachedArticles.Where(x => x.Code.Equals(internCode, StringComparison.OrdinalIgnoreCase))];
+        }
 
         var body = new StringContent(JsonSerializer.Serialize(searchPayload), Encoding.UTF8, "application/json");
         var response = await SendWithRateLimitCheckAsync(CreateRequest(HttpMethod.Post, "2.0/article/search", body));
@@ -237,7 +251,10 @@ public class BexioApiClient : IBexioClient
             var articles = await response.Content.ReadFromJsonAsync<List<BexioArticle>>();
             if (articles != null && articles.Count > 0)
             {
-                _cachedArticles = [.. _cachedArticles.UnionBy(articles, x => x.Id)];
+                lock (_cacheLock)
+                {
+                    _cachedArticles = [.. _cachedArticles.UnionBy(articles, x => x.Id)];
+                }
                 return articles;
             }
         }
@@ -252,10 +269,14 @@ public class BexioApiClient : IBexioClient
             new { field = "intern_code", value = articleNumber.Trim(), criteria = "like" }
         };
 
-        var cachedArticle = _cachedArticles.FirstOrDefault(x =>
-            x.Code.Contains(articleNumber.Trim(), StringComparison.OrdinalIgnoreCase) &&
-            x.Name.Contains(cleanColor, StringComparison.OrdinalIgnoreCase) &&
-            x.Name.Contains(seasonCode, StringComparison.OrdinalIgnoreCase));
+        BexioArticle? cachedArticle;
+        lock (_cacheLock)
+        {
+            cachedArticle = _cachedArticles.FirstOrDefault(x =>
+                x.Code.Contains(articleNumber.Trim(), StringComparison.OrdinalIgnoreCase) &&
+                x.Name.Contains(cleanColor, StringComparison.OrdinalIgnoreCase) &&
+                x.Name.Contains(seasonCode, StringComparison.OrdinalIgnoreCase));
+        }
         if (cachedArticle != null) return cachedArticle;
 
         var body = new StringContent(JsonSerializer.Serialize(searchPayload), Encoding.UTF8, "application/json");
@@ -266,7 +287,10 @@ public class BexioApiClient : IBexioClient
             var articles = await response.Content.ReadFromJsonAsync<List<BexioArticle>>();
             if (articles != null)
             {
-                _cachedArticles = [.. _cachedArticles.UnionBy(articles, x => x.Id)];
+                lock (_cacheLock)
+                {
+                    _cachedArticles = [.. _cachedArticles.UnionBy(articles, x => x.Id)];
+                }
 
                 if (articles.Count == 1)
                 {
@@ -284,11 +308,13 @@ public class BexioApiClient : IBexioClient
         return null;
     }
 
-    public async Task AddArticlePositionAsync(int orderId, int articleId, OrderPosition position)
+    public async Task AddArticlePositionAsync(int orderId, int articleId, OrderPosition position, string? positionText = null)
     {
-        var text = string.IsNullOrEmpty(position.PositionText)
-            ? $"Color: {position.Color}, Size: {position.Size}"
-            : position.PositionText;
+        var text = !string.IsNullOrEmpty(positionText)
+            ? positionText
+            : !string.IsNullOrEmpty(position.PositionText)
+                ? position.PositionText
+                : $"Color: {position.Color}, Size: {position.Size}";
 
         var positionPayload = new
         {
@@ -308,7 +334,7 @@ public class BexioApiClient : IBexioClient
         if (!response.IsSuccessStatusCode)
         {
             var errorContent = await response.Content.ReadAsStringAsync();
-            throw new Exception($"Error adding position: {errorContent}");
+            throw new HttpRequestException($"Error adding article position to order {orderId}: {errorContent}", null, response.StatusCode);
         }
     }
 
@@ -329,7 +355,7 @@ public class BexioApiClient : IBexioClient
         if (!response.IsSuccessStatusCode)
         {
             var errorContent = await response.Content.ReadAsStringAsync();
-            throw new Exception($"Error adding discount position: {errorContent}");
+            throw new HttpRequestException($"Error adding discount position to order {orderId}: {errorContent}", null, response.StatusCode);
         }
     }
 
@@ -348,22 +374,38 @@ public class BexioApiClient : IBexioClient
 
     public async Task<List<BexioAccount>> GetAccountsAsync()
     {
-        if (_cachedAccounts != null) return _cachedAccounts;
+        lock (_cacheLock)
+        {
+            if (_cachedAccounts != null) return _cachedAccounts;
+        }
+
         var response = await SendWithRateLimitCheckAsync(CreateRequest(HttpMethod.Get, "2.0/accounts"));
         response.EnsureSuccessStatusCode();
         var accounts = await response.Content.ReadFromJsonAsync<List<BexioAccount>>();
-        _cachedAccounts = accounts?.Where(a => a.IsActive && a.AccountType == 1).ToList() ?? [];
-        return _cachedAccounts;
+
+        lock (_cacheLock)
+        {
+            _cachedAccounts = accounts?.Where(a => a.IsActive && a.AccountType == 1).ToList() ?? [];
+            return _cachedAccounts;
+        }
     }
 
     public async Task<List<BexioTax>> GetTaxesAsync()
     {
-        if (_cachedTaxes != null) return _cachedTaxes;
+        lock (_cacheLock)
+        {
+            if (_cachedTaxes != null) return _cachedTaxes;
+        }
+
         var response = await SendWithRateLimitCheckAsync(CreateRequest(HttpMethod.Get, "3.0/taxes"));
         response.EnsureSuccessStatusCode();
         var taxes = await response.Content.ReadFromJsonAsync<List<BexioTax>>();
-        _cachedTaxes = taxes?.Where(t => t.IsActive && (t.Type == "sales_tax" || t.Type == "not_taxable_turnover")).ToList() ?? [];
-        return _cachedTaxes;
+
+        lock (_cacheLock)
+        {
+            _cachedTaxes = taxes?.Where(t => t.IsActive && (t.Type == "sales_tax" || t.Type == "not_taxable_turnover")).ToList() ?? [];
+            return _cachedTaxes;
+        }
     }
 
     /// <summary>
