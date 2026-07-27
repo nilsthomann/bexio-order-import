@@ -29,7 +29,7 @@ public partial class MainViewModel
                 }
                 catch (Exception ex)
                 {
-                    AppendLog($"[Warning] Could not copy appsettings.json template: {ex.Message}");
+                    AppendLog($"⚠️ Could not copy appsettings.json template: {ex.Message}");
                 }
             }
 
@@ -39,14 +39,14 @@ public partial class MainViewModel
                 ActiveProfileName = "Default",
                 Profiles = new System.Collections.Generic.List<Models.MappingProfileDto>
                 {
-                    new Models.MappingProfileDto { Name = "Default", ExcelMapping = new Models.ExcelMappingDto() }
+                    new Models.MappingProfileDto { Name = "Default", ExcelMapping = new Application.Options.ExcelMappingOptions() }
                 }
             };
             File.WriteAllText(_configFilePath, JsonSerializer.Serialize(defaultSettings, new JsonSerializerOptions { WriteIndented = true }));
         }
     }
 
-    private void LoadSettings()
+    internal void LoadSettings()
     {
         try
         {
@@ -66,19 +66,18 @@ public partial class MainViewModel
             ApplyLanguage(SelectedLanguage);
 
             Profiles.Clear();
-            if (dto.Profiles.Count > 0)
+            if (dto.Profiles != null && dto.Profiles.Count > 0)
             {
                 foreach (var p in dto.Profiles)
                 {
-                    Profiles.Add(new Models.MappingProfile { Name = p.Name, Mapping = MapDtoToOptions(p.ExcelMapping) });
+                    Profiles.Add(new Models.MappingProfile { Name = p.Name, Mapping = p.ExcelMapping });
                 }
             }
             else
             {
-                // Legacy single-profile migration
-                var mapping = dto.ExcelMapping != null ? MapDtoToOptions(dto.ExcelMapping) : new ExcelMappingOptions();
-                Profiles.Add(new Models.MappingProfile { Name = "Default", Mapping = mapping });
+                Profiles.Add(new Models.MappingProfile { Name = "Default", Mapping = new ExcelMappingOptions() });
             }
+
 
             var active = Profiles.FirstOrDefault(p => p.Name.Equals(dto.ActiveProfileName, StringComparison.OrdinalIgnoreCase)) ?? Profiles[0];
             _activeProfile = active;
@@ -97,11 +96,6 @@ public partial class MainViewModel
     {
         try
         {
-            if (SelectedProfile != null)
-            {
-                CopyVmToProfile(SelectedProfile);
-            }
-
             string encryptedToken = _encryptionService.Encrypt(BexioToken);
 
             var settingsObj = new Models.AppSettingsDto
@@ -117,13 +111,14 @@ public partial class MainViewModel
                 Profiles = Profiles.Select(p => new Models.MappingProfileDto
                 {
                     Name = p.Name,
-                    ExcelMapping = MapOptionsToDto(p.Mapping)
+                    ExcelMapping = p.Mapping
                 }).ToList()
             };
 
             File.WriteAllText(_configFilePath, JsonSerializer.Serialize(settingsObj, new JsonSerializerOptions { WriteIndented = true }));
-            
+
             _ = CheckBexioConnectionAsync();
+            OnPropertyChanged(nameof(IsActiveRowDiscountEnabled));
 
             if (!string.IsNullOrEmpty(SelectedFilePath) && File.Exists(SelectedFilePath))
             {
@@ -134,7 +129,7 @@ public partial class MainViewModel
             bool languageChanged = SelectedLanguage != _initialLanguage;
 
             HandleLanguageReload(languageChanged);
-            
+
             AppendLog("Settings saved successfully and active Excel file reloaded.");
             IsModified = false;
             SaveSettingsCommand.RaiseCanExecuteChanged();
@@ -159,74 +154,9 @@ public partial class MainViewModel
 
         if (reload)
         {
-            InvokeOnUiAsync(() =>
-            {
-                if (System.Windows.Application.Current is App)
-                {
-                    var newWindow = new Views.MainWindow();
-                    newWindow.Show();
-                    System.Windows.Application.Current.MainWindow.Close();
-                    System.Windows.Application.Current.MainWindow = newWindow;
-                }
-            });
+            _dialogService.RestartMainWindow();
         }
         _initialLanguage = SelectedLanguage;
-    }
-
-    private void CopyVmToProfile(Models.MappingProfile profile)
-    {
-        profile.Mapping.Header.CompanyNameCell = CompanyNameCell;
-        profile.Mapping.Header.StreetCell = StreetCell;
-        profile.Mapping.Header.ZipCityCell = ZipCityCell;
-        profile.Mapping.Header.BuyerEmailCell = BuyerEmailCell;
-        profile.Mapping.Header.BuyerNameCell = BuyerNameCell;
-        profile.Mapping.Header.DeliveryDateCell = DeliveryDateCell;
-        profile.Mapping.Header.PaymentTermsCell = PaymentTermsCell;
-        profile.Mapping.Header.DiscountCell = DiscountCell;
-
-        profile.Mapping.SizeMatrix.StartRow = MatrixStartRow;
-        profile.Mapping.SizeMatrix.EndRow = MatrixEndRow;
-        profile.Mapping.SizeMatrix.CategoryColumn = MatrixCategoryCol;
-        profile.Mapping.SizeMatrix.StartSizeColumn = MatrixStartSizeCol;
-        profile.Mapping.SizeMatrix.EndSizeColumn = MatrixEndSizeCol;
-
-        profile.Mapping.Data.StartRow = DataStartRow;
-        profile.Mapping.Data.ArticleNumberColumn = ColArtNum;
-        profile.Mapping.Data.ArticleNameColumn = ColArtName;
-        profile.Mapping.Data.ColorColumn = ColColor;
-        profile.Mapping.Data.CategoryColumn = ColSizeCategory;
-        profile.Mapping.Data.StartQtyColumn = ColStartQty;
-        profile.Mapping.Data.EndQtyColumn = ColEndQty;
-        profile.Mapping.Data.UnitPriceColumn = ColUnitPrice;
-        profile.Mapping.PositionTextTemplate = PositionTextTemplate;
-    }
-
-    private void CopyProfileToVm(Models.MappingProfile profile)
-    {
-        CompanyNameCell = profile.Mapping.Header.CompanyNameCell;
-        StreetCell = profile.Mapping.Header.StreetCell;
-        ZipCityCell = profile.Mapping.Header.ZipCityCell;
-        BuyerEmailCell = profile.Mapping.Header.BuyerEmailCell;
-        BuyerNameCell = profile.Mapping.Header.BuyerNameCell;
-        DeliveryDateCell = profile.Mapping.Header.DeliveryDateCell;
-        PaymentTermsCell = profile.Mapping.Header.PaymentTermsCell;
-        DiscountCell = profile.Mapping.Header.DiscountCell;
-
-        MatrixStartRow = profile.Mapping.SizeMatrix.StartRow;
-        MatrixEndRow = profile.Mapping.SizeMatrix.EndRow;
-        MatrixCategoryCol = profile.Mapping.SizeMatrix.CategoryColumn;
-        MatrixStartSizeCol = profile.Mapping.SizeMatrix.StartSizeColumn;
-        MatrixEndSizeCol = profile.Mapping.SizeMatrix.EndSizeColumn;
-
-        DataStartRow = profile.Mapping.Data.StartRow;
-        ColArtNum = profile.Mapping.Data.ArticleNumberColumn;
-        ColArtName = profile.Mapping.Data.ArticleNameColumn;
-        ColColor = profile.Mapping.Data.ColorColumn;
-        ColSizeCategory = profile.Mapping.Data.CategoryColumn;
-        ColStartQty = profile.Mapping.Data.StartQtyColumn;
-        ColEndQty = profile.Mapping.Data.EndQtyColumn;
-        ColUnitPrice = profile.Mapping.Data.UnitPriceColumn;
-        PositionTextTemplate = profile.Mapping.PositionTextTemplate;
     }
 
     private ExcelMappingOptions BuildMappingOptions()
@@ -239,81 +169,4 @@ public partial class MainViewModel
         Helpers.LanguageHelper.Apply(lang);
     }
 
-    private ExcelMappingOptions MapDtoToOptions(Models.ExcelMappingDto dto)
-    {
-        return new ExcelMappingOptions
-        {
-            WorksheetIndex = dto.WorksheetIndex,
-            PositionTextTemplate = dto.PositionTextTemplate,
-            Header = new HeaderMapping
-            {
-                CompanyNameCell = dto.Header.CompanyNameCell,
-                StreetCell = dto.Header.StreetCell,
-                ZipCityCell = dto.Header.ZipCityCell,
-                BuyerEmailCell = dto.Header.BuyerEmailCell,
-                BuyerNameCell = dto.Header.BuyerNameCell,
-                DeliveryDateCell = dto.Header.DeliveryDateCell,
-                PaymentTermsCell = dto.Header.PaymentTermsCell,
-                DiscountCell = dto.Header.DiscountCell
-            },
-            SizeMatrix = new SizeMatrixMapping
-            {
-                StartRow = dto.SizeMatrix.StartRow,
-                EndRow = dto.SizeMatrix.EndRow,
-                CategoryColumn = dto.SizeMatrix.CategoryColumn,
-                StartSizeColumn = dto.SizeMatrix.StartSizeColumn,
-                EndSizeColumn = dto.SizeMatrix.EndSizeColumn
-            },
-            Data = new DataMapping
-            {
-                StartRow = dto.Data.StartRow,
-                ArticleNumberColumn = dto.Data.ArticleNumberColumn,
-                ArticleNameColumn = dto.Data.ArticleNameColumn,
-                ColorColumn = dto.Data.ColorColumn,
-                CategoryColumn = dto.Data.CategoryColumn,
-                StartQtyColumn = dto.Data.StartQtyColumn,
-                EndQtyColumn = dto.Data.EndQtyColumn,
-                UnitPriceColumn = dto.Data.UnitPriceColumn
-            }
-        };
-    }
-
-    private Models.ExcelMappingDto MapOptionsToDto(ExcelMappingOptions opts)
-    {
-        return new Models.ExcelMappingDto
-        {
-            WorksheetIndex = opts.WorksheetIndex,
-            PositionTextTemplate = opts.PositionTextTemplate,
-            Header = new Models.HeaderMappingDto
-            {
-                CompanyNameCell = opts.Header.CompanyNameCell,
-                StreetCell = opts.Header.StreetCell,
-                ZipCityCell = opts.Header.ZipCityCell,
-                BuyerEmailCell = opts.Header.BuyerEmailCell,
-                BuyerNameCell = opts.Header.BuyerNameCell,
-                DeliveryDateCell = opts.Header.DeliveryDateCell,
-                PaymentTermsCell = opts.Header.PaymentTermsCell,
-                DiscountCell = opts.Header.DiscountCell
-            },
-            SizeMatrix = new Models.SizeMatrixDto
-            {
-                StartRow = opts.SizeMatrix.StartRow,
-                EndRow = opts.SizeMatrix.EndRow,
-                CategoryColumn = opts.SizeMatrix.CategoryColumn,
-                StartSizeColumn = opts.SizeMatrix.StartSizeColumn,
-                EndSizeColumn = opts.SizeMatrix.EndSizeColumn
-            },
-            Data = new Models.DataMappingDto
-            {
-                StartRow = opts.Data.StartRow,
-                ArticleNumberColumn = opts.Data.ArticleNumberColumn,
-                ArticleNameColumn = opts.Data.ArticleNameColumn,
-                ColorColumn = opts.Data.ColorColumn,
-                CategoryColumn = opts.Data.CategoryColumn,
-                StartQtyColumn = opts.Data.StartQtyColumn,
-                EndQtyColumn = opts.Data.EndQtyColumn,
-                UnitPriceColumn = opts.Data.UnitPriceColumn
-            }
-        };
-    }
 }

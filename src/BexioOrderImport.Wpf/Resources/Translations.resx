@@ -118,7 +118,7 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="MainWindow_Title" xml:space="preserve">
-    <value>Bexio Bestellungs-Importeur</value>
+    <value>Bexio Auftrags Import</value>
   </data>
   <data name="Nav_Import" xml:space="preserve">
     <value>Excel Auftrags Import</value>
@@ -136,16 +136,10 @@
     <value>Bexio-Verbindung: Prüfe...</value>
   </data>
   <data name="Import_DragDropText" xml:space="preserve">
-    <value>Excel-Bestellformular hierher ziehen oder Datei auswählen</value>
-  </data>
-  <data name="Import_BrowseButton" xml:space="preserve">
-    <value>Datei auswählen</value>
-  </data>
-  <data name="Import_SelectFileTitle" xml:space="preserve">
-    <value>Excel Bestellformular auswählen</value>
+    <value>Excel-Auftragsformular hierher ziehen oder Datei auswählen</value>
   </data>
   <data name="Import_OrderHeader" xml:space="preserve">
-    <value>Bestellungs-Kopfdaten</value>
+    <value>Auftrags-Kopfdaten</value>
   </data>
   <data name="Import_Customer" xml:space="preserve">
     <value>Kunde / Firma</value>
@@ -159,14 +153,14 @@
   <data name="Import_Buyer" xml:space="preserve">
     <value>Einkäufer</value>
   </data>
-  <data name="Import_DeliveryDate" xml:space="preserve">
-    <value>Datum</value>
+  <data name="Import_OrderId" xml:space="preserve">
+    <value>Auftrags-ID</value>
   </data>
   <data name="Import_Conditions" xml:space="preserve">
     <value>Konditionen</value>
   </data>
   <data name="Import_PositionsHeader" xml:space="preserve">
-    <value>Bestellpositionen</value>
+    <value>Aufragspositionen</value>
   </data>
   <data name="Import_ColArtNum" xml:space="preserve">
     <value>Art. Nr.</value>
@@ -192,38 +186,46 @@
   <data name="Import_ColTotalPrice" xml:space="preserve">
     <value>Betrag (CHF)</value>
   </data>
-  <data name="Import_SummaryQuantity" xml:space="preserve">
-    <value>Gesamtsumme Artikel</value>
-  </data>
-  <data name="Import_SummaryGross" xml:space="preserve">
-    <value>Bruttobetrag</value>
-  </data>
-  <data name="Import_SummaryDiscount" xml:space="preserve">
-    <value>Rabatt</value>
-  </data>
-  <data name="Import_SummaryNet" xml:space="preserve">
-    <value>Nettobetrag (exkl. MwSt.)</value>
-  </data>
   <data name="Import_UploadButton" xml:space="preserve">
     <value>In Bexio importieren</value>
   </data>
-  <data name="Import_NoPositions" xml:space="preserve">
-    <value>Keine Bestellpositionen mit Menge &gt; 0 gefunden.</value>
-  </data>
-  <data name="Import_SelectFileFirst" xml:space="preserve">
-    <value>Bitte wählen Sie zuerst eine Excel-Datei aus.</value>
-  </data>
   <data name="Import_LogHeader" xml:space="preserve">
     <value>Import Protokoll</value>
-  </data>
-  <data name="Import_ProgressText" xml:space="preserve">
-    <value>Hochgeladen: {0} / {1} Positionen</value>
   </data>
   <data name="Import_SuccessTitle" xml:space="preserve">
     <value>Erfolgreich</value>
   </data>
   <data name="Import_SuccessMessage" xml:space="preserve">
     <value>Auftrag #{0} wurde erfolgreich in Bexio erstellt!</value>
+  </data>
+  <data name="Import_SuccessDuration" xml:space="preserve">
+    <value>Benötigte Zeit: {0}</value>
+  </data>
+  <data name="Import_DoneButton" xml:space="preserve">
+    <value>Fertig</value>
+  </data>
+  <data name="Import_FileLockedTitle" xml:space="preserve">
+    <value>Datei wird verwendet</value>
+  </data>
+  <data name="Import_FileLockedMessage" xml:space="preserve">
+    <value>Die Datei "{0}" kann nicht geöffnet werden, da sie von einem anderen Programm (z.B. Microsoft Excel) verwendet wird.
+
+Bitte schliessen Sie die Datei in Excel und versuchen Sie es erneut.</value>
+  </data>
+  <data name="Settings_EnableRowDiscount" xml:space="preserve">
+    <value>Zeilenrabatt aktivieren</value>
+  </data>
+  <data name="Settings_ColRowDiscount" xml:space="preserve">
+    <value>Spalte Zeilenrabatt</value>
+  </data>
+  <data name="Import_ColDiscount" xml:space="preserve">
+    <value>Rabatt %</value>
+  </data>
+  <data name="Import_ColGrossPrice" xml:space="preserve">
+    <value>Brutto CHF</value>
+  </data>
+  <data name="Import_ColNetPrice" xml:space="preserve">
+    <value>Netto CHF</value>
   </data>
   <data name="Settings_Header" xml:space="preserve">
     <value>Konfigurations-Einstellungen</value>
@@ -246,9 +248,6 @@
   <data name="Settings_TaxLabel" xml:space="preserve">
     <value>Steuersatz</value>
   </data>
-  <data name="Settings_ExcelSection" xml:space="preserve">
-    <value>Excel Mapping Konfiguration</value>
-  </data>
   <data name="Settings_HeaderSection" xml:space="preserve">
     <value>Excel-Header Zellen</value>
   </data>
@@ -258,20 +257,14 @@
   <data name="Settings_CellStreet" xml:space="preserve">
     <value>Zelle Strasse</value>
   </data>
-  <data name="Settings_CellZipCode" xml:space="preserve">
-    <value>Zelle PLZ</value>
-  </data>
-  <data name="Settings_CellCity" xml:space="preserve">
-    <value>Zelle Ort</value>
-  </data>
   <data name="Settings_CellEmail" xml:space="preserve">
     <value>Zelle E-Mail</value>
   </data>
   <data name="Settings_CellBuyerName" xml:space="preserve">
     <value>Zelle Einkäufer</value>
   </data>
-  <data name="Settings_CellDeliveryDate" xml:space="preserve">
-    <value>Zelle Datum</value>
+  <data name="Settings_CellOrderId" xml:space="preserve">
+    <value>Zelle Auftrags-ID</value>
   </data>
   <data name="Settings_CellPaymentTerms" xml:space="preserve">
     <value>Zelle Konditionen</value>
@@ -287,9 +280,6 @@
   </data>
   <data name="Settings_MatrixEnd" xml:space="preserve">
     <value>Endzeile Matrix</value>
-  </data>
-  <data name="Settings_RowsSection" xml:space="preserve">
-    <value>Artikel-Tabellenzeilen</value>
   </data>
   <data name="Settings_RowStart" xml:space="preserve">
     <value>Erste Artikelzeile</value>
@@ -312,20 +302,11 @@
   <data name="Settings_SaveButton" xml:space="preserve">
     <value>Einstellungen speichern</value>
   </data>
-  <data name="Settings_SaveSuccess" xml:space="preserve">
-    <value>Einstellungen erfolgreich gespeichert.</value>
-  </data>
   <data name="CustomerConfirm_Title" xml:space="preserve">
     <value>Neuer Kunde in Bexio anlegen?</value>
   </data>
   <data name="CustomerConfirm_Warning" xml:space="preserve">
     <value>Ein Kunde mit dieser E-Mail wurde in Bexio nicht gefunden. Soll ein neuer Kontakt erstellt werden?</value>
-  </data>
-  <data name="CustomerConfirm_Field" xml:space="preserve">
-    <value>Feld</value>
-  </data>
-  <data name="CustomerConfirm_Value" xml:space="preserve">
-    <value>Wert für Neuanlage</value>
   </data>
   <data name="CustomerConfirm_CreateButton" xml:space="preserve">
     <value>Kunde erstellen &amp; fortfahren</value>
@@ -349,10 +330,10 @@
     <value>E-Mail</value>
   </data>
   <data name="Import_ConfirmTitle" xml:space="preserve">
-    <value>Bestellung übermitteln?</value>
+    <value>Auftrag übermitteln?</value>
   </data>
   <data name="Import_ConfirmMessage" xml:space="preserve">
-    <value>Möchten Sie diese Bestellung jetzt an Bexio übermitteln?</value>
+    <value>Möchten Sie diese Auftrag jetzt an Bexio übermitteln?</value>
   </data>
   <data name="Settings_ErrorLoad" xml:space="preserve">
     <value>Fehler beim Laden der Einstellungen</value>
@@ -375,9 +356,6 @@
   <data name="Settings_LanguageEnglish" xml:space="preserve">
     <value>English</value>
   </data>
-  <data name="Settings_RestartPrompt" xml:space="preserve">
-    <value>Einstellungen gespeichert. Bitte starten Sie die Applikation neu, um die Sprache zu übernehmen.</value>
-  </data>
   <data name="Settings_ColStartQty" xml:space="preserve">
     <value>Erste Mengen-Spalte</value>
   </data>
@@ -389,15 +367,6 @@
   </data>
   <data name="Settings_ProfilesSection" xml:space="preserve">
     <value>Excel Mapping Profile</value>
-  </data>
-  <data name="Settings_ProfilesSelectLabel" xml:space="preserve">
-    <value>Ausgewähltes Profil</value>
-  </data>
-  <data name="Settings_ProfilesActiveLabel" xml:space="preserve">
-    <value>Aktives Profil</value>
-  </data>
-  <data name="Settings_ProfilesNewNamePlaceholder" xml:space="preserve">
-    <value>Neuer Profilname</value>
   </data>
   <data name="Settings_ProfilesAddButton" xml:space="preserve">
     <value>Erstellen</value>
@@ -419,9 +388,6 @@
   </data>
   <data name="Settings_ProfilesTableColActive" xml:space="preserve">
     <value>Aktiv</value>
-  </data>
-  <data name="Settings_ProfilesTableColActions" xml:space="preserve">
-    <value>Aktionen</value>
   </data>
   <data name="Settings_ProfilesCloneButton" xml:space="preserve">
     <value>Klonen</value>
@@ -511,7 +477,10 @@
     <value>Bestätigung</value>
   </data>
   <data name="Settings_WorksheetSection" xml:space="preserve">
-    <value>Excel-Arbeitsblatt</value>
+    <value>Profil-Informationen</value>
+  </data>
+  <data name="Settings_TextTemplatesSection" xml:space="preserve">
+    <value>Texte &amp; Vorlagen</value>
   </data>
   <data name="Settings_WorksheetLabel" xml:space="preserve">
     <value>Excel Arbeitsblatt Index:</value>
@@ -520,7 +489,7 @@
     <value>Excel-Datei wird geladen...</value>
   </data>
   <data name="Import_Importing" xml:space="preserve">
-    <value>Importiere Bestellung in Bexio...</value>
+    <value>Importiere Auftrag in Bexio...</value>
   </data>
   <data name="Import_PleaseWait" xml:space="preserve">
     <value>Bitte warten...</value>
@@ -534,25 +503,64 @@
   <data name="Update_Downloading" xml:space="preserve">
     <value>Update wird heruntergeladen ({0:0}%)...</value>
   </data>
-  <data name="Update_Installing" xml:space="preserve">
-    <value>Installation wird gestartet...</value>
-  </data>
   <data name="Update_Error" xml:space="preserve">
     <value>Fehler beim Aktualisieren: {0}</value>
   </data>
-  <data name="Import_NoDeliveryDate" xml:space="preserve">
-    <value>Nicht definiert</value>
+  <data name="Import_NoOrderId" xml:space="preserve">
+    <value>Keine Auftrags-ID</value>
+  </data>
+  <data name="Settings_DefaultOrderNameLabel" xml:space="preserve">
+    <value>Auftragsname-Vorlage:</value>
+  </data>
+  <data name="Settings_DefaultOrderNameHint" xml:space="preserve">
+    <value>Platzhalter: {CustomerName}, {SeasonCode}. Beispiel: Order: {CustomerName} {SeasonCode}</value>
+  </data>
+  <data name="Settings_SeasonCodeLabel" xml:space="preserve">
+    <value>Saison-Code:</value>
   </data>
   <data name="Settings_PositionTextTemplateLabel" xml:space="preserve">
-    <value>Positions-Text Template:</value>
+    <value>Positions-Text Vorlage:</value>
   </data>
   <data name="Settings_PositionTextTemplateHint" xml:space="preserve">
-    <value>Verfügbare Platzhalter: {Color}, {Size}, {ArticleNumber}, {ArticleName}. Standard: Color: {Color}, Size: {Size}</value>
-  </data>
-  <data name="Settings_PositionTextTemplateSection" xml:space="preserve">
-    <value>Positions-Text Template</value>
+    <value>Platzhalter: {Color}, {Size}, {ArticleNumber}, {ArticleName}, {BexioArticleName}, {BexioArticleDescription}</value>
   </data>
   <data name="Error_SelectAccountAndTax" xml:space="preserve">
     <value>Bitte wählen Sie ein Standard-Konto und einen Standard-Steuersatz in den Einstellungen.</value>
+  </data>
+  <data name="Import_EmailMismatchTitle" xml:space="preserve">
+    <value>E-Mail Abweichung</value>
+  </data>
+  <data name="Import_EmailMismatchMessage" xml:space="preserve">
+    <value>Die E-Mail des Bexio-Auftrags ({0}) stimmt nicht mit der E-Mail im Excel ({1}) überein. Möchten Sie den Import trotzdem fortsetzen?</value>
+  </data>
+  <data name="Import_EstimatingTime" xml:space="preserve">
+    <value>Berechne...</value>
+  </data>
+  <data name="Import_ProgressTime" xml:space="preserve">
+    <value>Verstrichen: {0} | Verbleibend: {1}</value>
+  </data>
+  <data name="Import_ProgressTimeElapsedOnly" xml:space="preserve">
+    <value>Verstrichen: {0}</value>
+  </data>
+  <data name="Dialog_DiscardChanges" xml:space="preserve">
+    <value>Änderungen verwerfen</value>
+  </data>
+  <data name="Dialog_PendingChangesTitle" xml:space="preserve">
+    <value>Ungespeicherte Änderungen</value>
+  </data>
+  <data name="Dialog_PendingChangesMessage" xml:space="preserve">
+    <value>Sie haben ungespeicherte Änderungen in den Einstellungen. Möchten Sie diese verwerfen?</value>
+  </data>
+  <data name="Settings_DiscountPositionTextTemplateLabel" xml:space="preserve">
+    <value>Rabatt-Positions-Text Vorlage:</value>
+  </data>
+  <data name="Settings_DiscountPositionTextTemplateHint" xml:space="preserve">
+    <value>Verfügbare Platzhalter: {DiscountInPercent}</value>
+  </data>
+  <data name="Settings_CellZipCodeCity" xml:space="preserve">
+    <value>Zelle PLZ &amp; Ort</value>
+  </data>
+  <data name="Update_Installing" xml:space="preserve">
+    <value>Update wird installiert...</value>
   </data>
 </root>

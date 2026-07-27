@@ -2,6 +2,8 @@
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:lex="clr-namespace:BexioOrderImport.Wpf.Resources"
+        xmlns:helpers="clr-namespace:BexioOrderImport.Wpf.Helpers"
+        xmlns:controls="clr-namespace:BexioOrderImport.Wpf.Views.Controls"
         Title="{x:Static lex:Translations.MainWindow_Title}" 
         Height="800" Width="1100"
         WindowStartupLocation="CenterScreen"
@@ -43,13 +45,13 @@
                     <TextBlock Text="Bexio Import" Style="{StaticResource HeaderTextBlockStyle}" FontSize="18" Margin="0" VerticalAlignment="Center"/>
                 </StackPanel>
                 
-                <!-- Nav RadioButtons bound to TabControl SelectedIndex -->
+                <!-- Nav RadioButtons bound to MainViewModel SelectedTabIndex -->
                 <StackPanel Grid.Row="1">
                     <RadioButton Content="{x:Static lex:Translations.Nav_Import}" 
-                                 IsChecked="{Binding ElementName=MainTabControl, Path=SelectedIndex, Converter={StaticResource IndexToBooleanConverter}, ConverterParameter=0}"
+                                 IsChecked="{Binding SelectedTabIndex, Converter={StaticResource IndexToBooleanConverter}, ConverterParameter=0, Mode=TwoWay}"
                                  Style="{StaticResource SidebarNavButtonStyle}"/>
                     <RadioButton Content="{x:Static lex:Translations.Nav_Settings}" 
-                                 IsChecked="{Binding ElementName=MainTabControl, Path=SelectedIndex, Converter={StaticResource IndexToBooleanConverter}, ConverterParameter=1}"
+                                 IsChecked="{Binding SelectedTabIndex, Converter={StaticResource IndexToBooleanConverter}, ConverterParameter=1, Mode=TwoWay}"
                                  Style="{StaticResource SidebarNavButtonStyle}"/>
                 </StackPanel>
                 
@@ -114,545 +116,18 @@
             </Border>
 
             <TabControl x:Name="MainTabControl" Grid.Row="1" 
+                        SelectedIndex="{Binding SelectedTabIndex, Mode=TwoWay}"
                         BorderThickness="0" Background="Transparent" 
                         ItemContainerStyle="{StaticResource TabItemHiddenStyle}">
             
             <!-- Tab 1: Excel Import -->
             <TabItem Header="Import">
-                <Grid Margin="24">
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="*"/>
-                        <RowDefinition Height="Auto"/>
-                    </Grid.RowDefinitions>
-                    
-                    <!-- Title & Active Profile -->
-                    <Grid Grid.Row="0" Margin="0,0,0,16">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*"/>
-                            <ColumnDefinition Width="Auto"/>
-                        </Grid.ColumnDefinitions>
-                        <TextBlock Text="{x:Static lex:Translations.Nav_Import}" Style="{StaticResource HeaderTextBlockStyle}" Grid.Column="0" VerticalAlignment="Center"/>
-                        
-                        <!-- Active Profile Badge -->
-                        <Border Grid.Column="1" Background="{StaticResource AccentLightBrush}" CornerRadius="12" Padding="12,4" VerticalAlignment="Center">
-                            <StackPanel Orientation="Horizontal">
-                                <Ellipse Width="8" Height="8" Fill="{StaticResource AccentBrush}" Margin="0,0,6,0" VerticalAlignment="Center"/>
-                                <TextBlock Text="{Binding ActiveProfile.Name, FallbackValue='Default'}" Foreground="{StaticResource AccentBrush}" FontWeight="SemiBold" FontSize="12" VerticalAlignment="Center"/>
-                            </StackPanel>
-                        </Border>
-                    </Grid>
-                    
-                    <!-- File Drag & Drop Zone -->
-                    <Border Grid.Row="1" Style="{StaticResource DragDropZoneStyle}" 
-                            AllowDrop="True" DragOver="DropZone_DragOver" Drop="DropZone_Drop"
-                            MouseDown="DropZone_MouseDown"
-                            Visibility="{Binding HasLoadedFile, Converter={StaticResource InverseBooleanToVisibilityConverter}}">
-                        <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
-                            <!-- Cloud Upload Icon (Simple Vector) -->
-                            <Path Data="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM14 13v4h-4v-4H7l5-5 5 5h-3z"
-                                  Fill="{StaticResource AccentBrush}" Stretch="Uniform" Width="48" Height="48" Margin="0,0,0,12"/>
-                            <TextBlock Text="{x:Static lex:Translations.Import_DragDropText}" FontWeight="Medium" HorizontalAlignment="Center"/>
-                        </StackPanel>
-                    </Border>
-
-                    <!-- Loaded File Box -->
-                    <Border Grid.Row="1" Style="{StaticResource CardBorderStyle}" 
-                            Background="{StaticResource SidebarBrush}" BorderBrush="{StaticResource BorderBrush}" 
-                            Visibility="{Binding HasLoadedFile, Converter={StaticResource BooleanToVisibilityConverter}}">
-                        <Grid>
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="Auto"/>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="Auto"/>
-                            </Grid.ColumnDefinitions>
-                            
-                            <!-- Excel File Icon (Simple Vector) -->
-                            <Path Data="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z"
-                                  Fill="{StaticResource SuccessBrush}" Stretch="Uniform" Width="32" Height="32" Margin="0,0,16,0" Grid.Column="0" VerticalAlignment="Center"/>
-                            
-                            <!-- File Info -->
-                            <StackPanel Grid.Column="1" VerticalAlignment="Center">
-                                <TextBlock Text="{Binding SelectedFileName}" FontWeight="SemiBold" FontSize="13"/>
-                                <TextBlock Text="{Binding FileSizeText}" Style="{StaticResource MutedTextBlockStyle}"/>
-                            </StackPanel>
-                            
-                            <!-- Delete Button (Trashcan Icon) -->
-                            <Button Grid.Column="2" Command="{Binding ClearFileCommand}"
-                                    Style="{StaticResource SecondaryButtonStyle}" 
-                                    Width="36" Height="36" Padding="0">
-                                <Path Data="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"
-                                      Fill="{StaticResource ErrorBrush}" Stretch="Uniform" Width="16" Height="16" HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                            </Button>
-                        </Grid>
-                    </Border>
-                    
-                    <!-- Local Excel File Loading Overlay (over DropZone & File Box) -->
-                    <Border Grid.Row="1" Style="{StaticResource CardBorderStyle}" 
-                            Background="{StaticResource SidebarBrush}" BorderBrush="{StaticResource BorderBrush}" 
-                            Visibility="{Binding IsLoading, Converter={StaticResource BooleanToVisibilityConverter}}">
-                        <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
-                            <Control Style="{StaticResource SpinnerStyle}" Margin="0,0,0,16"/>
-                            <TextBlock Text="{x:Static lex:Translations.Import_LoadingExcel}" FontWeight="Medium" HorizontalAlignment="Center"/>
-                        </StackPanel>
-                    </Border>
-                    
-                    <!-- Order metadata / Header preview -->
-                    <Border Grid.Row="2" Style="{StaticResource CardBorderStyle}" Visibility="{Binding SelectedFilePath, Converter={StaticResource NullToVisibilityConverter}}">
-                        <Grid>
-                            <Grid.RowDefinitions>
-                                <RowDefinition Height="Auto"/>
-                                <RowDefinition Height="Auto"/>
-                            </Grid.RowDefinitions>
-                            
-                            <TextBlock Text="{x:Static lex:Translations.Import_OrderHeader}" Style="{StaticResource SectionHeaderTextBlockStyle}" Grid.Row="0"/>
-                            
-                            <Grid Grid.Row="1">
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="*"/>
-                                    <ColumnDefinition Width="*"/>
-                                    <ColumnDefinition Width="*"/>
-                                </Grid.ColumnDefinitions>
-                                <Grid.RowDefinitions>
-                                    <RowDefinition Height="Auto"/>
-                                    <RowDefinition Height="Auto"/>
-                                </Grid.RowDefinitions>
-                                
-                                <StackPanel Grid.Column="0" Grid.Row="0" Margin="0,4">
-                                    <TextBlock Text="{x:Static lex:Translations.Import_Customer}" Style="{StaticResource MutedTextBlockStyle}"/>
-                                    <TextBlock Text="{Binding CompanyName}" FontWeight="SemiBold"/>
-                                </StackPanel>
-                                <StackPanel Grid.Column="1" Grid.Row="0" Margin="0,4">
-                                    <TextBlock Text="{x:Static lex:Translations.Import_Address}" Style="{StaticResource MutedTextBlockStyle}"/>
-                                    <TextBlock Text="{Binding Address}" FontWeight="SemiBold"/>
-                                </StackPanel>
-                                <StackPanel Grid.Column="2" Grid.Row="0" Margin="0,4">
-                                    <TextBlock Text="{x:Static lex:Translations.Import_Email}" Style="{StaticResource MutedTextBlockStyle}"/>
-                                    <TextBlock Text="{Binding Email}" FontWeight="SemiBold"/>
-                                </StackPanel>
-                                
-                                <StackPanel Grid.Column="0" Grid.Row="1" Margin="0,4">
-                                    <TextBlock Text="{x:Static lex:Translations.Import_Buyer}" Style="{StaticResource MutedTextBlockStyle}"/>
-                                    <TextBlock Text="{Binding BuyerName}" FontWeight="SemiBold"/>
-                                </StackPanel>
-                                <StackPanel Grid.Column="1" Grid.Row="1" Margin="0,4">
-                                    <TextBlock Text="{x:Static lex:Translations.Import_DeliveryDate}" Style="{StaticResource MutedTextBlockStyle}"/>
-                                    <TextBlock Text="{Binding DeliveryDate}" FontWeight="SemiBold"/>
-                                </StackPanel>
-                                <StackPanel Grid.Column="2" Grid.Row="1" Margin="0,4">
-                                    <TextBlock Text="{x:Static lex:Translations.Import_Conditions}" Style="{StaticResource MutedTextBlockStyle}"/>
-                                    <TextBlock Text="{Binding PaymentTerms}" FontWeight="SemiBold"/>
-                                </StackPanel>
-                            </Grid>
-                        </Grid>
-                    </Border>
-                    
-                    <!-- DataGrid Preview -->
-                    <Grid Grid.Row="3">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="3*"/>
-                            <ColumnDefinition Width="2*"/>
-                        </Grid.ColumnDefinitions>
-                        
-                        <!-- Left pane: Grid -->
-                        <Border Grid.Column="0" Style="{StaticResource CardBorderStyle}" Margin="0,0,12,0">
-                            <Grid>
-                                <Grid.RowDefinitions>
-                                    <RowDefinition Height="Auto"/>
-                                    <RowDefinition Height="*"/>
-                                </Grid.RowDefinitions>
-                                
-                                <TextBlock Text="{x:Static lex:Translations.Import_PositionsHeader}" Style="{StaticResource SectionHeaderTextBlockStyle}" Grid.Row="0"/>
-                                
-                                <DataGrid ItemsSource="{Binding OrderPositions}" Grid.Row="1" 
-                                          CanUserReorderColumns="False" CanUserResizeColumns="False"
-                                          CanUserSortColumns="False"
-                                          CellEditEnding="DataGrid_CellEditEnding">
-                                    <DataGrid.Columns>
-                                         <DataGridTextColumn Header="{x:Static lex:Translations.Import_ColArtNum}" Binding="{Binding ArticleNumber, UpdateSourceTrigger=PropertyChanged}" Width="90" IsReadOnly="True"/>
-                                         <DataGridTextColumn Header="{x:Static lex:Translations.Import_ColName}" Binding="{Binding ArticleName, UpdateSourceTrigger=PropertyChanged}" Width="2*" IsReadOnly="True"/>
-                                         <DataGridTextColumn Header="{x:Static lex:Translations.Import_ColColor}" Binding="{Binding Color, UpdateSourceTrigger=PropertyChanged}" Width="120" IsReadOnly="True"/>
-                                         <DataGridTextColumn Header="{x:Static lex:Translations.Import_ColCategory}" Binding="{Binding SizeCategory, UpdateSourceTrigger=PropertyChanged}" Width="110" IsReadOnly="True"/>
-                                         <DataGridTextColumn Header="{x:Static lex:Translations.Import_ColSize}" Binding="{Binding Size, UpdateSourceTrigger=PropertyChanged}" Width="80" IsReadOnly="True"/>
-                                         <DataGridTextColumn Header="{x:Static lex:Translations.Import_ColQuantity}" Binding="{Binding Quantity, UpdateSourceTrigger=PropertyChanged}" Width="80" IsReadOnly="True"/>
-                                         <DataGridTextColumn Header="{x:Static lex:Translations.Import_ColUnitPrice}" Binding="{Binding UnitPrice, StringFormat=F2}" Width="95" IsReadOnly="True"/>
-                                         <DataGridTextColumn Header="{x:Static lex:Translations.Import_ColTotalPrice}" Binding="{Binding TotalPrice, StringFormat=F2, Mode=OneWay}" Width="110"/>
-                                    </DataGrid.Columns>
-                                </DataGrid>
-                            </Grid>
-                        </Border>
-                        
-                        <!-- Right pane: Console Logs -->
-                        <Border Grid.Column="1" Style="{StaticResource CardBorderStyle}" Margin="12,0,0,0">
-                            <Grid>
-                                <Grid.RowDefinitions>
-                                    <RowDefinition Height="Auto"/>
-                                    <RowDefinition Height="*"/>
-                                </Grid.RowDefinitions>
-                                
-                                <TextBlock Text="{x:Static lex:Translations.Import_LogHeader}" Style="{StaticResource SectionHeaderTextBlockStyle}" Grid.Row="0"/>
-                                
-                                <TextBox Text="{Binding LogText, Mode=OneWay}" Grid.Row="1" 
-                                         Style="{StaticResource ConsoleTextBoxStyle}"
-                                         VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto"
-                                         x:Name="LogTextBox" TextChanged="LogTextBox_TextChanged"/>
-                            </Grid>
-                        </Border>
-                    </Grid>
-                    
-                    <!-- Progress & Actions -->
-                    <StackPanel Grid.Row="4" Margin="0,16,0,0" Orientation="Vertical">
-                        <ProgressBar Value="{Binding ProgressPercentage}" Visibility="{Binding IsImporting, Converter={StaticResource BooleanToVisibilityConverter}}" Margin="0,0,0,16"/>
-                        
-                        <Grid>
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="Auto"/>
-                            </Grid.ColumnDefinitions>
-                                
-                                <!-- Summary Panel (Clean Grid inside Border) -->
-                                <Border Style="{StaticResource CardBorderStyle}" Margin="0,0,24,0" Padding="12" Grid.Column="0" VerticalAlignment="Center" HorizontalAlignment="Left" Visibility="{Binding HasLoadedFile, Converter={StaticResource BooleanToVisibilityConverter}}">
-                                    <Grid>
-                                        <Grid.ColumnDefinitions>
-                                            <ColumnDefinition Width="Auto"/>
-                                            <ColumnDefinition Width="Auto"/>
-                                            <ColumnDefinition Width="Auto"/>
-                                            <ColumnDefinition Width="Auto"/>
-                                            <ColumnDefinition Width="Auto"/>
-                                            <ColumnDefinition Width="Auto"/>
-                                            <ColumnDefinition Width="Auto"/>
-                                            <ColumnDefinition Width="Auto"/>
-                                        </Grid.ColumnDefinitions>
-                                        
-                                        <TextBlock Text="Artikel:" FontWeight="Medium" Foreground="{StaticResource TextMutedBrush}" Grid.Column="0" Margin="0,0,6,0"/>
-                                        <TextBlock Text="{Binding TotalQuantity}" FontWeight="SemiBold" Grid.Column="1"/>
-                                        
-                                        <TextBlock Text="Brutto:" FontWeight="Medium" Foreground="{StaticResource TextMutedBrush}" Grid.Column="2" Margin="16,0,6,0"/>
-                                        <TextBlock Text="{Binding TotalGrossAmount, StringFormat={}{0:F2} CHF}" FontWeight="SemiBold" Grid.Column="3"/>
-                                        
-                                        <TextBlock Text="Rabatt:" FontWeight="Medium" Foreground="{StaticResource TextMutedBrush}" Grid.Column="4" Margin="16,0,6,0"/>
-                                        <TextBlock Text="{Binding DiscountPercentVal, StringFormat={}{0}%}" FontWeight="SemiBold" Foreground="{StaticResource ErrorBrush}" Grid.Column="5"/>
-                                        
-                                        <TextBlock Text="Netto:" FontWeight="Bold" Grid.Column="6" Margin="16,0,6,0"/>
-                                        <TextBlock Text="{Binding TotalNetAmount, StringFormat={}{0:F2} CHF}" FontWeight="Bold" Foreground="{StaticResource AccentBrush}" Grid.Column="7"/>
-                                    </Grid>
-                                </Border>
-                                
-                                <Button Content="{x:Static lex:Translations.Import_UploadButton}" 
-                                        Command="{Binding ImportCommand}"
-                                        Style="{StaticResource ModernButtonStyle}" 
-                                        Width="220" Grid.Column="1"
-                                        VerticalAlignment="Center"/>
-                            </Grid>
-                    </StackPanel>
-                </Grid>
+                <controls:ImportControl/>
             </TabItem>
             
             <!-- Tab 2: Settings -->
             <TabItem Header="Settings">
-                <ScrollViewer VerticalScrollBarVisibility="Auto">
-                    <Grid Margin="24">
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="Auto"/>
-                            <RowDefinition Height="*"/>
-                            <RowDefinition Height="Auto"/>
-                        </Grid.RowDefinitions>
-                        
-                        <!-- Title -->
-                        <TextBlock Text="{x:Static lex:Translations.Settings_Header}" Style="{StaticResource HeaderTextBlockStyle}" Grid.Row="0"/>
-                        
-                        <StackPanel Grid.Row="1">
-                            
-                            <!-- 1. Language Settings Card -->
-                            <Border Style="{StaticResource CardBorderStyle}" Margin="0,0,0,16">
-                                <StackPanel>
-                                    <TextBlock Text="{x:Static lex:Translations.Settings_LanguageSection}" Style="{StaticResource SectionHeaderTextBlockStyle}"/>
-                                    <Grid Margin="0,8,0,0">
-                                        <Grid.ColumnDefinitions>
-                                            <ColumnDefinition Width="200"/>
-                                            <ColumnDefinition Width="*"/>
-                                        </Grid.ColumnDefinitions>
-                                        <TextBlock Text="{x:Static lex:Translations.Settings_LanguageLabel}" VerticalAlignment="Center" Grid.Column="0" Margin="0,6,16,6"/>
-                                        <ComboBox SelectedValue="{Binding SelectedLanguage, Mode=TwoWay}" SelectedValuePath="Tag" Grid.Column="1" VerticalAlignment="Center" Height="32" Width="200" HorizontalAlignment="Left">
-                                            <ComboBoxItem Content="{x:Static lex:Translations.Settings_LanguageGerman}" Tag="de"/>
-                                            <ComboBoxItem Content="{x:Static lex:Translations.Settings_LanguageEnglish}" Tag="en"/>
-                                        </ComboBox>
-                                    </Grid>
-                                </StackPanel>
-                            </Border>
-                            
-                            <!-- 2. Bexio API Settings Card -->
-                            <Border Style="{StaticResource CardBorderStyle}" Margin="0,0,0,16">
-                                <StackPanel>
-                                    <TextBlock Text="{x:Static lex:Translations.Settings_ApiSection}" Style="{StaticResource SectionHeaderTextBlockStyle}"/>
-                                    <Grid Margin="0,8,0,0">
-                                        <Grid.ColumnDefinitions>
-                                            <ColumnDefinition Width="200"/>
-                                            <ColumnDefinition Width="*"/>
-                                        </Grid.ColumnDefinitions>
-                                        <Grid.RowDefinitions>
-                                            <RowDefinition Height="Auto"/>
-                                            <RowDefinition Height="Auto"/>
-                                            <RowDefinition Height="Auto"/>
-                                        </Grid.RowDefinitions>
-                                        
-                                        <TextBlock Text="{x:Static lex:Translations.Settings_TokenLabel}" VerticalAlignment="Top" Grid.Row="0" Grid.Column="0" Margin="0,15,16,6"/>
-                                        <StackPanel Grid.Row="0" Grid.Column="1" VerticalAlignment="Center" Margin="0,6,0,6">
-                                            <TextBox Text="{Binding BexioTokenDisplay, UpdateSourceTrigger=PropertyChanged}" GotFocus="TokenTextBox_GotFocus" LostFocus="TokenTextBox_LostFocus" Margin="0,0,0,4"/>
-                                            <TextBlock FontSize="11" Foreground="{StaticResource TextMutedBrush}" TextWrapping="Wrap">
-                                                <Run Text="{x:Static lex:Translations.Settings_TokenHintPrefix}"/><Hyperlink NavigateUri="https://developer.bexio.com/pat" RequestNavigate="Hyperlink_RequestNavigate" Foreground="{StaticResource AccentBrush}">
-                                                    <Run Text="https://developer.bexio.com/pat"/>
-                                                </Hyperlink><Run Text="{x:Static lex:Translations.Settings_TokenHintSuffix}"/>
-                                            </TextBlock>
-                                        </StackPanel>
-                                        
-                                        <TextBlock Text="{x:Static lex:Translations.Settings_AccountLabel}" VerticalAlignment="Center" Grid.Row="1" Grid.Column="0" Margin="0,6,16,6"/>
-                                        <ComboBox ItemsSource="{Binding AccountsList}" SelectedValue="{Binding AccountId}" SelectedValuePath="Id" IsEnabled="{Binding IsConnectionSuccessful}" Grid.Row="1" Grid.Column="1" VerticalAlignment="Center" Width="300" HorizontalAlignment="Left" Margin="0,6,0,6" Height="32">
-                                            <ComboBox.ItemTemplate>
-                                                <DataTemplate>
-                                                    <TextBlock>
-                                                        <TextBlock.Text>
-                                                            <MultiBinding StringFormat="{}{0} - {1}">
-                                                                <Binding Path="AccountNo"/>
-                                                                <Binding Path="Name"/>
-                                                            </MultiBinding>
-                                                        </TextBlock.Text>
-                                                    </TextBlock>
-                                                </DataTemplate>
-                                            </ComboBox.ItemTemplate>
-                                        </ComboBox>
-                                        
-                                        <TextBlock Text="{x:Static lex:Translations.Settings_TaxLabel}" VerticalAlignment="Center" Grid.Row="2" Grid.Column="0" Margin="0,6,16,6"/>
-                                            <ComboBox ItemsSource="{Binding TaxesList}" SelectedValue="{Binding TaxId}" SelectedValuePath="Id" DisplayMemberPath="DisplayName" IsEnabled="{Binding IsConnectionSuccessful}" Grid.Row="2" Grid.Column="1" VerticalAlignment="Center" Width="300" HorizontalAlignment="Left" Margin="0,6,0,6" Height="32"/>
-                                    </Grid>
-                                </StackPanel>
-                            </Border>
-                            
-                            <!-- 3. Excel Mapping Profiles Table Card -->
-                            <Border Style="{StaticResource CardBorderStyle}" Margin="0,0,0,16">
-                                <StackPanel>
-                                    <TextBlock Text="{x:Static lex:Translations.Settings_ProfilesSection}" Style="{StaticResource SectionHeaderTextBlockStyle}" Margin="0,0,0,12"/>
-                                    
-                                    <!-- Profiles DataGrid -->
-                                    <DataGrid ItemsSource="{Binding Profiles}" 
-                                              AutoGenerateColumns="False" 
-                                              CanUserAddRows="False" 
-                                              CanUserDeleteRows="False"
-                                              GridLinesVisibility="Horizontal"
-                                              BorderThickness="0"
-                                              Background="White"
-                                              RowBackground="White"
-                                              AlternatingRowBackground="{StaticResource SidebarBrush}"
-                                              HeadersVisibility="Column"
-                                              HorizontalGridLinesBrush="{StaticResource BorderBrush}"
-                                              RowHeaderWidth="0"
-                                              IsReadOnly="True"
-                                              Margin="0,0,0,16">
-                                        <DataGrid.Resources>
-                                            <Style TargetType="DataGridColumnHeader">
-                                                <Setter Property="Background" Value="Transparent"/>
-                                                <Setter Property="Foreground" Value="{StaticResource TextMutedBrush}"/>
-                                                <Setter Property="FontWeight" Value="SemiBold"/>
-                                                <Setter Property="Padding" Value="12,8"/>
-                                                <Setter Property="BorderThickness" Value="0,0,0,1"/>
-                                                <Setter Property="BorderBrush" Value="{StaticResource BorderBrush}"/>
-                                            </Style>
-                                            <Style TargetType="DataGridCell">
-                                                <Setter Property="BorderThickness" Value="0"/>
-                                                <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
-                                            </Style>
-                                            <Style TargetType="DataGridRow">
-                                            <Style.Resources>
-                                                    <SolidColorBrush x:Key="{x:Static SystemColors.HighlightBrushKey}" Color="#EEF2FF"/>
-                                                    <SolidColorBrush x:Key="{x:Static SystemColors.HighlightTextBrushKey}" Color="#1F2937"/>
-                                                    <SolidColorBrush x:Key="{x:Static SystemColors.InactiveSelectionHighlightBrushKey}" Color="#F3F4F6"/>
-                                                    <SolidColorBrush x:Key="{x:Static SystemColors.InactiveSelectionHighlightTextBrushKey}" Color="#1F2937"/>
-                                                </Style.Resources>
-                                                <Setter Property="BorderThickness" Value="0"/>
-                                                <Style.Triggers>
-                                                    <!-- Highlight Active Profile row -->
-                                                    <DataTrigger Value="True">
-                                                        <DataTrigger.Binding>
-                                                            <MultiBinding Converter="{StaticResource EqualityConverter}">
-                                                                <Binding Path="Name"/>
-                                                                <Binding Path="DataContext.ActiveProfile.Name" RelativeSource="{RelativeSource AncestorType=DataGrid}"/>
-                                                            </MultiBinding>
-                                                        </DataTrigger.Binding>
-                                                        <Setter Property="Background" Value="{StaticResource ActiveRowBrush}"/>
-                                                    </DataTrigger>
-                                                </Style.Triggers>
-                                            </Style>
-                                        </DataGrid.Resources>
-                                        
-                                        <DataGrid.Columns>
-
-                                            <!-- Active Indicator -->
-                                            <DataGridTemplateColumn Header="{x:Static lex:Translations.Settings_ProfilesTableColActive}" Width="70" IsReadOnly="True">
-                                                <DataGridTemplateColumn.CellTemplate>
-                                                    <DataTemplate>
-                                                        <Grid VerticalAlignment="Center" HorizontalAlignment="Center">
-                                                            <!-- Active Badge (Visible if active) -->
-                                                            <Border CornerRadius="12" Padding="12,4" VerticalAlignment="Center" HorizontalAlignment="Center" Background="{StaticResource ActiveBadgeBrush}">
-                                                                <Border.Style>
-                                                                    <Style TargetType="Border">
-                                                                        <Setter Property="Visibility" Value="Collapsed"/>
-                                                                        <Style.Triggers>
-                                                                            <DataTrigger Value="True">
-                                                                                <DataTrigger.Binding>
-                                                                                    <MultiBinding Converter="{StaticResource EqualityConverter}">
-                                                                                        <Binding Path="Name"/>
-                                                                                        <Binding Path="DataContext.ActiveProfile.Name" RelativeSource="{RelativeSource AncestorType=DataGrid}"/>
-                                                                                    </MultiBinding>
-                                                                                </DataTrigger.Binding>
-                                                                                <Setter Property="Visibility" Value="Visible"/>
-                                                                            </DataTrigger>
-                                                                        </Style.Triggers>
-                                                                    </Style>
-                                                                </Border.Style>
-                                                                <Path Data="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z" Fill="{StaticResource ActiveBadgeForegroundBrush}" Stretch="Uniform" Width="14" Height="14" HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                                                            </Border>
-
-                                                            <!-- Set Active Button (Visible if inactive) -->
-                                                            <Button Command="{Binding DataContext.SetActiveProfileCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
-                                                                    CommandParameter="{Binding}"
-                                                                    ToolTip="{x:Static lex:Translations.Settings_ProfilesSetActiveButton}"
-                                                                    Width="32" Height="32" Padding="0" BorderThickness="0">
-                                                                <Button.Style>
-                                                                    <Style TargetType="Button" BasedOn="{StaticResource SecondaryButtonStyle}">
-                                                                        <Setter Property="Visibility" Value="Visible"/>
-                                                                        <Style.Triggers>
-                                                                            <DataTrigger Value="True">
-                                                                                <DataTrigger.Binding>
-                                                                                    <MultiBinding Converter="{StaticResource EqualityConverter}">
-                                                                                        <Binding Path="Name"/>
-                                                                                        <Binding Path="DataContext.ActiveProfile.Name" RelativeSource="{RelativeSource AncestorType=DataGrid}"/>
-                                                                                    </MultiBinding>
-                                                                                </DataTrigger.Binding>
-                                                                                <Setter Property="Visibility" Value="Collapsed"/>
-                                                                            </DataTrigger>
-                                                                        </Style.Triggers>
-                                                                    </Style>
-                                                                </Button.Style>
-                                                                <Path Data="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z" Fill="{StaticResource TextBrush}" Stretch="Uniform" Width="14" Height="14" HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                                                            </Button>
-                                                        </Grid>
-                                                    </DataTemplate>
-                                                </DataGridTemplateColumn.CellTemplate>
-                                            </DataGridTemplateColumn>
-
-
-                                            <!-- Profile Name -->
-                                            <DataGridTemplateColumn Header="{x:Static lex:Translations.Settings_ProfilesTableColName}" Width="*" IsReadOnly="True">
-                                                <DataGridTemplateColumn.CellTemplate>
-                                                    <DataTemplate>
-                                                        <TextBlock Text="{Binding Name}" VerticalAlignment="Center" Margin="12,6">
-                                                            <TextBlock.Style>
-                                                                <Style TargetType="TextBlock">
-                                                                    <Setter Property="FontWeight" Value="Normal"/>
-                                                                    <Setter Property="Foreground" Value="{StaticResource TextBrush}"/>
-                                                                    <Style.Triggers>
-                                                                        <DataTrigger Value="True">
-                                                                            <DataTrigger.Binding>
-                                                                                <MultiBinding Converter="{StaticResource EqualityConverter}">
-                                                                                    <Binding Path="Name"/>
-                                                                                    <Binding Path="DataContext.ActiveProfile.Name" RelativeSource="{RelativeSource AncestorType=DataGrid}"/>
-                                                                                </MultiBinding>
-                                                                            </DataTrigger.Binding>
-                                                                            <Setter Property="FontWeight" Value="SemiBold"/>
-                                                                            <Setter Property="Foreground" Value="{StaticResource AccentBrush}"/>
-                                                                        </DataTrigger>
-                                                                    </Style.Triggers>
-                                                                </Style>
-                                                            </TextBlock.Style>
-                                                        </TextBlock>
-                                                    </DataTemplate>
-                                                </DataGridTemplateColumn.CellTemplate>
-                                            </DataGridTemplateColumn>
-
-                                            <!-- Edit Column -->
-                                            <DataGridTemplateColumn Width="50" IsReadOnly="True">
-                                                <DataGridTemplateColumn.CellTemplate>
-                                                    <DataTemplate>
-                                                        <Button Command="{Binding DataContext.EditProfileCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
-                                                                CommandParameter="{Binding}"
-                                                                ToolTip="{x:Static lex:Translations.Settings_ProfilesEditButton}"
-                                                                Style="{StaticResource SecondaryButtonStyle}" 
-                                                                Width="32" Height="32" Padding="0" BorderThickness="0" VerticalAlignment="Center" HorizontalAlignment="Center">
-                                                            <Path Data="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z" Fill="{StaticResource TextMutedBrush}" Stretch="Uniform" Width="14" Height="14" HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                                                        </Button>
-                                                    </DataTemplate>
-                                                </DataGridTemplateColumn.CellTemplate>
-                                            </DataGridTemplateColumn>
-
-                                            <!-- Clone Column -->
-                                            <DataGridTemplateColumn Width="50" IsReadOnly="True">
-                                                <DataGridTemplateColumn.CellTemplate>
-                                                    <DataTemplate>
-                                                        <Button Command="{Binding DataContext.CloneProfileCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
-                                                                CommandParameter="{Binding}"
-                                                                ToolTip="{x:Static lex:Translations.Settings_ProfilesCloneButton}"
-                                                                Style="{StaticResource SecondaryButtonStyle}" 
-                                                                Width="32" Height="32" Padding="0" BorderThickness="0" VerticalAlignment="Center" HorizontalAlignment="Center">
-                                                            <Path Data="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z" Fill="{StaticResource TextMutedBrush}" Stretch="Uniform" Width="14" Height="14" HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                                                        </Button>
-                                                    </DataTemplate>
-                                                </DataGridTemplateColumn.CellTemplate>
-                                            </DataGridTemplateColumn>
-
-                                            <!-- Delete Column -->
-                                            <DataGridTemplateColumn Width="50" IsReadOnly="True">
-                                                <DataGridTemplateColumn.CellTemplate>
-                                                    <DataTemplate>
-                                                        <Button Command="{Binding DataContext.DeleteProfileCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
-                                                                CommandParameter="{Binding}"
-                                                                ToolTip="{x:Static lex:Translations.Settings_ProfilesDeleteButton}"
-                                                                Width="32" Height="32" Padding="0" BorderThickness="0" VerticalAlignment="Center" HorizontalAlignment="Center">
-                                                            <Button.Style>
-                                                                <Style TargetType="Button" BasedOn="{StaticResource SecondaryButtonStyle}">
-                                                                    <Setter Property="BorderBrush" Value="{StaticResource ErrorSoftBrush}"/>
-                                                                    <Style.Triggers>
-                                                                        <DataTrigger Binding="{Binding Name}" Value="Default">
-                                                                            <Setter Property="Visibility" Value="Collapsed"/>
-                                                                        </DataTrigger>
-                                                                    </Style.Triggers>
-                                                                </Style>
-                                                            </Button.Style>
-                                                            <Path Data="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z" Fill="{StaticResource ErrorBrush}" Stretch="Uniform" Width="14" Height="14" HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                                                        </Button>
-                                                    </DataTemplate>
-                                                </DataGridTemplateColumn.CellTemplate>
-                                            </DataGridTemplateColumn>
-                                        </DataGrid.Columns>
-                                    </DataGrid>
-                                    
-                                    <!-- Profiles Operations Stack -->
-                                    <StackPanel Orientation="Horizontal" Margin="12,0,0,0">
-                                        <Button Command="{Binding CreateProfileCommand}" 
-                                                Content="{x:Static lex:Translations.Settings_ProfilesAddButton}" 
-                                                Style="{StaticResource ModernButtonStyle}" 
-                                                Width="140" Margin="0,0,8,0"/>
-                                        <Button Command="{Binding ExportProfilesCommand}" 
-                                                Content="{x:Static lex:Translations.Settings_ProfilesExportButton}" 
-                                                Style="{StaticResource SecondaryButtonStyle}" 
-                                                Width="140" Margin="0,0,8,0"/>
-                                        <Button Command="{Binding ImportProfilesCommand}" 
-                                                Content="{x:Static lex:Translations.Settings_ProfilesImportButton}" 
-                                                Style="{StaticResource SecondaryButtonStyle}" 
-                                                Width="140"/>
-                                    </StackPanel>
-                                </StackPanel>
-                            </Border>
-                        </StackPanel>
-                        
-                        <!-- Actions -->
-                        <Button Content="{x:Static lex:Translations.Settings_SaveButton}" 
-                                Command="{Binding SaveSettingsCommand}"
-                                Style="{StaticResource ModernButtonStyle}" 
-                                Width="220" HorizontalAlignment="Right" Grid.Row="2"/>
-                    </Grid>
-                </ScrollViewer>
+                <controls:SettingsControl/>
             </TabItem>
             
         </TabControl>
@@ -675,47 +150,189 @@
             </StatusBarItem>
             </StatusBar>
 
-        <!-- Full Screen Loading Overlay for Bexio API Import (Pushes data to API) -->
+        <!-- Full Screen Loading & Success Modal Overlay for Bexio API Import -->
         <Grid Grid.Column="0" Grid.ColumnSpan="2" Grid.Row="0" Grid.RowSpan="2"
               Visibility="{Binding IsImportingActive, Converter={StaticResource BooleanToVisibilityConverter}}">
             <!-- Semi-transparent backdrop -->
-            <Rectangle Fill="#99000000"/>
+            <Rectangle Fill="#A8000000"/>
             
-            <!-- Loading Card -->
-            <Border Width="420" Height="220"
+            <!-- Modal Card -->
+            <Border Width="440" MinHeight="260"
                     HorizontalAlignment="Center"
                     VerticalAlignment="Center"
                     Background="{StaticResource BackgroundBrush}"
-                    CornerRadius="12"
+                    CornerRadius="16"
                     BorderBrush="{StaticResource BorderBrush}"
-                    BorderThickness="1">
+                    BorderThickness="1"
+                    Padding="28">
                 <Border.Effect>
-                    <DropShadowEffect Color="#000000" Opacity="0.25" BlurRadius="32" ShadowDepth="8" Direction="270"/>
+                    <DropShadowEffect Color="#000000" Opacity="0.35" BlurRadius="40" ShadowDepth="12" Direction="270"/>
                 </Border.Effect>
-                <Grid Margin="24">
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="*"/>
-                    </Grid.RowDefinitions>
-                    
-                    <!-- Spinner -->
-                    <Control Style="{StaticResource SpinnerStyle}" HorizontalAlignment="Center" Margin="0,0,0,16" Grid.Row="0"/>
-                    
-                    <!-- Title -->
-                    <TextBlock Text="{x:Static lex:Translations.Import_Importing}" 
-                               FontWeight="SemiBold" FontSize="15" 
-                               Foreground="{StaticResource TextBrush}"
-                               HorizontalAlignment="Center" Margin="0,0,0,8" Grid.Row="1"/>
-                    
-                    <!-- Subtext -->
-                    <TextBlock Text="{x:Static lex:Translations.Import_PleaseWait}" 
-                               Style="{StaticResource MutedTextBlockStyle}" 
-                               HorizontalAlignment="Center" Margin="0,0,0,24" Grid.Row="2"/>
-                    
-                    <!-- Progress Bar -->
-                    <ProgressBar Value="{Binding ProgressPercentage}" Height="6" Grid.Row="3" VerticalAlignment="Bottom"/>
+                
+                <Grid>
+                    <!-- STATE 1: IN PROGRESS (IsImportSuccess == False) -->
+                    <Grid Visibility="{Binding IsImportSuccess, Converter={StaticResource InverseBooleanToVisibilityConverter}}">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+                        
+                        <!-- Spinner -->
+                        <Control Style="{StaticResource SpinnerStyle}" HorizontalAlignment="Center" Margin="0,0,0,20" Grid.Row="0"/>
+                        
+                        <!-- Title -->
+                        <TextBlock Text="{x:Static lex:Translations.Import_Importing}" 
+                                   FontWeight="SemiBold" FontSize="16" 
+                                   Foreground="{StaticResource TextBrush}"
+                                   HorizontalAlignment="Center" Margin="0,0,0,8" Grid.Row="1"/>
+                        
+                        <!-- Subtext -->
+                        <TextBlock Text="{x:Static lex:Translations.Import_PleaseWait}" 
+                                   Style="{StaticResource MutedTextBlockStyle}" 
+                                   HorizontalAlignment="Center" Margin="0,0,0,8" Grid.Row="2"/>
+
+                        <!-- Remaining Time Text -->
+                        <TextBlock Text="{Binding RemainingTimeText}" 
+                                   Style="{StaticResource MutedTextBlockStyle}" 
+                                   FontSize="12" FontWeight="Medium"
+                                   Foreground="{StaticResource AccentBrush}"
+                                   HorizontalAlignment="Center" Margin="0,0,0,20" Grid.Row="3"
+                                   Visibility="{Binding RemainingTimeText, Converter={StaticResource NullToVisibilityConverter}}"/>
+                        
+                        <!-- Progress Bar -->
+                        <ProgressBar Value="{Binding ProgressPercentage}" Height="6" Grid.Row="4" VerticalAlignment="Bottom"/>
+                    </Grid>
+
+                    <!-- STATE 2: SUCCESS STATE (IsImportSuccess == True) -->
+                    <Grid Visibility="{Binding IsImportSuccess, Converter={StaticResource BooleanToVisibilityConverter}}">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+
+                        <!-- Animated Celebration Graphic Container -->
+                        <Grid Grid.Row="0" HorizontalAlignment="Center" Margin="0,0,0,20" Width="100" Height="100">
+                            <!-- Sprinkle Particles Burst -->
+                            <Canvas x:Name="SprinklesCanvas" Width="100" Height="100" RenderTransformOrigin="0.5,0.5">
+                                <Canvas.RenderTransform>
+                                    <ScaleTransform ScaleX="1" ScaleY="1"/>
+                                </Canvas.RenderTransform>
+                                <Canvas.Style>
+                                    <Style TargetType="Canvas">
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding IsImportSuccess}" Value="True">
+                                                <DataTrigger.EnterActions>
+                                                    <BeginStoryboard>
+                                                        <Storyboard>
+                                                            <DoubleAnimation Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleX)"
+                                                                             From="0.2" To="1.25" Duration="0:0:0.65"/>
+                                                            <DoubleAnimation Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleY)"
+                                                                             From="0.2" To="1.25" Duration="0:0:0.65"/>
+                                                            <DoubleAnimation Storyboard.TargetProperty="Opacity"
+                                                                             From="0.0" To="1.0" Duration="0:0:0.3" AutoReverse="True"/>
+                                                        </Storyboard>
+                                                    </BeginStoryboard>
+                                                </DataTrigger.EnterActions>
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </Canvas.Style>
+                                <Ellipse Width="6" Height="6" Fill="#10B981" Canvas.Left="47" Canvas.Top="6"/>
+                                <Ellipse Width="7" Height="7" Fill="#3B82F6" Canvas.Left="76" Canvas.Top="18"/>
+                                <Ellipse Width="6" Height="6" Fill="#F59E0B" Canvas.Left="86" Canvas.Top="47"/>
+                                <Ellipse Width="7" Height="7" Fill="#10B981" Canvas.Left="74" Canvas.Top="76"/>
+                                <Ellipse Width="6" Height="6" Fill="#EC4899" Canvas.Left="47" Canvas.Top="86"/>
+                                <Ellipse Width="7" Height="7" Fill="#8B5CF6" Canvas.Left="18" Canvas.Top="76"/>
+                                <Ellipse Width="6" Height="6" Fill="#10B981" Canvas.Left="8" Canvas.Top="47"/>
+                                <Ellipse Width="7" Height="7" Fill="#3B82F6" Canvas.Left="18" Canvas.Top="18"/>
+                            </Canvas>
+
+                            <!-- Green Filled Circle with Masked Checkmark -->
+                            <Grid Width="64" Height="64" HorizontalAlignment="Center" VerticalAlignment="Center" RenderTransformOrigin="0.5,0.5">
+                                <Grid.RenderTransform>
+                                    <ScaleTransform ScaleX="1" ScaleY="1"/>
+                                </Grid.RenderTransform>
+                                <Grid.Style>
+                                    <Style TargetType="Grid">
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding IsImportSuccess}" Value="True">
+                                                <DataTrigger.EnterActions>
+                                                    <BeginStoryboard>
+                                                        <Storyboard>
+                                                            <DoubleAnimation Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleX)"
+                                                                             From="0.2" To="1.0" Duration="0:0:0.5">
+                                                                <DoubleAnimation.EasingFunction>
+                                                                    <BackEase EasingMode="EaseOut" Amplitude="0.7"/>
+                                                                </DoubleAnimation.EasingFunction>
+                                                            </DoubleAnimation>
+                                                            <DoubleAnimation Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleY)"
+                                                                             From="0.2" To="1.0" Duration="0:0:0.5">
+                                                                <DoubleAnimation.EasingFunction>
+                                                                    <BackEase EasingMode="EaseOut" Amplitude="0.7"/>
+                                                                </DoubleAnimation.EasingFunction>
+                                                            </DoubleAnimation>
+                                                        </Storyboard>
+                                                    </BeginStoryboard>
+                                                </DataTrigger.EnterActions>
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </Grid.Style>
+
+                                <Ellipse Width="64" Height="64">
+                                    <Ellipse.Fill>
+                                        <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                                            <GradientStop Color="#8B5CF6" Offset="0.0"/>
+                                            <GradientStop Color="#6D28D9" Offset="1.0"/>
+                                        </LinearGradientBrush>
+                                    </Ellipse.Fill>
+                                    <Ellipse.Effect>
+                                        <DropShadowEffect Color="#7C3AED" Opacity="0.45" BlurRadius="20" ShadowDepth="4" Direction="270"/>
+                                    </Ellipse.Effect>
+                                </Ellipse>
+
+                                <!-- Perfectly Centered White Masked Checkmark Path -->
+                                <Canvas Width="64" Height="64" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                    <Path Data="M19,33 L27,41 L45,23" 
+                                          Stroke="White" 
+                                          StrokeThickness="4.5" 
+                                          StrokeStartLineCap="Round" 
+                                          StrokeEndLineCap="Round" 
+                                          StrokeLineJoin="Round"/>
+                                </Canvas>
+                            </Grid>
+                        </Grid>
+
+                        <!-- Title -->
+                        <TextBlock Text="{Binding ImportSuccessTitle}" 
+                                   FontWeight="Bold" FontSize="18" 
+                                   Foreground="{StaticResource TextBrush}"
+                                   HorizontalAlignment="Center" Margin="0,0,0,8" Grid.Row="1"/>
+                        
+                        <!-- Success Message -->
+                        <TextBlock Text="{Binding ImportSuccessMessage}" 
+                                   Style="{StaticResource MutedTextBlockStyle}" 
+                                   FontSize="13" TextWrapping="Wrap" TextAlignment="Center"
+                                   HorizontalAlignment="Center" Margin="0,0,0,8" Grid.Row="2"/>
+
+                        <!-- Duration Text -->
+                        <TextBlock Text="{Binding ImportDurationText}" 
+                                   FontWeight="SemiBold" FontSize="13"
+                                   Foreground="{StaticResource AccentBrush}"
+                                   HorizontalAlignment="Center" Margin="0,0,0,24" Grid.Row="3"/>
+                        
+                        <!-- Done Button -->
+                        <Button Content="{x:Static lex:Translations.Import_DoneButton}" 
+                                Command="{Binding CloseImportSuccessCommand}"
+                                Style="{StaticResource ModernButtonStyle}" 
+                                Width="140" HorizontalAlignment="Center" Grid.Row="4"/>
+                    </Grid>
                 </Grid>
             </Border>
         </Grid>

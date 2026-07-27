@@ -37,7 +37,7 @@ Please help maintain a professional, respectful, and welcoming environment for e
 
 ### Coding Style
 - Follow standard C# styling conventions.
-- Keep implementation simple and direct (KISS/Ponytail principles). Prefer standard library features over custom utilities, and keep external dependencies to a minimum.
+- Keep implementation simple and direct. Prefer standard library features over custom utilities, and keep external dependencies to a minimum.
 
 ### Testing Changes
 - Extend or modify tests inside the `src/BexioOrderImport.Tests/` directory if you modify parsing or business workflows.
@@ -58,6 +58,21 @@ Please help maintain a professional, respectful, and welcoming environment for e
   ./build/run-coverage.ps1
   ```
 - Pull requests with failing tests or decreased test coverage cannot be approved.
+
+### Building the Installer
+
+To compile the Windows installer executable (`BexioOrderImportSetup.exe`) locally:
+
+1. Ensure **Inno Setup 6** is installed on your machine.
+2. Publish the WPF application:
+   ```bash
+   dotnet publish src/BexioOrderImport.Wpf/BexioOrderImport.Wpf.csproj -c Release -o publish
+   ```
+3. Compile the Inno Setup script:
+   ```cmd
+   iscc /DAppVersion=1.0.0 build/setup.iss
+   ```
+   The generated setup executable will be created in `build/Output/BexioOrderImportSetup.exe` (or in the working directory).
 
 ### Adding New Excel Field Mappings
 

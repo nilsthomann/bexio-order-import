@@ -138,12 +138,6 @@
   <data name="Import_DragDropText" xml:space="preserve">
     <value>Drag Excel order form here or click to browse</value>
   </data>
-  <data name="Import_BrowseButton" xml:space="preserve">
-    <value>Select File</value>
-  </data>
-  <data name="Import_SelectFileTitle" xml:space="preserve">
-    <value>Select Excel Order Form</value>
-  </data>
   <data name="Import_OrderHeader" xml:space="preserve">
     <value>Order Header Details</value>
   </data>
@@ -159,8 +153,8 @@
   <data name="Import_Buyer" xml:space="preserve">
     <value>Buyer</value>
   </data>
-  <data name="Import_DeliveryDate" xml:space="preserve">
-    <value>Date</value>
+  <data name="Import_OrderId" xml:space="preserve">
+    <value>Order ID</value>
   </data>
   <data name="Import_Conditions" xml:space="preserve">
     <value>Terms</value>
@@ -192,38 +186,46 @@
   <data name="Import_ColTotalPrice" xml:space="preserve">
     <value>Total (CHF)</value>
   </data>
-  <data name="Import_SummaryQuantity" xml:space="preserve">
-    <value>Total Quantity</value>
-  </data>
-  <data name="Import_SummaryGross" xml:space="preserve">
-    <value>Gross Amount</value>
-  </data>
-  <data name="Import_SummaryDiscount" xml:space="preserve">
-    <value>Discount</value>
-  </data>
-  <data name="Import_SummaryNet" xml:space="preserve">
-    <value>Net Amount (excl. VAT)</value>
-  </data>
   <data name="Import_UploadButton" xml:space="preserve">
     <value>Import to Bexio</value>
   </data>
-  <data name="Import_NoPositions" xml:space="preserve">
-    <value>No order positions with quantity &gt; 0 found.</value>
-  </data>
-  <data name="Import_SelectFileFirst" xml:space="preserve">
-    <value>Please select an Excel file first.</value>
-  </data>
   <data name="Import_LogHeader" xml:space="preserve">
     <value>Import Log</value>
-  </data>
-  <data name="Import_ProgressText" xml:space="preserve">
-    <value>Uploaded: {0} / {1} positions</value>
   </data>
   <data name="Import_SuccessTitle" xml:space="preserve">
     <value>Success</value>
   </data>
   <data name="Import_SuccessMessage" xml:space="preserve">
     <value>Order #{0} was successfully created in Bexio!</value>
+  </data>
+  <data name="Import_SuccessDuration" xml:space="preserve">
+    <value>Total duration: {0}</value>
+  </data>
+  <data name="Import_DoneButton" xml:space="preserve">
+    <value>Done</value>
+  </data>
+  <data name="Import_FileLockedTitle" xml:space="preserve">
+    <value>File In Use</value>
+  </data>
+  <data name="Import_FileLockedMessage" xml:space="preserve">
+    <value>The file "{0}" cannot be opened because it is currently being used by another process (e.g. Microsoft Excel).
+
+Please close the file in Excel and try again.</value>
+  </data>
+  <data name="Settings_EnableRowDiscount" xml:space="preserve">
+    <value>Enable Row Discount</value>
+  </data>
+  <data name="Settings_ColRowDiscount" xml:space="preserve">
+    <value>Row Discount Column</value>
+  </data>
+  <data name="Import_ColDiscount" xml:space="preserve">
+    <value>Discount %</value>
+  </data>
+  <data name="Import_ColGrossPrice" xml:space="preserve">
+    <value>Gross CHF</value>
+  </data>
+  <data name="Import_ColNetPrice" xml:space="preserve">
+    <value>Net CHF</value>
   </data>
   <data name="Settings_Header" xml:space="preserve">
     <value>Configuration Settings</value>
@@ -246,9 +248,6 @@
   <data name="Settings_TaxLabel" xml:space="preserve">
     <value>Tax rate</value>
   </data>
-  <data name="Settings_ExcelSection" xml:space="preserve">
-    <value>Excel Mapping Configuration</value>
-  </data>
   <data name="Settings_HeaderSection" xml:space="preserve">
     <value>Header Coordinates (Cells)</value>
   </data>
@@ -258,20 +257,14 @@
   <data name="Settings_CellStreet" xml:space="preserve">
     <value>Street cell</value>
   </data>
-  <data name="Settings_CellZipCode" xml:space="preserve">
-    <value>ZIP Code &amp; City cell</value>
-  </data>
-  <data name="Settings_CellCity" xml:space="preserve">
-    <value>City cell</value>
-  </data>
   <data name="Settings_CellEmail" xml:space="preserve">
     <value>E-Mail cell</value>
   </data>
   <data name="Settings_CellBuyerName" xml:space="preserve">
     <value>Buyer Name cell</value>
   </data>
-  <data name="Settings_CellDeliveryDate" xml:space="preserve">
-    <value>Date cell</value>
+  <data name="Settings_CellOrderId" xml:space="preserve">
+    <value>Order ID cell</value>
   </data>
   <data name="Settings_CellPaymentTerms" xml:space="preserve">
     <value>Payment Terms cell</value>
@@ -287,9 +280,6 @@
   </data>
   <data name="Settings_MatrixEnd" xml:space="preserve">
     <value>Matrix End Row</value>
-  </data>
-  <data name="Settings_RowsSection" xml:space="preserve">
-    <value>Article Grid Rows</value>
   </data>
   <data name="Settings_RowStart" xml:space="preserve">
     <value>First Article Row</value>
@@ -312,20 +302,11 @@
   <data name="Settings_SaveButton" xml:space="preserve">
     <value>Save Settings</value>
   </data>
-  <data name="Settings_SaveSuccess" xml:space="preserve">
-    <value>Settings successfully saved.</value>
-  </data>
   <data name="CustomerConfirm_Title" xml:space="preserve">
     <value>Create new Customer in Bexio?</value>
   </data>
   <data name="CustomerConfirm_Warning" xml:space="preserve">
-    <value>A customer with this e-mail address was not found in Bexio. Do you want to create a new contact?</value>
-  </data>
-  <data name="CustomerConfirm_Field" xml:space="preserve">
-    <value>Field</value>
-  </data>
-  <data name="CustomerConfirm_Value" xml:space="preserve">
-    <value>Value for creation</value>
+    <value>A customer with this email was not found in Bexio. Do you want to create a new contact?</value>
   </data>
   <data name="CustomerConfirm_CreateButton" xml:space="preserve">
     <value>Create Contact &amp; Continue</value>
@@ -375,9 +356,6 @@
   <data name="Settings_LanguageEnglish" xml:space="preserve">
     <value>English</value>
   </data>
-  <data name="Settings_RestartPrompt" xml:space="preserve">
-    <value>Settings saved. Please restart the application to apply the language change.</value>
-  </data>
   <data name="Settings_ColStartQty" xml:space="preserve">
     <value>First Quantity Column</value>
   </data>
@@ -389,15 +367,6 @@
   </data>
   <data name="Settings_ProfilesSection" xml:space="preserve">
     <value>Excel Mapping Profiles</value>
-  </data>
-  <data name="Settings_ProfilesSelectLabel" xml:space="preserve">
-    <value>Selected Profile</value>
-  </data>
-  <data name="Settings_ProfilesActiveLabel" xml:space="preserve">
-    <value>Active Profile</value>
-  </data>
-  <data name="Settings_ProfilesNewNamePlaceholder" xml:space="preserve">
-    <value>New profile name</value>
   </data>
   <data name="Settings_ProfilesAddButton" xml:space="preserve">
     <value>Create</value>
@@ -419,9 +388,6 @@
   </data>
   <data name="Settings_ProfilesTableColActive" xml:space="preserve">
     <value>Active</value>
-  </data>
-  <data name="Settings_ProfilesTableColActions" xml:space="preserve">
-    <value>Actions</value>
   </data>
   <data name="Settings_ProfilesCloneButton" xml:space="preserve">
     <value>Clone</value>
@@ -511,7 +477,10 @@
     <value>Confirmation</value>
   </data>
   <data name="Settings_WorksheetSection" xml:space="preserve">
-    <value>Excel Worksheet</value>
+    <value>Profile Information</value>
+  </data>
+  <data name="Settings_TextTemplatesSection" xml:space="preserve">
+    <value>Text Templates &amp; Formatting</value>
   </data>
   <data name="Settings_WorksheetLabel" xml:space="preserve">
     <value>Excel Worksheet Index:</value>
@@ -540,19 +509,58 @@
   <data name="Update_Error" xml:space="preserve">
     <value>Update error: {0}</value>
   </data>
-  <data name="Import_NoDeliveryDate" xml:space="preserve">
-    <value>Not defined</value>
+  <data name="Import_NoOrderId" xml:space="preserve">
+    <value>No Order ID</value>
+  </data>
+  <data name="Settings_DefaultOrderNameLabel" xml:space="preserve">
+    <value>Order Name Template:</value>
+  </data>
+  <data name="Settings_DefaultOrderNameHint" xml:space="preserve">
+    <value>Placeholders: {CustomerName}, {SeasonCode}. Example: Order: {CustomerName} {SeasonCode}</value>
+  </data>
+  <data name="Settings_SeasonCodeLabel" xml:space="preserve">
+    <value>Season Code:</value>
   </data>
   <data name="Settings_PositionTextTemplateLabel" xml:space="preserve">
     <value>Position Text Template:</value>
   </data>
   <data name="Settings_PositionTextTemplateHint" xml:space="preserve">
-    <value>Available placeholders: {Color}, {Size}, {ArticleNumber}, {ArticleName}. Default: Color: {Color}, Size: {Size}</value>
-  </data>
-  <data name="Settings_PositionTextTemplateSection" xml:space="preserve">
-    <value>Position Text Template</value>
+    <value>Placeholders: {Color}, {Size}, {ArticleNumber}, {ArticleName}, {BexioArticleName}, {BexioArticleDescription}</value>
   </data>
   <data name="Error_SelectAccountAndTax" xml:space="preserve">
     <value>Please select a default account and a default tax rate in the settings.</value>
+  </data>
+  <data name="Import_EmailMismatchTitle" xml:space="preserve">
+    <value>Email Mismatch</value>
+  </data>
+  <data name="Import_EmailMismatchMessage" xml:space="preserve">
+    <value>The Bexio order email ({0}) does not match the Excel email ({1}). Do you want to continue the import anyway?</value>
+  </data>
+  <data name="Import_EstimatingTime" xml:space="preserve">
+    <value>Estimating...</value>
+  </data>
+  <data name="Import_ProgressTime" xml:space="preserve">
+    <value>Elapsed: {0} | Remaining: {1}</value>
+  </data>
+  <data name="Import_ProgressTimeElapsedOnly" xml:space="preserve">
+    <value>Elapsed: {0}</value>
+  </data>
+  <data name="Dialog_DiscardChanges" xml:space="preserve">
+    <value>Discard Changes</value>
+  </data>
+  <data name="Dialog_PendingChangesTitle" xml:space="preserve">
+    <value>Unsaved Changes</value>
+  </data>
+  <data name="Dialog_PendingChangesMessage" xml:space="preserve">
+    <value>You have unsaved changes in Settings. Do you want to discard them?</value>
+  </data>
+  <data name="Settings_DiscountPositionTextTemplateLabel" xml:space="preserve">
+    <value>Discount Line Text Template:</value>
+  </data>
+  <data name="Settings_DiscountPositionTextTemplateHint" xml:space="preserve">
+    <value>Available placeholders: {DiscountInPercent}</value>
+  </data>
+  <data name="Settings_CellZipCodeCity" xml:space="preserve">
+    <value>ZIP Code &amp; City cell</value>
   </data>
 </root>

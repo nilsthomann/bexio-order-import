@@ -13,17 +13,23 @@ public class UpdateService : IUpdateService
 {
     private readonly HttpClient _httpClient;
     private readonly IAppLifecycleService _appLifecycleService;
-    private const string RepoOwner = "nils-thomann";
+    private const string RepoOwner = "nilsthomann";
     private const string RepoName = "bexio-order-import";
 
-    public UpdateService(IAppLifecycleService appLifecycleService) : this(new HttpClient(), appLifecycleService) { }
+    public UpdateService(IHttpClientFactory httpClientFactory, IAppLifecycleService appLifecycleService)
+        : this(httpClientFactory?.CreateClient("GitHubUpdate"), appLifecycleService) { }
 
-    public UpdateService(HttpClient httpClient, IAppLifecycleService appLifecycleService)
+    internal UpdateService(IAppLifecycleService appLifecycleService)
+        : this(new HttpClient(), appLifecycleService) { }
+
+    internal UpdateService(HttpClient? httpClient, IAppLifecycleService appLifecycleService)
     {
-        _httpClient = httpClient;
-        _appLifecycleService = appLifecycleService;
-        // GitHub API requires a User-Agent header
-        _httpClient.DefaultRequestHeaders.UserAgent.Add(new ProductInfoHeaderValue("BexioOrderImporter", "1.0"));
+        _httpClient = httpClient ?? new HttpClient();
+        _appLifecycleService = appLifecycleService ?? throw new ArgumentNullException(nameof(appLifecycleService));
+        if (!_httpClient.DefaultRequestHeaders.UserAgent.Any())
+        {
+            _httpClient.DefaultRequestHeaders.UserAgent.Add(new ProductInfoHeaderValue("BexioOrderImporter", "1.0"));
+        }
     }
 
     private bool IsUpdateCheckCached(string cacheFilePath)
@@ -63,7 +69,7 @@ public class UpdateService : IUpdateService
             {
                 if (asset.TryGetProperty("name", out var nameProp))
                 {
-                    string name = nameProp.GetString() ?? "";
+                    string name = nameProp.GetString() ?? string.Empty;
                     if (name.Equals("BexioOrderImportSetup.exe", StringComparison.OrdinalIgnoreCase))
                     {
                         return asset.GetProperty("browser_download_url").GetString();
@@ -97,7 +103,7 @@ public class UpdateService : IUpdateService
             var root = doc.RootElement;
 
             if (!root.TryGetProperty("tag_name", out var tagProp)) return null;
-            string rawTag = tagProp.GetString() ?? "";
+            string rawTag = tagProp.GetString() ?? string.Empty;
 
             var currentVersion = Assembly.GetExecutingAssembly().GetName().Version;
             if (!IsNewerVersion(rawTag, currentVersion)) return null;
@@ -105,7 +111,7 @@ public class UpdateService : IUpdateService
             string? downloadUrl = FindInstallerDownloadUrl(root);
             if (string.IsNullOrEmpty(downloadUrl)) return null;
 
-            string body = root.TryGetProperty("body", out var bodyProp) ? bodyProp.GetString() ?? "" : "";
+            string body = root.TryGetProperty("body", out var bodyProp) ? bodyProp.GetString() ?? string.Empty : "";
 
             return new UpdateInfo
             {

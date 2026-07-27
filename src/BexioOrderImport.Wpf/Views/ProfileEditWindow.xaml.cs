@@ -9,11 +9,13 @@ namespace BexioOrderImport.Wpf.Views;
 public partial class ProfileEditWindow : Window
 {
     private readonly MappingProfile _profile;
+    private readonly System.Collections.Generic.IEnumerable<MappingProfile>? _existingProfiles;
 
-    public ProfileEditWindow(MappingProfile profile)
+    public ProfileEditWindow(MappingProfile profile, System.Collections.Generic.IEnumerable<MappingProfile>? existingProfiles = null)
     {
         InitializeComponent();
         _profile = profile ?? throw new ArgumentNullException(nameof(profile));
+        _existingProfiles = existingProfiles;
 
         Title = $"{Translations.Settings_ProfilesEditTitle}: {profile.Name}";
         TitleTextBlock.Text = $"{Translations.Settings_ProfilesEditTitle}: {profile.Name}";
@@ -53,6 +55,7 @@ public partial class ProfileEditWindow : Window
 
     private void LoadProfileData()
     {
+        ProfileNameInput.Text = _profile.Name;
         WorksheetIndexInput.Text = _profile.Mapping.WorksheetIndex.ToString();
 
         CompanyNameCellInput.Text = _profile.Mapping.Header.CompanyNameCell;
@@ -60,7 +63,7 @@ public partial class ProfileEditWindow : Window
         ZipCityCellInput.Text = _profile.Mapping.Header.ZipCityCell;
         BuyerEmailCellInput.Text = _profile.Mapping.Header.BuyerEmailCell;
         BuyerNameCellInput.Text = _profile.Mapping.Header.BuyerNameCell;
-        DeliveryDateCellInput.Text = _profile.Mapping.Header.DeliveryDateCell;
+        OrderIdCellInput.Text = _profile.Mapping.Header.OrderIdCell;
         PaymentTermsCellInput.Text = _profile.Mapping.Header.PaymentTermsCell;
         DiscountCellInput.Text = _profile.Mapping.Header.DiscountCell;
 
@@ -78,13 +81,36 @@ public partial class ProfileEditWindow : Window
         ColStartQtyInput.Text = _profile.Mapping.Data.StartQtyColumn.ToString();
         ColEndQtyInput.Text = _profile.Mapping.Data.EndQtyColumn.ToString();
         ColUnitPriceInput.Text = _profile.Mapping.Data.UnitPriceColumn.ToString();
+        EnableRowDiscountCheckBox.IsChecked = _profile.Mapping.Data.EnableRowDiscount;
+        ColRowDiscountInput.Text = _profile.Mapping.Data.RowDiscountColumn.ToString();
+        DefaultOrderNameInput.Text = _profile.Mapping.DefaultOrderName;
+        SeasonCodeInput.Text = _profile.Mapping.SeasonCode;
         PositionTextTemplateInput.Text = _profile.Mapping.PositionTextTemplate;
+        DiscountPositionTextTemplateInput.Text = _profile.Mapping.DiscountPositionTextTemplate;
     }
 
     private void Save_Click(object sender, RoutedEventArgs e)
     {
         try
         {
+            string newName = ProfileNameInput.Text.Trim();
+            if (string.IsNullOrWhiteSpace(newName))
+            {
+                Views.CustomDialog.ShowWarning(Translations.Dialog_ProfileNameRequired);
+                return;
+            }
+
+            if (!newName.Equals(_profile.Name, StringComparison.OrdinalIgnoreCase))
+            {
+                if (_existingProfiles != null && System.Linq.Enumerable.Any(_existingProfiles, p => p != _profile && p.Name.Equals(newName, StringComparison.OrdinalIgnoreCase)))
+                {
+                    Views.CustomDialog.ShowError(Translations.Dialog_ProfileNameExists, Translations.Dialog_ErrorTitle);
+                    return;
+                }
+            }
+
+            _profile.Name = newName;
+
             // Parse and Validate inputs
             _profile.Mapping.WorksheetIndex = int.Parse(WorksheetIndexInput.Text.Trim());
 
@@ -93,7 +119,7 @@ public partial class ProfileEditWindow : Window
             _profile.Mapping.Header.ZipCityCell = ZipCityCellInput.Text.Trim();
             _profile.Mapping.Header.BuyerEmailCell = BuyerEmailCellInput.Text.Trim();
             _profile.Mapping.Header.BuyerNameCell = BuyerNameCellInput.Text.Trim();
-            _profile.Mapping.Header.DeliveryDateCell = DeliveryDateCellInput.Text.Trim();
+            _profile.Mapping.Header.OrderIdCell = OrderIdCellInput.Text.Trim();
             _profile.Mapping.Header.PaymentTermsCell = PaymentTermsCellInput.Text.Trim();
             _profile.Mapping.Header.DiscountCell = DiscountCellInput.Text.Trim();
 
@@ -111,7 +137,12 @@ public partial class ProfileEditWindow : Window
             _profile.Mapping.Data.StartQtyColumn = int.Parse(ColStartQtyInput.Text.Trim());
             _profile.Mapping.Data.EndQtyColumn = int.Parse(ColEndQtyInput.Text.Trim());
             _profile.Mapping.Data.UnitPriceColumn = int.Parse(ColUnitPriceInput.Text.Trim());
+            _profile.Mapping.Data.EnableRowDiscount = EnableRowDiscountCheckBox.IsChecked == true;
+            _profile.Mapping.Data.RowDiscountColumn = int.Parse(ColRowDiscountInput.Text.Trim());
+            _profile.Mapping.DefaultOrderName = DefaultOrderNameInput.Text.Trim();
+            _profile.Mapping.SeasonCode = SeasonCodeInput.Text.Trim();
             _profile.Mapping.PositionTextTemplate = PositionTextTemplateInput.Text.Trim();
+            _profile.Mapping.DiscountPositionTextTemplate = DiscountPositionTextTemplateInput.Text.Trim();
 
             DialogResult = true;
             Close();

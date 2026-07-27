@@ -1,7 +1,7 @@
 using BexioOrderImport.Application.Options;
 using BexioOrderImport.Domain.Models;
 using BexioOrderImport.Infrastructure.Excel;
-using BexioOrderImport.Wpf.Services;
+using BexioOrderImport.Tests.Utils;
 using FluentAssertions;
 
 namespace BexioOrderImport.Tests;
@@ -23,7 +23,7 @@ public class ExcelParserTests
                 ZipCityCell = "B6",
                 BuyerEmailCell = "E5",
                 BuyerNameCell = "E4",
-                DeliveryDateCell = "T7",
+                OrderIdCell = "E6",
                 PaymentTermsCell = "A9",
                 DiscountCell = "V12"
             },
@@ -70,6 +70,21 @@ public class ExcelParserTests
         // Arrange
         string filePath = FindExcelFile("AnonymizedOrder.xlsx");
 
+        // Restore original AnonymizedOrder.xlsx matrix category names
+        using (var wb = new ClosedXML.Excel.XLWorkbook(filePath))
+        {
+            var ws = wb.Worksheet(1);
+            ws.Cell("D10").Value = "Mittens/Acc";
+            ws.Cell("D11").Value = "Hats/Necks";
+            ws.Cell("D12").Value = "Shoes";
+            ws.Cell("D13").Value = "Socks/UWear";
+            ws.Cell("D14").Value = "Shoes 20-31";
+            ws.Cell("D15").Value = "Shoes 32-41";
+            ws.Cell("D16").Value = "Mini";
+            ws.Cell("E5").Value = "test@test.com";
+            wb.Save();
+        }
+
         // Act
         var order = _parser.ParseOrderForm(filePath);
 
@@ -81,11 +96,11 @@ public class ExcelParserTests
         order.Customer.Street.Should().Be("Musterstrasse 12");
         order.Customer.ZipCode.Should().Be("8000");
         order.Customer.City.Should().Be("Zürich");
-        order.Customer.Email.Should().Be("chris@peakmile.com");
+        order.Customer.Email.Should().Be("test@test.com");
         order.Customer.BuyerName.Should().Be("Hans Muster");
 
         // 2. Delivery & payment terms assertions
-        order.DeliveryDate.Should().Be(new DateTime(2026, 5, 28));
+        order.OrderId.Should().BeNull();
         order.PaymentTerms.Should().Be("10 Tage 4% Skonto, 30 Tage netto");
 
         // 3. Totals assertions
@@ -123,6 +138,42 @@ public class ExcelParserTests
     }
 
     [Fact]
+    public void ParseOrderForm_WithFileStreamOpenWithReadWriteShare_ShouldSucceed()
+    {
+        // Arrange
+        string filePath = Path.Combine(Path.GetTempPath(), $"test_share_{Guid.NewGuid():N}.xlsx");
+        try
+        {
+            using (var wb = new ClosedXML.Excel.XLWorkbook())
+            {
+                var ws = wb.Worksheets.Add("Bestellformular");
+                ws.Cell("B4").Value = "Test Company";
+                ws.Cell("B5").Value = "Test Street";
+                ws.Cell("B6").Value = "8000 Zurich";
+                ws.Cell("E5").Value = "test@example.com";
+                ws.Cell("E4").Value = "Test Buyer";
+                ws.Cell("E6").Value = "1001";
+                ws.Cell("A9").Value = "30 Tage netto";
+                wb.SaveAs(filePath);
+            }
+
+            // Open file with FileShare.ReadWrite to simulate Excel open in read share
+            using var fileLockStream = new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
+
+            // Act
+            var order = _parser.ParseOrderForm(filePath);
+
+            // Assert
+            order.Should().NotBeNull();
+            order.Customer.CompanyName.Should().Be("Test Company");
+        }
+        finally
+        {
+            if (File.Exists(filePath)) File.Delete(filePath);
+        }
+    }
+
+    [Fact]
     public void InMemoryExcelParser_ShouldReturnProvidedOrder()
     {
         // Arrange
@@ -138,54 +189,85 @@ public class ExcelParserTests
     }
 
     [Fact]
-    public void MapCategoryName_ShouldWorkForVariousInputs()
+    public void ParseOrderForm_WhenCategoryNotInMatrix_ShouldThrowInvalidOperationException()
     {
-        // Get the private MapCategoryName method using reflection
-        var method = typeof(ClosedXmlExcelParser).GetMethod("MapCategoryName", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static);
-        method.Should().NotBeNull();
+        using var workbook = new ClosedXML.Excel.XLWorkbook();
+        var sheet = workbook.Worksheets.Add("Order Form");
 
-        var categories = new[] { "Hats/Necks", "Mittens/Acc", "Socks/UWear", "Shoes 32-42", "Shoes 20-31", "Other Category" };
+        sheet.Cell("B4").Value = "Test Company";
+        sheet.Cell("B5").Value = "Test Street";
+        sheet.Cell("B6").Value = "8000 Zurich";
 
-        // Test 1: Null or whitespace
-        method!.Invoke(_parser, ["", categories]).Should().BeNull();
-        method.Invoke(_parser, [null!, categories]).Should().BeNull();
+        // Matrix has "ValidCategory"
+        sheet.Cell("D10").Value = "ValidCategory";
+        sheet.Cell("E10").Value = "S";
 
-        // Test 2: Exact Match
-        method.Invoke(_parser, ["Other Category", categories]).Should().Be("Other Category");
+        // Data row has "UnknownCategory"
+        sheet.Cell("A18").Value = "ART001";
+        sheet.Cell("B18").Value = "Article 1";
+        sheet.Cell("D18").Value = "UnknownCategory";
+        sheet.Cell("E18").Value = 5;
 
-        // Test 3: Acc/Mitten robust mapping
-        method.Invoke(_parser, ["Mittens", categories]).Should().Be("Mittens/Acc");
-        method.Invoke(_parser, ["Acc", categories]).Should().Be("Mittens/Acc");
+        string tempPath = Path.Combine(Path.GetTempPath(), $"{Guid.NewGuid()}.xlsx");
+        workbook.SaveAs(tempPath);
 
-        // Test 4: Socks/UWear robust mapping
-        method.Invoke(_parser, ["Socks", categories]).Should().Be("Socks/UWear");
-        method.Invoke(_parser, ["UWear", categories]).Should().Be("Socks/UWear");
+        try
+        {
+            Action act = () => _parser.ParseOrderForm(tempPath);
+            act.Should().Throw<InvalidOperationException>()
+               .WithMessage("*Category 'UnknownCategory' on row 18 is not defined in the size matrix.*");
+        }
+        finally
+        {
+            try { File.Delete(tempPath); } catch { }
+        }
+    }
 
-        // Test 5: Shoes robust mapping
-        method.Invoke(_parser, ["Shoes 32", categories]).Should().Be("Shoes 32-42");
-        method.Invoke(_parser, ["Shoes 20", categories]).Should().Be("Shoes 20-31");
+    [Fact]
+    public void ParseOrderForm_WhenSizeHeaderMissing_ShouldThrowInvalidOperationException()
+    {
+        using var workbook = new ClosedXML.Excel.XLWorkbook();
+        var sheet = workbook.Worksheets.Add("Order Form");
 
-        // Test 6: StartsWith / Contains robust mapping fallback
-        method.Invoke(_parser, ["Other", categories]).Should().Be("Other Category");
+        sheet.Cell("B4").Value = "Test Company";
+        sheet.Cell("B5").Value = "Test Street";
 
-        // Test 7: No match
-        method.Invoke(_parser, ["Unregistered Category", categories]).Should().BeNull();
+        // Matrix has "CategoryA" with size only in col E (5), col F (6) is empty
+        sheet.Cell("D10").Value = "CategoryA";
+        sheet.Cell("E10").Value = "S";
+
+        // Data row has quantity in col F (6), which has no size header defined
+        sheet.Cell("A18").Value = "ART001";
+        sheet.Cell("B18").Value = "Article 1";
+        sheet.Cell("D18").Value = "CategoryA";
+        sheet.Cell("F18").Value = 10;
+
+        string tempPath = Path.Combine(Path.GetTempPath(), $"{Guid.NewGuid()}.xlsx");
+        workbook.SaveAs(tempPath);
+
+        try
+        {
+            Action act = () => _parser.ParseOrderForm(tempPath);
+            act.Should().Throw<InvalidOperationException>()
+               .WithMessage("*Size header for column 6 in category 'CategoryA'*");
+        }
+        finally
+        {
+            try { File.Delete(tempPath); } catch { }
+        }
     }
 
     [Fact]
     public void ExtractZipAndCity_ShouldHandleEdgeCases()
     {
-        var extractZip = typeof(ClosedXmlExcelParser).GetMethod("ExtractZip", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static);
-        var extractCity = typeof(ClosedXmlExcelParser).GetMethod("ExtractCity", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static);
+        ClosedXmlExcelParser.ExtractZipAndCity("").City.Should().Be("");
+        ClosedXmlExcelParser.ExtractZipAndCity("").Zip.Should().Be("");
 
-        extractZip!.Invoke(_parser, [""]).Should().Be("");
-        extractCity!.Invoke(_parser, [""]).Should().Be("");
-
-        extractZip.Invoke(_parser, ["8000"]).Should().Be("8000");
-        extractCity.Invoke(_parser, ["8000"]).Should().Be("");
+        ClosedXmlExcelParser.ExtractZipAndCity("8000").Zip.Should().Be("8000");
+        ClosedXmlExcelParser.ExtractZipAndCity("8000").City.Should().Be("");
     }
 
-    private static string CreateTemporaryExcelFile(string deliveryDateStr, string discountStr)
+    private static string CreateTemporaryExcelFile(string orderIdStr, string discountStr)
     {
         using var workbook = new ClosedXML.Excel.XLWorkbook();
         var sheet = workbook.Worksheets.Add("Order Form");
@@ -196,7 +278,7 @@ public class ExcelParserTests
         sheet.Cell("B6").Value = "8000 Zurich";
         sheet.Cell("E5").Value = "test@test.com";
         sheet.Cell("E4").Value = "Buyer Name";
-        sheet.Cell("T7").Value = deliveryDateStr;
+        sheet.Cell("E6").Value = orderIdStr;
         sheet.Cell("A9").Value = "30 Days";
         sheet.Cell("V12").Value = discountStr;
 
@@ -221,7 +303,7 @@ public class ExcelParserTests
     public void ParseOrderForm_WithDecimalDiscount_ShouldScaleToPercentage()
     {
         // Arrange
-        string filePath = CreateTemporaryExcelFile("2026-05-28", "0.05");
+        string filePath = CreateTemporaryExcelFile("123", "0.05");
 
         try
         {
@@ -238,10 +320,10 @@ public class ExcelParserTests
     }
 
     [Fact]
-    public void ParseOrderForm_WithInvalidDeliveryDate_ShouldReturnNullDeliveryDate()
+    public void ParseOrderForm_WithInvalidOrderId_ShouldReturnNullOrderId()
     {
         // Arrange
-        string filePath = CreateTemporaryExcelFile("invalid-date-value", "5%");
+        string filePath = CreateTemporaryExcelFile("invalid-id-value", "5%");
 
         try
         {
@@ -249,11 +331,211 @@ public class ExcelParserTests
             var order = _parser.ParseOrderForm(filePath);
 
             // Assert
-            order.DeliveryDate.Should().BeNull();
+            order.OrderId.Should().BeNull();
         }
         finally
         {
             try { File.Delete(filePath); } catch { }
+        }
+    }
+
+    [Fact]
+    public void ParseOrderForm_WithValidOrderId_ShouldParseOrderIdCorrectly()
+    {
+        // Arrange
+        string filePath = CreateTemporaryExcelFile("12345", "5%");
+
+        try
+        {
+            // Act
+            var order = _parser.ParseOrderForm(filePath);
+
+            // Assert
+            order.OrderId.Should().Be(12345);
+        }
+        finally
+        {
+            try { File.Delete(filePath); } catch { }
+        }
+    }
+
+    [Fact]
+    public void ParseOrderForm_WithRowDiscountEnabled_ShouldSetPositionDiscountPercent()
+    {
+        // Arrange
+        var options = new ExcelMappingOptions();
+        options.Data.EnableRowDiscount = true;
+        options.Data.RowDiscountColumn = 21;
+        var parser = new ClosedXmlExcelParser(Microsoft.Extensions.Options.Options.Create(options));
+
+        using var wb = new ClosedXML.Excel.XLWorkbook();
+        var ws = wb.Worksheets.Add("Bestellformular");
+        ws.Cell("B4").Value = "Firma AG";
+        ws.Cell("B5").Value = "Musterstrasse 1";
+        ws.Cell("B6").Value = "8000 Zurich";
+        ws.Cell("E5").Value = "info@firma.ch";
+
+        // Size matrix
+        ws.Cell(10, 4).Value = "KIDS";
+        ws.Cell(10, 5).Value = "92";
+
+        // Data row
+        ws.Cell(18, 1).Value = "ART-01";
+        ws.Cell(18, 2).Value = "Jacke";
+        ws.Cell(18, 3).Value = "Rot";
+        ws.Cell(18, 4).Value = "KIDS";
+        ws.Cell(18, 5).Value = 2; // Qty
+        ws.Cell(18, 20).Value = 100m; // Unit Price
+        ws.Cell(18, 21).Value = "15%"; // Row discount in Col 21
+
+        string tempPath = Path.Combine(Path.GetTempPath(), $"row_disc_{Guid.NewGuid():N}.xlsx");
+        wb.SaveAs(tempPath);
+
+        try
+        {
+            // Act
+            var order = parser.ParseOrderForm(tempPath);
+
+            // Assert
+            order.Positions.Should().HaveCount(1);
+            order.Positions[0].GrossUnitPrice.Should().Be(100m);
+            order.Positions[0].DiscountPercent.Should().Be(15m);
+            order.Positions[0].NetUnitPrice.Should().Be(85m);
+            order.Positions[0].TotalPrice.Should().Be(170m);
+        }
+        finally
+        {
+            if (File.Exists(tempPath)) File.Delete(tempPath);
+        }
+    }
+
+    [Fact]
+    public void ParseOrderForm_WithRowDiscountDisabled_ShouldKeepPositionDiscountNull()
+    {
+        // Arrange
+        var options = new ExcelMappingOptions();
+        options.Data.EnableRowDiscount = false;
+        options.Data.RowDiscountColumn = 21;
+        var parser = new ClosedXmlExcelParser(Microsoft.Extensions.Options.Options.Create(options));
+
+        using var wb = new ClosedXML.Excel.XLWorkbook();
+        var ws = wb.Worksheets.Add("Bestellformular");
+        ws.Cell("B4").Value = "Firma AG";
+        ws.Cell("B5").Value = "Musterstrasse 1";
+        ws.Cell("B6").Value = "8000 Zurich";
+        ws.Cell("E5").Value = "info@firma.ch";
+
+        // Size matrix
+        ws.Cell(10, 4).Value = "KIDS";
+        ws.Cell(10, 5).Value = "92";
+
+        // Data row
+        ws.Cell(18, 1).Value = "ART-01";
+        ws.Cell(18, 2).Value = "Jacke";
+        ws.Cell(18, 3).Value = "Rot";
+        ws.Cell(18, 4).Value = "KIDS";
+        ws.Cell(18, 5).Value = 2; // Qty
+        ws.Cell(18, 20).Value = 100m; // Unit Price
+        ws.Cell(18, 21).Value = "15%"; // Col 21 ignored because row discount is disabled
+
+        string tempPath = Path.Combine(Path.GetTempPath(), $"row_disc_dis_{Guid.NewGuid():N}.xlsx");
+        wb.SaveAs(tempPath);
+
+        try
+        {
+            // Act
+            var order = parser.ParseOrderForm(tempPath);
+
+            // Assert
+            order.Positions.Should().HaveCount(1);
+            order.Positions[0].GrossUnitPrice.Should().Be(100m);
+            order.Positions[0].DiscountPercent.Should().BeNull();
+            order.Positions[0].NetUnitPrice.Should().Be(100m);
+            order.Positions[0].TotalPrice.Should().Be(200m);
+        }
+        finally
+        {
+            if (File.Exists(tempPath)) File.Delete(tempPath);
+        }
+    }
+
+    [Fact]
+    [Trait("Category", "Unit")]
+    public void ParseOrderForm_WithRowDiscountEnabled_ShouldCalculateNetUnitPriceAndTotalCorrectly()
+    {
+        // Arrange
+        var options = new ExcelMappingOptions
+        {
+            Header = new HeaderMapping
+            {
+                CompanyNameCell = "A1",
+                StreetCell = "A2",
+                ZipCityCell = "A3",
+                BuyerEmailCell = "A4",
+                BuyerNameCell = "A5",
+                OrderIdCell = "A6",
+                PaymentTermsCell = "A7",
+                DiscountCell = "A8"
+            },
+            SizeMatrix = new SizeMatrixMapping
+            {
+                StartRow = 10,
+                EndRow = 10,
+                CategoryColumn = 4,
+                StartSizeColumn = 5,
+                EndSizeColumn = 5
+            },
+            Data = new DataMapping
+            {
+                StartRow = 18,
+                ArticleNumberColumn = 1,
+                ArticleNameColumn = 2,
+                ColorColumn = 3,
+                CategoryColumn = 4,
+                StartQtyColumn = 5,
+                EndQtyColumn = 5,
+                UnitPriceColumn = 6,
+                EnableRowDiscount = true,
+                RowDiscountColumn = 7
+            }
+        };
+
+        var parser = new ClosedXmlExcelParser(Microsoft.Extensions.Options.Options.Create(options));
+
+        using var wb = new ClosedXML.Excel.XLWorkbook();
+        var ws = wb.Worksheets.Add("Sheet1");
+
+        ws.Cell("A1").Value = "Test AG";
+        ws.Cell(10, 4).Value = "KIDS";
+        ws.Cell(10, 5).Value = "92";
+
+        ws.Cell(18, 1).Value = "ART-02";
+        ws.Cell(18, 2).Value = "Hose";
+        ws.Cell(18, 3).Value = "Blau";
+        ws.Cell(18, 4).Value = "KIDS";
+        ws.Cell(18, 5).Value = 2; // Qty
+        ws.Cell(18, 6).Value = 100m; // Unit Price
+        ws.Cell(18, 7).Value = "20%"; // 20% discount
+
+        string tempPath = Path.Combine(Path.GetTempPath(), $"row_disc_enabled_{Guid.NewGuid():N}.xlsx");
+        wb.SaveAs(tempPath);
+
+        try
+        {
+            // Act
+            var order = parser.ParseOrderForm(tempPath);
+
+            // Assert
+            order.Should().NotBeNull();
+            order.Positions.Should().HaveCount(1);
+            order.Positions[0].GrossUnitPrice.Should().Be(100m);
+            order.Positions[0].DiscountPercent.Should().Be(20m);
+            order.Positions[0].NetUnitPrice.Should().Be(80m);
+            order.Positions[0].TotalPrice.Should().Be(160m);
+        }
+        finally
+        {
+            if (File.Exists(tempPath)) File.Delete(tempPath);
         }
     }
 }

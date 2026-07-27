@@ -48,13 +48,25 @@ public partial class App : System.Windows.Application
 
         // Build DI container
         var services = new ServiceCollection();
-        services.AddHttpClient("BexioApi");
+        services.AddHttpClient("GitHubUpdate", client =>
+        {
+            client.DefaultRequestHeaders.UserAgent.Add(new System.Net.Http.Headers.ProductInfoHeaderValue("BexioOrderImporter", "1.0"));
+        });
+        services.AddHttpClient("BexioApi")
+        .ConfigurePrimaryHttpMessageHandler(() => new SocketsHttpHandler
+         {
+             EnableMultipleHttp2Connections = true,
+             PooledConnectionLifetime = TimeSpan.FromMinutes(15),
+             KeepAlivePingDelay = TimeSpan.FromSeconds(30)
+         });
         services.AddSingleton<IBexioClientFactory, BexioClientFactory>();
+        services.AddSingleton<IExcelParserFactory, BexioOrderImport.Infrastructure.Excel.ClosedXmlExcelParserFactory>();
         services.AddSingleton<IEncryptionService, DpapiEncryptionService>();
         services.AddSingleton<IDispatcherService, WpfDispatcherService>();
         services.AddSingleton<IAppLifecycleService, WpfLifecycleService>();
         services.AddSingleton<IDialogService, WpfDialogService>();
-        services.AddSingleton<IUpdateService, UpdateService>();
+        services.AddSingleton<IProfileManagerService, ProfileManagerService>();
+        services.AddSingleton<IUpdateService>(sp => new UpdateService(sp.GetRequiredService<IHttpClientFactory>(), sp.GetRequiredService<IAppLifecycleService>()));
         services.AddTransient<MainViewModel>();
         Services = services.BuildServiceProvider();
 

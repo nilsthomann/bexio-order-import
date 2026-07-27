@@ -24,3 +24,7 @@ Thumbs.db
 ## Ignore Build Output / Publish
 /build/Output
 /publish
+/graphify-out
+/.agents
+/src/graphify-out
+/.graphifyignore

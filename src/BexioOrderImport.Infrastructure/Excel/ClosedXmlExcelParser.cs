@@ -20,14 +20,15 @@ public class ClosedXmlExcelParser : IExcelParser
         if (!File.Exists(filePath))
             throw new FileNotFoundException($"Excel file not found: {filePath}");
 
-        using var workbook = new XLWorkbook(filePath);
+        using var stream = new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
+        using var workbook = new XLWorkbook(stream);
         var sheet = workbook.Worksheet(_options.WorksheetIndex);
 
         var order = new Order
         {
-            // 1. Parse header data
+            // Parse header data
             Customer = ParseCustomerHeader(sheet),
-            DeliveryDate = ParseDeliveryDate(sheet)
+            OrderId = ParseOrderId(sheet)
         };
 
         string paymentTermsVal = sheet.Cell(_options.Header.PaymentTermsCell).Value.ToString().Trim();
@@ -45,10 +46,10 @@ public class ClosedXmlExcelParser : IExcelParser
             order.DiscountPercent = parsedDiscount;
         }
 
-        // 2. Read size matrices from rows 10-17
+        // Read size matrices
         var sizeMatrices = ParseSizeMatrices(sheet);
 
-        // 3. Read row data starting from StartRow
+        // Read row data starting from StartRow
         int lastRow = sheet.LastRowUsed()?.RowNumber() ?? _options.Data.StartRow;
         for (int r = _options.Data.StartRow; r <= lastRow; r++)
         {
@@ -58,19 +59,45 @@ public class ClosedXmlExcelParser : IExcelParser
             string color = row.Cell(_options.Data.ColorColumn).Value.ToString().Trim();
             string rawCategory = row.Cell(_options.Data.CategoryColumn).Value.ToString().Trim();
 
-            // Stop condition on empty row
+            // Stop condition on empty row or empty category
             if (string.IsNullOrEmpty(artNr) && string.IsNullOrEmpty(artName))
                 continue;
 
+            if (string.IsNullOrEmpty(rawCategory))
+                continue;
+
             // Read unit price from column
-            _ = decimal.TryParse(row.Cell(_options.Data.UnitPriceColumn).Value.ToString(), out decimal unitPrice);
+            string priceStr = row.Cell(_options.Data.UnitPriceColumn).Value.ToString().Trim();
+            if (!decimal.TryParse(priceStr, System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out decimal unitPrice) &&
+                !decimal.TryParse(priceStr, out unitPrice))
+            {
+                if (!string.IsNullOrWhiteSpace(priceStr))
+                {
+                    throw new FormatException($"Ungültiges Preisformat '{priceStr}' in Zeile {r}, Spalte {_options.Data.UnitPriceColumn}.");
+                }
+                unitPrice = 0m;
+            }
+
+            // Read row-based discount if enabled
+            decimal? rowDiscount = null;
+            if (_options.Data.EnableRowDiscount)
+            {
+                string discountStr = row.Cell(_options.Data.RowDiscountColumn).Value.ToString().Replace("%", "").Trim();
+                if (decimal.TryParse(discountStr, out decimal parsedRowDiscount))
+                {
+                    if (parsedRowDiscount > 0 && parsedRowDiscount < 1)
+                    {
+                        parsedRowDiscount *= 100;
+                    }
+                    rowDiscount = parsedRowDiscount;
+                }
+            }
 
             // Dynamically assign matrix
-            string? matchedCategory = MapCategoryName(rawCategory, sizeMatrices.Keys);
-            if (matchedCategory == null || !sizeMatrices.ContainsKey(matchedCategory))
-                continue; // Category not present in matrix definitions
-
-            var sizes = sizeMatrices[matchedCategory];
+            if (!sizeMatrices.TryGetValue(rawCategory, out var sizes))
+            {
+                throw new InvalidOperationException($"Category '{rawCategory}' on row {r} is not defined in the size matrix.");
+            }
 
             // Check size columns for order quantities
             for (int col = _options.Data.StartQtyColumn; col <= _options.Data.EndQtyColumn; col++)
@@ -78,7 +105,10 @@ public class ClosedXmlExcelParser : IExcelParser
                 string qtyStr = row.Cell(col).Value.ToString();
                 if (int.TryParse(qtyStr, out int qty) && qty > 0)
                 {
-                    string sizeName = sizes.TryGetValue(col, out string? value) ? value : $"Col_{col}";
+                    if (!sizes.TryGetValue(col, out string? sizeName) || string.IsNullOrWhiteSpace(sizeName))
+                    {
+                        throw new InvalidOperationException($"Size header for column {col} in category '{rawCategory}' (row {r}) was not defined in the size matrix.");
+                    }
 
                     var pos = new OrderPosition
                     {
@@ -88,10 +118,9 @@ public class ClosedXmlExcelParser : IExcelParser
                         SizeCategory = rawCategory,
                         Size = sizeName,
                         Quantity = qty,
-                        UnitPrice = unitPrice,
-                        DiscountPercent = order.DiscountPercent
+                        GrossUnitPrice = unitPrice,
+                        DiscountPercent = rowDiscount
                     };
-                    pos.PositionText = FormatPositionText(_options.PositionTextTemplate, pos);
                     order.Positions.Add(pos);
                 }
             }
@@ -105,6 +134,7 @@ public class ClosedXmlExcelParser : IExcelParser
         string companyVal = sheet.Cell(_options.Header.CompanyNameCell).Value.ToString().Trim();
         string streetVal = sheet.Cell(_options.Header.StreetCell).Value.ToString().Trim();
         string zipCityVal = sheet.Cell(_options.Header.ZipCityCell).Value.ToString().Trim();
+        var (zip, city) = ExtractZipAndCity(zipCityVal);
         string emailVal = sheet.Cell(_options.Header.BuyerEmailCell).Value.ToString().Trim();
         string buyerVal = sheet.Cell(_options.Header.BuyerNameCell).Value.ToString().Trim();
 
@@ -112,17 +142,17 @@ public class ClosedXmlExcelParser : IExcelParser
         {
             CompanyName = companyVal,
             Street = streetVal,
-            ZipCode = ExtractZip(zipCityVal),
-            City = ExtractCity(zipCityVal),
+            ZipCode = zip,
+            City = city,
             Email = emailVal,
             BuyerName = buyerVal
         };
     }
 
-    private DateTime? ParseDeliveryDate(IXLWorksheet sheet)
+    private int? ParseOrderId(IXLWorksheet sheet)
     {
-        string val = sheet.Cell(_options.Header.DeliveryDateCell).Value.ToString();
-        if (DateTime.TryParse(val, out DateTime dt)) return dt;
+        string val = sheet.Cell(_options.Header.OrderIdCell).Value.ToString().Trim();
+        if (int.TryParse(val, out int id)) return id;
         return null;
     }
 
@@ -147,73 +177,36 @@ public class ClosedXmlExcelParser : IExcelParser
                 }
             }
             matrices[categoryName] = columns;
+            var subCategories = categoryName.Split('/', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+            foreach (var subCat in subCategories)
+            {
+                matrices[subCat] = columns;
+                if (subCat.StartsWith("Shoes 32", StringComparison.OrdinalIgnoreCase))
+                {
+                    matrices["Shoes 32"] = columns;
+                    matrices["Shoes 32-41"] = columns;
+                    matrices["Shoes 32-42"] = columns;
+                }
+                else if (subCat.StartsWith("Shoes 20", StringComparison.OrdinalIgnoreCase))
+                {
+                    matrices["Shoes 20"] = columns;
+                    matrices["Shoes 20-31"] = columns;
+                    matrices["Shoes 20-32"] = columns;
+                }
+            }
         }
         return matrices;
     }
 
-    private static string? MapCategoryName(string rawCategory, IEnumerable<string> registeredCategories)
+    internal static (string Zip, string City) ExtractZipAndCity(string rawZipCity)
     {
-        if (string.IsNullOrWhiteSpace(rawCategory)) return null;
-
-        // 1. Exact match
-        foreach (var reg in registeredCategories)
+        if (string.IsNullOrWhiteSpace(rawZipCity)) return (string.Empty, string.Empty);
+        var parts = rawZipCity.Trim().Split(' ', 2, StringSplitOptions.RemoveEmptyEntries);
+        return parts.Length switch
         {
-            if (reg.Equals(rawCategory, StringComparison.OrdinalIgnoreCase))
-                return reg;
-        }
-
-        // 2. Category mapping rules
-        if (rawCategory.Contains("Hat", StringComparison.OrdinalIgnoreCase) ||
-            rawCategory.Contains("Neck", StringComparison.OrdinalIgnoreCase))
-            return "Hats/Necks";
-
-        if (rawCategory.Contains("Mitten", StringComparison.OrdinalIgnoreCase) ||
-            rawCategory.Contains("Acc", StringComparison.OrdinalIgnoreCase))
-            return "Mittens/Acc";
-
-        if (rawCategory.Contains("Socks", StringComparison.OrdinalIgnoreCase) ||
-            rawCategory.Contains("UWear", StringComparison.OrdinalIgnoreCase))
-            return "Socks/UWear";
-
-        if (rawCategory.Contains("Shoes 32", StringComparison.OrdinalIgnoreCase))
-            return "Shoes 32-42";
-
-        if (rawCategory.Contains("Shoes 20", StringComparison.OrdinalIgnoreCase))
-            return "Shoes 20-31";
-
-        // 3. Fallback to StartsWith/Contains
-        foreach (var reg in registeredCategories)
-        {
-            if (reg.StartsWith(rawCategory, StringComparison.OrdinalIgnoreCase) ||
-                rawCategory.StartsWith(reg, StringComparison.OrdinalIgnoreCase))
-                return reg;
-        }
-
-        return null;
-    }
-
-    private static string ExtractZip(string rawZipCity)
-    {
-        var parts = rawZipCity.Split(' ', 2);
-        return parts.Length > 0 ? parts[0] : string.Empty;
-    }
-
-    private static string ExtractCity(string rawZipCity)
-    {
-        var parts = rawZipCity.Split(' ', 2);
-        return parts.Length > 1 ? parts[1] : string.Empty;
-    }
-
-    private string FormatPositionText(string template, OrderPosition pos)
-    {
-        if (string.IsNullOrEmpty(template))
-        {
-            return $"Farbe: {pos.Color}, Grösse: {pos.Size}";
-        }
-        return template
-            .Replace("{Color}", pos.Color)
-            .Replace("{Size}", pos.Size)
-            .Replace("{ArticleNumber}", pos.ArticleNumber)
-            .Replace("{ArticleName}", pos.ArticleName);
+            0 => (string.Empty, string.Empty),
+            1 => (parts[0], string.Empty),
+            _ => (parts[0], parts[1].Trim())
+        };
     }
 }

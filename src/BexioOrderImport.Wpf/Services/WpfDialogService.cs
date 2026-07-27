@@ -36,14 +36,19 @@ public class WpfDialogService : IDialogService
         });
     }
 
-    public bool ShowProfileEditDialog(Models.MappingProfile profile)
+    public bool ShowProfileEditDialog(Models.MappingProfile profile, System.Collections.Generic.IEnumerable<Models.MappingProfile>? existingProfiles = null)
     {
         return InvokeOnDispatcher(() =>
         {
-            var editWindow = new Views.ProfileEditWindow(profile);
+            var editWindow = new Views.ProfileEditWindow(profile, existingProfiles);
             editWindow.Owner = System.Windows.Application.Current?.MainWindow;
             return editWindow.ShowDialog() == true;
         });
+    }
+
+    public bool ShowPendingChangesDialog()
+    {
+        return InvokeOnDispatcher(() => Views.CustomDialog.ShowPendingChanges());
     }
 
     public string? ShowOpenFileDialog(string filter, string defaultExt)
@@ -96,5 +101,19 @@ public class WpfDialogService : IDialogService
     public void ShowInfoDialog(string message)
     {
         InvokeOnDispatcher(() => Views.CustomDialog.ShowInfo(message));
+    }
+
+    public void RestartMainWindow()
+    {
+        InvokeOnDispatcher(() =>
+        {
+            if (System.Windows.Application.Current is App)
+            {
+                var newWindow = new Views.MainWindow();
+                newWindow.Show();
+                System.Windows.Application.Current.MainWindow?.Close();
+                System.Windows.Application.Current.MainWindow = newWindow;
+            }
+        });
     }
 }

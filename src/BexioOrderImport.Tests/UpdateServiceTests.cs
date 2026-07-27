@@ -330,4 +330,17 @@ public class UpdateServiceTests
         Func<Task> act = async () => await updateService.DownloadAndInstallUpdateAsync("https://dummyurl.com/setup.exe", _ => { });
         await act.Should().ThrowAsync<HttpRequestException>().WithMessage("Response status code does not indicate success: 400 (Bad Request).");
     }
+
+    [Fact]
+    public void Constructors_ShouldInitializeCorrectly()
+    {
+        var lifecycle = new FakeAppLifecycleService();
+        var service1 = new UpdateService(lifecycle);
+        service1.Should().NotBeNull();
+
+        var factoryMock = new Moq.Mock<IHttpClientFactory>();
+        factoryMock.Setup(f => f.CreateClient("GitHubUpdate")).Returns(new HttpClient());
+        var service2 = new UpdateService(factoryMock.Object, lifecycle);
+        service2.Should().NotBeNull();
+    }
 }

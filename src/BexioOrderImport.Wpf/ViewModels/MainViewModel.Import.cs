@@ -1,18 +1,24 @@
 using System;
 using System.IO;
 using System.Linq;
-using System.Net.Http;
 using System.Threading.Tasks;
 using BexioOrderImport.Application.Interfaces;
 using BexioOrderImport.Application.Services;
 using BexioOrderImport.Domain.Models;
-using BexioOrderImport.Infrastructure.Excel;
-using Microsoft.Extensions.Options;
+using BexioOrderImport.Domain.Models.Bexio;
 
 namespace BexioOrderImport.Wpf.ViewModels;
 
 public partial class MainViewModel
 {
+    private readonly System.Collections.Generic.List<(DateTime Timestamp, double UploadedCount)> _progressSamples = new();
+    private double _smoothedSecondsPerItem;
+    private string _lastFormattedRemaining = "-";
+
+    private const string ConnectionColorConnected    = "#10B981"; // Green
+    private const string ConnectionColorDisconnected = "#EF4444"; // Red
+    private const string ConnectionColorChecking     = "#F59E0B"; // Amber
+
     public async Task LoadExcelFileAsync(string? filePath = null)
     {
         if (filePath == null)
@@ -29,7 +35,7 @@ public partial class MainViewModel
         try
         {
             var options = BuildMappingOptions();
-            var parser = new ClosedXmlExcelParser(Options.Create(options));
+            var parser = _excelParserFactory.Create(options);
 
             // Parse on background thread to keep UI responsive and allow spinner animation
             _loadedOrder = await Task.Run(() => parser.ParseOrderForm(filePath));
@@ -45,7 +51,7 @@ public partial class MainViewModel
             BuyerName = _loadedOrder.Customer.BuyerName;
             Email = _loadedOrder.Customer.Email;
             Address = $"{_loadedOrder.Customer.Street}, {_loadedOrder.Customer.ZipCode} {_loadedOrder.Customer.City}";
-            DeliveryDate = _loadedOrder.DeliveryDate?.ToString("dd.MM.yyyy") ?? Resources.Translations.Import_NoDeliveryDate;
+            OrderId = _loadedOrder.OrderId?.ToString() ?? Resources.Translations.Import_NoOrderId;
             PaymentTerms = _loadedOrder.PaymentTerms;
 
             OrderPositions.Clear();
@@ -60,10 +66,22 @@ public partial class MainViewModel
         }
         catch (Exception ex)
         {
-            AppendLog($"[Error] Error reading Excel file: {ex.Message}");
+            AppendLog($"⛔ Error reading Excel file: {ex.Message}");
             _loadedOrder = null;
             HasLoadedFile = false;
             ImportCommand.RaiseCanExecuteChanged();
+
+            if (IsFileLockedException(ex))
+            {
+                string fileName = !string.IsNullOrEmpty(filePath) ? Path.GetFileName(filePath) : "Excel";
+                string title = Resources.Translations.Import_FileLockedTitle;
+                string message = string.Format(Resources.Translations.Import_FileLockedMessage, fileName);
+                _dialogService.ShowErrorDialog(message, title);
+            }
+            else
+            {
+                _dialogService.ShowErrorDialog(ex.Message, Resources.Translations.Dialog_ErrorTitle);
+            }
         }
         finally
         {
@@ -75,11 +93,9 @@ public partial class MainViewModel
     {
         if (_loadedOrder == null)
         {
-            TotalsSummary = string.Empty;
             TotalQuantity = 0;
             TotalGrossAmount = 0;
             DiscountPercentVal = 0;
-            DiscountAmount = 0;
             TotalNetAmount = 0;
             return;
         }
@@ -88,10 +104,8 @@ public partial class MainViewModel
         TotalQuantity = OrderPositions.Sum(p => p.Quantity);
         TotalGrossAmount = OrderPositions.Sum(p => p.TotalPrice);
         DiscountPercentVal = _loadedOrder.DiscountPercent;
-        DiscountAmount = TotalGrossAmount * (DiscountPercentVal / 100m);
-        TotalNetAmount = TotalGrossAmount - DiscountAmount;
-
-        TotalsSummary = $"{Resources.Translations.Import_SummaryQuantity}: {TotalQuantity} | {Resources.Translations.Import_SummaryGross}: {TotalGrossAmount:F2} CHF | {Resources.Translations.Import_SummaryDiscount}: {DiscountPercentVal}% | {Resources.Translations.Import_SummaryNet}: {TotalNetAmount:F2} CHF";
+        decimal discountAmount = TotalGrossAmount * (DiscountPercentVal / 100m);
+        TotalNetAmount = TotalGrossAmount - discountAmount;
     }
 
     private void ClearLoadedFileInternal(string logMessage)
@@ -105,7 +119,7 @@ public partial class MainViewModel
         BuyerName = string.Empty;
         Email = string.Empty;
         Address = string.Empty;
-        DeliveryDate = string.Empty;
+        OrderId = string.Empty;
         PaymentTerms = string.Empty;
         OrderPositions.Clear();
         UpdateTotalsSummary();
@@ -131,7 +145,26 @@ public partial class MainViewModel
         IsImportingActive = true;
         LogText = string.Empty;
         ProgressPercentage = 0;
+        RemainingTimeText = string.Empty;
         AppendLog("Starting import process...");
+
+        _progressSamples.Clear();
+        _smoothedSecondsPerItem = 0;
+        _lastFormattedRemaining = "-";
+        var importStopwatch = System.Diagnostics.Stopwatch.StartNew();
+        double currentUploaded = 0;
+        double currentTotal = 0;
+
+        // Periodic timer to tick elapsed time every second on UI
+        var uiTimer = new System.Windows.Threading.DispatcherTimer
+        {
+            Interval = TimeSpan.FromSeconds(1)
+        };
+        uiTimer.Tick += (s, e) =>
+        {
+            UpdateRemainingTime(currentUploaded, currentTotal, importStopwatch);
+        };
+        uiTimer.Start();
 
         try
         {
@@ -139,65 +172,162 @@ public partial class MainViewModel
             _loadedOrder.Positions = OrderPositions.ToList();
 
             var bexioClient = _bexioClientFactory.Create(BexioToken, AccountId, TaxId, SelectedLanguage);
-            var useCase = new ImportOrderUseCase(new Services.InMemoryExcelParser(_loadedOrder), bexioClient);
+            var useCase = new ImportOrderUseCase(bexioClient);
 
-            int createdOrderId = 0;
-            bool success = await useCase.ExecuteAsync(
-                filePath: SelectedFilePath!,
-                showPreviewCallback: order => { }, // Already shown in UI
-                confirmUploadCallback: ConfirmUploadAsync,
-                confirmCustomerCreationCallback: ConfirmCustomerCreationAsync,
-                logInfoCallback: message =>
-                {
-                    InvokeOnUi(() =>
-                    {
-                        AppendLog(message);
-                        if (message.Contains("Positions uploaded:"))
-                        {
-                            var parts = message.Split(':').Last().Trim().Split('/');
-                            if (parts.Length == 2 && double.TryParse(parts[0], out double uploaded) && double.TryParse(parts[1], out double total))
-                            {
-                                ProgressPercentage = (uploaded / total) * 100;
-                            }
-                        }
-                        
-                        var match = System.Text.RegularExpressions.Regex.Match(message, @"Bexio ID:\s*(\d+)");
-                        if (match.Success && int.TryParse(match.Groups[1].Value, out var id))
-                        {
-                            createdOrderId = id;
-                        }
-                    });
-                }
+            var mappingOpts = BuildMappingOptions();
+            var interaction = new WpfImportUserInteractionService(
+                this,
+                (uploaded, total, sw) => UpdateRemainingTime(uploaded, total, sw),
+                importStopwatch);
+
+            var options = new Application.Models.ImportOrderOptions(
+                DefaultOrderName: mappingOpts.DefaultOrderName,
+                SeasonCode: mappingOpts.SeasonCode,
+                PositionTextTemplate: mappingOpts.PositionTextTemplate,
+                DiscountPositionTextTemplate: mappingOpts.DiscountPositionTextTemplate
             );
 
-            if (success)
+            var result = await useCase.ExecuteAsync(_loadedOrder, interaction, options);
+
+            if (result.Success)
             {
+                int createdOrderId = result.OrderId ?? 0;
+                importStopwatch.Stop();
+                TimeSpan duration = importStopwatch.Elapsed;
+                string formattedDuration = string.Format("{0:D2}:{1:D2} Min", (int)duration.TotalMinutes, duration.Seconds);
+
                 ProgressPercentage = 100;
+                RemainingTimeText = string.Empty;
                 InvokeOnUi(() =>
                 {
-                    ClearLoadedFileInternal("Import completed successfully. File selection reset.");
-                    _dialogService.ShowInfoDialog(string.Format(Resources.Translations.Import_SuccessMessage, createdOrderId > 0 ? createdOrderId.ToString() : "?"));
+                    ImportSuccessTitle = Resources.Translations.Import_SuccessTitle;
+                    ImportSuccessMessage = string.Format(Resources.Translations.Import_SuccessMessage, createdOrderId > 0 ? createdOrderId.ToString() : "?");
+                    ImportDurationText = string.Format(Resources.Translations.Import_SuccessDuration, formattedDuration);
+                    IsImportSuccess = true;
                 });
             }
             else
             {
                 ProgressPercentage = 0;
+                RemainingTimeText = string.Empty;
                 AppendLog("Import cancelled. File remains loaded.");
             }
         }
         catch (Exception ex)
         {
-            AppendLog($"[Error] Error during import: {ex.Message}");
-            _dialogService.ShowErrorDialog(ex.Message, Resources.Translations.Dialog_ErrorTitle);
+            AppendLog($"⛔ Error during import: {ex.Message}");
+            if (IsFileLockedException(ex))
+            {
+                string fileName = !string.IsNullOrEmpty(SelectedFilePath) ? Path.GetFileName(SelectedFilePath) : "Excel";
+                string title = Resources.Translations.Import_FileLockedTitle;
+                string message = string.Format(Resources.Translations.Import_FileLockedMessage, fileName);
+                _dialogService.ShowErrorDialog(message, title);
+            }
+            else
+            {
+                _dialogService.ShowErrorDialog(ex.Message, Resources.Translations.Dialog_ErrorTitle);
+            }
         }
         finally
         {
+            uiTimer.Stop();
             IsImporting = false;
-            IsImportingActive = false;
+            if (!IsImportSuccess)
+            {
+                IsImportingActive = false;
+            }
+            RemainingTimeText = string.Empty;
         }
     }
 
+    private static bool IsFileLockedException(Exception ex)
+    {
+        Exception? current = ex;
+        while (current != null)
+        {
+            if (current is System.IO.IOException ioEx)
+            {
+                int hr = System.Runtime.InteropServices.Marshal.GetHRForException(ioEx) & 0xFFFF;
+                if (hr == 32 || hr == 33) return true; // ERROR_SHARING_VIOLATION or ERROR_LOCK_VIOLATION
 
+                string msg = ioEx.Message;
+                if (msg.Contains("being used by another process", StringComparison.OrdinalIgnoreCase) ||
+                    msg.Contains("wird von einem anderen Prozess verwendet", StringComparison.OrdinalIgnoreCase) ||
+                    msg.Contains("cannot access the file", StringComparison.OrdinalIgnoreCase) ||
+                    msg.Contains("Prozess kann nicht auf die Datei zugreifen", StringComparison.OrdinalIgnoreCase))
+                {
+                    return true;
+                }
+            }
+            current = current.InnerException;
+        }
+        return false;
+    }
+
+    private void UpdateRemainingTime(double uploaded, double total, System.Diagnostics.Stopwatch stopwatch)
+    {
+        TimeSpan elapsedTs = stopwatch.Elapsed;
+        string elapsedStr = string.Format("{0:D2}:{1:D2}", (int)elapsedTs.TotalMinutes, elapsedTs.Seconds);
+
+        if (total > 0 && uploaded >= total)
+        {
+            RemainingTimeText = string.Format(Resources.Translations.Import_ProgressTimeElapsedOnly, elapsedStr);
+            return;
+        }
+
+        if (uploaded >= 3 && _progressSamples.Count >= 2)
+        {
+            DateTime now = DateTime.UtcNow;
+
+            // Calculate overall average seconds per item
+            double overallSecondsPerItem = elapsedTs.TotalSeconds / Math.Max(1, uploaded);
+
+            // Find a reference sample from 4+ seconds ago for rolling velocity
+            var validSamples = _progressSamples
+                .Where(s => (now - s.Timestamp).TotalSeconds >= 4 && s.UploadedCount < uploaded)
+                .ToList();
+
+            double currentInstantSecondsPerItem = overallSecondsPerItem;
+            if (validSamples.Count > 0)
+            {
+                var refSample = validSamples.Last();
+                double dItems = uploaded - refSample.UploadedCount;
+                double dSec = (now - refSample.Timestamp).TotalSeconds;
+                if (dItems > 0 && dSec > 0)
+                {
+                    currentInstantSecondsPerItem = dSec / dItems;
+                }
+            }
+
+            // Blend overall average (40%) and recent velocity (60%) for stability
+            double targetSecondsPerItem = (overallSecondsPerItem * 0.4) + (currentInstantSecondsPerItem * 0.6);
+
+            // Apply Exponential Moving Average (EMA) smoothing to prevent UI flickering
+            if (_smoothedSecondsPerItem <= 0)
+            {
+                _smoothedSecondsPerItem = targetSecondsPerItem;
+            }
+            else
+            {
+                _smoothedSecondsPerItem = (_smoothedSecondsPerItem * 0.85) + (targetSecondsPerItem * 0.15);
+            }
+
+            double remainingItems = total - uploaded;
+            double remainingSeconds = Math.Max(0, remainingItems * _smoothedSecondsPerItem);
+
+            TimeSpan remainingTs = TimeSpan.FromSeconds(remainingSeconds);
+            if (remainingTs.TotalMinutes < 1)
+            {
+                _lastFormattedRemaining = $"~{Math.Max(1, (int)Math.Ceiling(remainingSeconds))}s";
+            }
+            else
+            {
+                _lastFormattedRemaining = $"~{(int)remainingTs.TotalMinutes}m {remainingTs.Seconds}s";
+            }
+        }
+
+        RemainingTimeText = string.Format(Resources.Translations.Import_ProgressTime, elapsedStr, _lastFormattedRemaining);
+    }
 
     private async Task<bool> ConfirmUploadAsync()
     {
@@ -225,10 +355,24 @@ public partial class MainViewModel
         }
     }
 
+    private async Task<bool> ConfirmEmailMismatchAsync(string existingEmail, string excelEmail)
+    {
+        IsImportingActive = false;
+        try
+        {
+            string message = string.Format(Resources.Translations.Import_EmailMismatchMessage, existingEmail, excelEmail);
+            return _dialogService.ShowConfirmDialog(message, Resources.Translations.Import_EmailMismatchTitle);
+        }
+        finally
+        {
+            if (IsImporting) IsImportingActive = true;
+        }
+    }
+
     public async Task CheckBexioConnectionAsync()
     {
         ConnectionStatusText = Resources.Translations.Status_BexioChecking;
-        ConnectionStatusColor = "#F59E0B"; // Yellow warning
+        ConnectionStatusColor = ConnectionColorChecking;
 
         try
         {
@@ -240,13 +384,13 @@ public partial class MainViewModel
             if (isConnected)
             {
                 ConnectionStatusText = Resources.Translations.Status_BexioConnected;
-                ConnectionStatusColor = "#10B981"; // Green success
+                ConnectionStatusColor = ConnectionColorConnected;
                 await LoadBexioOptionsAsync(client);
             }
             else
             {
                 ConnectionStatusText = Resources.Translations.Status_BexioDisconnected;
-                ConnectionStatusColor = "#EF4444"; // Red error
+                ConnectionStatusColor = ConnectionColorDisconnected;
                 ClearBexioOptionsKeepSelected();
             }
         }
@@ -254,7 +398,7 @@ public partial class MainViewModel
         {
             IsConnectionSuccessful = false;
             ConnectionStatusText = Resources.Translations.Status_BexioDisconnected;
-            ConnectionStatusColor = "#EF4444"; // Red error
+            ConnectionStatusColor = ConnectionColorDisconnected;
             ClearBexioOptionsKeepSelected();
         }
     }
@@ -280,7 +424,7 @@ public partial class MainViewModel
         }
         catch (Exception ex)
         {
-            AppendLog($"[Warning] Could not load accounts: {ex.Message}");
+            AppendLog($"⚠️ Could not load accounts: {ex.Message}");
             if (AccountsList.Count == 0 && !AccountId.HasValue)
             {
                 AccountsList.Add(new BexioAccount { AccountNo = string.Empty, Name = string.Empty });
@@ -310,7 +454,7 @@ public partial class MainViewModel
         }
         catch (Exception ex)
         {
-            AppendLog($"[Warning] Could not load tax rates: {ex.Message}");
+            AppendLog($"⚠️ Could not load tax rates: {ex.Message}");
             if (TaxesList.Count == 0 && !TaxId.HasValue)
             {
                 TaxesList.Add(new BexioTax { DisplayName = string.Empty });
@@ -338,4 +482,44 @@ public partial class MainViewModel
             TaxesList.Add(selectedTax ?? new BexioTax { Id = TaxId.Value, DisplayName = TaxId.Value.ToString() });
         }
     }
+
+    private class WpfImportUserInteractionService : IImportUserInteractionService
+    {
+        private readonly MainViewModel _vm;
+        private readonly Action<double, double, System.Diagnostics.Stopwatch> _updateProgressAction;
+        private readonly System.Diagnostics.Stopwatch _stopwatch;
+
+        public WpfImportUserInteractionService(
+            MainViewModel vm,
+            Action<double, double, System.Diagnostics.Stopwatch> updateProgressAction,
+            System.Diagnostics.Stopwatch stopwatch)
+        {
+            _vm = vm;
+            _updateProgressAction = updateProgressAction;
+            _stopwatch = stopwatch;
+        }
+
+        public void ShowPreview(Order order) { }
+
+        public Task<bool> ConfirmUploadAsync() => _vm.ConfirmUploadAsync();
+
+        public Task<bool> ConfirmCustomerCreationAsync(Customer customer) => _vm.ConfirmCustomerCreationAsync(customer);
+
+        public Task<bool> ConfirmEmailMismatchAsync(string existingEmail, string excelEmail) => _vm.ConfirmEmailMismatchAsync(existingEmail, excelEmail);
+
+        public void LogInfo(string message) => _vm.InvokeOnUi(() => _vm.AppendLog(message));
+
+        public void ReportProgress(int current, int total)
+        {
+            _vm.InvokeOnUi(() =>
+            {
+                _vm.ProgressPercentage = ((double)current / total) * 100;
+                _vm._progressSamples.Add((DateTime.UtcNow, current));
+                var cutoff = DateTime.UtcNow.AddMinutes(-3);
+                _vm._progressSamples.RemoveAll(s => s.Timestamp < cutoff);
+                _updateProgressAction(current, total, _stopwatch);
+            });
+        }
+    }
 }
+

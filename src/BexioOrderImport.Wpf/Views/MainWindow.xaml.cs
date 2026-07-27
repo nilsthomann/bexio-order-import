@@ -1,7 +1,4 @@
-using System;
 using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Input;
 using BexioOrderImport.Wpf.ViewModels;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -14,88 +11,5 @@ public partial class MainWindow : Window
     {
         InitializeComponent();
         DataContext = App.Services.GetRequiredService<MainViewModel>();
-    }
-
-    private void DropZone_DragOver(object sender, DragEventArgs e)
-    {
-        if (e.Data.GetDataPresent(DataFormats.FileDrop))
-        {
-            e.Effects = DragDropEffects.Copy;
-        }
-        e.Handled = true;
-    }
-
-    private void DropZone_Drop(object sender, DragEventArgs e)
-    {
-        if (e.Data.GetDataPresent(DataFormats.FileDrop))
-        {
-            string[] files = (string[])e.Data.GetData(DataFormats.FileDrop);
-            if (files.Length > 0 && DataContext is MainViewModel vm)
-            {
-                _ = vm.LoadExcelFileAsync(files[0]);
-            }
-        }
-    }
-
-    private void DropZone_MouseDown(object sender, MouseButtonEventArgs e)
-    {
-        if (DataContext is MainViewModel vm)
-        {
-            _ = vm.LoadExcelFileAsync();
-        }
-    }
-
-    private void LogTextBox_TextChanged(object sender, TextChangedEventArgs e)
-    {
-        if (sender is TextBox textBox)
-        {
-            textBox.ScrollToEnd();
-        }
-    }
-
-    private void DataGrid_CellEditEnding(object sender, DataGridCellEditEndingEventArgs e)
-    {
-        // Delay recalculation slightly to let the grid commit the cell value change to the model
-        Dispatcher.BeginInvoke(new Action(() =>
-        {
-            if (DataContext is MainViewModel vm)
-            {
-                vm.UpdateTotalsSummary();
-            }
-        }), System.Windows.Threading.DispatcherPriority.Background);
-    }
-
-    private void TokenTextBox_GotFocus(object sender, RoutedEventArgs e)
-    {
-        if (DataContext is MainViewModel vm)
-        {
-            vm.IsTokenFocused = true;
-        }
-    }
-
-    private void TokenTextBox_LostFocus(object sender, RoutedEventArgs e)
-    {
-        if (DataContext is MainViewModel vm)
-        {
-            vm.IsTokenFocused = false;
-        }
-    }
-
-    private void Hyperlink_RequestNavigate(object sender, System.Windows.Navigation.RequestNavigateEventArgs e)
-    {
-        try
-        {
-            var psi = new System.Diagnostics.ProcessStartInfo
-            {
-                FileName = e.Uri.AbsoluteUri,
-                UseShellExecute = true
-            };
-            System.Diagnostics.Process.Start(psi);
-            e.Handled = true;
-        }
-        catch
-        {
-            // Ignore exceptions
-        }
     }
 }

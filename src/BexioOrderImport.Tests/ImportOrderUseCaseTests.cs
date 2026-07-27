@@ -1,6 +1,8 @@
 using BexioOrderImport.Application.Interfaces;
+using BexioOrderImport.Application.Models;
 using BexioOrderImport.Application.Services;
 using BexioOrderImport.Domain.Models;
+using BexioOrderImport.Domain.Models.Bexio;
 using FluentAssertions;
 using Moq;
 
@@ -27,23 +29,24 @@ public class ImportOrderUseCaseTests
         _parserMock.Setup(p => p.ParseOrderForm(It.IsAny<string>())).Returns(order);
         _clientMock.Setup(c => c.FindContactIdAsync(order.Customer.Email)).ReturnsAsync(123);
         _clientMock.Setup(c => c.CreateOrderAsync(123, order)).ReturnsAsync(456);
-        _clientMock.Setup(c => c.FindArticleIdAsync("123")).ReturnsAsync(789);
+        _clientMock.Setup(c => c.FindArticleAsync("123", "Black", It.IsAny<string>())).ReturnsAsync(new BexioArticle { Id = 789, Description = "Product Description Text", Name = "Product Name Text" });
 
         var loggedMessages = new List<string>();
+        var interaction = new DelegateImportUserInteractionService(
+            showPreview: o => { },
+            confirmUpload: () => Task.FromResult(true),
+            confirmCustomerCreation: c => Task.FromResult(true),
+            confirmEmailMismatch: (ex, el) => Task.FromResult(true),
+            logInfo: loggedMessages.Add
+        );
 
         // Act
-        await _useCase.ExecuteAsync(
-            "dummy.xlsx",
-            showPreviewCallback: o => { },
-            confirmUploadCallback: () => Task.FromResult(true),
-            confirmCustomerCreationCallback: c => Task.FromResult(true),
-            logInfoCallback: loggedMessages.Add
-        );
+        await _useCase.ExecuteAsync("dummy.xlsx", interaction);
 
         // Assert
         _clientMock.Verify(c => c.CreateContactAsync(It.IsAny<Customer>()), Times.Never);
         _clientMock.Verify(c => c.CreateOrderAsync(123, order), Times.Once);
-        _clientMock.Verify(c => c.AddArticlePositionAsync(456, 789, order.Positions[0]), Times.Once);
+        _clientMock.Verify(c => c.AddArticlePositionAsync(456, 789, order.Positions[0], It.IsAny<string?>()), Times.Once);
 
         loggedMessages.Should().Contain(m => m.Contains("Order created successfully"));
         loggedMessages.Should().Contain(m => m.Contains("Successfully completed"));
@@ -58,23 +61,24 @@ public class ImportOrderUseCaseTests
         _clientMock.Setup(c => c.FindContactIdAsync(order.Customer.Email)).ReturnsAsync((int?)null);
         _clientMock.Setup(c => c.CreateContactAsync(order.Customer)).ReturnsAsync(123);
         _clientMock.Setup(c => c.CreateOrderAsync(123, order)).ReturnsAsync(456);
-        _clientMock.Setup(c => c.FindArticleIdAsync("123")).ReturnsAsync(789);
+        _clientMock.Setup(c => c.FindArticleAsync("123", "Black", It.IsAny<string>())).ReturnsAsync(new BexioArticle { Id = 789, Description = "Product Description Text", Name = "Product Name Text" });
 
         var loggedMessages = new List<string>();
+        var interaction = new DelegateImportUserInteractionService(
+            showPreview: o => { },
+            confirmUpload: () => Task.FromResult(true),
+            confirmCustomerCreation: c => Task.FromResult(true),
+            confirmEmailMismatch: (ex, el) => Task.FromResult(true),
+            logInfo: loggedMessages.Add
+        );
 
         // Act
-        await _useCase.ExecuteAsync(
-            "dummy.xlsx",
-            showPreviewCallback: o => { },
-            confirmUploadCallback: () => Task.FromResult(true),
-            confirmCustomerCreationCallback: c => Task.FromResult(true),
-            logInfoCallback: loggedMessages.Add
-        );
+        await _useCase.ExecuteAsync("dummy.xlsx", interaction);
 
         // Assert
         _clientMock.Verify(c => c.CreateContactAsync(order.Customer), Times.Once);
         _clientMock.Verify(c => c.CreateOrderAsync(123, order), Times.Once);
-        _clientMock.Verify(c => c.AddArticlePositionAsync(456, 789, order.Positions[0]), Times.Once);
+        _clientMock.Verify(c => c.AddArticlePositionAsync(456, 789, order.Positions[0], It.IsAny<string?>()), Times.Once);
 
         loggedMessages.Should().Contain(m => m.Contains("Creating new customer in Bexio"));
         loggedMessages.Should().Contain(m => m.Contains("Successfully completed"));
@@ -89,15 +93,16 @@ public class ImportOrderUseCaseTests
         _clientMock.Setup(c => c.FindContactIdAsync(order.Customer.Email)).ReturnsAsync((int?)null);
 
         var loggedMessages = new List<string>();
+        var interaction = new DelegateImportUserInteractionService(
+            showPreview: o => { },
+            confirmUpload: () => Task.FromResult(true),
+            confirmCustomerCreation: c => Task.FromResult(false),
+            confirmEmailMismatch: (ex, el) => Task.FromResult(true),
+            logInfo: loggedMessages.Add
+        );
 
         // Act
-        await _useCase.ExecuteAsync(
-            "dummy.xlsx",
-            showPreviewCallback: o => { },
-            confirmUploadCallback: () => Task.FromResult(true),
-            confirmCustomerCreationCallback: c => Task.FromResult(false),
-            logInfoCallback: loggedMessages.Add
-        );
+        await _useCase.ExecuteAsync("dummy.xlsx", interaction);
 
         // Assert
         _clientMock.Verify(c => c.CreateContactAsync(It.IsAny<Customer>()), Times.Never);
@@ -114,15 +119,16 @@ public class ImportOrderUseCaseTests
         _parserMock.Setup(p => p.ParseOrderForm(It.IsAny<string>())).Returns(order);
 
         var loggedMessages = new List<string>();
+        var interaction = new DelegateImportUserInteractionService(
+            showPreview: o => { },
+            confirmUpload: () => Task.FromResult(false),
+            confirmCustomerCreation: c => Task.FromResult(true),
+            confirmEmailMismatch: (ex, el) => Task.FromResult(true),
+            logInfo: loggedMessages.Add
+        );
 
         // Act
-        await _useCase.ExecuteAsync(
-            "dummy.xlsx",
-            showPreviewCallback: o => { },
-            confirmUploadCallback: () => Task.FromResult(false),
-            confirmCustomerCreationCallback: c => Task.FromResult(true),
-            logInfoCallback: loggedMessages.Add
-        );
+        await _useCase.ExecuteAsync("dummy.xlsx", interaction);
 
         // Assert
         _clientMock.Verify(c => c.CreateOrderAsync(It.IsAny<int>(), It.IsAny<Order>()), Times.Never);
@@ -135,10 +141,9 @@ public class ImportOrderUseCaseTests
         var emptyOrder = new Order { Positions = [] };
         _parserMock.Setup(p => p.ParseOrderForm(It.IsAny<string>())).Returns(emptyOrder);
 
-        bool result = await _useCase.ExecuteAsync(
-            "test.xlsx", _ => { }, () => Task.FromResult(true), _ => Task.FromResult(true), _ => { }
-        );
-        result.Should().BeFalse();
+        var interaction = new DelegateImportUserInteractionService();
+        var result = await _useCase.ExecuteAsync("test.xlsx", interaction);
+        result.Success.Should().BeFalse();
     }
 
     [Fact]
@@ -156,16 +161,248 @@ public class ImportOrderUseCaseTests
         _parserMock.Setup(p => p.ParseOrderForm(It.IsAny<string>())).Returns(order);
         _clientMock.Setup(c => c.FindContactIdAsync(order.Customer.Email)).ReturnsAsync(123);
         _clientMock.Setup(c => c.CreateOrderAsync(123, order)).ReturnsAsync(456);
-        _clientMock.Setup(c => c.FindArticleIdAsync("UNKNOWN")).ReturnsAsync((int?)null);
+        _clientMock.Setup(c => c.FindArticleAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>())).ReturnsAsync((BexioArticle?)null);
+
+        var interaction = new DelegateImportUserInteractionService();
 
         // Act
-        Func<Task> act = () => _useCase.ExecuteAsync(
-            "test.xlsx", _ => { }, () => Task.FromResult(true), _ => Task.FromResult(true), _ => { }
-        );
+        Func<Task> act = () => _useCase.ExecuteAsync("test.xlsx", interaction);
 
         // Assert
         await act.Should().ThrowAsync<InvalidOperationException>().WithMessage("*UNKNOWN*");
-        _clientMock.Verify(c => c.AddArticlePositionAsync(It.IsAny<int>(), It.IsAny<int>(), It.IsAny<OrderPosition>()), Times.Never);
+        _clientMock.Verify(c => c.AddArticlePositionAsync(It.IsAny<int>(), It.IsAny<int>(), It.IsAny<OrderPosition>(), It.IsAny<string?>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task ExecuteAsync_WithOrderIdAndEmailMatch_ShouldImportDirectlyToExistingOrder()
+    {
+        // Arrange
+        var order = CreateSampleOrder();
+        order.OrderId = 456;
+        _parserMock.Setup(p => p.ParseOrderForm(It.IsAny<string>())).Returns(order);
+        _clientMock.Setup(c => c.GetOrderContactEmailAsync(456)).ReturnsAsync(order.Customer.Email);
+        _clientMock.Setup(c => c.FindArticleAsync("123", "Black", It.IsAny<string>())).ReturnsAsync(new BexioArticle { Id = 789, Description = "Product Description Text", Name = "Product Name Text" });
+
+        var loggedMessages = new List<string>();
+        var interaction = new DelegateImportUserInteractionService(
+            showPreview: o => { },
+            confirmUpload: () => Task.FromResult(true),
+            confirmCustomerCreation: c => Task.FromResult(true),
+            confirmEmailMismatch: (ex, el) => Task.FromResult(true),
+            logInfo: loggedMessages.Add
+        );
+
+        // Act
+        var result = await _useCase.ExecuteAsync("dummy.xlsx", interaction);
+
+        // Assert
+        result.Success.Should().BeTrue();
+        _clientMock.Verify(c => c.FindContactIdAsync(It.IsAny<string>()), Times.Never);
+        _clientMock.Verify(c => c.CreateOrderAsync(It.IsAny<int>(), It.IsAny<Order>()), Times.Never);
+        _clientMock.Verify(c => c.AddArticlePositionAsync(456, 789, order.Positions[0], It.IsAny<string?>()), Times.Once);
+        loggedMessages.Should().Contain(m => m.Contains("Existing order matched"));
+    }
+
+    [Fact]
+    public async Task ExecuteAsync_WithOrderIdAndEmailMismatch_WhenUserConfirms_ShouldImportSuccessfully()
+    {
+        // Arrange
+        var order = CreateSampleOrder();
+        order.OrderId = 456;
+        _parserMock.Setup(p => p.ParseOrderForm(It.IsAny<string>())).Returns(order);
+        _clientMock.Setup(c => c.GetOrderContactEmailAsync(456)).ReturnsAsync("different@domain.com");
+        _clientMock.Setup(c => c.FindArticleAsync("123", "Black", It.IsAny<string>())).ReturnsAsync(new BexioArticle { Id = 789, Description = "Product Description Text", Name = "Product Name Text" });
+
+        var loggedMessages = new List<string>();
+        bool mismatchCallbackCalled = false;
+        var interaction = new DelegateImportUserInteractionService(
+            showPreview: o => { },
+            confirmUpload: () => Task.FromResult(true),
+            confirmCustomerCreation: c => Task.FromResult(true),
+            confirmEmailMismatch: (ex, el) =>
+            {
+                mismatchCallbackCalled = true;
+                return Task.FromResult(true);
+            },
+            logInfo: loggedMessages.Add
+        );
+
+        // Act
+        var result = await _useCase.ExecuteAsync("dummy.xlsx", interaction);
+
+        // Assert
+        result.Success.Should().BeTrue();
+        mismatchCallbackCalled.Should().BeTrue();
+        _clientMock.Verify(c => c.AddArticlePositionAsync(456, 789, order.Positions[0], It.IsAny<string?>()), Times.Once);
+        loggedMessages.Should().Contain(m => m.Contains("Email mismatch ignored by user"));
+    }
+
+    [Fact]
+    public async Task ExecuteAsync_WithOrderIdAndEmailMismatch_WhenUserRejects_ShouldAbort()
+    {
+        // Arrange
+        var order = CreateSampleOrder();
+        order.OrderId = 456;
+        _parserMock.Setup(p => p.ParseOrderForm(It.IsAny<string>())).Returns(order);
+        _clientMock.Setup(c => c.GetOrderContactEmailAsync(456)).ReturnsAsync("different@domain.com");
+
+        var loggedMessages = new List<string>();
+        var interaction = new DelegateImportUserInteractionService(
+            showPreview: o => { },
+            confirmUpload: () => Task.FromResult(true),
+            confirmCustomerCreation: c => Task.FromResult(true),
+            confirmEmailMismatch: (ex, el) => Task.FromResult(false),
+            logInfo: loggedMessages.Add
+        );
+
+        // Act
+        var result = await _useCase.ExecuteAsync("dummy.xlsx", interaction);
+
+        // Assert
+        result.Success.Should().BeFalse();
+        _clientMock.Verify(c => c.AddArticlePositionAsync(It.IsAny<int>(), It.IsAny<int>(), It.IsAny<OrderPosition>(), It.IsAny<string?>()), Times.Never);
+        loggedMessages.Should().Contain(m => m.Contains("Order import cancelled due to email mismatch"));
+    }
+
+    [Fact]
+    public async Task ExecuteAsync_WithOrderId_WhenOrderNotFound_ShouldAbort()
+    {
+        // Arrange
+        var order = CreateSampleOrder();
+        order.OrderId = 999;
+        _parserMock.Setup(p => p.ParseOrderForm(It.IsAny<string>())).Returns(order);
+        _clientMock.Setup(c => c.GetOrderContactEmailAsync(999)).ReturnsAsync((string?)null);
+
+        var loggedMessages = new List<string>();
+        var interaction = new DelegateImportUserInteractionService(
+            showPreview: o => { },
+            confirmUpload: () => Task.FromResult(true),
+            confirmCustomerCreation: c => Task.FromResult(true),
+            confirmEmailMismatch: (ex, el) => Task.FromResult(true),
+            logInfo: loggedMessages.Add
+        );
+
+        // Act
+        var result = await _useCase.ExecuteAsync("dummy.xlsx", interaction);
+
+        // Assert
+        result.Success.Should().BeFalse();
+        _clientMock.Verify(c => c.AddArticlePositionAsync(It.IsAny<int>(), It.IsAny<int>(), It.IsAny<OrderPosition>(), It.IsAny<string?>()), Times.Never);
+        loggedMessages.Should().Contain(m => m.Contains("Order with ID 999 not found"));
+    }
+
+    [Fact]
+    public async Task ExecuteAsync_ShouldQueryArticleWithSeasonCodeAndColor()
+    {
+        // Arrange
+        var order = CreateSampleOrder();
+        order.Positions[0].Color = "Black";
+        _parserMock.Setup(p => p.ParseOrderForm(It.IsAny<string>())).Returns(order);
+        _clientMock.Setup(c => c.FindContactIdAsync(order.Customer.Email)).ReturnsAsync(123);
+        _clientMock.Setup(c => c.CreateOrderAsync(123, order)).ReturnsAsync(456);
+
+        _clientMock.Setup(c => c.FindArticleAsync("123", "Black", "FS27"))
+            .ReturnsAsync(new BexioArticle { Id = 789, Description = "Product Description", Name = "Product Name" });
+
+        var interaction = new DelegateImportUserInteractionService();
+        var options = new ImportOrderOptions(SeasonCode: "FS27");
+
+        // Act
+        await _useCase.ExecuteAsync("dummy.xlsx", interaction, options);
+
+        // Assert
+        _clientMock.Verify(c => c.FindArticleAsync("123", "Black", "FS27"), Times.Once);
+    }
+
+    [Fact]
+    public async Task ExecuteAsync_WhenOrderHasGlobalDiscount_ShouldCallAddDiscountPositionAsync()
+    {
+        // Arrange
+        var order = CreateSampleOrder();
+        order.DiscountPercent = 10m; // 10% global discount
+        _parserMock.Setup(p => p.ParseOrderForm(It.IsAny<string>())).Returns(order);
+        _clientMock.Setup(c => c.FindContactIdAsync(order.Customer.Email)).ReturnsAsync(123);
+        _clientMock.Setup(c => c.CreateOrderAsync(123, order)).ReturnsAsync(456);
+        _clientMock.Setup(c => c.FindArticleAsync("123", "Black", It.IsAny<string>()))
+            .ReturnsAsync(new BexioArticle { Id = 789, Description = "Desc", Name = "Name" });
+
+        var interaction = new DelegateImportUserInteractionService();
+
+        // Act
+        await _useCase.ExecuteAsync("dummy.xlsx", interaction);
+
+        // Assert
+        _clientMock.Verify(c => c.AddDiscountPositionAsync(456, 10m, "Rabatt (10%)"), Times.Once);
+    }
+
+    [Fact]
+    public async Task ExecuteAsync_WithCustomDiscountPositionTextTemplate_ShouldFormatTextCorrectly()
+    {
+        // Arrange
+        var order = CreateSampleOrder();
+        order.DiscountPercent = 15m;
+        _parserMock.Setup(p => p.ParseOrderForm(It.IsAny<string>())).Returns(order);
+        _clientMock.Setup(c => c.FindContactIdAsync(order.Customer.Email)).ReturnsAsync(123);
+        _clientMock.Setup(c => c.CreateOrderAsync(123, order)).ReturnsAsync(456);
+        _clientMock.Setup(c => c.FindArticleAsync("123", "Black", It.IsAny<string>()))
+            .ReturnsAsync(new BexioArticle { Id = 789, Description = "Desc", Name = "Name" });
+
+        var interaction = new DelegateImportUserInteractionService();
+        var options = new ImportOrderOptions(DiscountPositionTextTemplate: "Sonderrabatt ({DiscountInPercent}%)");
+
+        // Act
+        await _useCase.ExecuteAsync("dummy.xlsx", interaction, options);
+
+        // Assert
+        _clientMock.Verify(c => c.AddDiscountPositionAsync(456, 15m, "Sonderrabatt (15%)"), Times.Once);
+    }
+
+    [Fact]
+    public async Task ExecuteAsync_WhenOrderHasNoGlobalDiscount_ShouldNotCallAddDiscountPositionAsync()
+    {
+        // Arrange
+        var order = CreateSampleOrder();
+        order.DiscountPercent = 0m;
+        _parserMock.Setup(p => p.ParseOrderForm(It.IsAny<string>())).Returns(order);
+        _clientMock.Setup(c => c.FindContactIdAsync(order.Customer.Email)).ReturnsAsync(123);
+        _clientMock.Setup(c => c.CreateOrderAsync(123, order)).ReturnsAsync(456);
+        _clientMock.Setup(c => c.FindArticleAsync("123", "Black", It.IsAny<string>()))
+            .ReturnsAsync(new BexioArticle { Id = 789, Description = "Desc", Name = "Name" });
+
+        var interaction = new DelegateImportUserInteractionService();
+
+        // Act
+        await _useCase.ExecuteAsync("dummy.xlsx", interaction);
+
+        // Assert
+        _clientMock.Verify(c => c.AddDiscountPositionAsync(It.IsAny<int>(), It.IsAny<decimal>(), It.IsAny<string>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task ExecuteAsync_WithInteractionInterfaceAndOptions_ShouldImportSuccessfully()
+    {
+        // Arrange
+        var order = CreateSampleOrder();
+        _parserMock.Setup(p => p.ParseOrderForm(It.IsAny<string>())).Returns(order);
+        _clientMock.Setup(c => c.FindContactIdAsync(order.Customer.Email)).ReturnsAsync(123);
+        _clientMock.Setup(c => c.CreateOrderAsync(123, order)).ReturnsAsync(456);
+        _clientMock.Setup(c => c.FindArticleAsync("123", "Black", "SS26")).ReturnsAsync(new BexioArticle { Id = 789, Description = "Desc", Name = "Name" });
+
+        var interactionMock = new Mock<IImportUserInteractionService>();
+        interactionMock.Setup(i => i.ConfirmUploadAsync()).ReturnsAsync(true);
+        interactionMock.Setup(i => i.ConfirmCustomerCreationAsync(It.IsAny<Customer>())).ReturnsAsync(true);
+        interactionMock.Setup(i => i.ConfirmEmailMismatchAsync(It.IsAny<string>(), It.IsAny<string>())).ReturnsAsync(true);
+
+        var options = new ImportOrderOptions(SeasonCode: "SS26");
+
+        // Act
+        var result = await _useCase.ExecuteAsync("file.xlsx", interactionMock.Object, options);
+
+        // Assert
+        result.Success.Should().BeTrue();
+        result.OrderId.Should().Be(456);
+        _clientMock.Verify(c => c.FindArticleAsync("123", "Black", "SS26"), Times.Once);
+        interactionMock.Verify(i => i.LogInfo(It.Is<string>(s => s.Contains("Successfully completed"))), Times.Once);
     }
 
     private static Order CreateSampleOrder()
@@ -182,6 +419,7 @@ public class ImportOrderUseCaseTests
         {
             ArticleNumber = "123",
             ArticleName = "Test Artikel",
+            Color = "Black",
             Quantity = 2,
             UnitPrice = 10.0m
         });

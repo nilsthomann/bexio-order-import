@@ -64,11 +64,23 @@
                 <ScrollViewer Grid.Row="2" VerticalScrollBarVisibility="Auto" Margin="20,16,20,0">
                     <StackPanel>
 
-                        <!-- General Section -->
+                        <!-- 1. General Profile Info Section -->
                         <Border Style="{StaticResource CardBorderStyle}" Margin="0,0,0,16">
                             <StackPanel>
                                 <TextBlock Text="{x:Static lex:Translations.Settings_WorksheetSection}" Style="{StaticResource SectionHeaderTextBlockStyle}"/>
-                                <Grid Margin="0,8,0,0">
+                                
+                                <!-- Profile Name -->
+                                <Grid Margin="0,8,0,8">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="200"/>
+                                        <ColumnDefinition Width="*"/>
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Text="{x:Static lex:Translations.Settings_ProfileNameLabel}" VerticalAlignment="Center" Margin="0,0,12,0" FontWeight="Medium"/>
+                                    <TextBox x:Name="ProfileNameInput" Grid.Column="1" Height="32" VerticalAlignment="Center"/>
+                                </Grid>
+
+                                <!-- Worksheet Index -->
+                                <Grid Margin="0,0,0,8">
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition Width="200"/>
                                         <ColumnDefinition Width="*"/>
@@ -76,10 +88,20 @@
                                     <TextBlock Text="{x:Static lex:Translations.Settings_WorksheetLabel}" VerticalAlignment="Center" Margin="0,0,12,0"/>
                                     <TextBox x:Name="WorksheetIndexInput" Grid.Column="1" Height="32" VerticalAlignment="Center" Width="100" HorizontalAlignment="Left"/>
                                 </Grid>
+
+                                <!-- Season Code -->
+                                <Grid Margin="0,0,0,4">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="200"/>
+                                        <ColumnDefinition Width="*"/>
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Text="{x:Static lex:Translations.Settings_SeasonCodeLabel}" VerticalAlignment="Center" Margin="0,0,12,0"/>
+                                    <TextBox x:Name="SeasonCodeInput" Grid.Column="1" Height="32" VerticalAlignment="Center" Width="200" HorizontalAlignment="Left"/>
+                                </Grid>
                             </StackPanel>
                         </Border>
 
-                        <!-- Header Section -->
+                        <!-- 2. Header Section -->
                         <Border Style="{StaticResource CardBorderStyle}" Margin="0,0,0,16">
                             <StackPanel>
                                 <TextBlock Text="{x:Static lex:Translations.Settings_HeaderSection}" Style="{StaticResource SectionHeaderTextBlockStyle}"/>
@@ -104,7 +126,7 @@
                                         <TextBox x:Name="StreetCellInput" Height="32"/>
                                     </StackPanel>
                                     <StackPanel Grid.Row="0" Grid.Column="2" Margin="0,0,8,12">
-                                        <TextBlock Text="{x:Static lex:Translations.Settings_CellZipCode}" Style="{StaticResource MutedTextBlockStyle}"/>
+                                        <TextBlock Text="{x:Static lex:Translations.Settings_CellZipCodeCity}" Style="{StaticResource MutedTextBlockStyle}"/>
                                         <TextBox x:Name="ZipCityCellInput" Height="32"/>
                                     </StackPanel>
                                     <StackPanel Grid.Row="0" Grid.Column="3" Margin="0,0,0,12">
@@ -117,8 +139,8 @@
                                         <TextBox x:Name="BuyerNameCellInput" Height="32"/>
                                     </StackPanel>
                                     <StackPanel Grid.Row="1" Grid.Column="1" Margin="0,0,8,0">
-                                        <TextBlock Text="{x:Static lex:Translations.Settings_CellDeliveryDate}" Style="{StaticResource MutedTextBlockStyle}"/>
-                                        <TextBox x:Name="DeliveryDateCellInput" Height="32"/>
+                                        <TextBlock Text="{x:Static lex:Translations.Settings_CellOrderId}" Style="{StaticResource MutedTextBlockStyle}"/>
+                                        <TextBox x:Name="OrderIdCellInput" Height="32"/>
                                     </StackPanel>
                                     <StackPanel Grid.Row="1" Grid.Column="2" Margin="0,0,8,0">
                                         <TextBlock Text="{x:Static lex:Translations.Settings_CellPaymentTerms}" Style="{StaticResource MutedTextBlockStyle}"/>
@@ -132,7 +154,7 @@
                             </StackPanel>
                         </Border>
 
-                        <!-- Size Matrix Section -->
+                        <!-- 3. Size Matrix Section -->
                         <Border Style="{StaticResource CardBorderStyle}" Margin="0,0,0,16">
                             <StackPanel>
                                 <TextBlock Text="{x:Static lex:Translations.Settings_MatrixSection}" Style="{StaticResource SectionHeaderTextBlockStyle}"/>
@@ -169,8 +191,8 @@
                             </StackPanel>
                         </Border>
 
-                        <!-- Data Columns Section -->
-                        <Border Style="{StaticResource CardBorderStyle}" Margin="0,0,0,4">
+                        <!-- 4. Data Columns Section -->
+                        <Border Style="{StaticResource CardBorderStyle}" Margin="0,0,0,16">
                             <StackPanel>
                                 <TextBlock Text="{x:Static lex:Translations.Settings_ColsSection}" Style="{StaticResource SectionHeaderTextBlockStyle}"/>
                                 <Grid Margin="0,8,0,0">
@@ -219,23 +241,65 @@
                                         <TextBlock Text="{x:Static lex:Translations.Settings_ColUnitPrice}" Style="{StaticResource MutedTextBlockStyle}"/>
                                         <TextBox x:Name="ColUnitPriceInput" Height="32"/>
                                     </StackPanel>
+                                    <CheckBox x:Name="EnableRowDiscountCheckBox" Grid.Row="1" Grid.Column="3" 
+                                              Content="{x:Static lex:Translations.Settings_EnableRowDiscount}" 
+                                              VerticalAlignment="Center" Margin="0,16,8,0"
+                                              Foreground="{StaticResource TextBrush}" FontWeight="Medium"/>
+                                    <StackPanel Grid.Row="1" Grid.Column="4" Margin="0,0,0,0">
+                                        <TextBlock Text="{x:Static lex:Translations.Settings_ColRowDiscount}" Style="{StaticResource MutedTextBlockStyle}"/>
+                                        <TextBox x:Name="ColRowDiscountInput" Height="32" IsEnabled="{Binding ElementName=EnableRowDiscountCheckBox, Path=IsChecked}"/>
+                                    </StackPanel>
                                 </Grid>
                             </StackPanel>
                         </Border>
 
-                        <!-- Position Text Template Section -->
+                        <!-- 5. Texte & Vorlagen Section -->
                         <Border Style="{StaticResource CardBorderStyle}" Margin="0,0,0,16">
                             <StackPanel>
-                                <TextBlock Text="{x:Static lex:Translations.Settings_PositionTextTemplateSection}" Style="{StaticResource SectionHeaderTextBlockStyle}"/>
-                                <Grid Margin="0,8,0,0">
+                                <TextBlock Text="{x:Static lex:Translations.Settings_TextTemplatesSection}" Style="{StaticResource SectionHeaderTextBlockStyle}"/>
+                                
+                                <!-- Auftragsname-Vorlage -->
+                                <Grid Margin="0,8,0,12">
                                     <Grid.RowDefinitions>
                                         <RowDefinition Height="Auto"/>
                                         <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="Auto"/>
                                     </Grid.RowDefinitions>
-                                    <TextBox x:Name="PositionTextTemplateInput" Height="32" Grid.Row="0" Margin="0,0,0,4"/>
+                                    <TextBlock Text="{x:Static lex:Translations.Settings_DefaultOrderNameLabel}" Grid.Row="0" Margin="0,0,0,4" FontWeight="Medium"/>
+                                    <TextBox x:Name="DefaultOrderNameInput" Height="32" Grid.Row="1" Margin="0,0,0,4"/>
+                                    <TextBlock Text="{x:Static lex:Translations.Settings_DefaultOrderNameHint}" 
+                                               Style="{StaticResource MutedTextBlockStyle}" 
+                                               Grid.Row="2" 
+                                               FontStyle="Italic"/>
+                                </Grid>
+
+                                <!-- Positions-Text Vorlage -->
+                                <Grid Margin="0,0,0,12">
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="Auto"/>
+                                    </Grid.RowDefinitions>
+                                    <TextBlock Text="{x:Static lex:Translations.Settings_PositionTextTemplateLabel}" Grid.Row="0" Margin="0,0,0,4" FontWeight="Medium"/>
+                                    <TextBox x:Name="PositionTextTemplateInput" Height="32" Grid.Row="1" Margin="0,0,0,4"/>
                                     <TextBlock Text="{x:Static lex:Translations.Settings_PositionTextTemplateHint}" 
                                                Style="{StaticResource MutedTextBlockStyle}" 
-                                               Grid.Row="1" 
+                                               Grid.Row="2" 
+                                               FontStyle="Italic"/>
+                                </Grid>
+
+                                <!-- Rabatt-Positions-Text Vorlage -->
+                                <Grid Margin="0,0,0,4">
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="Auto"/>
+                                    </Grid.RowDefinitions>
+                                    <TextBlock Text="{x:Static lex:Translations.Settings_DiscountPositionTextTemplateLabel}" Grid.Row="0" Margin="0,0,0,4" FontWeight="Medium"/>
+                                    <TextBox x:Name="DiscountPositionTextTemplateInput" Height="32" Grid.Row="1" Margin="0,0,0,4"/>
+                                    <TextBlock Text="{x:Static lex:Translations.Settings_DiscountPositionTextTemplateHint}" 
+                                               Style="{StaticResource MutedTextBlockStyle}" 
+                                               Grid.Row="2" 
                                                FontStyle="Italic"/>
                                 </Grid>
                             </StackPanel>

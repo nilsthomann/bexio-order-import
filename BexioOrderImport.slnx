@@ -30,7 +30,6 @@
   </Folder>
   <Folder Name="/src/">
     <Project Path="src/BexioOrderImport.Application/BexioOrderImport.Application.csproj" />
-    <Project Path="src/BexioOrderImport.Cli/BexioOrderImport.Cli.csproj" />
     <Project Path="src/BexioOrderImport.Domain/BexioOrderImport.Domain.csproj" />
     <Project Path="src/BexioOrderImport.Infrastructure/BexioOrderImport.Infrastructure.csproj" />
     <Project Path="src/BexioOrderImport.Tests/BexioOrderImport.Tests.csproj" />
