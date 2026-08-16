@@ -61,4 +61,13 @@ public partial class ImportControl : UserControl
             }
         }), System.Windows.Threading.DispatcherPriority.Background);
     }
+
+    private void ProfileItem_Click(object sender, RoutedEventArgs e)
+    {
+        if (sender is Button button && button.DataContext is Models.MappingProfile profile && DataContext is MainViewModel vm)
+        {
+            vm.SetActiveProfileCommand.Execute(profile);
+            ProfileDropdownButton.IsChecked = false;
+        }
+    }
 }

@@ -23,5 +23,5 @@ public class BexioCreateArticlePositionRequest
     public int? TaxId { get; set; }
 
     [JsonPropertyName("discount_in_percent")]
-    public decimal DiscountInPercent { get; set; }
+    public decimal? DiscountInPercent { get; set; }
 }
