@@ -49,6 +49,9 @@ public static class Translations
     public static string Settings_CellEmail => ResourceManager.GetString(nameof(Settings_CellEmail)) ?? string.Empty;
     public static string Settings_CellBuyerName => ResourceManager.GetString(nameof(Settings_CellBuyerName)) ?? string.Empty;
     public static string Settings_CellOrderId => ResourceManager.GetString(nameof(Settings_CellOrderId)) ?? string.Empty;
+    public static string Settings_EnableOrderId => ResourceManager.GetString(nameof(Settings_EnableOrderId)) ?? string.Empty;
+    public static string Settings_CellCustomerId => ResourceManager.GetString(nameof(Settings_CellCustomerId)) ?? string.Empty;
+    public static string Settings_EnableCustomerId => ResourceManager.GetString(nameof(Settings_EnableCustomerId)) ?? string.Empty;
     public static string Settings_CellPaymentTerms => ResourceManager.GetString(nameof(Settings_CellPaymentTerms)) ?? string.Empty;
     public static string Settings_CellDiscount => ResourceManager.GetString(nameof(Settings_CellDiscount)) ?? string.Empty;
     public static string Settings_MatrixSection => ResourceManager.GetString(nameof(Settings_MatrixSection)) ?? string.Empty;
@@ -131,6 +134,8 @@ public static class Translations
     public static string Update_Installing => ResourceManager.GetString(nameof(Update_Installing)) ?? string.Empty;
     public static string Update_Error => ResourceManager.GetString(nameof(Update_Error)) ?? string.Empty;
     public static string Import_NoOrderId => ResourceManager.GetString(nameof(Import_NoOrderId)) ?? string.Empty;
+    public static string Import_CustomerId => ResourceManager.GetString(nameof(Import_CustomerId)) ?? string.Empty;
+    public static string Import_NoCustomerId => ResourceManager.GetString(nameof(Import_NoCustomerId)) ?? string.Empty;
     public static string Settings_DefaultOrderNameLabel => ResourceManager.GetString(nameof(Settings_DefaultOrderNameLabel)) ?? string.Empty;
     public static string Settings_DefaultOrderNameHint => ResourceManager.GetString(nameof(Settings_DefaultOrderNameHint)) ?? string.Empty;
     public static string Settings_SeasonCodeLabel => ResourceManager.GetString(nameof(Settings_SeasonCodeLabel)) ?? string.Empty;

@@ -52,6 +52,7 @@ public partial class MainViewModel
             Email = _loadedOrder.Customer.Email;
             Address = $"{_loadedOrder.Customer.Street}, {_loadedOrder.Customer.ZipCode} {_loadedOrder.Customer.City}";
             OrderId = _loadedOrder.OrderId?.ToString() ?? Resources.Translations.Import_NoOrderId;
+            CustomerId = _loadedOrder.CustomerId?.ToString() ?? Resources.Translations.Import_NoCustomerId;
             PaymentTerms = _loadedOrder.PaymentTerms;
 
             OrderPositions.Clear();
@@ -120,6 +121,7 @@ public partial class MainViewModel
         Email = string.Empty;
         Address = string.Empty;
         OrderId = string.Empty;
+        CustomerId = string.Empty;
         PaymentTerms = string.Empty;
         OrderPositions.Clear();
         UpdateTotalsSummary();

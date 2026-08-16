@@ -323,12 +323,15 @@ public class ExcelParserTests
     public void ParseOrderForm_WithInvalidOrderId_ShouldReturnNullOrderId()
     {
         // Arrange
+        var options = new ExcelMappingOptions();
+        options.Header.EnableOrderId = true;
+        var parser = new ClosedXmlExcelParser(Microsoft.Extensions.Options.Options.Create(options));
         string filePath = CreateTemporaryExcelFile("invalid-id-value", "5%");
 
         try
         {
             // Act
-            var order = _parser.ParseOrderForm(filePath);
+            var order = parser.ParseOrderForm(filePath);
 
             // Assert
             order.OrderId.Should().BeNull();
@@ -340,15 +343,18 @@ public class ExcelParserTests
     }
 
     [Fact]
-    public void ParseOrderForm_WithValidOrderId_ShouldParseOrderIdCorrectly()
+    public void ParseOrderForm_WithValidOrderId_WhenEnableOrderIdIsTrue_ShouldParseOrderIdCorrectly()
     {
         // Arrange
+        var options = new ExcelMappingOptions();
+        options.Header.EnableOrderId = true;
+        var parser = new ClosedXmlExcelParser(Microsoft.Extensions.Options.Options.Create(options));
         string filePath = CreateTemporaryExcelFile("12345", "5%");
 
         try
         {
             // Act
-            var order = _parser.ParseOrderForm(filePath);
+            var order = parser.ParseOrderForm(filePath);
 
             // Assert
             order.OrderId.Should().Be(12345);
@@ -356,6 +362,75 @@ public class ExcelParserTests
         finally
         {
             try { File.Delete(filePath); } catch { }
+        }
+    }
+
+    [Fact]
+    public void ParseOrderForm_WithValidOrderId_WhenEnableOrderIdIsFalse_ShouldReturnNullOrderId()
+    {
+        // Arrange
+        var options = new ExcelMappingOptions();
+        options.Header.EnableOrderId = false;
+        var parser = new ClosedXmlExcelParser(Microsoft.Extensions.Options.Options.Create(options));
+        string filePath = CreateTemporaryExcelFile("12345", "5%");
+
+        try
+        {
+            // Act
+            var order = parser.ParseOrderForm(filePath);
+
+            // Assert
+            order.OrderId.Should().BeNull();
+        }
+        finally
+        {
+            try { File.Delete(filePath); } catch { }
+        }
+    }
+
+    [Fact]
+    public void ParseOrderForm_WithValidCustomerId_WhenEnableCustomerIdIsTrue_ShouldParseCustomerIdCorrectly()
+    {
+        // Arrange
+        var options = new ExcelMappingOptions();
+        options.Header.EnableCustomerId = true;
+        options.Header.CustomerIdCell = "E3";
+        var parser = new ClosedXmlExcelParser(Microsoft.Extensions.Options.Options.Create(options));
+
+        using var wb = new ClosedXML.Excel.XLWorkbook();
+        var ws = wb.Worksheets.Add("Bestellformular");
+        ws.Cell("B4").Value = "Firma AG";
+        ws.Cell("B5").Value = "Musterstrasse 1";
+        ws.Cell("B6").Value = "8000 Zurich";
+        ws.Cell("E5").Value = "info@firma.ch";
+        ws.Cell("E3").Value = "9876";
+
+        // Size matrix
+        ws.Cell(10, 4).Value = "KIDS";
+        ws.Cell(10, 5).Value = "92";
+
+        // Data row
+        ws.Cell(18, 1).Value = "ART-01";
+        ws.Cell(18, 2).Value = "Jacke";
+        ws.Cell(18, 3).Value = "Rot";
+        ws.Cell(18, 4).Value = "KIDS";
+        ws.Cell(18, 5).Value = 2; // Qty
+        ws.Cell(18, 20).Value = 100m; // Unit Price
+
+        string tempPath = Path.Combine(Path.GetTempPath(), $"cust_id_{Guid.NewGuid():N}.xlsx");
+        wb.SaveAs(tempPath);
+
+        try
+        {
+            // Act
+            var order = parser.ParseOrderForm(tempPath);
+
+            // Assert
+            order.CustomerId.Should().Be(9876);
+        }
+        finally
+        {
+            if (File.Exists(tempPath)) File.Delete(tempPath);
         }
     }
 

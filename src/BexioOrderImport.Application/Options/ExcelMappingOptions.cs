@@ -19,7 +19,10 @@ public class HeaderMapping
     public string ZipCityCell { get; set; } = "B6";
     public string BuyerEmailCell { get; set; } = "E5";
     public string BuyerNameCell { get; set; } = "E4";
+    public bool EnableOrderId { get; set; } = false;
     public string OrderIdCell { get; set; } = "E6";
+    public bool EnableCustomerId { get; set; } = false;
+    public string CustomerIdCell { get; set; } = "E3";
     public string PaymentTermsCell { get; set; } = "A9";
     public string DiscountCell { get; set; } = "V12";
 }

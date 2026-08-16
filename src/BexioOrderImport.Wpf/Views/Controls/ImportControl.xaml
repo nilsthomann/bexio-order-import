@@ -94,6 +94,7 @@
                         <ColumnDefinition Width="*"/>
                         <ColumnDefinition Width="*"/>
                         <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
                     </Grid.ColumnDefinitions>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto"/>
@@ -118,12 +119,18 @@
                         <TextBlock Text="{Binding BuyerName}" FontWeight="SemiBold"/>
                     </StackPanel>
                     <StackPanel Grid.Column="1" Grid.Row="1" Margin="0,4">
+                        <TextBlock Text="{x:Static lex:Translations.Import_Conditions}" Style="{StaticResource MutedTextBlockStyle}"/>
+                        <TextBlock Text="{Binding PaymentTerms}" FontWeight="SemiBold"/>
+                    </StackPanel>
+                    <StackPanel Grid.Column="2" Grid.Row="1" Margin="0,4"
+                                Visibility="{Binding IsActiveOrderIdEnabled, Converter={StaticResource BooleanToVisibilityConverter}}">
                         <TextBlock Text="{x:Static lex:Translations.Import_OrderId}" Style="{StaticResource MutedTextBlockStyle}"/>
                         <TextBlock Text="{Binding OrderId}" FontWeight="SemiBold"/>
                     </StackPanel>
-                    <StackPanel Grid.Column="2" Grid.Row="1" Margin="0,4">
-                        <TextBlock Text="{x:Static lex:Translations.Import_Conditions}" Style="{StaticResource MutedTextBlockStyle}"/>
-                        <TextBlock Text="{Binding PaymentTerms}" FontWeight="SemiBold"/>
+                    <StackPanel Grid.Column="3" Grid.Row="1" Margin="0,4"
+                                Visibility="{Binding IsActiveCustomerIdEnabled, Converter={StaticResource BooleanToVisibilityConverter}}">
+                        <TextBlock Text="{x:Static lex:Translations.Import_CustomerId}" Style="{StaticResource MutedTextBlockStyle}"/>
+                        <TextBlock Text="{Binding CustomerId}" FontWeight="SemiBold"/>
                     </StackPanel>
                 </Grid>
             </Grid>

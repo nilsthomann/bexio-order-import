@@ -28,7 +28,8 @@ public class ClosedXmlExcelParser : IExcelParser
         {
             // Parse header data
             Customer = ParseCustomerHeader(sheet),
-            OrderId = ParseOrderId(sheet)
+            OrderId = ParseOrderId(sheet),
+            CustomerId = ParseCustomerId(sheet)
         };
 
         string paymentTermsVal = sheet.Cell(_options.Header.PaymentTermsCell).Value.ToString().Trim();
@@ -151,7 +152,16 @@ public class ClosedXmlExcelParser : IExcelParser
 
     private int? ParseOrderId(IXLWorksheet sheet)
     {
+        if (!_options.Header.EnableOrderId) return null;
         string val = sheet.Cell(_options.Header.OrderIdCell).Value.ToString().Trim();
+        if (int.TryParse(val, out int id)) return id;
+        return null;
+    }
+
+    private int? ParseCustomerId(IXLWorksheet sheet)
+    {
+        if (!_options.Header.EnableCustomerId) return null;
+        string val = sheet.Cell(_options.Header.CustomerIdCell).Value.ToString().Trim();
         if (int.TryParse(val, out int id)) return id;
         return null;
     }

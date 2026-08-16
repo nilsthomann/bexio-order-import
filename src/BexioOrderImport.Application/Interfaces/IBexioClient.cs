@@ -29,6 +29,11 @@ public interface IBexioClient
     Task<string?> GetOrderContactEmailAsync(int orderId);
 
     /// <summary>
+    /// Fetches contact details (contact ID and email) associated with an existing Bexio order ID.
+    /// </summary>
+    Task<BexioOrderContactDetails?> GetOrderContactDetailsAsync(int orderId);
+
+    /// <summary>
     /// Finds a Bexio article matching the article number, color, and season code.
     /// </summary>
     Task<BexioArticle?> FindArticleAsync(string articleNumber, string color, string seasonCode);

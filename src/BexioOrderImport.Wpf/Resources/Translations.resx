@@ -266,6 +266,15 @@ Bitte schliessen Sie die Datei in Excel und versuchen Sie es erneut.</value>
   <data name="Settings_CellOrderId" xml:space="preserve">
     <value>Zelle Auftrags-ID</value>
   </data>
+  <data name="Settings_EnableOrderId" xml:space="preserve">
+    <value>Auftrags-ID aktivieren</value>
+  </data>
+  <data name="Settings_CellCustomerId" xml:space="preserve">
+    <value>Zelle Kunden-ID</value>
+  </data>
+  <data name="Settings_EnableCustomerId" xml:space="preserve">
+    <value>Kunden-ID aktivieren</value>
+  </data>
   <data name="Settings_CellPaymentTerms" xml:space="preserve">
     <value>Zelle Konditionen</value>
   </data>
@@ -508,6 +517,12 @@ Bitte schliessen Sie die Datei in Excel und versuchen Sie es erneut.</value>
   </data>
   <data name="Import_NoOrderId" xml:space="preserve">
     <value>Keine Auftrags-ID</value>
+  </data>
+  <data name="Import_CustomerId" xml:space="preserve">
+    <value>Kunden-ID</value>
+  </data>
+  <data name="Import_NoCustomerId" xml:space="preserve">
+    <value>Keine Kunden-ID</value>
   </data>
   <data name="Settings_DefaultOrderNameLabel" xml:space="preserve">
     <value>Auftragsname-Vorlage:</value>

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using BexioOrderImport.Application.Interfaces;
 using BexioOrderImport.Domain.Models;
+using BexioOrderImport.Domain.Models.Bexio;
 using BexioOrderImport.Wpf.Services;
 using BexioOrderImport.Wpf.ViewModels;
 using BexioOrderImport.Tests.Utils;
