@@ -29,7 +29,7 @@ public partial class MainViewModel
         if (profile == null) return;
         if (_profileManagerService.EditProfile(Profiles, profile))
         {
-            OnPropertyChanged(nameof(ActiveProfile));
+            NotifyActiveProfileChanged();
             SetModified();
         }
     }
@@ -47,6 +47,7 @@ public partial class MainViewModel
             {
                 ActiveProfile = Profiles[0];
             }
+            NotifyActiveProfileChanged();
             SetModified();
         }
     }
@@ -56,7 +57,7 @@ public partial class MainViewModel
         if (profile != null)
         {
             ActiveProfile = profile;
-            OnPropertyChanged(nameof(ActiveProfile));
+            NotifyActiveProfileChanged();
             AppendLog($"Active profile set to: {ActiveProfile.Name}");
             SetModified();
         }

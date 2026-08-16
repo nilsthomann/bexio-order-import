@@ -55,7 +55,7 @@ public class BexioApiClient : IBexioClient
     {
         var searchPayload = new[]
         {
-            new { field = "mail", value = email, criteria = "=" }
+            new BexioSearchCriteria { Field = "mail", Value = email, Criteria = "=" }
         };
 
         var body = new StringContent(JsonSerializer.Serialize(searchPayload), Encoding.UTF8, "application/json");
@@ -75,16 +75,16 @@ public class BexioApiClient : IBexioClient
 
     public async Task<int> CreateContactAsync(Customer customer)
     {
-        var createPayload = new
+        var createPayload = new BexioCreateContactRequest
         {
-            contact_type_id = 1, // 1 = Company, 2 = Person
-            name_1 = customer.CompanyName,
-            mail = customer.Email,
-            street_name = customer.Street,
-            postcode = customer.ZipCode,
-            city = customer.City,
-            user_id = 1, // Default userid
-            owner_id = 1 // Default owner
+            ContactTypeId = 1, // 1 = Company, 2 = Person
+            Name1 = customer.CompanyName,
+            Mail = customer.Email,
+            StreetName = customer.Street,
+            Postcode = customer.ZipCode,
+            City = customer.City,
+            UserId = 1, // Default userid
+            OwnerId = 1 // Default owner
         };
 
         var body = new StringContent(JsonSerializer.Serialize(createPayload), Encoding.UTF8, "application/json");
@@ -97,17 +97,17 @@ public class BexioApiClient : IBexioClient
 
     public async Task<int> CreateOrderAsync(int contactId, Order order)
     {
-        var orderPayload = new
+        var orderPayload = new BexioCreateOrderRequest
         {
-            contact_id = contactId,
-            user_id = 1, // Default user
-            title = string.IsNullOrEmpty(order.Title) ? $"Order: {order.Customer.CompanyName}" : order.Title,
-            mwst_type = 0, // 0 = excl. VAT, 1 = incl. VAT
-            currency_id = 1, // 1 = CHF
-            payment_type_id = 1, // Default
-            language_id = 1, // German
-            api_reference = "Excel-Import",
-            positions = Array.Empty<object>() // Positions added subsequently
+            ContactId = contactId,
+            UserId = 1, // Default user
+            Title = string.IsNullOrEmpty(order.Title) ? $"Order: {order.Customer.CompanyName}" : order.Title,
+            MwstType = 0, // 0 = excl. VAT, 1 = incl. VAT
+            CurrencyId = 1, // 1 = CHF
+            PaymentTypeId = 1, // Default
+            LanguageId = 1, // German
+            ApiReference = "Excel-Import",
+            Positions = [] // Positions added subsequently
         };
 
         var body = new StringContent(JsonSerializer.Serialize(orderPayload), Encoding.UTF8, "application/json");
@@ -118,7 +118,7 @@ public class BexioApiClient : IBexioClient
         return createdOrder?.Id ?? throw new InvalidOperationException("Bexio returned an empty response when creating an order.");
     }
 
-    public async Task<string?> GetOrderContactEmailAsync(int orderId)
+    public async Task<BexioOrderContactDetails?> GetOrderContactDetailsAsync(int orderId)
     {
         var response = await SendWithRateLimitCheckAsync(CreateRequest(HttpMethod.Get, $"2.0/kb_order/{orderId}"));
         if (!response.IsSuccessStatusCode)
@@ -132,11 +132,17 @@ public class BexioApiClient : IBexioClient
         var contactResponse = await SendWithRateLimitCheckAsync(CreateRequest(HttpMethod.Get, $"2.0/contact/{order.ContactId}"));
         if (!contactResponse.IsSuccessStatusCode)
         {
-            return null;
+            return new BexioOrderContactDetails(order.ContactId, null);
         }
 
         var contact = await contactResponse.Content.ReadFromJsonAsync<BexioContact>();
-        return contact?.EMail;
+        return new BexioOrderContactDetails(order.ContactId, contact?.EMail);
+    }
+
+    public async Task<string?> GetOrderContactEmailAsync(int orderId)
+    {
+        var details = await GetOrderContactDetailsAsync(orderId);
+        return details?.Email;
     }
 
     public async Task<BexioArticle?> FindArticleAsync(string articleNumber, string color, string seasonCode)
@@ -171,7 +177,7 @@ public class BexioApiClient : IBexioClient
         {
             var searchPayload = new[]
             {
-                new { field = "intern_code", value = seasonCode.Trim(), criteria = "like" }
+                new BexioSearchCriteria { Field = "intern_code", Value = seasonCode.Trim(), Criteria = "like" }
             };
 
             var body = new StringContent(JsonSerializer.Serialize(searchPayload), Encoding.UTF8, "application/json");
@@ -196,7 +202,7 @@ public class BexioApiClient : IBexioClient
 
                 var searchPayload = new[]
                 {
-                    new { field = "intern_code", value = artNo, criteria = "like" }
+                    new BexioSearchCriteria { Field = "intern_code", Value = artNo, Criteria = "like" }
                 };
 
                 var body = new StringContent(JsonSerializer.Serialize(searchPayload), Encoding.UTF8, "application/json");
@@ -234,7 +240,7 @@ public class BexioApiClient : IBexioClient
 
         var searchPayload = new[]
         {
-            new { field = "intern_code", value = internCode, criteria = "=" }
+            new BexioSearchCriteria { Field = "intern_code", Value = internCode, Criteria = "=" }
         };
 
         lock (_cacheLock)
@@ -266,7 +272,7 @@ public class BexioApiClient : IBexioClient
     {
         var searchPayload = new[]
         {
-            new { field = "intern_code", value = articleNumber.Trim(), criteria = "like" }
+            new BexioSearchCriteria { Field = "intern_code", Value = articleNumber.Trim(), Criteria = "like" }
         };
 
         BexioArticle? cachedArticle;
@@ -316,15 +322,15 @@ public class BexioApiClient : IBexioClient
                 ? position.PositionText
                 : $"Color: {position.Color}, Size: {position.Size}";
 
-        var positionPayload = new
+        var positionPayload = new BexioCreateArticlePositionRequest
         {
-            amount = position.Quantity,
-            article_id = articleId,
-            text,
-            unit_price = position.GrossUnitPrice,
-            account_id = _accountId,
-            tax_id = _taxId,
-            discount_in_percent = position.DiscountPercent ?? 0m
+            Amount = position.Quantity,
+            ArticleId = articleId,
+            Text = text,
+            UnitPrice = position.GrossUnitPrice,
+            AccountId = _accountId,
+            TaxId = _taxId,
+            DiscountInPercent = position.DiscountPercent ?? 0m
         };
 
         var body = new StringContent(JsonSerializer.Serialize(positionPayload), Encoding.UTF8, "application/json");
@@ -340,12 +346,11 @@ public class BexioApiClient : IBexioClient
 
     public async Task AddDiscountPositionAsync(int orderId, decimal discountPercent, string text = "Rabatt")
     {
-        var discountPayload = new
+        var discountPayload = new BexioCreateDiscountPositionRequest
         {
-            text = string.IsNullOrEmpty(text) ? "Rabatt" : text,
-            value = discountPercent,
-            
-            is_percentual = true
+            Text = string.IsNullOrEmpty(text) ? "Rabatt" : text,
+            Value = discountPercent,
+            IsPercentual = true
         };
 
         var body = new StringContent(JsonSerializer.Serialize(discountPayload), Encoding.UTF8, "application/json");

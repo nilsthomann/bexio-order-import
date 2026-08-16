@@ -6,6 +6,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using BexioOrderImport.Application.Interfaces;
 using BexioOrderImport.Domain.Models;
+using BexioOrderImport.Domain.Models.Bexio;
 using BexioOrderImport.Wpf.Resources;
 using BexioOrderImport.Wpf.Services;
 using System.Reflection;
@@ -59,6 +60,7 @@ public partial class MainViewModel : ViewModelBase
     private string _email = string.Empty;
     private string _address = string.Empty;
     private string _orderId = string.Empty;
+    private string _customerId = string.Empty;
     private string _paymentTerms = string.Empty;
 
     public bool HasLoadedFile
@@ -362,6 +364,12 @@ public partial class MainViewModel : ViewModelBase
         set => SetProperty(ref _orderId, value);
     }
 
+    public string CustomerId
+    {
+        get => _customerId;
+        set => SetProperty(ref _customerId, value);
+    }
+
     public string PaymentTerms
     {
         get => _paymentTerms;
@@ -411,6 +419,8 @@ public partial class MainViewModel : ViewModelBase
     }
 
     public bool IsActiveRowDiscountEnabled => ActiveProfile?.Mapping.Data.EnableRowDiscount ?? false;
+    public bool IsActiveOrderIdEnabled => ActiveProfile?.Mapping.Header.EnableOrderId ?? false;
+    public bool IsActiveCustomerIdEnabled => ActiveProfile?.Mapping.Header.EnableCustomerId ?? false;
 
     public Models.MappingProfile? ActiveProfile
     {
@@ -419,9 +429,17 @@ public partial class MainViewModel : ViewModelBase
         {
             if (SetProperty(ref _activeProfile, value))
             {
-                OnPropertyChanged(nameof(IsActiveRowDiscountEnabled));
+                NotifyActiveProfileChanged();
             }
         }
+    }
+
+    public void NotifyActiveProfileChanged()
+    {
+        OnPropertyChanged(nameof(ActiveProfile));
+        OnPropertyChanged(nameof(IsActiveRowDiscountEnabled));
+        OnPropertyChanged(nameof(IsActiveOrderIdEnabled));
+        OnPropertyChanged(nameof(IsActiveCustomerIdEnabled));
     }
 
 

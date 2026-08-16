@@ -1,6 +1,6 @@
 using System.Text.Json.Serialization;
 
-namespace BexioOrderImport.Domain.Models;
+namespace BexioOrderImport.Domain.Models.Bexio;
 
 public class BexioAccount
 {

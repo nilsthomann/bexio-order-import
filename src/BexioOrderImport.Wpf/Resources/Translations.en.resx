@@ -266,6 +266,15 @@ Please close the file in Excel and try again.</value>
   <data name="Settings_CellOrderId" xml:space="preserve">
     <value>Order ID cell</value>
   </data>
+  <data name="Settings_EnableOrderId" xml:space="preserve">
+    <value>Enable Order ID</value>
+  </data>
+  <data name="Settings_CellCustomerId" xml:space="preserve">
+    <value>Customer ID cell</value>
+  </data>
+  <data name="Settings_EnableCustomerId" xml:space="preserve">
+    <value>Enable Customer ID</value>
+  </data>
   <data name="Settings_CellPaymentTerms" xml:space="preserve">
     <value>Payment Terms cell</value>
   </data>
@@ -511,6 +520,12 @@ Please close the file in Excel and try again.</value>
   </data>
   <data name="Import_NoOrderId" xml:space="preserve">
     <value>No Order ID</value>
+  </data>
+  <data name="Import_CustomerId" xml:space="preserve">
+    <value>Customer ID</value>
+  </data>
+  <data name="Import_NoCustomerId" xml:space="preserve">
+    <value>No Customer ID</value>
   </data>
   <data name="Settings_DefaultOrderNameLabel" xml:space="preserve">
     <value>Order Name Template:</value>

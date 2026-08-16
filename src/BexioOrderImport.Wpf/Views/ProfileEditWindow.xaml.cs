@@ -63,7 +63,10 @@ public partial class ProfileEditWindow : Window
         ZipCityCellInput.Text = _profile.Mapping.Header.ZipCityCell;
         BuyerEmailCellInput.Text = _profile.Mapping.Header.BuyerEmailCell;
         BuyerNameCellInput.Text = _profile.Mapping.Header.BuyerNameCell;
+        EnableOrderIdCheckBox.IsChecked = _profile.Mapping.Header.EnableOrderId;
         OrderIdCellInput.Text = _profile.Mapping.Header.OrderIdCell;
+        EnableCustomerIdCheckBox.IsChecked = _profile.Mapping.Header.EnableCustomerId;
+        CustomerIdCellInput.Text = _profile.Mapping.Header.CustomerIdCell;
         PaymentTermsCellInput.Text = _profile.Mapping.Header.PaymentTermsCell;
         DiscountCellInput.Text = _profile.Mapping.Header.DiscountCell;
 
@@ -119,7 +122,10 @@ public partial class ProfileEditWindow : Window
             _profile.Mapping.Header.ZipCityCell = ZipCityCellInput.Text.Trim();
             _profile.Mapping.Header.BuyerEmailCell = BuyerEmailCellInput.Text.Trim();
             _profile.Mapping.Header.BuyerNameCell = BuyerNameCellInput.Text.Trim();
+            _profile.Mapping.Header.EnableOrderId = EnableOrderIdCheckBox.IsChecked == true;
             _profile.Mapping.Header.OrderIdCell = OrderIdCellInput.Text.Trim();
+            _profile.Mapping.Header.EnableCustomerId = EnableCustomerIdCheckBox.IsChecked == true;
+            _profile.Mapping.Header.CustomerIdCell = CustomerIdCellInput.Text.Trim();
             _profile.Mapping.Header.PaymentTermsCell = PaymentTermsCellInput.Text.Trim();
             _profile.Mapping.Header.DiscountCell = DiscountCellInput.Text.Trim();
 

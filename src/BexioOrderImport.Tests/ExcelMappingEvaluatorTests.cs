@@ -49,7 +49,10 @@ public class ExcelMappingEvaluatorTests
                 ZipCityCell = "A3",
                 BuyerEmailCell = "A4",
                 BuyerNameCell = "A5",
+                EnableOrderId = true,
                 OrderIdCell = "A6",
+                EnableCustomerId = true,
+                CustomerIdCell = "A9",
                 PaymentTermsCell = "A7",
                 DiscountCell = "A8"
             },
@@ -87,6 +90,9 @@ public class ExcelMappingEvaluatorTests
         target.SeasonCode.Should().Be("SS26");
         target.Header.CompanyNameCell.Should().Be("A1");
         target.Header.BuyerEmailCell.Should().Be("A4");
+        target.Header.EnableOrderId.Should().BeTrue();
+        target.Header.EnableCustomerId.Should().BeTrue();
+        target.Header.CustomerIdCell.Should().Be("A9");
         target.Data.EnableRowDiscount.Should().BeTrue();
         target.Data.RowDiscountColumn.Should().Be(14);
     }
