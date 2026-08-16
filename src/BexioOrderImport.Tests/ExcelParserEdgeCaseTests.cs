@@ -62,18 +62,18 @@ public class ExcelParserEdgeCaseTests
 
         options.SizeMatrix.StartRow = 10;
         options.SizeMatrix.EndRow = 10;
-        options.SizeMatrix.CategoryColumn = 4;
-        options.SizeMatrix.StartSizeColumn = 5;
-        options.SizeMatrix.EndSizeColumn = 6;
+        options.SizeMatrix.CategoryColumn = "D";
+        options.SizeMatrix.StartSizeColumn = "E";
+        options.SizeMatrix.EndSizeColumn = "F";
 
         options.Data.StartRow = 11;
-        options.Data.ArticleNumberColumn = 1;
-        options.Data.ArticleNameColumn = 2;
-        options.Data.ColorColumn = 3;
-        options.Data.CategoryColumn = 4;
-        options.Data.StartQtyColumn = 5;
-        options.Data.EndQtyColumn = 6;
-        options.Data.UnitPriceColumn = 7;
+        options.Data.ArticleNumberColumn = "A";
+        options.Data.ArticleNameColumn = "B";
+        options.Data.ColorColumn = "C";
+        options.Data.CategoryColumn = "D";
+        options.Data.StartQtyColumn = "E";
+        options.Data.EndQtyColumn = "F";
+        options.Data.UnitPriceColumn = "G";
 
         string tempPath = Path.Combine(Path.GetTempPath(), $"test_{Guid.NewGuid():N}.xlsx");
         try

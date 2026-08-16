@@ -72,20 +72,20 @@ public partial class ProfileEditWindow : Window
 
         MatrixStartRowInput.Text = _profile.Mapping.SizeMatrix.StartRow.ToString();
         MatrixEndRowInput.Text = _profile.Mapping.SizeMatrix.EndRow.ToString();
-        MatrixCategoryColInput.Text = _profile.Mapping.SizeMatrix.CategoryColumn.ToString();
-        MatrixStartSizeColInput.Text = _profile.Mapping.SizeMatrix.StartSizeColumn.ToString();
-        MatrixEndSizeColInput.Text = _profile.Mapping.SizeMatrix.EndSizeColumn.ToString();
+        MatrixCategoryColInput.Text = _profile.Mapping.SizeMatrix.CategoryColumn;
+        MatrixStartSizeColInput.Text = _profile.Mapping.SizeMatrix.StartSizeColumn;
+        MatrixEndSizeColInput.Text = _profile.Mapping.SizeMatrix.EndSizeColumn;
 
         DataStartRowInput.Text = _profile.Mapping.Data.StartRow.ToString();
-        ColArtNumInput.Text = _profile.Mapping.Data.ArticleNumberColumn.ToString();
-        ColArtNameInput.Text = _profile.Mapping.Data.ArticleNameColumn.ToString();
-        ColColorInput.Text = _profile.Mapping.Data.ColorColumn.ToString();
-        ColSizeCategoryInput.Text = _profile.Mapping.Data.CategoryColumn.ToString();
-        ColStartQtyInput.Text = _profile.Mapping.Data.StartQtyColumn.ToString();
-        ColEndQtyInput.Text = _profile.Mapping.Data.EndQtyColumn.ToString();
-        ColUnitPriceInput.Text = _profile.Mapping.Data.UnitPriceColumn.ToString();
+        ColArtNumInput.Text = _profile.Mapping.Data.ArticleNumberColumn;
+        ColArtNameInput.Text = _profile.Mapping.Data.ArticleNameColumn;
+        ColColorInput.Text = _profile.Mapping.Data.ColorColumn;
+        ColSizeCategoryInput.Text = _profile.Mapping.Data.CategoryColumn;
+        ColStartQtyInput.Text = _profile.Mapping.Data.StartQtyColumn;
+        ColEndQtyInput.Text = _profile.Mapping.Data.EndQtyColumn;
+        ColUnitPriceInput.Text = _profile.Mapping.Data.UnitPriceColumn;
         EnableRowDiscountCheckBox.IsChecked = _profile.Mapping.Data.EnableRowDiscount;
-        ColRowDiscountInput.Text = _profile.Mapping.Data.RowDiscountColumn.ToString();
+        ColRowDiscountInput.Text = _profile.Mapping.Data.RowDiscountColumn;
         DefaultOrderNameInput.Text = _profile.Mapping.DefaultOrderName;
         SeasonCodeInput.Text = _profile.Mapping.SeasonCode;
         SinglePositionTextTemplateInput.Text = _profile.Mapping.SinglePositionTextTemplate;
@@ -170,20 +170,20 @@ public partial class ProfileEditWindow : Window
 
             _profile.Mapping.SizeMatrix.StartRow = int.Parse(MatrixStartRowInput.Text.Trim());
             _profile.Mapping.SizeMatrix.EndRow = int.Parse(MatrixEndRowInput.Text.Trim());
-            _profile.Mapping.SizeMatrix.CategoryColumn = int.Parse(MatrixCategoryColInput.Text.Trim());
-            _profile.Mapping.SizeMatrix.StartSizeColumn = int.Parse(MatrixStartSizeColInput.Text.Trim());
-            _profile.Mapping.SizeMatrix.EndSizeColumn = int.Parse(MatrixEndSizeColInput.Text.Trim());
+            _profile.Mapping.SizeMatrix.CategoryColumn = Application.Helpers.ExcelColumnHelper.NormalizeColumnLetter(MatrixCategoryColInput.Text, "D");
+            _profile.Mapping.SizeMatrix.StartSizeColumn = Application.Helpers.ExcelColumnHelper.NormalizeColumnLetter(MatrixStartSizeColInput.Text, "E");
+            _profile.Mapping.SizeMatrix.EndSizeColumn = Application.Helpers.ExcelColumnHelper.NormalizeColumnLetter(MatrixEndSizeColInput.Text, "R");
 
             _profile.Mapping.Data.StartRow = int.Parse(DataStartRowInput.Text.Trim());
-            _profile.Mapping.Data.ArticleNumberColumn = int.Parse(ColArtNumInput.Text.Trim());
-            _profile.Mapping.Data.ArticleNameColumn = int.Parse(ColArtNameInput.Text.Trim());
-            _profile.Mapping.Data.ColorColumn = int.Parse(ColColorInput.Text.Trim());
-            _profile.Mapping.Data.CategoryColumn = int.Parse(ColSizeCategoryInput.Text.Trim());
-            _profile.Mapping.Data.StartQtyColumn = int.Parse(ColStartQtyInput.Text.Trim());
-            _profile.Mapping.Data.EndQtyColumn = int.Parse(ColEndQtyInput.Text.Trim());
-            _profile.Mapping.Data.UnitPriceColumn = int.Parse(ColUnitPriceInput.Text.Trim());
+            _profile.Mapping.Data.ArticleNumberColumn = Application.Helpers.ExcelColumnHelper.NormalizeColumnLetter(ColArtNumInput.Text, "A");
+            _profile.Mapping.Data.ArticleNameColumn = Application.Helpers.ExcelColumnHelper.NormalizeColumnLetter(ColArtNameInput.Text, "B");
+            _profile.Mapping.Data.ColorColumn = Application.Helpers.ExcelColumnHelper.NormalizeColumnLetter(ColColorInput.Text, "C");
+            _profile.Mapping.Data.CategoryColumn = Application.Helpers.ExcelColumnHelper.NormalizeColumnLetter(ColSizeCategoryInput.Text, "D");
+            _profile.Mapping.Data.StartQtyColumn = Application.Helpers.ExcelColumnHelper.NormalizeColumnLetter(ColStartQtyInput.Text, "E");
+            _profile.Mapping.Data.EndQtyColumn = Application.Helpers.ExcelColumnHelper.NormalizeColumnLetter(ColEndQtyInput.Text, "R");
+            _profile.Mapping.Data.UnitPriceColumn = Application.Helpers.ExcelColumnHelper.NormalizeColumnLetter(ColUnitPriceInput.Text, "T");
             _profile.Mapping.Data.EnableRowDiscount = EnableRowDiscountCheckBox.IsChecked == true;
-            _profile.Mapping.Data.RowDiscountColumn = int.Parse(ColRowDiscountInput.Text.Trim());
+            _profile.Mapping.Data.RowDiscountColumn = Application.Helpers.ExcelColumnHelper.NormalizeColumnLetter(ColRowDiscountInput.Text, "U");
             _profile.Mapping.DefaultOrderName = DefaultOrderNameInput.Text.Trim();
             _profile.Mapping.SeasonCode = SeasonCodeInput.Text.Trim();
             _profile.Mapping.PositionGroupingMode = selectedGroupingMode;

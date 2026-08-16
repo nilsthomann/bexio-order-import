@@ -1,3 +1,5 @@
+using System.Text.Json.Serialization;
+using BexioOrderImport.Application.Helpers;
 using BexioOrderImport.Domain.Models;
 
 namespace BexioOrderImport.Application.Options;
@@ -51,21 +53,44 @@ public class SizeMatrixMapping
 {
     public int StartRow { get; set; } = 10;
     public int EndRow { get; set; } = 17;
-    public int CategoryColumn { get; set; } = 4;
-    public int StartSizeColumn { get; set; } = 5;
-    public int EndSizeColumn { get; set; } = 18;
+
+    [JsonConverter(typeof(ExcelColumnJsonConverter))]
+    public string CategoryColumn { get; set; } = "D";
+
+    [JsonConverter(typeof(ExcelColumnJsonConverter))]
+    public string StartSizeColumn { get; set; } = "E";
+
+    [JsonConverter(typeof(ExcelColumnJsonConverter))]
+    public string EndSizeColumn { get; set; } = "R";
 }
 
 public class DataMapping
 {
     public int StartRow { get; set; } = 18;
-    public int ArticleNumberColumn { get; set; } = 1;
-    public int ArticleNameColumn { get; set; } = 2;
-    public int ColorColumn { get; set; } = 3;
-    public int CategoryColumn { get; set; } = 4;
-    public int StartQtyColumn { get; set; } = 5;
-    public int EndQtyColumn { get; set; } = 18;
-    public int UnitPriceColumn { get; set; } = 20;
+
+    [JsonConverter(typeof(ExcelColumnJsonConverter))]
+    public string ArticleNumberColumn { get; set; } = "A";
+
+    [JsonConverter(typeof(ExcelColumnJsonConverter))]
+    public string ArticleNameColumn { get; set; } = "B";
+
+    [JsonConverter(typeof(ExcelColumnJsonConverter))]
+    public string ColorColumn { get; set; } = "C";
+
+    [JsonConverter(typeof(ExcelColumnJsonConverter))]
+    public string CategoryColumn { get; set; } = "D";
+
+    [JsonConverter(typeof(ExcelColumnJsonConverter))]
+    public string StartQtyColumn { get; set; } = "E";
+
+    [JsonConverter(typeof(ExcelColumnJsonConverter))]
+    public string EndQtyColumn { get; set; } = "R";
+
+    [JsonConverter(typeof(ExcelColumnJsonConverter))]
+    public string UnitPriceColumn { get; set; } = "T";
+
     public bool EnableRowDiscount { get; set; } = false;
-    public int RowDiscountColumn { get; set; } = 21;
+
+    [JsonConverter(typeof(ExcelColumnJsonConverter))]
+    public string RowDiscountColumn { get; set; } = "U";
 }

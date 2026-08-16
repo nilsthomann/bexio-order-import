@@ -1,3 +1,4 @@
+using BexioOrderImport.Application.Helpers;
 using BexioOrderImport.Application.Interfaces;
 using BexioOrderImport.Application.Options;
 using BexioOrderImport.Domain.Models;
@@ -49,6 +50,9 @@ public class ClosedXmlExcelParser : IExcelParser
 
         // Read size matrices
         var sizeMatrices = ParseSizeMatrices(sheet);
+
+        int startQtyCol = ExcelColumnHelper.ColumnLetterToIndex(_options.Data.StartQtyColumn);
+        int endQtyCol = ExcelColumnHelper.ColumnLetterToIndex(_options.Data.EndQtyColumn);
 
         // Read row data starting from StartRow
         int lastRow = sheet.LastRowUsed()?.RowNumber() ?? _options.Data.StartRow;
@@ -104,7 +108,7 @@ public class ClosedXmlExcelParser : IExcelParser
             if (_options.PositionGroupingMode == PositionGroupingMode.GroupedSizePosition)
             {
                 var groupedSizes = new List<(string SizeName, int Quantity)>();
-                for (int col = _options.Data.StartQtyColumn; col <= _options.Data.EndQtyColumn; col++)
+                for (int col = startQtyCol; col <= endQtyCol; col++)
                 {
                     string qtyStr = row.Cell(col).Value.ToString();
                     if (int.TryParse(qtyStr, out int qty) && qty > 0)
@@ -142,7 +146,7 @@ public class ClosedXmlExcelParser : IExcelParser
             }
             else
             {
-                for (int col = _options.Data.StartQtyColumn; col <= _options.Data.EndQtyColumn; col++)
+                for (int col = startQtyCol; col <= endQtyCol; col++)
                 {
                     string qtyStr = row.Cell(col).Value.ToString();
                     if (int.TryParse(qtyStr, out int qty) && qty > 0)
@@ -213,6 +217,9 @@ public class ClosedXmlExcelParser : IExcelParser
         var matrices = new Dictionary<string, Dictionary<int, string>>(StringComparer.OrdinalIgnoreCase);
         var matrixOpt = _options.SizeMatrix;
 
+        int startSizeCol = ExcelColumnHelper.ColumnLetterToIndex(matrixOpt.StartSizeColumn);
+        int endSizeCol = ExcelColumnHelper.ColumnLetterToIndex(matrixOpt.EndSizeColumn);
+
         for (int r = matrixOpt.StartRow; r <= matrixOpt.EndRow; r++)
         {
             var row = sheet.Row(r);
@@ -220,7 +227,7 @@ public class ClosedXmlExcelParser : IExcelParser
             if (string.IsNullOrEmpty(categoryName)) continue;
 
             var columns = new Dictionary<int, string>();
-            for (int col = matrixOpt.StartSizeColumn; col <= matrixOpt.EndSizeColumn; col++)
+            for (int col = startSizeCol; col <= endSizeCol; col++)
             {
                 string sizeVal = row.Cell(col).Value.ToString().Trim();
                 if (!string.IsNullOrEmpty(sizeVal))
