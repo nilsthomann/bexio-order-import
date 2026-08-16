@@ -174,6 +174,33 @@ public class ImportOrderUseCaseTests
     }
 
     [Fact]
+    public async Task ExecuteAsync_WhenNoOrderIdOrCustomerIdAndEmailMissing_ShouldThrowInvalidOperationException()
+    {
+        // Arrange
+        var order = new Order
+        {
+            Customer = new Customer { Email = string.Empty, CompanyName = "Test AG" },
+            Positions =
+            [
+                new OrderPosition { ArticleNumber = "ART1", ArticleName = "Part", Quantity = 1, UnitPrice = 10m }
+            ]
+        };
+        _parserMock.Setup(p => p.ParseOrderForm(It.IsAny<string>())).Returns(order);
+
+        var interaction = new DelegateImportUserInteractionService(
+            confirmUpload: () => Task.FromResult(true)
+        );
+
+        // Act
+        Func<Task> act = () => _useCase.ExecuteAsync("test.xlsx", interaction);
+
+        // Assert
+        await act.Should().ThrowAsync<InvalidOperationException>().WithMessage("*Email address is required*");
+        _clientMock.Verify(c => c.FindContactIdAsync(It.IsAny<string>()), Times.Never);
+        _clientMock.Verify(c => c.CreateOrderAsync(It.IsAny<int>(), It.IsAny<Order>()), Times.Never);
+    }
+
+    [Fact]
     public async Task ExecuteAsync_WithOrderIdAndEmailMatch_ShouldImportDirectlyToExistingOrder()
     {
         // Arrange

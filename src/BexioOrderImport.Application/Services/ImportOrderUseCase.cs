@@ -120,6 +120,12 @@ public class ImportOrderUseCase
         }
         else
         {
+            if (string.IsNullOrWhiteSpace(order.Customer.Email))
+            {
+                interaction.LogInfo("⛔ Email address is required when creating an order by customer email, but no email was provided in the order sheet.");
+                throw new InvalidOperationException("Email address is required when no Order ID or Customer ID is specified.");
+            }
+
             int? contactId = await _bexioClient.FindContactIdAsync(order.Customer.Email);
             if (!contactId.HasValue)
             {
