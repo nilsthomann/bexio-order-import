@@ -537,7 +537,7 @@ Bitte schliessen Sie die Datei in Excel und versuchen Sie es erneut.</value>
     <value>Positions-Text Vorlage:</value>
   </data>
   <data name="Settings_PositionTextTemplateHint" xml:space="preserve">
-    <value>Platzhalter: {Color}, {Size}, {ArticleNumber}, {ArticleName}, {BexioArticleName}, {BexioArticleDescription}</value>
+    <value>Platzhalter: {Color}, {Size} (Einzelne Pos.), {SizesRows} (Gruppiert), {ArticleNumber}, {ArticleName}, {BexioArticleName}, {BexioArticleDescription}</value>
   </data>
   <data name="Error_SelectAccountAndTax" xml:space="preserve">
     <value>Bitte wählen Sie ein Standard-Konto und einen Standard-Steuersatz in den Einstellungen.</value>
@@ -577,5 +577,32 @@ Bitte schliessen Sie die Datei in Excel und versuchen Sie es erneut.</value>
   </data>
   <data name="Update_Installing" xml:space="preserve">
     <value>Update wird installiert...</value>
+  </data>
+  <data name="Settings_PositionGroupingModeLabel" xml:space="preserve">
+    <value>Positionserstellung:</value>
+  </data>
+  <data name="Settings_PositionGroupingSingle" xml:space="preserve">
+    <value>Einzelne Position pro Grösse</value>
+  </data>
+  <data name="Settings_PositionGroupingGrouped" xml:space="preserve">
+    <value>Gruppierte Position pro Artikel</value>
+  </data>
+  <data name="Settings_SinglePositionTextTemplateHint" xml:space="preserve">
+    <value>Platzhalter: {Color}, {Size}, {ArticleNumber}, {ArticleName}, {BexioArticleName}, {BexioArticleDescription}</value>
+  </data>
+  <data name="Settings_GroupedPositionTextTemplateHint" xml:space="preserve">
+    <value>Platzhalter: {Color}, {SizesRows}, {ArticleNumber}, {ArticleName}, {BexioArticleName}, {BexioArticleDescription}</value>
+  </data>
+  <data name="Settings_SizeRowTemplateLabel" xml:space="preserve">
+    <value>Grössen-Zeilen Vorlage:</value>
+  </data>
+  <data name="Settings_SizeRowTemplateHint" xml:space="preserve">
+    <value>Platzhalter: {Amount}, {Size}. Beispiel: {Amount}x Size {Size}</value>
+  </data>
+  <data name="Dialog_SizePlaceholderRequiredForGrouped" xml:space="preserve">
+    <value>Wenn 'Gruppierte Position pro Artikel' gewählt ist, muss die Positionstext-Vorlage den Platzhalter {SizesRows} enthalten.</value>
+  </data>
+  <data name="Dialog_SizesRowsPlaceholderRequiredForGrouped" xml:space="preserve">
+    <value>Wenn 'Gruppierte Position pro Artikel' gewählt ist, muss die Positionstext-Vorlage den Platzhalter {SizesRows} enthalten.</value>
   </data>
 </root>

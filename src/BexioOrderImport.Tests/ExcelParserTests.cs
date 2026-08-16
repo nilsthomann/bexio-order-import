@@ -613,4 +613,139 @@ public class ExcelParserTests
             if (File.Exists(tempPath)) File.Delete(tempPath);
         }
     }
+
+    [Fact]
+    public void ParseOrderForm_WithGroupedSizePositionMode_ShouldCreateSinglePositionPerArticleAndFormatSize()
+    {
+        // Arrange
+        var options = new ExcelMappingOptions
+        {
+            PositionGroupingMode = PositionGroupingMode.GroupedSizePosition,
+            Header = new HeaderMapping { CompanyNameCell = "A1", StreetCell = "A2", ZipCityCell = "A3", BuyerEmailCell = "A4", BuyerNameCell = "A5" },
+            SizeMatrix = new SizeMatrixMapping { StartRow = 10, EndRow = 10, CategoryColumn = 4, StartSizeColumn = 5, EndSizeColumn = 6 },
+            Data = new DataMapping
+            {
+                StartRow = 18,
+                ArticleNumberColumn = 1,
+                ArticleNameColumn = 2,
+                ColorColumn = 3,
+                CategoryColumn = 4,
+                StartQtyColumn = 5,
+                EndQtyColumn = 6,
+                UnitPriceColumn = 7
+            }
+        };
+
+        var parser = new ClosedXmlExcelParser(Microsoft.Extensions.Options.Options.Create(options));
+
+        using var wb = new ClosedXML.Excel.XLWorkbook();
+        var ws = wb.AddWorksheet("Sheet1");
+        ws.Cell("A1").Value = "Test Company";
+        ws.Cell("A2").Value = "Test Street 1";
+        ws.Cell("A3").Value = "8000 Zurich";
+        ws.Cell("A4").Value = "buyer@test.com";
+        ws.Cell("A5").Value = "Buyer Name";
+
+        // Size Matrix row 10
+        ws.Cell(10, 4).Value = "KIDS";
+        ws.Cell(10, 5).Value = "120";
+        ws.Cell(10, 6).Value = "134";
+
+        // Data row 18
+        ws.Cell(18, 1).Value = "ART001";
+        ws.Cell(18, 2).Value = "Test Shirt";
+        ws.Cell(18, 3).Value = "Red";
+        ws.Cell(18, 4).Value = "KIDS";
+        ws.Cell(18, 5).Value = 2; // 2x Size 120
+        ws.Cell(18, 6).Value = 3; // 3x Size 134
+        ws.Cell(18, 7).Value = 50m; // Unit Price
+
+        string tempPath = Path.Combine(Path.GetTempPath(), $"grouped_mode_{Guid.NewGuid():N}.xlsx");
+        wb.SaveAs(tempPath);
+
+        try
+        {
+            // Act
+            var order = parser.ParseOrderForm(tempPath);
+
+            // Assert
+            order.Should().NotBeNull();
+            order.Positions.Should().HaveCount(1);
+            var pos = order.Positions[0];
+            pos.ArticleNumber.Should().Be("ART001");
+            pos.Quantity.Should().Be(5); // 2 + 3
+            pos.Size.Should().Be("2x Size 120<br />3x Size 134");
+        }
+        finally
+        {
+            if (File.Exists(tempPath)) File.Delete(tempPath);
+        }
+    }
+
+    [Fact]
+    public void ParseOrderForm_WithCustomSizeRowTemplate_ShouldFormatCustomSizesRows()
+    {
+        // Arrange
+        var options = new ExcelMappingOptions
+        {
+            PositionGroupingMode = PositionGroupingMode.GroupedSizePosition,
+            SizeRowTemplate = "{Amount} Stk. ({Size})",
+            Header = new HeaderMapping { CompanyNameCell = "A1", StreetCell = "A2", ZipCityCell = "A3", BuyerEmailCell = "A4", BuyerNameCell = "A5" },
+            SizeMatrix = new SizeMatrixMapping { StartRow = 10, EndRow = 10, CategoryColumn = 4, StartSizeColumn = 5, EndSizeColumn = 6 },
+            Data = new DataMapping
+            {
+                StartRow = 18,
+                ArticleNumberColumn = 1,
+                ArticleNameColumn = 2,
+                ColorColumn = 3,
+                CategoryColumn = 4,
+                StartQtyColumn = 5,
+                EndQtyColumn = 6,
+                UnitPriceColumn = 7
+            }
+        };
+
+        var parser = new ClosedXmlExcelParser(Microsoft.Extensions.Options.Options.Create(options));
+
+        using var wb = new ClosedXML.Excel.XLWorkbook();
+        var ws = wb.AddWorksheet("Sheet1");
+        ws.Cell("A1").Value = "Test Company";
+        ws.Cell("A2").Value = "Test Street 1";
+        ws.Cell("A3").Value = "8000 Zurich";
+        ws.Cell("A4").Value = "buyer@test.com";
+        ws.Cell("A5").Value = "Buyer Name";
+
+        // Size Matrix row 10
+        ws.Cell(10, 4).Value = "KIDS";
+        ws.Cell(10, 5).Value = "120";
+        ws.Cell(10, 6).Value = "134";
+
+        // Data row 18
+        ws.Cell(18, 1).Value = "ART001";
+        ws.Cell(18, 2).Value = "Test Shirt";
+        ws.Cell(18, 3).Value = "Red";
+        ws.Cell(18, 4).Value = "KIDS";
+        ws.Cell(18, 5).Value = 1;
+        ws.Cell(18, 6).Value = 4;
+        ws.Cell(18, 7).Value = 50m;
+
+        string tempPath = Path.Combine(Path.GetTempPath(), $"custom_row_template_{Guid.NewGuid():N}.xlsx");
+        wb.SaveAs(tempPath);
+
+        try
+        {
+            // Act
+            var order = parser.ParseOrderForm(tempPath);
+
+            // Assert
+            order.Should().NotBeNull();
+            order.Positions.Should().HaveCount(1);
+            var pos = order.Positions[0];
+            pos.Size.Should().Be("1 Stk. (120)<br />4 Stk. (134)");
+        }
+        finally
+        {
+            if (File.Exists(tempPath)) File.Delete(tempPath);
+        }
+    }
 }

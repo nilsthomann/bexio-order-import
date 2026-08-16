@@ -88,8 +88,34 @@ public partial class ProfileEditWindow : Window
         ColRowDiscountInput.Text = _profile.Mapping.Data.RowDiscountColumn.ToString();
         DefaultOrderNameInput.Text = _profile.Mapping.DefaultOrderName;
         SeasonCodeInput.Text = _profile.Mapping.SeasonCode;
-        PositionTextTemplateInput.Text = _profile.Mapping.PositionTextTemplate;
+        SinglePositionTextTemplateInput.Text = _profile.Mapping.SinglePositionTextTemplate;
+        GroupedPositionTextTemplateInput.Text = _profile.Mapping.GroupedPositionTextTemplate;
         DiscountPositionTextTemplateInput.Text = _profile.Mapping.DiscountPositionTextTemplate;
+        SizeRowTemplateInput.Text = string.IsNullOrWhiteSpace(_profile.Mapping.SizeRowTemplate) ? "{Amount}x Size {Size}" : _profile.Mapping.SizeRowTemplate;
+
+        if (_profile.Mapping.PositionGroupingMode == Domain.Models.PositionGroupingMode.GroupedSizePosition)
+        {
+            GroupedPositionRadioButton.IsChecked = true;
+        }
+        else
+        {
+            SinglePositionRadioButton.IsChecked = true;
+        }
+
+        UpdateTemplateVisibility();
+    }
+
+    private void PositionGroupingRadioButton_Checked(object sender, RoutedEventArgs e)
+    {
+        UpdateTemplateVisibility();
+    }
+
+    private void UpdateTemplateVisibility()
+    {
+        if (SinglePositionTemplatePanel == null || GroupedPositionTemplatePanel == null) return;
+        bool isGrouped = GroupedPositionRadioButton.IsChecked == true;
+        SinglePositionTemplatePanel.Visibility = isGrouped ? Visibility.Collapsed : Visibility.Visible;
+        GroupedPositionTemplatePanel.Visibility = isGrouped ? Visibility.Visible : Visibility.Collapsed;
     }
 
     private void Save_Click(object sender, RoutedEventArgs e)
@@ -110,6 +136,19 @@ public partial class ProfileEditWindow : Window
                     Views.CustomDialog.ShowError(Translations.Dialog_ProfileNameExists, Translations.Dialog_ErrorTitle);
                     return;
                 }
+            }
+
+            var selectedGroupingMode = GroupedPositionRadioButton.IsChecked == true
+                ? Domain.Models.PositionGroupingMode.GroupedSizePosition
+                : Domain.Models.PositionGroupingMode.SinglePositionPerSize;
+
+            string singleTemplate = SinglePositionTextTemplateInput.Text.Trim();
+            string groupedTemplate = GroupedPositionTextTemplateInput.Text.Trim();
+
+            if (selectedGroupingMode == Domain.Models.PositionGroupingMode.GroupedSizePosition && !groupedTemplate.Contains("{SizesRows}"))
+            {
+                Views.CustomDialog.ShowWarning(Translations.Dialog_SizesRowsPlaceholderRequiredForGrouped);
+                return;
             }
 
             _profile.Name = newName;
@@ -147,7 +186,10 @@ public partial class ProfileEditWindow : Window
             _profile.Mapping.Data.RowDiscountColumn = int.Parse(ColRowDiscountInput.Text.Trim());
             _profile.Mapping.DefaultOrderName = DefaultOrderNameInput.Text.Trim();
             _profile.Mapping.SeasonCode = SeasonCodeInput.Text.Trim();
-            _profile.Mapping.PositionTextTemplate = PositionTextTemplateInput.Text.Trim();
+            _profile.Mapping.PositionGroupingMode = selectedGroupingMode;
+            _profile.Mapping.SinglePositionTextTemplate = singleTemplate;
+            _profile.Mapping.GroupedPositionTextTemplate = groupedTemplate;
+            _profile.Mapping.SizeRowTemplate = SizeRowTemplateInput.Text.Trim();
             _profile.Mapping.DiscountPositionTextTemplate = DiscountPositionTextTemplateInput.Text.Trim();
 
             DialogResult = true;

@@ -159,23 +159,59 @@
                     <DataGrid ItemsSource="{Binding OrderPositions}" Grid.Row="1" 
                               CanUserReorderColumns="False" CanUserResizeColumns="False"
                               CanUserSortColumns="False"
+                              Focusable="False"
                               CellEditEnding="DataGrid_CellEditEnding">
+                        <DataGrid.ItemContainerStyle>
+                            <Style TargetType="DataGridRow">
+                                <Setter Property="Focusable" Value="False"/>
+                                <Style.Triggers>
+                                    <Trigger Property="IsSelected" Value="True">
+                                        <Setter Property="Background" Value="Transparent"/>
+                                        <Setter Property="Foreground" Value="{StaticResource TextBrush}"/>
+                                    </Trigger>
+                                </Style.Triggers>
+                            </Style>
+                        </DataGrid.ItemContainerStyle>
+                        <DataGrid.CellStyle>
+                            <Style TargetType="DataGridCell" BasedOn="{StaticResource {x:Type DataGridCell}}">
+                                <Setter Property="Focusable" Value="False"/>
+                                <Style.Triggers>
+                                    <Trigger Property="IsSelected" Value="True">
+                                        <Setter Property="Background" Value="Transparent"/>
+                                        <Setter Property="Foreground" Value="{StaticResource TextBrush}"/>
+                                    </Trigger>
+                                </Style.Triggers>
+                            </Style>
+                        </DataGrid.CellStyle>
                         <DataGrid.Columns>
-                             <DataGridTextColumn Header="{x:Static lex:Translations.Import_ColArtNum}" Binding="{Binding ArticleNumber, UpdateSourceTrigger=PropertyChanged}" Width="90" IsReadOnly="True"/>
-                             <DataGridTextColumn Header="{x:Static lex:Translations.Import_ColName}" Binding="{Binding ArticleName, UpdateSourceTrigger=PropertyChanged}" Width="2*" IsReadOnly="True"/>
-                             <DataGridTextColumn Header="{x:Static lex:Translations.Import_ColColor}" Binding="{Binding Color, UpdateSourceTrigger=PropertyChanged}" Width="110" IsReadOnly="True"/>
-                             <DataGridTextColumn Header="{x:Static lex:Translations.Import_ColCategory}" Binding="{Binding SizeCategory, UpdateSourceTrigger=PropertyChanged}" Width="100" IsReadOnly="True"/>
-                             <DataGridTextColumn Header="{x:Static lex:Translations.Import_ColSize}" Binding="{Binding Size, UpdateSourceTrigger=PropertyChanged}" Width="70" IsReadOnly="True"/>
-                             <DataGridTextColumn Header="{x:Static lex:Translations.Import_ColQuantity}" Binding="{Binding Quantity, UpdateSourceTrigger=PropertyChanged}" Width="70" IsReadOnly="True"/>
-                             <DataGridTextColumn Header="{x:Static lex:Translations.Import_ColUnitPrice}" Binding="{Binding UnitPrice, StringFormat=F2}" Width="95" IsReadOnly="True"
+                             <DataGridTextColumn Header="{x:Static lex:Translations.Import_ColArtNum}" Binding="{Binding ArticleNumber, UpdateSourceTrigger=PropertyChanged}" Width="90" IsReadOnly="True" ElementStyle="{StaticResource DataGridCellTextBlockStyle}"/>
+                             <DataGridTextColumn Header="{x:Static lex:Translations.Import_ColName}" Binding="{Binding ArticleName, UpdateSourceTrigger=PropertyChanged}" Width="2*" IsReadOnly="True" ElementStyle="{StaticResource DataGridCellTextBlockStyle}"/>
+                             <DataGridTextColumn Header="{x:Static lex:Translations.Import_ColColor}" Binding="{Binding Color, UpdateSourceTrigger=PropertyChanged}" Width="110" IsReadOnly="True" ElementStyle="{StaticResource DataGridCellTextBlockStyle}"/>
+                             <DataGridTextColumn Header="{x:Static lex:Translations.Import_ColCategory}" Binding="{Binding SizeCategory, UpdateSourceTrigger=PropertyChanged}" Width="100" IsReadOnly="True" ElementStyle="{StaticResource DataGridCellTextBlockStyle}"/>
+                             <DataGridTemplateColumn Header="{x:Static lex:Translations.Import_ColSize}" Width="120">
+                                 <DataGridTemplateColumn.CellTemplate>
+                                     <DataTemplate>
+                                         <Grid Background="Transparent" 
+                                               ToolTip="{Binding Size, Converter={StaticResource HtmlToNewLineConverter}}" 
+                                               HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+                                             <TextBlock Text="{Binding Size, Converter={StaticResource HtmlToNewLineConverter}}" 
+                                                        TextWrapping="Wrap" 
+                                                        VerticalAlignment="Center" 
+                                                        Margin="4,2"/>
+                                         </Grid>
+                                     </DataTemplate>
+                                 </DataGridTemplateColumn.CellTemplate>
+                             </DataGridTemplateColumn>
+                             <DataGridTextColumn Header="{x:Static lex:Translations.Import_ColQuantity}" Binding="{Binding Quantity, UpdateSourceTrigger=PropertyChanged}" Width="70" IsReadOnly="True" ElementStyle="{StaticResource DataGridCellTextBlockStyle}"/>
+                             <DataGridTextColumn Header="{x:Static lex:Translations.Import_ColUnitPrice}" Binding="{Binding UnitPrice, StringFormat=F2}" Width="95" IsReadOnly="True" ElementStyle="{StaticResource DataGridCellTextBlockStyle}"
                                                  Visibility="{Binding Data.IsActiveRowDiscountEnabled, Source={StaticResource Proxy}, Converter={StaticResource InverseBooleanToVisibilityConverter}}"/>
-                             <DataGridTextColumn Header="{x:Static lex:Translations.Import_ColGrossPrice}" Binding="{Binding GrossUnitPrice, StringFormat=F2}" Width="85" IsReadOnly="True"
+                             <DataGridTextColumn Header="{x:Static lex:Translations.Import_ColGrossPrice}" Binding="{Binding GrossUnitPrice, StringFormat=F2}" Width="85" IsReadOnly="True" ElementStyle="{StaticResource DataGridCellTextBlockStyle}"
                                                  Visibility="{Binding Data.IsActiveRowDiscountEnabled, Source={StaticResource Proxy}, Converter={StaticResource BooleanToVisibilityConverter}}"/>
-                             <DataGridTextColumn Header="{x:Static lex:Translations.Import_ColDiscount}" Binding="{Binding DiscountPercent, StringFormat=G}" Width="75" IsReadOnly="True"
+                             <DataGridTextColumn Header="{x:Static lex:Translations.Import_ColDiscount}" Binding="{Binding DiscountPercent, StringFormat=G}" Width="75" IsReadOnly="True" ElementStyle="{StaticResource DataGridCellTextBlockStyle}"
                                                  Visibility="{Binding Data.IsActiveRowDiscountEnabled, Source={StaticResource Proxy}, Converter={StaticResource BooleanToVisibilityConverter}}"/>
-                             <DataGridTextColumn Header="{x:Static lex:Translations.Import_ColNetPrice}" Binding="{Binding NetUnitPrice, StringFormat=F2}" Width="85" IsReadOnly="True"
+                             <DataGridTextColumn Header="{x:Static lex:Translations.Import_ColNetPrice}" Binding="{Binding NetUnitPrice, StringFormat=F2}" Width="85" IsReadOnly="True" ElementStyle="{StaticResource DataGridCellTextBlockStyle}"
                                                  Visibility="{Binding Data.IsActiveRowDiscountEnabled, Source={StaticResource Proxy}, Converter={StaticResource BooleanToVisibilityConverter}}"/>
-                             <DataGridTextColumn Header="{x:Static lex:Translations.Import_ColTotalPrice}" Binding="{Binding TotalPrice, StringFormat=F2, Mode=OneWay}" Width="95"/>
+                             <DataGridTextColumn Header="{x:Static lex:Translations.Import_ColTotalPrice}" Binding="{Binding TotalPrice, StringFormat=F2, Mode=OneWay}" Width="95" ElementStyle="{StaticResource DataGridCellTextBlockStyle}"/>
                         </DataGrid.Columns>
                     </DataGrid>
                 </Grid>

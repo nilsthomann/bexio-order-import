@@ -287,20 +287,89 @@
                                                FontStyle="Italic"/>
                                 </Grid>
 
-                                <!-- Positions-Text Vorlage -->
-                                <Grid Margin="0,0,0,12">
+                                <!-- Positionserstellung (Grouping Mode Segmented Control) -->
+                                <Grid Margin="0,0,0,14">
                                     <Grid.RowDefinitions>
                                         <RowDefinition Height="Auto"/>
                                         <RowDefinition Height="Auto"/>
-                                        <RowDefinition Height="Auto"/>
                                     </Grid.RowDefinitions>
-                                    <TextBlock Text="{x:Static lex:Translations.Settings_PositionTextTemplateLabel}" Grid.Row="0" Margin="0,0,0,4" FontWeight="Medium"/>
-                                    <TextBox x:Name="PositionTextTemplateInput" Height="32" Grid.Row="1" Margin="0,0,0,4"/>
-                                    <TextBlock Text="{x:Static lex:Translations.Settings_PositionTextTemplateHint}" 
-                                               Style="{StaticResource MutedTextBlockStyle}" 
-                                               Grid.Row="2" 
-                                               FontStyle="Italic"/>
+                                    <TextBlock Text="{x:Static lex:Translations.Settings_PositionGroupingModeLabel}" Grid.Row="0" Margin="0,0,0,6" FontWeight="Medium"/>
+                                    
+                                    <Border Grid.Row="1"
+                                            HorizontalAlignment="Stretch"
+                                            BorderBrush="{StaticResource AccentBrush}"
+                                            BorderThickness="1"
+                                            CornerRadius="6"
+                                            Background="Transparent"
+                                            SnapsToDevicePixels="True">
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*"/>
+                                                <ColumnDefinition Width="1"/>
+                                                <ColumnDefinition Width="*"/>
+                                            </Grid.ColumnDefinitions>
+                                            
+                                            <RadioButton x:Name="SinglePositionRadioButton" 
+                                                         Grid.Column="0"
+                                                         Content="{x:Static lex:Translations.Settings_PositionGroupingSingle}" 
+                                                         GroupName="PositionGroupingModeGroup"
+                                                         IsChecked="True"
+                                                         Checked="PositionGroupingRadioButton_Checked"
+                                                         Style="{StaticResource SegmentedRadioButtonLeftStyle}"/>
+                                                         
+                                            <Rectangle Grid.Column="1" Fill="{StaticResource AccentBrush}"/>
+                                            
+                                            <RadioButton x:Name="GroupedPositionRadioButton" 
+                                                         Grid.Column="2"
+                                                         Content="{x:Static lex:Translations.Settings_PositionGroupingGrouped}" 
+                                                         GroupName="PositionGroupingModeGroup"
+                                                         Checked="PositionGroupingRadioButton_Checked"
+                                                         Style="{StaticResource SegmentedRadioButtonRightStyle}"/>
+                                        </Grid>
+                                    </Border>
                                 </Grid>
+
+                                <!-- Single Position Template Section -->
+                                <StackPanel x:Name="SinglePositionTemplatePanel" Margin="0,0,0,12">
+                                    <TextBlock Text="{x:Static lex:Translations.Settings_PositionTextTemplateLabel}" Margin="0,0,0,4" FontWeight="Medium"/>
+                                    <TextBox x:Name="SinglePositionTextTemplateInput" Height="32" Margin="0,0,0,4"/>
+                                    <TextBlock Text="{x:Static lex:Translations.Settings_SinglePositionTextTemplateHint}" 
+                                               Style="{StaticResource MutedTextBlockStyle}" 
+                                               FontStyle="Italic"/>
+                                </StackPanel>
+
+                                <!-- Grouped Position Template Section -->
+                                <StackPanel x:Name="GroupedPositionTemplatePanel" Margin="0,0,0,12" Visibility="Collapsed">
+                                    <!-- Positions-Text Vorlage (Gruppiert) -->
+                                    <Grid Margin="0,0,0,12">
+                                        <Grid.RowDefinitions>
+                                            <RowDefinition Height="Auto"/>
+                                            <RowDefinition Height="Auto"/>
+                                            <RowDefinition Height="Auto"/>
+                                        </Grid.RowDefinitions>
+                                        <TextBlock Text="{x:Static lex:Translations.Settings_PositionTextTemplateLabel}" Grid.Row="0" Margin="0,0,0,4" FontWeight="Medium"/>
+                                        <TextBox x:Name="GroupedPositionTextTemplateInput" Height="32" Grid.Row="1" Margin="0,0,0,4"/>
+                                        <TextBlock Text="{x:Static lex:Translations.Settings_GroupedPositionTextTemplateHint}" 
+                                                   Style="{StaticResource MutedTextBlockStyle}" 
+                                                   Grid.Row="2" 
+                                                   FontStyle="Italic"/>
+                                    </Grid>
+
+                                    <!-- Grössen-Zeilen Vorlage -->
+                                    <Grid Margin="0,0,0,0">
+                                        <Grid.RowDefinitions>
+                                            <RowDefinition Height="Auto"/>
+                                            <RowDefinition Height="Auto"/>
+                                            <RowDefinition Height="Auto"/>
+                                        </Grid.RowDefinitions>
+                                        <TextBlock Text="{x:Static lex:Translations.Settings_SizeRowTemplateLabel}" Grid.Row="0" Margin="0,0,0,4" FontWeight="Medium"/>
+                                        <TextBox x:Name="SizeRowTemplateInput" Height="32" Grid.Row="1" Margin="0,0,0,4"/>
+                                        <TextBlock Text="{x:Static lex:Translations.Settings_SizeRowTemplateHint}" 
+                                                   Style="{StaticResource MutedTextBlockStyle}" 
+                                                   Grid.Row="2" 
+                                                   FontStyle="Italic"/>
+                                    </Grid>
+                                </StackPanel>
 
                                 <!-- Rabatt-Positions-Text Vorlage -->
                                 <Grid Margin="0,0,0,4">

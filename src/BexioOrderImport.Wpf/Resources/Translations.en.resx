@@ -540,7 +540,7 @@ Please close the file in Excel and try again.</value>
     <value>Position Text Template:</value>
   </data>
   <data name="Settings_PositionTextTemplateHint" xml:space="preserve">
-    <value>Placeholders: {Color}, {Size}, {ArticleNumber}, {ArticleName}, {BexioArticleName}, {BexioArticleDescription}</value>
+    <value>Placeholders: {Color}, {Size} (Single Pos.), {SizesRows} (Grouped), {ArticleNumber}, {ArticleName}, {BexioArticleName}, {BexioArticleDescription}</value>
   </data>
   <data name="Error_SelectAccountAndTax" xml:space="preserve">
     <value>Please select a default account and a default tax rate in the settings.</value>
@@ -577,5 +577,32 @@ Please close the file in Excel and try again.</value>
   </data>
   <data name="Settings_CellZipCodeCity" xml:space="preserve">
     <value>ZIP Code &amp; City cell</value>
+  </data>
+  <data name="Settings_PositionGroupingModeLabel" xml:space="preserve">
+    <value>Position Creation:</value>
+  </data>
+  <data name="Settings_PositionGroupingSingle" xml:space="preserve">
+    <value>Single Position per Size</value>
+  </data>
+  <data name="Settings_PositionGroupingGrouped" xml:space="preserve">
+    <value>Grouped Size Position</value>
+  </data>
+  <data name="Settings_SinglePositionTextTemplateHint" xml:space="preserve">
+    <value>Placeholders: {Color}, {Size}, {ArticleNumber}, {ArticleName}, {BexioArticleName}, {BexioArticleDescription}</value>
+  </data>
+  <data name="Settings_GroupedPositionTextTemplateHint" xml:space="preserve">
+    <value>Placeholders: {Color}, {SizesRows}, {ArticleNumber}, {ArticleName}, {BexioArticleName}, {BexioArticleDescription}</value>
+  </data>
+  <data name="Settings_SizeRowTemplateLabel" xml:space="preserve">
+    <value>Size Row Template:</value>
+  </data>
+  <data name="Settings_SizeRowTemplateHint" xml:space="preserve">
+    <value>Placeholders: {Amount}, {Size}. Example: {Amount}x Size {Size}</value>
+  </data>
+  <data name="Dialog_SizePlaceholderRequiredForGrouped" xml:space="preserve">
+    <value>When 'Grouped Size Position' is selected, the position text template must contain the {SizesRows} placeholder.</value>
+  </data>
+  <data name="Dialog_SizesRowsPlaceholderRequiredForGrouped" xml:space="preserve">
+    <value>When 'Grouped Size Position' is selected, the position text template must contain the {SizesRows} placeholder.</value>
   </data>
 </root>

@@ -101,15 +101,30 @@ public class ClosedXmlExcelParser : IExcelParser
             }
 
             // Check size columns for order quantities
-            for (int col = _options.Data.StartQtyColumn; col <= _options.Data.EndQtyColumn; col++)
+            if (_options.PositionGroupingMode == PositionGroupingMode.GroupedSizePosition)
             {
-                string qtyStr = row.Cell(col).Value.ToString();
-                if (int.TryParse(qtyStr, out int qty) && qty > 0)
+                var groupedSizes = new List<(string SizeName, int Quantity)>();
+                for (int col = _options.Data.StartQtyColumn; col <= _options.Data.EndQtyColumn; col++)
                 {
-                    if (!sizes.TryGetValue(col, out string? sizeName) || string.IsNullOrWhiteSpace(sizeName))
+                    string qtyStr = row.Cell(col).Value.ToString();
+                    if (int.TryParse(qtyStr, out int qty) && qty > 0)
                     {
-                        throw new InvalidOperationException($"Size header for column {col} in category '{rawCategory}' (row {r}) was not defined in the size matrix.");
+                        if (!sizes.TryGetValue(col, out string? sizeName) || string.IsNullOrWhiteSpace(sizeName))
+                        {
+                            throw new InvalidOperationException($"Size header for column {col} in category '{rawCategory}' (row {r}) was not defined in the size matrix.");
+                        }
+                        groupedSizes.Add((sizeName, qty));
                     }
+                }
+
+                if (groupedSizes.Count > 0)
+                {
+                    int totalQty = groupedSizes.Sum(x => x.Quantity);
+                    string rowTemplate = string.IsNullOrWhiteSpace(_options.SizeRowTemplate) ? "{Amount}x Size {Size}" : _options.SizeRowTemplate;
+                    string formattedSizes = string.Join("<br />", groupedSizes.Select(x =>
+                        rowTemplate
+                            .Replace("{Amount}", x.Quantity.ToString())
+                            .Replace("{Size}", x.SizeName)));
 
                     var pos = new OrderPosition
                     {
@@ -117,12 +132,39 @@ public class ClosedXmlExcelParser : IExcelParser
                         ArticleName = artName,
                         Color = color,
                         SizeCategory = rawCategory,
-                        Size = sizeName,
-                        Quantity = qty,
+                        Size = formattedSizes,
+                        Quantity = totalQty,
                         GrossUnitPrice = unitPrice,
                         DiscountPercent = rowDiscount
                     };
                     order.Positions.Add(pos);
+                }
+            }
+            else
+            {
+                for (int col = _options.Data.StartQtyColumn; col <= _options.Data.EndQtyColumn; col++)
+                {
+                    string qtyStr = row.Cell(col).Value.ToString();
+                    if (int.TryParse(qtyStr, out int qty) && qty > 0)
+                    {
+                        if (!sizes.TryGetValue(col, out string? sizeName) || string.IsNullOrWhiteSpace(sizeName))
+                        {
+                            throw new InvalidOperationException($"Size header for column {col} in category '{rawCategory}' (row {r}) was not defined in the size matrix.");
+                        }
+
+                        var pos = new OrderPosition
+                        {
+                            ArticleNumber = artNr,
+                            ArticleName = artName,
+                            Color = color,
+                            SizeCategory = rawCategory,
+                            Size = sizeName,
+                            Quantity = qty,
+                            GrossUnitPrice = unitPrice,
+                            DiscountPercent = rowDiscount
+                        };
+                        order.Positions.Add(pos);
+                    }
                 }
             }
         }
