@@ -31,20 +31,20 @@ public class ExcelParserTests
             {
                 StartRow = 10,
                 EndRow = 17,
-                CategoryColumn = 4,
-                StartSizeColumn = 5,
-                EndSizeColumn = 18
+                CategoryColumn = "D",
+                StartSizeColumn = "E",
+                EndSizeColumn = "R"
             },
             Data = new DataMapping
             {
                 StartRow = 18,
-                ArticleNumberColumn = 1,
-                ArticleNameColumn = 2,
-                ColorColumn = 3,
-                CategoryColumn = 4,
-                StartQtyColumn = 5,
-                EndQtyColumn = 18,
-                UnitPriceColumn = 20
+                ArticleNumberColumn = "A",
+                ArticleNameColumn = "B",
+                ColorColumn = "C",
+                CategoryColumn = "D",
+                StartQtyColumn = "E",
+                EndQtyColumn = "R",
+                UnitPriceColumn = "T"
             }
         };
 
@@ -440,7 +440,7 @@ public class ExcelParserTests
         // Arrange
         var options = new ExcelMappingOptions();
         options.Data.EnableRowDiscount = true;
-        options.Data.RowDiscountColumn = 21;
+        options.Data.RowDiscountColumn = "U";
         var parser = new ClosedXmlExcelParser(Microsoft.Extensions.Options.Options.Create(options));
 
         using var wb = new ClosedXML.Excel.XLWorkbook();
@@ -490,7 +490,7 @@ public class ExcelParserTests
         // Arrange
         var options = new ExcelMappingOptions();
         options.Data.EnableRowDiscount = false;
-        options.Data.RowDiscountColumn = 21;
+        options.Data.RowDiscountColumn = "U";
         var parser = new ClosedXmlExcelParser(Microsoft.Extensions.Options.Options.Create(options));
 
         using var wb = new ClosedXML.Excel.XLWorkbook();
@@ -556,22 +556,22 @@ public class ExcelParserTests
             {
                 StartRow = 10,
                 EndRow = 10,
-                CategoryColumn = 4,
-                StartSizeColumn = 5,
-                EndSizeColumn = 5
+                CategoryColumn = "D",
+                StartSizeColumn = "E",
+                EndSizeColumn = "E"
             },
             Data = new DataMapping
             {
                 StartRow = 18,
-                ArticleNumberColumn = 1,
-                ArticleNameColumn = 2,
-                ColorColumn = 3,
-                CategoryColumn = 4,
-                StartQtyColumn = 5,
-                EndQtyColumn = 5,
-                UnitPriceColumn = 6,
+                ArticleNumberColumn = "A",
+                ArticleNameColumn = "B",
+                ColorColumn = "C",
+                CategoryColumn = "D",
+                StartQtyColumn = "E",
+                EndQtyColumn = "E",
+                UnitPriceColumn = "F",
                 EnableRowDiscount = true,
-                RowDiscountColumn = 7
+                RowDiscountColumn = "G"
             }
         };
 
@@ -622,17 +622,17 @@ public class ExcelParserTests
         {
             PositionGroupingMode = PositionGroupingMode.GroupedSizePosition,
             Header = new HeaderMapping { CompanyNameCell = "A1", StreetCell = "A2", ZipCityCell = "A3", BuyerEmailCell = "A4", BuyerNameCell = "A5" },
-            SizeMatrix = new SizeMatrixMapping { StartRow = 10, EndRow = 10, CategoryColumn = 4, StartSizeColumn = 5, EndSizeColumn = 6 },
+            SizeMatrix = new SizeMatrixMapping { StartRow = 10, EndRow = 10, CategoryColumn = "D", StartSizeColumn = "E", EndSizeColumn = "F" },
             Data = new DataMapping
             {
                 StartRow = 18,
-                ArticleNumberColumn = 1,
-                ArticleNameColumn = 2,
-                ColorColumn = 3,
-                CategoryColumn = 4,
-                StartQtyColumn = 5,
-                EndQtyColumn = 6,
-                UnitPriceColumn = 7
+                ArticleNumberColumn = "A",
+                ArticleNameColumn = "B",
+                ColorColumn = "C",
+                CategoryColumn = "D",
+                StartQtyColumn = "E",
+                EndQtyColumn = "F",
+                UnitPriceColumn = "G"
             }
         };
 
@@ -691,17 +691,17 @@ public class ExcelParserTests
             PositionGroupingMode = PositionGroupingMode.GroupedSizePosition,
             SizeRowTemplate = "{Amount} Stk. ({Size})",
             Header = new HeaderMapping { CompanyNameCell = "A1", StreetCell = "A2", ZipCityCell = "A3", BuyerEmailCell = "A4", BuyerNameCell = "A5" },
-            SizeMatrix = new SizeMatrixMapping { StartRow = 10, EndRow = 10, CategoryColumn = 4, StartSizeColumn = 5, EndSizeColumn = 6 },
+            SizeMatrix = new SizeMatrixMapping { StartRow = 10, EndRow = 10, CategoryColumn = "D", StartSizeColumn = "E", EndSizeColumn = "F" },
             Data = new DataMapping
             {
                 StartRow = 18,
-                ArticleNumberColumn = 1,
-                ArticleNameColumn = 2,
-                ColorColumn = 3,
-                CategoryColumn = 4,
-                StartQtyColumn = 5,
-                EndQtyColumn = 6,
-                UnitPriceColumn = 7
+                ArticleNumberColumn = "A",
+                ArticleNameColumn = "B",
+                ColorColumn = "C",
+                CategoryColumn = "D",
+                StartQtyColumn = "E",
+                EndQtyColumn = "F",
+                UnitPriceColumn = "G"
             }
         };
 

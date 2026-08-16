@@ -51,6 +51,7 @@ public partial class MainViewModel
         try
         {
             EnsureAppSettingsFile();
+            Application.Helpers.ExcelColumnJsonConverter.ResetMigrationTracker();
             string text = File.ReadAllText(_configFilePath);
             var dto = JsonSerializer.Deserialize<Models.AppSettingsDto>(text) ?? new Models.AppSettingsDto();
 
@@ -78,11 +79,26 @@ public partial class MainViewModel
                 Profiles.Add(new Models.MappingProfile { Name = "Default", Mapping = new ExcelMappingOptions() });
             }
 
+            // TODO: Remove legacy numeric column mapping migration in future versions.
+            bool legacyMigrationPerformed = Application.Helpers.ExcelColumnJsonConverter.HasPerformedNumericConversion;
+            foreach (var profile in Profiles)
+            {
+                if (Application.Helpers.ExcelColumnHelper.MigrateProfileColumnMappings(profile.Mapping))
+                {
+                    legacyMigrationPerformed = true;
+                }
+            }
 
             var active = Profiles.FirstOrDefault(p => p.Name.Equals(dto.ActiveProfileName, StringComparison.OrdinalIgnoreCase)) ?? Profiles[0];
             _activeProfile = active;
             SelectedProfile = active;
             OnPropertyChanged(nameof(ActiveProfile));
+
+            if (legacyMigrationPerformed)
+            {
+                SaveSettings();
+                return;
+            }
         }
         catch (Exception ex)
         {

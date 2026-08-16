@@ -63,22 +63,22 @@ public class ExcelMappingEvaluatorTests
             {
                 StartRow = 5,
                 EndRow = 12,
-                CategoryColumn = 2,
-                StartSizeColumn = 3,
-                EndSizeColumn = 10
+                CategoryColumn = "B",
+                StartSizeColumn = "C",
+                EndSizeColumn = "J"
             },
             Data = new DataMapping
             {
                 StartRow = 15,
-                ArticleNumberColumn = 1,
-                ArticleNameColumn = 2,
-                ColorColumn = 3,
-                CategoryColumn = 4,
-                StartQtyColumn = 5,
-                EndQtyColumn = 12,
-                UnitPriceColumn = 13,
+                ArticleNumberColumn = "A",
+                ArticleNameColumn = "B",
+                ColorColumn = "C",
+                CategoryColumn = "D",
+                StartQtyColumn = "E",
+                EndQtyColumn = "L",
+                UnitPriceColumn = "M",
                 EnableRowDiscount = true,
-                RowDiscountColumn = 14
+                RowDiscountColumn = "N"
             }
         };
 
@@ -99,7 +99,7 @@ public class ExcelMappingEvaluatorTests
         target.Header.EnableCustomerId.Should().BeTrue();
         target.Header.CustomerIdCell.Should().Be("A9");
         target.Data.EnableRowDiscount.Should().BeTrue();
-        target.Data.RowDiscountColumn.Should().Be(14);
+        target.Data.RowDiscountColumn.Should().Be("N");
     }
 
     [Fact]

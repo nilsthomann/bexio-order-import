@@ -1,5 +1,6 @@
 using System.Text.Json;
 using System.Text.RegularExpressions;
+using BexioOrderImport.Application.Helpers;
 using BexioOrderImport.Application.Options;
 
 namespace BexioOrderImport.Application.Services;
@@ -12,6 +13,11 @@ public static class ExcelMappingEvaluator
     {
         if (string.IsNullOrWhiteSpace(address)) return false;
         return CellRegex.IsMatch(address.Trim());
+    }
+
+    public static bool IsValidColumnLetter(string? columnLetter)
+    {
+        return ExcelColumnHelper.IsValidColumnLetter(columnLetter);
     }
 
     public static void CopyOptions(ExcelMappingOptions source, ExcelMappingOptions target)
