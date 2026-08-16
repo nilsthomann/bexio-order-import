@@ -159,6 +159,7 @@ public class ImportOrderUseCase
             {
                 string positionText = (options.PositionTextTemplate ?? string.Empty)
                     .Replace("{Color}", pos.Color ?? string.Empty)
+                    .Replace("{SizesRows}", pos.Size ?? string.Empty)
                     .Replace("{Size}", pos.Size ?? string.Empty)
                     .Replace("{ArticleNumber}", pos.ArticleNumber ?? string.Empty)
                     .Replace("{ArticleName}", pos.ArticleName ?? string.Empty)

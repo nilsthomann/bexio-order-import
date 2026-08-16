@@ -1,5 +1,6 @@
 using BexioOrderImport.Application.Options;
 using BexioOrderImport.Application.Services;
+using BexioOrderImport.Domain.Models;
 using FluentAssertions;
 using Xunit;
 
@@ -42,6 +43,8 @@ public class ExcelMappingEvaluatorTests
             SeasonCode = "SS26",
             PositionTextTemplate = "{ArtNo}",
             DiscountPositionTextTemplate = "Disc",
+            SizeRowTemplate = "{Amount}x {Size}",
+            PositionGroupingMode = PositionGroupingMode.GroupedSizePosition,
             Header = new HeaderMapping
             {
                 CompanyNameCell = "A1",
@@ -88,6 +91,8 @@ public class ExcelMappingEvaluatorTests
         target.WorksheetIndex.Should().Be(2);
         target.DefaultOrderName.Should().Be("Test Order");
         target.SeasonCode.Should().Be("SS26");
+        target.PositionGroupingMode.Should().Be(PositionGroupingMode.GroupedSizePosition);
+        target.SizeRowTemplate.Should().Be("{Amount}x {Size}");
         target.Header.CompanyNameCell.Should().Be("A1");
         target.Header.BuyerEmailCell.Should().Be("A4");
         target.Header.EnableOrderId.Should().BeTrue();

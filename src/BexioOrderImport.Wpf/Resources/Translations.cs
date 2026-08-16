@@ -161,4 +161,13 @@ public static class Translations
     public static string Dialog_PendingChangesMessage => ResourceManager.GetString(nameof(Dialog_PendingChangesMessage)) ?? string.Empty;
     public static string Settings_DiscountPositionTextTemplateLabel => ResourceManager.GetString(nameof(Settings_DiscountPositionTextTemplateLabel)) ?? string.Empty;
     public static string Settings_DiscountPositionTextTemplateHint => ResourceManager.GetString(nameof(Settings_DiscountPositionTextTemplateHint)) ?? string.Empty;
+    public static string Settings_PositionGroupingModeLabel => ResourceManager.GetString(nameof(Settings_PositionGroupingModeLabel)) ?? string.Empty;
+    public static string Settings_PositionGroupingSingle => ResourceManager.GetString(nameof(Settings_PositionGroupingSingle)) ?? string.Empty;
+    public static string Settings_PositionGroupingGrouped => ResourceManager.GetString(nameof(Settings_PositionGroupingGrouped)) ?? string.Empty;
+    public static string Settings_SinglePositionTextTemplateHint => ResourceManager.GetString(nameof(Settings_SinglePositionTextTemplateHint)) ?? string.Empty;
+    public static string Settings_GroupedPositionTextTemplateHint => ResourceManager.GetString(nameof(Settings_GroupedPositionTextTemplateHint)) ?? string.Empty;
+    public static string Settings_SizeRowTemplateLabel => ResourceManager.GetString(nameof(Settings_SizeRowTemplateLabel)) ?? string.Empty;
+    public static string Settings_SizeRowTemplateHint => ResourceManager.GetString(nameof(Settings_SizeRowTemplateHint)) ?? string.Empty;
+    public static string Dialog_SizePlaceholderRequiredForGrouped => ResourceManager.GetString(nameof(Dialog_SizePlaceholderRequiredForGrouped)) ?? string.Empty;
+    public static string Dialog_SizesRowsPlaceholderRequiredForGrouped => ResourceManager.GetString(nameof(Dialog_SizesRowsPlaceholderRequiredForGrouped)) ?? string.Empty;
 }

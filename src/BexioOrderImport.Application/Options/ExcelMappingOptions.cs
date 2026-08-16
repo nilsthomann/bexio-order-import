@@ -1,3 +1,5 @@
+using BexioOrderImport.Domain.Models;
+
 namespace BexioOrderImport.Application.Options;
 
 public class ExcelMappingOptions
@@ -5,8 +7,26 @@ public class ExcelMappingOptions
     public int WorksheetIndex { get; set; } = 1;
     public string DefaultOrderName { get; set; } = "Order: {CustomerName} {SeasonCode}";
     public string SeasonCode { get; set; } = "FS27";
-    public string PositionTextTemplate { get; set; } = "<strong>{BexioArticleName} Size {Size}</strong><br />{BexioArticleDescription}";
+    public string SinglePositionTextTemplate { get; set; } = "<strong>{BexioArticleName} Size {Size}</strong><br />{BexioArticleDescription}";
+    public string GroupedPositionTextTemplate { get; set; } = "<strong>{BexioArticleName}</strong><br />{SizesRows}<br />{BexioArticleDescription}";
+
+    public string PositionTextTemplate
+    {
+        get => PositionGroupingMode == PositionGroupingMode.GroupedSizePosition
+            ? GroupedPositionTextTemplate
+            : SinglePositionTextTemplate;
+        set
+        {
+            if (PositionGroupingMode == PositionGroupingMode.GroupedSizePosition)
+                GroupedPositionTextTemplate = value;
+            else
+                SinglePositionTextTemplate = value;
+        }
+    }
+
     public string DiscountPositionTextTemplate { get; set; } = "Rabatt ({DiscountInPercent}%)";
+    public string SizeRowTemplate { get; set; } = "{Amount}x Size {Size}";
+    public PositionGroupingMode PositionGroupingMode { get; set; } = PositionGroupingMode.SinglePositionPerSize;
     public HeaderMapping Header { get; set; } = new();
     public SizeMatrixMapping SizeMatrix { get; set; } = new();
     public DataMapping Data { get; set; } = new();

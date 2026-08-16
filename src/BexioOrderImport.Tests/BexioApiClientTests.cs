@@ -133,7 +133,7 @@ public class BexioApiClientTests
             {
                 var response = new HttpResponseMessage(HttpStatusCode.OK)
                 {
-                    Content = new StringContent("[{\"id\": 77777, \"internal_name\": \"Sample Product Name\",\"internal_description\": \"Sample Product Description\"}]", System.Text.Encoding.UTF8, "application/json")
+                    Content = new StringContent("[{\"id\": 77777, \"intern_name\": \"Sample Product Name\",\"intern_description\": \"Sample Product Description\"}]", System.Text.Encoding.UTF8, "application/json")
                 };
                 return Task.FromResult(response);
             }
@@ -163,8 +163,8 @@ public class BexioApiClientTests
                 var response = new HttpResponseMessage(HttpStatusCode.OK)
                 {
                     Content = new StringContent("[" +
-                    "{\"id\": 77777, \"internal_name\": \"FS27 Sample Product Name Black\",\"internal_description\": \"Sample Product Description\"}," +
-                    "{\"id\": 77778, \"internal_name\": \"FS27 Sample Product Name White\",\"internal_description\": \"Sample Product Description\"}]"
+                    "{\"id\": 77777, \"intern_name\": \"FS27 Sample Product Name Black\",\"intern_description\": \"Sample Product Description\"}," +
+                    "{\"id\": 77778, \"intern_name\": \"FS27 Sample Product Name White\",\"intern_description\": \"Sample Product Description\"}]"
                     , System.Text.Encoding.UTF8, "application/json")
                 };
                 return Task.FromResult(response);

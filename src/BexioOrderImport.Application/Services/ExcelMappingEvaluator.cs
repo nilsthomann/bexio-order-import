@@ -26,8 +26,11 @@ public static class ExcelMappingEvaluator
             target.WorksheetIndex = temp.WorksheetIndex;
             target.DefaultOrderName = temp.DefaultOrderName;
             target.SeasonCode = temp.SeasonCode;
-            target.PositionTextTemplate = temp.PositionTextTemplate;
+            target.SinglePositionTextTemplate = temp.SinglePositionTextTemplate;
+            target.GroupedPositionTextTemplate = temp.GroupedPositionTextTemplate;
             target.DiscountPositionTextTemplate = temp.DiscountPositionTextTemplate;
+            target.SizeRowTemplate = temp.SizeRowTemplate;
+            target.PositionGroupingMode = temp.PositionGroupingMode;
             target.Header = temp.Header;
             target.SizeMatrix = temp.SizeMatrix;
             target.Data = temp.Data;

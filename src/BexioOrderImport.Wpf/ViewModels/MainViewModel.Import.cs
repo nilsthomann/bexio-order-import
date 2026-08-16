@@ -186,7 +186,8 @@ public partial class MainViewModel
                 DefaultOrderName: mappingOpts.DefaultOrderName,
                 SeasonCode: mappingOpts.SeasonCode,
                 PositionTextTemplate: mappingOpts.PositionTextTemplate,
-                DiscountPositionTextTemplate: mappingOpts.DiscountPositionTextTemplate
+                DiscountPositionTextTemplate: mappingOpts.DiscountPositionTextTemplate,
+                SizeRowTemplate: mappingOpts.SizeRowTemplate
             );
 
             var result = await useCase.ExecuteAsync(_loadedOrder, interaction, options);

@@ -61,8 +61,8 @@ public class ModelCoverageTests : StaTestBase
 
         article.Id.Should().Be(10);
         article.Code.Should().Be("ART-10");
-        article.Name.Should().Be("Internal Name");
-        article.Description.Should().Be("Internal Desc");
+        article.Name.Should().Be("Initial Name");
+        article.Description.Should().Be("Initial Desc");
     }
 
     [Fact]

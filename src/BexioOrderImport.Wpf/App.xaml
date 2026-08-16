@@ -16,6 +16,7 @@
             <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
             <conv:InverseBooleanToVisibilityConverter x:Key="InverseBooleanToVisibilityConverter"/>
             <conv:EqualityToBooleanConverter x:Key="EqualityConverter"/>
+            <conv:HtmlToNewLineConverter x:Key="HtmlToNewLineConverter"/>
 
             <!-- Style to hide TabControl headers for navigation -->
             <Style x:Key="TabItemHiddenStyle" TargetType="{x:Type TabItem}">

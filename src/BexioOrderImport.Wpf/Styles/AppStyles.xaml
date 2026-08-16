@@ -326,6 +326,56 @@
         </Setter>
     </Style>
 
+    <!-- Segmented Control RadioButton Style -->
+    <Style x:Key="SegmentedRadioButtonStyle" TargetType="{x:Type RadioButton}">
+        <Setter Property="FontFamily" Value="{StaticResource MainFontFamily}"/>
+        <Setter Property="FontSize" Value="13"/>
+        <Setter Property="FontWeight" Value="Medium"/>
+        <Setter Property="Height" Value="34"/>
+        <Setter Property="Padding" Value="16,0"/>
+        <Setter Property="Cursor" Value="Hand"/>
+        <Setter Property="Background" Value="Transparent"/>
+        <Setter Property="Foreground" Value="{StaticResource AccentBrush}"/>
+        <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type RadioButton}">
+                    <Border x:Name="border"
+                            Background="{TemplateBinding Background}"
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}"
+                            CornerRadius="{Binding Path=Tag, RelativeSource={RelativeSource TemplatedParent}}"
+                            SnapsToDevicePixels="True">
+                        <ContentPresenter HorizontalAlignment="Center"
+                                          VerticalAlignment="Center"
+                                          Margin="{TemplateBinding Padding}"/>
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsChecked" Value="True">
+                            <Setter TargetName="border" Property="Background" Value="{StaticResource AccentBrush}"/>
+                            <Setter Property="Foreground" Value="{StaticResource TextLightBrush}"/>
+                        </Trigger>
+                        <MultiTrigger>
+                            <MultiTrigger.Conditions>
+                                <Condition Property="IsMouseOver" Value="True"/>
+                                <Condition Property="IsChecked" Value="False"/>
+                            </MultiTrigger.Conditions>
+                            <Setter TargetName="border" Property="Background" Value="{StaticResource AccentLightBrush}"/>
+                        </MultiTrigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <Style x:Key="SegmentedRadioButtonLeftStyle" TargetType="{x:Type RadioButton}" BasedOn="{StaticResource SegmentedRadioButtonStyle}">
+        <Setter Property="Tag" Value="5,0,0,5"/>
+    </Style>
+
+    <Style x:Key="SegmentedRadioButtonRightStyle" TargetType="{x:Type RadioButton}" BasedOn="{StaticResource SegmentedRadioButtonStyle}">
+        <Setter Property="Tag" Value="0,5,5,0"/>
+    </Style>
+
     <!-- Clean Minimalist DataGrid Style -->
     <Style TargetType="{x:Type DataGrid}">
         <Setter Property="Background" Value="{StaticResource CardBackgroundBrush}"/>
@@ -384,6 +434,15 @@
                 <Setter Property="Foreground" Value="{StaticResource AccentBrush}"/>
             </Trigger>
         </Style.Triggers>
+    </Style>
+
+    <!-- Shared TextBlock style for DataGrid cells with ToolTip popover on hover and TextTrimming -->
+    <Style x:Key="DataGridCellTextBlockStyle" TargetType="{x:Type TextBlock}">
+        <Setter Property="ToolTip" Value="{Binding RelativeSource={RelativeSource Self}, Path=Text}"/>
+        <Setter Property="TextTrimming" Value="CharacterEllipsis"/>
+        <Setter Property="VerticalAlignment" Value="Stretch"/>
+        <Setter Property="HorizontalAlignment" Value="Stretch"/>
+        <Setter Property="Background" Value="Transparent"/>
     </Style>
 
     <!-- Clean ProgressBar Style -->
