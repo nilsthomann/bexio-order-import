@@ -605,4 +605,10 @@ Bitte schliessen Sie die Datei in Excel und versuchen Sie es erneut.</value>
   <data name="Dialog_SizesRowsPlaceholderRequiredForGrouped" xml:space="preserve">
     <value>Wenn 'Gruppierte Position pro Artikel' gewählt ist, muss die Positionstext-Vorlage den Platzhalter {SizesRows} enthalten.</value>
   </data>
+  <data name="Import_SelectProfileHeader" xml:space="preserve">
+    <value>Aktives Profil</value>
+  </data>
+  <data name="Import_ActiveProfileTooltip" xml:space="preserve">
+    <value>Klicken zum Ändern des aktiven Profils</value>
+  </data>
 </root>

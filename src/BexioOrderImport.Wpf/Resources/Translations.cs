@@ -35,6 +35,8 @@ public static class Translations
     public static string Import_LogHeader => ResourceManager.GetString(nameof(Import_LogHeader)) ?? string.Empty;
     public static string Import_SuccessTitle => ResourceManager.GetString(nameof(Import_SuccessTitle)) ?? string.Empty;
     public static string Import_SuccessMessage => ResourceManager.GetString(nameof(Import_SuccessMessage)) ?? string.Empty;
+    public static string Import_SelectProfileHeader => ResourceManager.GetString(nameof(Import_SelectProfileHeader)) ?? string.Empty;
+    public static string Import_ActiveProfileTooltip => ResourceManager.GetString(nameof(Import_ActiveProfileTooltip)) ?? string.Empty;
     public static string Settings_Header => ResourceManager.GetString(nameof(Settings_Header)) ?? string.Empty;
     public static string Settings_ApiSection => ResourceManager.GetString(nameof(Settings_ApiSection)) ?? string.Empty;
     public static string Settings_TokenLabel => ResourceManager.GetString(nameof(Settings_TokenLabel)) ?? string.Empty;

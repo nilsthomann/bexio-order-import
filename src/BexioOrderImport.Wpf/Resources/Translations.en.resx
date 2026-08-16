@@ -605,4 +605,10 @@ Please close the file in Excel and try again.</value>
   <data name="Dialog_SizesRowsPlaceholderRequiredForGrouped" xml:space="preserve">
     <value>When 'Grouped Size Position' is selected, the position text template must contain the {SizesRows} placeholder.</value>
   </data>
+  <data name="Import_SelectProfileHeader" xml:space="preserve">
+    <value>Active Profile</value>
+  </data>
+  <data name="Import_ActiveProfileTooltip" xml:space="preserve">
+    <value>Click to switch active profile</value>
+  </data>
 </root>

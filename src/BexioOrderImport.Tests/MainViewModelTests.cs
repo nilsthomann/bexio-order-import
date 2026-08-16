@@ -326,7 +326,7 @@ public class MainViewModelTests : IDisposable
     }
 
     [Fact]
-    public void SetActiveProfile_ShouldSetIsModified_AndNotReloadExcelImmediately()
+    public void SetActiveProfile_ShouldSetIsModified()
     {
         // Arrange
         var vm = CreateVm();

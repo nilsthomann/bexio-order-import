@@ -60,6 +60,10 @@ public partial class MainViewModel
             NotifyActiveProfileChanged();
             AppendLog($"Active profile set to: {ActiveProfile.Name}");
             SetModified();
+            if (!string.IsNullOrEmpty(SelectedFilePath) && System.IO.File.Exists(SelectedFilePath))
+            {
+                _ = LoadExcelFileAsync(SelectedFilePath);
+            }
         }
     }
 
