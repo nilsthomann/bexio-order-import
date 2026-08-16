@@ -330,7 +330,7 @@ public class BexioApiClient : IBexioClient
             UnitPrice = position.GrossUnitPrice,
             AccountId = _accountId,
             TaxId = _taxId,
-            DiscountInPercent = position.DiscountPercent ?? 0m
+            DiscountInPercent = position.DiscountPercent
         };
 
         var body = new StringContent(JsonSerializer.Serialize(positionPayload), Encoding.UTF8, "application/json");
