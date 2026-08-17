@@ -199,17 +199,15 @@ public class ClosedXmlExcelParser : IExcelParser
     private int? ParseOrderId(IXLWorksheet sheet)
     {
         if (!_options.Header.EnableOrderId) return null;
-        string val = sheet.Cell(_options.Header.OrderIdCell).Value.ToString().Trim();
-        if (int.TryParse(val, out int id)) return id;
-        return null;
+        string val = sheet.Cell(_options.Header.OrderIdCell).Value.ToString();
+        return IdNormalizationHelper.NormalizeOrderId(val);
     }
 
     private int? ParseCustomerId(IXLWorksheet sheet)
     {
         if (!_options.Header.EnableCustomerId) return null;
-        string val = sheet.Cell(_options.Header.CustomerIdCell).Value.ToString().Trim();
-        if (int.TryParse(val, out int id)) return id;
-        return null;
+        string val = sheet.Cell(_options.Header.CustomerIdCell).Value.ToString();
+        return IdNormalizationHelper.NormalizeCustomerId(val);
     }
 
     private Dictionary<string, Dictionary<int, string>> ParseSizeMatrices(IXLWorksheet sheet)

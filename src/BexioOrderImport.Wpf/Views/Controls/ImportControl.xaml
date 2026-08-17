@@ -198,13 +198,11 @@
                         <TextBlock Text="{x:Static lex:Translations.Import_Conditions}" Style="{StaticResource MutedTextBlockStyle}"/>
                         <TextBlock Text="{Binding PaymentTerms}" FontWeight="SemiBold"/>
                     </StackPanel>
-                    <StackPanel Grid.Column="2" Grid.Row="1" Margin="0,4"
-                                Visibility="{Binding IsActiveOrderIdEnabled, Converter={StaticResource BooleanToVisibilityConverter}}">
+                    <StackPanel Grid.Column="2" Grid.Row="1" Margin="0,4">
                         <TextBlock Text="{x:Static lex:Translations.Import_OrderId}" Style="{StaticResource MutedTextBlockStyle}"/>
                         <TextBlock Text="{Binding OrderId}" FontWeight="SemiBold"/>
                     </StackPanel>
-                    <StackPanel Grid.Column="3" Grid.Row="1" Margin="0,4"
-                                Visibility="{Binding IsActiveCustomerIdEnabled, Converter={StaticResource BooleanToVisibilityConverter}}">
+                    <StackPanel Grid.Column="3" Grid.Row="1" Margin="0,4">
                         <TextBlock Text="{x:Static lex:Translations.Import_CustomerId}" Style="{StaticResource MutedTextBlockStyle}"/>
                         <TextBlock Text="{Binding CustomerId}" FontWeight="SemiBold"/>
                     </StackPanel>
@@ -260,7 +258,7 @@
                             </Style>
                         </DataGrid.CellStyle>
                         <DataGrid.Columns>
-                             <DataGridTextColumn Header="{x:Static lex:Translations.Import_ColArtNum}" Binding="{Binding ArticleNumber, UpdateSourceTrigger=PropertyChanged}" Width="90" IsReadOnly="True" ElementStyle="{StaticResource DataGridCellTextBlockStyle}"/>
+                             <DataGridTextColumn Header="{x:Static lex:Translations.Import_ColArtNum}" Binding="{Binding ArticleNumber, UpdateSourceTrigger=PropertyChanged}" Width="70" IsReadOnly="True" ElementStyle="{StaticResource DataGridCellTextBlockStyle}"/>
                              <DataGridTextColumn Header="{x:Static lex:Translations.Import_ColName}" Binding="{Binding ArticleName, UpdateSourceTrigger=PropertyChanged}" Width="2*" IsReadOnly="True" ElementStyle="{StaticResource DataGridCellTextBlockStyle}"/>
                              <DataGridTextColumn Header="{x:Static lex:Translations.Import_ColColor}" Binding="{Binding Color, UpdateSourceTrigger=PropertyChanged}" Width="110" IsReadOnly="True" ElementStyle="{StaticResource DataGridCellTextBlockStyle}"/>
                              <DataGridTextColumn Header="{x:Static lex:Translations.Import_ColCategory}" Binding="{Binding SizeCategory, UpdateSourceTrigger=PropertyChanged}" Width="100" IsReadOnly="True" ElementStyle="{StaticResource DataGridCellTextBlockStyle}"/>

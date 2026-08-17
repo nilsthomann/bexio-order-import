@@ -9,5 +9,8 @@ namespace BexioOrderImport.Domain.Models.Bexio
 
         [JsonPropertyName("mail")]
         public string? EMail { get; set; }
+
+        [JsonPropertyName("name_1")]
+        public string Name { get; set; }
     }
 }

@@ -133,20 +133,15 @@ public static class Translations
     public static string Update_Available => ResourceManager.GetString(nameof(Update_Available)) ?? string.Empty;
     public static string Update_InstallNow => ResourceManager.GetString(nameof(Update_InstallNow)) ?? string.Empty;
     public static string Update_Downloading => ResourceManager.GetString(nameof(Update_Downloading)) ?? string.Empty;
-    public static string Update_Installing => ResourceManager.GetString(nameof(Update_Installing)) ?? string.Empty;
     public static string Update_Error => ResourceManager.GetString(nameof(Update_Error)) ?? string.Empty;
-    public static string Import_NoOrderId => ResourceManager.GetString(nameof(Import_NoOrderId)) ?? string.Empty;
     public static string Import_CustomerId => ResourceManager.GetString(nameof(Import_CustomerId)) ?? string.Empty;
-    public static string Import_NoCustomerId => ResourceManager.GetString(nameof(Import_NoCustomerId)) ?? string.Empty;
     public static string Settings_DefaultOrderNameLabel => ResourceManager.GetString(nameof(Settings_DefaultOrderNameLabel)) ?? string.Empty;
     public static string Settings_DefaultOrderNameHint => ResourceManager.GetString(nameof(Settings_DefaultOrderNameHint)) ?? string.Empty;
     public static string Settings_SeasonCodeLabel => ResourceManager.GetString(nameof(Settings_SeasonCodeLabel)) ?? string.Empty;
     public static string Settings_PositionTextTemplateLabel => ResourceManager.GetString(nameof(Settings_PositionTextTemplateLabel)) ?? string.Empty;
-    public static string Settings_PositionTextTemplateHint => ResourceManager.GetString(nameof(Settings_PositionTextTemplateHint)) ?? string.Empty;
     public static string Error_SelectAccountAndTax => ResourceManager.GetString(nameof(Error_SelectAccountAndTax)) ?? string.Empty;
     public static string Import_EmailMismatchTitle => ResourceManager.GetString(nameof(Import_EmailMismatchTitle)) ?? string.Empty;
     public static string Import_EmailMismatchMessage => ResourceManager.GetString(nameof(Import_EmailMismatchMessage)) ?? string.Empty;
-    public static string Import_EstimatingTime => ResourceManager.GetString(nameof(Import_EstimatingTime)) ?? string.Empty;
     public static string Import_ProgressTime => ResourceManager.GetString(nameof(Import_ProgressTime)) ?? string.Empty;
     public static string Import_ProgressTimeElapsedOnly => ResourceManager.GetString(nameof(Import_ProgressTimeElapsedOnly)) ?? string.Empty;
     public static string Import_SuccessDuration => ResourceManager.GetString(nameof(Import_SuccessDuration)) ?? string.Empty;
@@ -170,6 +165,5 @@ public static class Translations
     public static string Settings_GroupedPositionTextTemplateHint => ResourceManager.GetString(nameof(Settings_GroupedPositionTextTemplateHint)) ?? string.Empty;
     public static string Settings_SizeRowTemplateLabel => ResourceManager.GetString(nameof(Settings_SizeRowTemplateLabel)) ?? string.Empty;
     public static string Settings_SizeRowTemplateHint => ResourceManager.GetString(nameof(Settings_SizeRowTemplateHint)) ?? string.Empty;
-    public static string Dialog_SizePlaceholderRequiredForGrouped => ResourceManager.GetString(nameof(Dialog_SizePlaceholderRequiredForGrouped)) ?? string.Empty;
     public static string Dialog_SizesRowsPlaceholderRequiredForGrouped => ResourceManager.GetString(nameof(Dialog_SizesRowsPlaceholderRequiredForGrouped)) ?? string.Empty;
 }

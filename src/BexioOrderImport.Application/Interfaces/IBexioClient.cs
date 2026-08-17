@@ -24,14 +24,14 @@ public interface IBexioClient
     Task<int> CreateOrderAsync(int contactId, Order order);
 
     /// <summary>
-    /// Fetches the contact email associated with an existing Bexio order ID.
+    /// Fetches contact details associated with an existing Bexio order ID.
     /// </summary>
-    Task<string?> GetOrderContactEmailAsync(int orderId);
+    Task<BexioContact?> GetOrderContactDetailsAsync(int orderId);
 
     /// <summary>
-    /// Fetches contact details (contact ID and email) associated with an existing Bexio order ID.
+    /// Fetches contact details associated with an existing Bexio contact ID.
     /// </summary>
-    Task<BexioOrderContactDetails?> GetOrderContactDetailsAsync(int orderId);
+    Task<BexioContact?> GetContactDetailsAsync(int contactId);
 
     /// <summary>
     /// Finds a Bexio article matching the article number, color, and season code.

@@ -207,7 +207,7 @@ public class ImportOrderUseCaseTests
         var order = CreateSampleOrder();
         order.OrderId = 456;
         _parserMock.Setup(p => p.ParseOrderForm(It.IsAny<string>())).Returns(order);
-        _clientMock.Setup(c => c.GetOrderContactDetailsAsync(456)).ReturnsAsync(new BexioOrderContactDetails(123, order.Customer.Email));
+        _clientMock.Setup(c => c.GetOrderContactDetailsAsync(456)).ReturnsAsync(new BexioContact() { Id = 123, EMail = order.Customer.Email });
         _clientMock.Setup(c => c.FindArticleAsync("123", "Black", It.IsAny<string>())).ReturnsAsync(new BexioArticle { Id = 789, Description = "Product Description Text", Name = "Product Name Text" });
 
         var loggedMessages = new List<string>();
@@ -238,7 +238,7 @@ public class ImportOrderUseCaseTests
         order.OrderId = 456;
         order.CustomerId = 99;
         _parserMock.Setup(p => p.ParseOrderForm(It.IsAny<string>())).Returns(order);
-        _clientMock.Setup(c => c.GetOrderContactDetailsAsync(456)).ReturnsAsync(new BexioOrderContactDetails(99, "different@domain.com"));
+        _clientMock.Setup(c => c.GetOrderContactDetailsAsync(456)).ReturnsAsync(new BexioContact() { Id = 99, EMail = "different@domain.com" });
         _clientMock.Setup(c => c.FindArticleAsync("123", "Black", It.IsAny<string>())).ReturnsAsync(new BexioArticle { Id = 789, Description = "Product Description Text", Name = "Product Name Text" });
 
         var loggedMessages = new List<string>();
@@ -266,7 +266,7 @@ public class ImportOrderUseCaseTests
         order.OrderId = 456;
         order.CustomerId = 99;
         _parserMock.Setup(p => p.ParseOrderForm(It.IsAny<string>())).Returns(order);
-        _clientMock.Setup(c => c.GetOrderContactDetailsAsync(456)).ReturnsAsync(new BexioOrderContactDetails(100, order.Customer.Email));
+        _clientMock.Setup(c => c.GetOrderContactDetailsAsync(456)).ReturnsAsync(new BexioContact() { Id = 100, EMail = order.Customer.Email });
 
         var loggedMessages = new List<string>();
         var interaction = new DelegateImportUserInteractionService(
@@ -323,7 +323,7 @@ public class ImportOrderUseCaseTests
         var order = CreateSampleOrder();
         order.OrderId = 456;
         _parserMock.Setup(p => p.ParseOrderForm(It.IsAny<string>())).Returns(order);
-        _clientMock.Setup(c => c.GetOrderContactDetailsAsync(456)).ReturnsAsync(new BexioOrderContactDetails(123, "different@domain.com"));
+        _clientMock.Setup(c => c.GetOrderContactDetailsAsync(456)).ReturnsAsync(new BexioContact() { Id = 123, EMail = "different@domain.com" });
         _clientMock.Setup(c => c.FindArticleAsync("123", "Black", It.IsAny<string>())).ReturnsAsync(new BexioArticle { Id = 789, Description = "Product Description Text", Name = "Product Name Text" });
 
         var loggedMessages = new List<string>();
@@ -357,7 +357,7 @@ public class ImportOrderUseCaseTests
         var order = CreateSampleOrder();
         order.OrderId = 456;
         _parserMock.Setup(p => p.ParseOrderForm(It.IsAny<string>())).Returns(order);
-        _clientMock.Setup(c => c.GetOrderContactDetailsAsync(456)).ReturnsAsync(new BexioOrderContactDetails(123, "different@domain.com"));
+        _clientMock.Setup(c => c.GetOrderContactDetailsAsync(456)).ReturnsAsync(new BexioContact() { Id = 123, EMail = "different@domain.com" });
 
         var loggedMessages = new List<string>();
         var interaction = new DelegateImportUserInteractionService(
@@ -384,7 +384,7 @@ public class ImportOrderUseCaseTests
         var order = CreateSampleOrder();
         order.OrderId = 999;
         _parserMock.Setup(p => p.ParseOrderForm(It.IsAny<string>())).Returns(order);
-        _clientMock.Setup(c => c.GetOrderContactEmailAsync(999)).ReturnsAsync((string?)null);
+        _clientMock.Setup(c => c.GetOrderContactDetailsAsync(999)).ReturnsAsync((BexioContact?)null);
 
         var loggedMessages = new List<string>();
         var interaction = new DelegateImportUserInteractionService(

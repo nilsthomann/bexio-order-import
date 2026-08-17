@@ -219,20 +219,41 @@ public class SettingsPersistenceTests : StaTestBase, IDisposable
     }
 
     [Fact]
-    public void SetActiveProfile_ShouldChangeActiveProfile()
+    public void SetActiveProfile_ShouldChangeActiveProfileAndPersistWithoutIsModified()
     {
         RunInSta(() =>
         {
             // Arrange
-            var vm = CreateVm();
-            var newProfile = new MappingProfile { Name = "ActiveTest", Mapping = new ExcelMappingOptions() };
-            vm.Profiles.Add(newProfile);
+            string tempFile = Path.Combine(Path.GetTempPath(), $"{Guid.NewGuid()}.json");
+            try
+            {
+                var mockUpdate = new Mock<IUpdateService>();
+                var mockFactory = new Mock<IBexioClientFactory>();
+                var mockClient = new Mock<IBexioClient>();
+                mockClient.Setup(c => c.CheckConnectionAsync()).ReturnsAsync(true);
+                mockFactory.Setup(f => f.Create(It.IsAny<string>(), It.IsAny<int?>(), It.IsAny<int?>())).Returns(mockClient.Object);
 
-            // Act
-            vm.SetActiveProfileCommand.Execute(newProfile);
+                var vm = CreateVm(mockUpdate.Object, mockFactory.Object, tempFile);
+                var newProfile = new MappingProfile { Name = "ActiveTest", Mapping = new ExcelMappingOptions() };
+                vm.Profiles.Add(newProfile);
+                vm.SaveSettingsCommand.Execute(null);
+                vm.IsModified.Should().BeFalse();
 
-            // Assert
-            vm.ActiveProfile.Should().Be(newProfile);
+                // Act
+                vm.SetActiveProfileCommand.Execute(newProfile);
+
+                // Assert
+                vm.ActiveProfile.Should().Be(newProfile);
+                vm.IsModified.Should().BeFalse();
+
+                // Verify saved to disk
+                string json = File.ReadAllText(tempFile);
+                json.Should().Contain("\"ActiveProfileName\": \"ActiveTest\"");
+            }
+            finally
+            {
+                if (File.Exists(tempFile)) File.Delete(tempFile);
+            }
         });
     }
 

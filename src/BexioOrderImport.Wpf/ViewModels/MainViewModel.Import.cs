@@ -47,13 +47,19 @@ public partial class MainViewModel
             HasLoadedFile = true;
 
             // Populate GUI bindings
-            CompanyName = _loadedOrder.Customer.CompanyName;
-            BuyerName = _loadedOrder.Customer.BuyerName;
-            Email = _loadedOrder.Customer.Email;
-            Address = $"{_loadedOrder.Customer.Street}, {_loadedOrder.Customer.ZipCode} {_loadedOrder.Customer.City}";
-            OrderId = _loadedOrder.OrderId?.ToString() ?? Resources.Translations.Import_NoOrderId;
-            CustomerId = _loadedOrder.CustomerId?.ToString() ?? Resources.Translations.Import_NoCustomerId;
-            PaymentTerms = _loadedOrder.PaymentTerms;
+            CompanyName = string.IsNullOrWhiteSpace(_loadedOrder.Customer.CompanyName) ? "-" : _loadedOrder.Customer.CompanyName;
+            BuyerName = string.IsNullOrWhiteSpace(_loadedOrder.Customer.BuyerName) ? "-" : _loadedOrder.Customer.BuyerName;
+            Email = string.IsNullOrWhiteSpace(_loadedOrder.Customer.Email) ? "-" : _loadedOrder.Customer.Email;
+
+            string street = _loadedOrder.Customer.Street?.Trim() ?? string.Empty;
+            string zip = _loadedOrder.Customer.ZipCode?.Trim() ?? string.Empty;
+            string city = _loadedOrder.Customer.City?.Trim() ?? string.Empty;
+            string rawAddress = $"{street}, {zip} {city}".Trim(',', ' ');
+            Address = string.IsNullOrWhiteSpace(rawAddress) ? "-" : rawAddress;
+
+            OrderId = (_loadedOrder.OrderId.HasValue && _loadedOrder.OrderId.Value > 0) ? _loadedOrder.OrderId.Value.ToString() : "-";
+            CustomerId = (_loadedOrder.CustomerId.HasValue && _loadedOrder.CustomerId.Value > 0) ? _loadedOrder.CustomerId.Value.ToString() : "-";
+            PaymentTerms = string.IsNullOrWhiteSpace(_loadedOrder.PaymentTerms) ? "-" : _loadedOrder.PaymentTerms;
 
             OrderPositions.Clear();
             foreach (var pos in _loadedOrder.Positions)
