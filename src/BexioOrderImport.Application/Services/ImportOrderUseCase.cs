@@ -80,23 +80,23 @@ public class ImportOrderUseCase
 
             if (order.CustomerId.HasValue)
             {
-                if (contactInfo.ContactId != order.CustomerId.Value)
+                if (contactInfo.Id != order.CustomerId.Value)
                 {
-                    interaction.LogInfo($"⛔ Customer ID mismatch: Existing order {order.OrderId.Value} belongs to contact ID {contactInfo.ContactId}, but Customer ID {order.CustomerId.Value} was specified.");
-                    return new ImportResult(Success: false, ErrorMessage: $"Customer ID mismatch: order belongs to contact {contactInfo.ContactId}, specified customer ID is {order.CustomerId.Value}.");
+                    interaction.LogInfo($"⛔ Customer ID mismatch: Existing order {order.OrderId.Value} belongs to contact ID {contactInfo.Id}, but Customer ID {order.CustomerId.Value} was specified.");
+                    return new ImportResult(Success: false, ErrorMessage: $"Customer ID mismatch: order belongs to contact {contactInfo.Id}, specified customer ID is {order.CustomerId.Value}.");
                 }
                 interaction.LogInfo($"Customer ID matched ({order.CustomerId.Value}).");
             }
             else
             {
-                string? existingEmail = contactInfo.Email;
+                string? existingEmail = contactInfo.EMail;
                 if (!string.Equals(existingEmail, order.Customer.Email, StringComparison.OrdinalIgnoreCase))
                 {
                     bool ignoreMismatch = await interaction.ConfirmEmailMismatchAsync(existingEmail ?? string.Empty, order.Customer.Email);
                     if (!ignoreMismatch)
                     {
-                        interaction.LogInfo("Order import cancelled due to email mismatch.");
-                        return new ImportResult(Success: false, ErrorMessage: "Cancelled due to email mismatch.");
+                        interaction.LogInfo($"⛔ Email mismatch: Existing order {order.OrderId.Value} belongs to contact ID {contactInfo.Id} with email {contactInfo.EMail}, but Email {order.Customer.Email} was specified.");
+                        return new ImportResult(Success: false, ErrorMessage: "Email mismatch: Existing order {order.OrderId.Value} belongs to contact ID {contactInfo.Id} with email {contactInfo.EMail}, but Email {order.Customer.Email} was specified.");
                     }
                     interaction.LogInfo("Email mismatch ignored by user. Proceeding with existing order...");
                 }
@@ -109,6 +109,14 @@ public class ImportOrderUseCase
         {
             int contactId = order.CustomerId.Value;
             interaction.LogInfo($"Customer ID provided ({contactId}). Creating order...");
+            var contactInfo = await _bexioClient.GetContactDetailsAsync(order.CustomerId.Value);
+            if(contactInfo == null)
+            {
+                interaction.LogInfo($"⛔ Customer with ID {order.CustomerId.Value} not found in Bexio.");
+                return new ImportResult(Success: false, ErrorMessage: $"Customer {order.CustomerId.Value} not found.");
+            }
+
+            interaction.LogInfo($"Customer found: {contactInfo.Name} {contactInfo.EMail}");
 
             string titleTemplate = options.DefaultOrderName ?? "Order: {CustomerName} {SeasonCode}";
             order.Title = titleTemplate

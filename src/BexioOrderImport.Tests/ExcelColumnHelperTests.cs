@@ -67,44 +67,4 @@ public class ExcelColumnHelperTests
         var deserializedLetter = JsonSerializer.Deserialize<SizeMatrixMapping>(jsonWithLetter);
         deserializedLetter!.CategoryColumn.Should().Be("D");
     }
-
-    [Fact]
-    public void MigrateProfileColumnMappings_WhenNumericValuesExist_ShouldMigrateAndReturnTrue()
-    {
-        var options = new ExcelMappingOptions
-        {
-            SizeMatrix = new SizeMatrixMapping
-            {
-                CategoryColumn = "4",
-                StartSizeColumn = "5",
-                EndSizeColumn = "18"
-            },
-            Data = new DataMapping
-            {
-                ArticleNumberColumn = "1",
-                ArticleNameColumn = "2",
-                ColorColumn = "3",
-                CategoryColumn = "4",
-                StartQtyColumn = "5",
-                EndQtyColumn = "18",
-                UnitPriceColumn = "20",
-                RowDiscountColumn = "21"
-            }
-        };
-
-        bool migrated = ExcelColumnHelper.MigrateProfileColumnMappings(options);
-
-        migrated.Should().BeTrue();
-        options.SizeMatrix.CategoryColumn.Should().Be("D");
-        options.SizeMatrix.StartSizeColumn.Should().Be("E");
-        options.SizeMatrix.EndSizeColumn.Should().Be("R");
-        options.Data.ArticleNumberColumn.Should().Be("A");
-        options.Data.ArticleNameColumn.Should().Be("B");
-        options.Data.ColorColumn.Should().Be("C");
-        options.Data.CategoryColumn.Should().Be("D");
-        options.Data.StartQtyColumn.Should().Be("E");
-        options.Data.EndQtyColumn.Should().Be("R");
-        options.Data.UnitPriceColumn.Should().Be("T");
-        options.Data.RowDiscountColumn.Should().Be("U");
-    }
 }

@@ -418,43 +418,6 @@ public class BexioApiClientTests
     }
 
     [Fact]
-    public async Task GetOrderContactEmailAsync_WhenOrderAndContactExist_ReturnsEmail()
-    {
-        // Arrange
-        var handler = new MockHttpMessageHandler
-        {
-            SendAsyncFunc = (req, token) =>
-            {
-                var uri = req.RequestUri!.ToString();
-                if (uri.Contains("kb_order/456"))
-                {
-                    return Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK)
-                    {
-                        Content = new StringContent("{\"id\": 456, \"contact_id\": 999}", System.Text.Encoding.UTF8, "application/json")
-                    });
-                }
-                if (uri.Contains("contact/999"))
-                {
-                    return Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK)
-                    {
-                        Content = new StringContent("{\"id\": 999, \"mail\": \"client@domain.com\"}", System.Text.Encoding.UTF8, "application/json")
-                    });
-                }
-                return Task.FromResult(new HttpResponseMessage(HttpStatusCode.NotFound));
-            }
-        };
-
-        var httpClient = new HttpClient(handler);
-        var client = new BexioApiClient(httpClient, "dummy-token", 1, 1);
-
-        // Act
-        var email = await client.GetOrderContactEmailAsync(456);
-
-        // Assert
-        email.Should().Be("client@domain.com");
-    }
-
-    [Fact]
     public async Task PreFetchArticlesAsync_CachesArticles_SubsequentLookupsUseCache()
     {
         // Arrange
@@ -604,43 +567,6 @@ public class BexioApiClientTests
 
         // Assert
         result.Should().BeFalse();
-    }
-
-    [Fact]
-    public async Task GetOrderContactEmailAsync_WhenContactFound_ShouldReturnEmail()
-    {
-        // Arrange
-        var handler = new MockHttpMessageHandler
-        {
-            SendAsyncFunc = (req, token) =>
-            {
-                var uri = req.RequestUri!.ToString();
-                if (uri.Contains("kb_order/99"))
-                {
-                    return Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK)
-                    {
-                        Content = new StringContent("{\"id\":99, \"contact_id\":123}", Encoding.UTF8, "application/json")
-                    });
-                }
-                if (uri.Contains("contact/123"))
-                {
-                    return Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK)
-                    {
-                        Content = new StringContent("{\"id\":123, \"mail\":\"buyer@bexio.com\"}", Encoding.UTF8, "application/json")
-                    });
-                }
-                return Task.FromResult(new HttpResponseMessage(HttpStatusCode.NotFound));
-            }
-        };
-
-        var httpClient = new HttpClient(handler);
-        var client = new BexioApiClient(httpClient, "dummy-token", 1, 1);
-
-        // Act
-        string? email = await client.GetOrderContactEmailAsync(99);
-
-        // Assert
-        email.Should().Be("buyer@bexio.com");
     }
 
     [Fact]

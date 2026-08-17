@@ -51,7 +51,6 @@ public partial class MainViewModel
         try
         {
             EnsureAppSettingsFile();
-            Application.Helpers.ExcelColumnJsonConverter.ResetMigrationTracker();
             string text = File.ReadAllText(_configFilePath);
             var dto = JsonSerializer.Deserialize<Models.AppSettingsDto>(text) ?? new Models.AppSettingsDto();
 
@@ -79,26 +78,10 @@ public partial class MainViewModel
                 Profiles.Add(new Models.MappingProfile { Name = "Default", Mapping = new ExcelMappingOptions() });
             }
 
-            // TODO: Remove legacy numeric column mapping migration in future versions.
-            bool legacyMigrationPerformed = Application.Helpers.ExcelColumnJsonConverter.HasPerformedNumericConversion;
-            foreach (var profile in Profiles)
-            {
-                if (Application.Helpers.ExcelColumnHelper.MigrateProfileColumnMappings(profile.Mapping))
-                {
-                    legacyMigrationPerformed = true;
-                }
-            }
-
             var active = Profiles.FirstOrDefault(p => p.Name.Equals(dto.ActiveProfileName, StringComparison.OrdinalIgnoreCase)) ?? Profiles[0];
             _activeProfile = active;
             SelectedProfile = active;
             OnPropertyChanged(nameof(ActiveProfile));
-
-            if (legacyMigrationPerformed)
-            {
-                SaveSettings();
-                return;
-            }
         }
         catch (Exception ex)
         {
@@ -153,6 +136,25 @@ public partial class MainViewModel
         catch (Exception ex)
         {
             _dialogService.ShowErrorDialog($"{Resources.Translations.Settings_ErrorSave}: {ex.Message}", Resources.Translations.Settings_ErrorTitle);
+        }
+    }
+
+    internal void SaveActiveProfile()
+    {
+        try
+        {
+            EnsureAppSettingsFile();
+            if (File.Exists(_configFilePath))
+            {
+                string text = File.ReadAllText(_configFilePath);
+                var dto = JsonSerializer.Deserialize<Models.AppSettingsDto>(text) ?? new Models.AppSettingsDto();
+                dto.ActiveProfileName = ActiveProfile?.Name ?? "Default";
+                File.WriteAllText(_configFilePath, JsonSerializer.Serialize(dto, new JsonSerializerOptions { WriteIndented = true }));
+            }
+        }
+        catch (Exception ex)
+        {
+            AppendLog($"⚠️ Could not save active profile setting: {ex.Message}");
         }
     }
 

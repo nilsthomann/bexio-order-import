@@ -326,7 +326,7 @@ public class MainViewModelTests : IDisposable
     }
 
     [Fact]
-    public void SetActiveProfile_ShouldSetIsModified()
+    public void SetActiveProfile_ShouldNotSetIsModified()
     {
         // Arrange
         var vm = CreateVm();
@@ -339,7 +339,7 @@ public class MainViewModelTests : IDisposable
 
         // Assert
         vm.ActiveProfile.Should().Be(newProfile);
-        vm.IsModified.Should().BeTrue();
+        vm.IsModified.Should().BeFalse();
     }
 
     [Fact]

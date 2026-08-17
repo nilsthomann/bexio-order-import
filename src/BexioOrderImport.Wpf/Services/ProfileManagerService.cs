@@ -130,7 +130,6 @@ public class ProfileManagerService : IProfileManagerService
                     if (string.IsNullOrEmpty(dto.Name)) continue;
 
                     ExcelMappingOptions mapping = dto.ExcelMapping;
-                    Application.Helpers.ExcelColumnHelper.MigrateProfileColumnMappings(mapping);
                     var existing = profiles.FirstOrDefault(p => p.Name.Equals(dto.Name, StringComparison.OrdinalIgnoreCase));
                     if (existing != null)
                     {

@@ -196,7 +196,7 @@
     <value>Erfolgreich</value>
   </data>
   <data name="Import_SuccessMessage" xml:space="preserve">
-    <value>Auftrag #{0} wurde erfolgreich in Bexio erstellt!</value>
+    <value>Auftrag #{0} wurde erfolgreich in Bexio importiert!</value>
   </data>
   <data name="Import_SuccessDuration" xml:space="preserve">
     <value>Benötigte Zeit: {0}</value>
@@ -515,17 +515,11 @@ Bitte schliessen Sie die Datei in Excel und versuchen Sie es erneut.</value>
   <data name="Update_Error" xml:space="preserve">
     <value>Fehler beim Aktualisieren: {0}</value>
   </data>
-  <data name="Import_NoOrderId" xml:space="preserve">
-    <value>Keine Auftrags-ID</value>
-  </data>
   <data name="Import_CustomerId" xml:space="preserve">
     <value>Kunden-ID</value>
   </data>
-  <data name="Import_NoCustomerId" xml:space="preserve">
-    <value>Keine Kunden-ID</value>
-  </data>
   <data name="Settings_DefaultOrderNameLabel" xml:space="preserve">
-    <value>Auftragsname-Vorlage:</value>
+    <value>Auftragstitel Vorlage:</value>
   </data>
   <data name="Settings_DefaultOrderNameHint" xml:space="preserve">
     <value>Platzhalter: {CustomerName}, {SeasonCode}. Beispiel: Order: {CustomerName} {SeasonCode}</value>
@@ -534,10 +528,7 @@ Bitte schliessen Sie die Datei in Excel und versuchen Sie es erneut.</value>
     <value>Saison-Code:</value>
   </data>
   <data name="Settings_PositionTextTemplateLabel" xml:space="preserve">
-    <value>Positions-Text Vorlage:</value>
-  </data>
-  <data name="Settings_PositionTextTemplateHint" xml:space="preserve">
-    <value>Platzhalter: {Color}, {Size} (Einzelne Pos.), {SizesRows} (Gruppiert), {ArticleNumber}, {ArticleName}, {BexioArticleName}, {BexioArticleDescription}</value>
+    <value>Positionstext Vorlage:</value>
   </data>
   <data name="Error_SelectAccountAndTax" xml:space="preserve">
     <value>Bitte wählen Sie ein Standard-Konto und einen Standard-Steuersatz in den Einstellungen.</value>
@@ -547,9 +538,6 @@ Bitte schliessen Sie die Datei in Excel und versuchen Sie es erneut.</value>
   </data>
   <data name="Import_EmailMismatchMessage" xml:space="preserve">
     <value>Die E-Mail des Bexio-Auftrags ({0}) stimmt nicht mit der E-Mail im Excel ({1}) überein. Möchten Sie den Import trotzdem fortsetzen?</value>
-  </data>
-  <data name="Import_EstimatingTime" xml:space="preserve">
-    <value>Berechne...</value>
   </data>
   <data name="Import_ProgressTime" xml:space="preserve">
     <value>Verstrichen: {0} | Verbleibend: {1}</value>
@@ -567,16 +555,13 @@ Bitte schliessen Sie die Datei in Excel und versuchen Sie es erneut.</value>
     <value>Sie haben ungespeicherte Änderungen in den Einstellungen. Möchten Sie diese verwerfen?</value>
   </data>
   <data name="Settings_DiscountPositionTextTemplateLabel" xml:space="preserve">
-    <value>Rabatt-Positions-Text Vorlage:</value>
+    <value>Rabatt-Positionstext Vorlage:</value>
   </data>
   <data name="Settings_DiscountPositionTextTemplateHint" xml:space="preserve">
     <value>Verfügbare Platzhalter: {DiscountInPercent}</value>
   </data>
   <data name="Settings_CellZipCodeCity" xml:space="preserve">
     <value>Zelle PLZ &amp; Ort</value>
-  </data>
-  <data name="Update_Installing" xml:space="preserve">
-    <value>Update wird installiert...</value>
   </data>
   <data name="Settings_PositionGroupingModeLabel" xml:space="preserve">
     <value>Positionserstellung:</value>
@@ -598,9 +583,6 @@ Bitte schliessen Sie die Datei in Excel und versuchen Sie es erneut.</value>
   </data>
   <data name="Settings_SizeRowTemplateHint" xml:space="preserve">
     <value>Platzhalter: {Amount}, {Size}. Beispiel: {Amount}x Size {Size}</value>
-  </data>
-  <data name="Dialog_SizePlaceholderRequiredForGrouped" xml:space="preserve">
-    <value>Wenn 'Gruppierte Position pro Artikel' gewählt ist, muss die Positionstext-Vorlage den Platzhalter {SizesRows} enthalten.</value>
   </data>
   <data name="Dialog_SizesRowsPlaceholderRequiredForGrouped" xml:space="preserve">
     <value>Wenn 'Gruppierte Position pro Artikel' gewählt ist, muss die Positionstext-Vorlage den Platzhalter {SizesRows} enthalten.</value>
