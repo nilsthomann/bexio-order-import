@@ -363,4 +363,58 @@ public class MainViewModelTests : IDisposable
         // Assert
         vm.IsActiveRowDiscountEnabled.Should().BeTrue();
     }
+
+    [Test]
+    public async Task LoadExcelFileAsync_WhenFileParsingFails_ShouldShowErrorDialog()
+    {
+        // Arrange
+        var mockParser = new Mock<IExcelParser>();
+        mockParser.Setup(p => p.ParseOrderForm(It.IsAny<string>())).Throws(new Exception("Parsing failed custom error"));
+        var mockFactory = new Mock<IExcelParserFactory>();
+        mockFactory.Setup(f => f.Create(It.IsAny<BexioOrderImport.Application.Options.ExcelMappingOptions>())).Returns(mockParser.Object);
+
+        var vm = new MainViewModel(
+            _updateServiceMock.Object,
+            _clientFactoryMock.Object,
+            _dialogServiceMock.Object,
+            _dispatcherServiceMock.Object,
+            _encryptionServiceMock.Object,
+            mockFactory.Object,
+            _tempFilePath
+        );
+
+        // Act
+        await vm.LoadExcelFileAsync("invalid.xlsx");
+
+        // Assert
+        vm.HasLoadedFile.Should().BeFalse();
+        _dialogServiceMock.Verify(d => d.ShowErrorDialog("Parsing failed custom error", It.IsAny<string>()), Times.Once);
+    }
+
+    [Test]
+    public async Task LoadExcelFileAsync_WhenFileIsLocked_ShouldShowLockedDialog()
+    {
+        // Arrange
+        var mockParser = new Mock<IExcelParser>();
+        mockParser.Setup(p => p.ParseOrderForm(It.IsAny<string>())).Throws(new System.IO.IOException("The process cannot access the file because it is being used by another process."));
+        var mockFactory = new Mock<IExcelParserFactory>();
+        mockFactory.Setup(f => f.Create(It.IsAny<BexioOrderImport.Application.Options.ExcelMappingOptions>())).Returns(mockParser.Object);
+
+        var vm = new MainViewModel(
+            _updateServiceMock.Object,
+            _clientFactoryMock.Object,
+            _dialogServiceMock.Object,
+            _dispatcherServiceMock.Object,
+            _encryptionServiceMock.Object,
+            mockFactory.Object,
+            _tempFilePath
+        );
+
+        // Act
+        await vm.LoadExcelFileAsync("locked.xlsx");
+
+        // Assert
+        vm.HasLoadedFile.Should().BeFalse();
+        _dialogServiceMock.Verify(d => d.ShowErrorDialog(It.Is<string>(s => s.Contains("locked.xlsx")), It.IsAny<string>()), Times.Once);
+    }
 }
