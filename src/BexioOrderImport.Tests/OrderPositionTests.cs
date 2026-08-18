@@ -1,12 +1,11 @@
 using BexioOrderImport.Domain.Models;
 using FluentAssertions;
-using Xunit;
 
 namespace BexioOrderImport.Tests;
 
 public class OrderPositionTests
 {
-    [Fact]
+    [Test]
     public void OrderPosition_WithoutDiscount_ShouldCalculateNetAndTotalFromGrossUnitPrice()
     {
         // Arrange & Act
@@ -23,7 +22,7 @@ public class OrderPositionTests
         pos.TotalPrice.Should().Be(500m);
     }
 
-    [Fact]
+    [Test]
     public void OrderPosition_WithDiscount_ShouldCalculateNetUnitPriceAndTotalPriceCorrectly()
     {
         // Arrange & Act
@@ -40,7 +39,7 @@ public class OrderPositionTests
         pos.TotalPrice.Should().Be(340m);
     }
 
-    [Fact]
+    [Test]
     public void OrderPosition_SettingUnitPrice_ShouldUpdateGrossUnitPrice()
     {
         // Arrange
@@ -54,7 +53,7 @@ public class OrderPositionTests
         pos.NetUnitPrice.Should().Be(50m);
     }
 
-    [Fact]
+    [Test]
     public void OrderPosition_WithDecimalDiscount_ShouldRoundNetUnitPriceToOneDecimalPlace()
     {
         // Arrange & Act

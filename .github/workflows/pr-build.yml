@@ -11,7 +11,8 @@ jobs:
     runs-on: windows-latest
     permissions:
       contents: read
-      code-quality: write
+      pull-requests: write
+      checks: write
 
     steps:
       - name: Checkout Repository
@@ -22,31 +23,24 @@ jobs:
         with:
           dotnet-version: '10.0.x'
 
-      - name: Restore dependencies (incl. local tools)
-        run: dotnet tool restore && dotnet restore BexioOrderImport.slnx
+      - name: Restore dependencies
+        run: dotnet restore BexioOrderImport.slnx
 
       - name: Build solution
         run: dotnet build BexioOrderImport.slnx -c Release --no-restore
 
       - name: Run unit tests & generate coverage
         working-directory: build
-        run: powershell -File run-coverage.ps1 -Configuration Release -CI
+        run: powershell -ExecutionPolicy Bypass -File run-coverage.ps1 -Configuration Release -CI
 
-      - name: Publish Coverage to GitHub Run Summary
-        run: |
-          Get-Content -Path TestResults/CoverageReport/Summary.md | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Append -Encoding utf8
-        shell: powershell
-
-      - name: Copy Coverage File to Static Path
-        run: |
-          $covFile = (Get-ChildItem -Path TestResults -Filter "coverage.cobertura.xml" -Recurse | Select-Object -First 1).FullName
-          Copy-Item -Path $covFile -Destination TestResults/coverage.cobertura.xml
-        shell: powershell
-
-      - name: Upload coverage to GitHub native API
-        uses: actions/upload-code-coverage@v1
+      - name: Report Test Results & Coverage to PR
+        uses: bibipkins/dotnet-test-reporter@v1.6.4
+        if: always()
         with:
-          file: TestResults/coverage.cobertura.xml
-          language: csharp
-          label: code-coverage-cobertura
-          fail-on-error: false
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          comment-title: '🧪 Unit Test & Code Coverage Report'
+          results-path: 'TestResults/*.trx'
+          coverage-path: 'TestResults/coverage.cobertura.xml'
+          coverage-type: 'cobertura'
+          coverage-threshold: 90
+

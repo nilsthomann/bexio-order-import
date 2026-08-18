@@ -7,7 +7,7 @@ public class SettingsAndSecurityTests
 {
     private readonly DpapiEncryptionService _encryptionService = new();
 
-    [Fact]
+    [Test]
     public void Encrypt_WithValidString_ShouldReturnEncryptedBase64()
     {
         // Arrange
@@ -17,12 +17,12 @@ public class SettingsAndSecurityTests
         string encrypted = _encryptionService.Encrypt(clearText);
 
         // Assert
-        Assert.NotNull(encrypted);
-        Assert.NotEmpty(encrypted);
-        Assert.NotEqual(clearText, encrypted);
+        encrypted.Should().NotBeNull();
+        encrypted.Should().NotBeEmpty();
+        encrypted.Should().NotBe(clearText);
     }
 
-    [Fact]
+    [Test]
     public void Decrypt_WithEncryptedString_ShouldRestoreOriginalString()
     {
         // Arrange
@@ -33,10 +33,10 @@ public class SettingsAndSecurityTests
         string decrypted = _encryptionService.Decrypt(encrypted);
 
         // Assert
-        Assert.Equal(clearText, decrypted);
+        decrypted.Should().Be(clearText);
     }
 
-    [Fact]
+    [Test]
     public void Decrypt_WithInvalidBase64_ShouldReturnEmptyString()
     {
         // Arrange
@@ -46,17 +46,17 @@ public class SettingsAndSecurityTests
         string decrypted = _encryptionService.Decrypt(invalidBase64);
 
         // Assert
-        Assert.Equal(string.Empty, decrypted);
+        decrypted.Should().Be(string.Empty);
     }
 
-    [Fact]
+    [Test]
     public void Encrypt_WithNullOrEmpty_ShouldReturnEmptyString()
     {
         _encryptionService.Encrypt(null!).Should().BeEmpty();
         _encryptionService.Encrypt("").Should().BeEmpty();
     }
 
-    [Fact]
+    [Test]
     public void Decrypt_WithNullOrEmpty_ShouldReturnEmptyString()
     {
         _encryptionService.Decrypt(null!).Should().BeEmpty();

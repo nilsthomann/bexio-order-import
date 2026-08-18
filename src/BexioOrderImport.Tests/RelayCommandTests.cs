@@ -5,21 +5,21 @@ namespace BexioOrderImport.Tests;
 
 public class RelayCommandTests
 {
-    [Fact]
+    [Test]
     public void RelayCommand_Constructor_NullAction_ThrowsException()
     {
         Action act = () => new RelayCommand(null!);
         act.Should().Throw<ArgumentNullException>();
     }
 
-    [Fact]
+    [Test]
     public void RelayCommand_CanExecute_WithoutCanExecuteFunc_ReturnsTrue()
     {
         var cmd = new RelayCommand(() => { });
         cmd.CanExecute(null).Should().BeTrue();
     }
 
-    [Fact]
+    [Test]
     public void RelayCommand_CanExecute_WithCanExecuteFunc_ReturnsCorrectValue()
     {
         bool allowed = false;
@@ -29,7 +29,7 @@ public class RelayCommandTests
         cmd.CanExecute(null).Should().BeTrue();
     }
 
-    [Fact]
+    [Test]
     public void RelayCommand_Execute_RunsAction()
     {
         bool executed = false;
@@ -38,7 +38,7 @@ public class RelayCommandTests
         executed.Should().BeTrue();
     }
 
-    [Fact]
+    [Test]
     public void RelayCommand_RaiseCanExecuteChanged_DoesNotThrow()
     {
         var cmd = new RelayCommand(() => { });
@@ -46,7 +46,7 @@ public class RelayCommandTests
         act.Should().NotThrow();
     }
 
-    [Fact]
+    [Test]
     public void RelayCommand_CanExecuteChangedEvent_SubscribeAndUnsubscribe_DoesNotThrow()
     {
         var cmd = new RelayCommand(() => { });
@@ -59,14 +59,14 @@ public class RelayCommandTests
         act.Should().NotThrow();
     }
 
-    [Fact]
+    [Test]
     public void RelayCommandGeneric_Constructor_NullAction_ThrowsException()
     {
         Action act = () => new RelayCommand<string>(null!);
         act.Should().Throw<ArgumentNullException>();
     }
 
-    [Fact]
+    [Test]
     public void RelayCommandGeneric_CanExecute_InvalidParameterType_ReturnsFalse()
     {
         var cmd = new RelayCommand<string>(_ => { });
@@ -74,14 +74,14 @@ public class RelayCommandTests
         cmd.CanExecute(null).Should().BeFalse();
     }
 
-    [Fact]
+    [Test]
     public void RelayCommandGeneric_CanExecute_ValidParameterType_ReturnsTrue()
     {
         var cmd = new RelayCommand<string>(_ => { });
         cmd.CanExecute("test").Should().BeTrue();
     }
 
-    [Fact]
+    [Test]
     public void RelayCommandGeneric_CanExecute_WithCanExecuteFunc_ReturnsCorrectValue()
     {
         var cmd = new RelayCommand<string>(_ => { }, val => val == "allow");
@@ -89,7 +89,7 @@ public class RelayCommandTests
         cmd.CanExecute("allow").Should().BeTrue();
     }
 
-    [Fact]
+    [Test]
     public void RelayCommandGeneric_Execute_InvalidParameterType_DoesNotExecute()
     {
         bool executed = false;
@@ -98,7 +98,7 @@ public class RelayCommandTests
         executed.Should().BeFalse();
     }
 
-    [Fact]
+    [Test]
     public void RelayCommandGeneric_Execute_ValidParameterType_Executes()
     {
         string? result = null;
@@ -107,7 +107,7 @@ public class RelayCommandTests
         result.Should().Be("success");
     }
 
-    [Fact]
+    [Test]
     public void RelayCommandGeneric_CanExecuteChangedEvent_SubscribeAndUnsubscribe_DoesNotThrow()
     {
         var cmd = new RelayCommand<string>(_ => { });
@@ -120,7 +120,7 @@ public class RelayCommandTests
         act.Should().NotThrow();
     }
 
-    [Fact]
+    [Test]
     public void RelayCommandGeneric_RaiseCanExecuteChanged_DoesNotThrow()
     {
         var cmd = new RelayCommand<string>(_ => { });

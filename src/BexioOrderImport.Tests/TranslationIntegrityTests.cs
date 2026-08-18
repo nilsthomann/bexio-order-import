@@ -2,15 +2,14 @@ using System.Globalization;
 using System.Reflection;
 using BexioOrderImport.Wpf.Resources;
 using FluentAssertions;
-using Xunit;
 
 namespace BexioOrderImport.Tests;
 
 public class TranslationIntegrityTests
 {
-    [Theory]
-    [InlineData("de-CH")]
-    [InlineData("en-US")]
+    [Test]
+    [Arguments("de-CH")]
+    [Arguments("en-US")]
     public void AllTranslationProperties_ShouldReturnNonEmptyString_ForSupportedCultures(string cultureName)
     {
         // Arrange

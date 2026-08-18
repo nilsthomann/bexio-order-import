@@ -11,7 +11,7 @@ namespace BexioOrderImport.Tests;
 
 public class BexioApiClientTests
 {
-    [Fact]
+    [Test]
     public async Task FindContactIdAsync_WhenContactExists_ShouldReturnContactId()
     {
         // Arrange
@@ -37,7 +37,7 @@ public class BexioApiClientTests
         result.Should().Be(12345);
     }
 
-    [Fact]
+    [Test]
     public async Task FindContactIdAsync_WhenContactDoesNotExist_ShouldReturnNull()
     {
         // Arrange
@@ -63,7 +63,7 @@ public class BexioApiClientTests
         result.Should().BeNull();
     }
 
-    [Fact]
+    [Test]
     public async Task CreateContactAsync_ShouldReturnNewContactId()
     {
         // Arrange
@@ -95,7 +95,7 @@ public class BexioApiClientTests
         result.Should().Be(98765);
     }
 
-    [Fact]
+    [Test]
     public async Task CreateOrderAsync_WithValidOrder_ReturnsOrderId()
     {
         // Arrange
@@ -123,7 +123,7 @@ public class BexioApiClientTests
         result.Should().Be(11111);
     }
 
-    [Fact]
+    [Test]
     public async Task FindArticleAsync_WithKnownArticle_ReturnsArticle()
     {
         // Arrange
@@ -152,7 +152,7 @@ public class BexioApiClientTests
         result.Description.Should().Be("Sample Product Description");
     }
 
-    [Fact]
+    [Test]
     public async Task FindArticleAsync_WithDuplicateArticles_Fallback_To_Filter_ReturnsArticle()
     {
         // Arrange
@@ -184,7 +184,7 @@ public class BexioApiClientTests
         result.Description.Should().Be("Sample Product Description");
     }
 
-    [Fact]
+    [Test]
     public async Task FindArticleAsync_WithUnknownArticle_ReturnsNull()
     {
         // Arrange
@@ -210,7 +210,7 @@ public class BexioApiClientTests
         result.Should().BeNull();
     }
 
-    [Fact]
+    [Test]
     public async Task AddArticlePositionAsync_Succeeds()
     {
         // Arrange
@@ -256,7 +256,7 @@ public class BexioApiClientTests
 
 
 
-    [Fact]
+    [Test]
     public async Task FindContactIdAsync_WhenApiReturns500_ThrowsHttpRequestException()
     {
         // Arrange
@@ -269,11 +269,12 @@ public class BexioApiClientTests
         var client = new BexioApiClient(httpClient, "dummy-token", 1, 1);
 
         // Act & Assert
-        await Assert.ThrowsAsync<HttpRequestException>(() => client.FindContactIdAsync("error@error.com"));
+        Func<Task> act = async () => await client.FindContactIdAsync("error@error.com");
+        await act.Should().ThrowAsync<HttpRequestException>();
     }
 
 
-    [Fact]
+    [Test]
     public void BexioClientFactory_Create_ShouldReturnBexioApiClient()
     {
         // Arrange
@@ -289,7 +290,7 @@ public class BexioApiClientTests
         client.Should().BeOfType<BexioApiClient>();
     }
 
-    [Fact]
+    [Test]
     public async Task CreateContactAsync_WhenApiReturnsNullContact_ThrowsException()
     {
         // Arrange
@@ -310,10 +311,11 @@ public class BexioApiClientTests
         var customer = new Customer { CompanyName = "New Partner", Email = "partner@domain.com" };
 
         // Act & Assert
-        await Assert.ThrowsAsync<InvalidOperationException>(() => client.CreateContactAsync(customer));
+        Func<Task> act = async () => await client.CreateContactAsync(customer);
+        await act.Should().ThrowAsync<InvalidOperationException>();
     }
 
-    [Fact]
+    [Test]
     public async Task CreateOrderAsync_WhenApiReturnsNullOrder_ThrowsException()
     {
         // Arrange
@@ -334,10 +336,11 @@ public class BexioApiClientTests
         var order = new Order { Customer = new Customer { CompanyName = "Test AG" } };
 
         // Act & Assert
-        await Assert.ThrowsAsync<InvalidOperationException>(() => client.CreateOrderAsync(12345, order));
+        Func<Task> act = async () => await client.CreateOrderAsync(12345, order);
+        await act.Should().ThrowAsync<InvalidOperationException>();
     }
 
-    [Fact]
+    [Test]
     public async Task GetAccountsAsync_ReturnsAccountsList()
     {
         // Arrange
@@ -376,7 +379,7 @@ public class BexioApiClientTests
         result[0].AccountType.Should().Be(1);
     }
 
-    [Fact]
+    [Test]
     public async Task GetTaxesAsync_ReturnsTaxesList()
     {
         // Arrange
@@ -417,7 +420,7 @@ public class BexioApiClientTests
         result[0].Type.Should().Be("sales_tax");
     }
 
-    [Fact]
+    [Test]
     public async Task PreFetchArticlesAsync_CachesArticles_SubsequentLookupsUseCache()
     {
         // Arrange
@@ -451,7 +454,7 @@ public class BexioApiClientTests
         apiCallCount.Should().Be(initialCallCount); // No additional API calls made
     }
 
-    [Fact]
+    [Test]
     public async Task AddDiscountPositionAsync_WhenCalled_SendsCorrectPayloadToBexioApi()
     {
         // Arrange
@@ -488,7 +491,7 @@ public class BexioApiClientTests
         requestBody.Should().Contain("\"is_percentual\":true");
     }
 
-    [Fact]
+    [Test]
     public async Task RateLimit_When429Returned_ShouldWaitAndRetryRequest()
     {
         // Arrange
@@ -525,7 +528,7 @@ public class BexioApiClientTests
         callCount.Should().Be(2);
     }
 
-    [Fact]
+    [Test]
     public async Task CheckConnectionAsync_WhenSuccess_ShouldReturnTrue()
     {
         // Arrange
@@ -550,7 +553,7 @@ public class BexioApiClientTests
         result.Should().BeTrue();
     }
 
-    [Fact]
+    [Test]
     public async Task CheckConnectionAsync_WhenExceptionThrown_ShouldReturnFalse()
     {
         // Arrange
@@ -569,7 +572,7 @@ public class BexioApiClientTests
         result.Should().BeFalse();
     }
 
-    [Fact]
+    [Test]
     public async Task FindContactIdAsync_WhenRateLimited429_ShouldRetryAndSucceed()
     {
         // Arrange
@@ -605,7 +608,7 @@ public class BexioApiClientTests
         result.Should().Be(555);
     }
 
-    [Fact]
+    [Test]
     public async Task GetAccountsAsync_ShouldCacheResultsOnConsecutiveCalls()
     {
         int callCount = 0;
@@ -633,7 +636,7 @@ public class BexioApiClientTests
         firstCall.Should().HaveCount(1);
     }
 
-    [Fact]
+    [Test]
     public async Task GetTaxesAsync_ShouldCacheResultsOnConsecutiveCalls()
     {
         int callCount = 0;
@@ -661,7 +664,7 @@ public class BexioApiClientTests
         firstCall.Should().HaveCount(1);
     }
 
-    [Fact]
+    [Test]
     public async Task CreateContactAsync_WhenApiReturnsEmptyJson_ShouldThrowInvalidOperationException()
     {
         var handler = new MockHttpMessageHandler
@@ -681,7 +684,7 @@ public class BexioApiClientTests
             .WithMessage("Bexio returned an empty response when creating a contact.");
     }
 
-    [Fact]
+    [Test]
     public async Task CreateOrderAsync_WhenApiReturnsEmptyJson_ShouldThrowInvalidOperationException()
     {
         var handler = new MockHttpMessageHandler
@@ -701,7 +704,7 @@ public class BexioApiClientTests
             .WithMessage("Bexio returned an empty response when creating an order.");
     }
 
-    [Fact]
+    [Test]
     public async Task FindContactIdAsync_WhenRateLimitHeaderUsesUnixTimestamp_ShouldHandleCorrectly()
     {
         int callCount = 0;
@@ -727,5 +730,125 @@ public class BexioApiClientTests
         var id = await client.FindContactIdAsync("unix@test.com");
         id.Should().Be(888);
         callCount.Should().Be(1);
+    }
+
+    [Test]
+    public async Task GetOrderContactDetailsAsync_WhenOrderExists_ShouldReturnContactDetails()
+    {
+        var handler = new MockHttpMessageHandler
+        {
+            SendAsyncFunc = (req, token) =>
+            {
+                string uri = req.RequestUri!.ToString();
+                if (uri.Contains("kb_order/456"))
+                {
+                    return Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK)
+                    {
+                        Content = new StringContent("{\"id\": 456, \"contact_id\": 123}", Encoding.UTF8, "application/json")
+                    });
+                }
+                if (uri.Contains("contact/123"))
+                {
+                    return Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK)
+                    {
+                        Content = new StringContent("{\"id\": 123, \"name_1\": \"Acme Ltd\", \"mail\": \"acme@ltd.com\"}", Encoding.UTF8, "application/json")
+                    });
+                }
+                return Task.FromResult(new HttpResponseMessage(HttpStatusCode.NotFound));
+            }
+        };
+
+        var httpClient = new HttpClient(handler);
+        var client = new BexioApiClient(httpClient, "dummy-token", 1, 1);
+
+        var contact = await client.GetOrderContactDetailsAsync(456);
+        contact.Should().NotBeNull();
+        contact!.Id.Should().Be(123);
+        contact.Name.Should().Be("Acme Ltd");
+        contact.EMail.Should().Be("acme@ltd.com");
+    }
+
+    [Test]
+    public async Task GetOrderContactDetailsAsync_WhenOrderHttpError_ShouldReturnNull()
+    {
+        var handler = new MockHttpMessageHandler
+        {
+            SendAsyncFunc = (req, token) => Task.FromResult(new HttpResponseMessage(HttpStatusCode.NotFound))
+        };
+
+        var httpClient = new HttpClient(handler);
+        var client = new BexioApiClient(httpClient, "dummy-token", 1, 1);
+
+        var contact = await client.GetOrderContactDetailsAsync(999);
+        contact.Should().BeNull();
+    }
+
+    [Test]
+    public async Task AddArticlePositionAsync_WhenHttpFails_ShouldThrowHttpRequestException()
+    {
+        var handler = new MockHttpMessageHandler
+        {
+            SendAsyncFunc = (req, token) => Task.FromResult(new HttpResponseMessage(HttpStatusCode.BadRequest)
+            {
+                Content = new StringContent("Invalid position data", Encoding.UTF8, "text/plain")
+            })
+        };
+
+        var httpClient = new HttpClient(handler);
+        var client = new BexioApiClient(httpClient, "dummy-token", 1, 1);
+        var pos = new OrderPosition { Quantity = 1, UnitPrice = 10m };
+
+        Func<Task> act = async () => await client.AddArticlePositionAsync(100, 200, pos);
+        await act.Should().ThrowAsync<HttpRequestException>().WithMessage("*Error adding article position to order 100*");
+    }
+
+    [Test]
+    public async Task AddDiscountPositionAsync_WhenHttpFails_ShouldThrowHttpRequestException()
+    {
+        var handler = new MockHttpMessageHandler
+        {
+            SendAsyncFunc = (req, token) => Task.FromResult(new HttpResponseMessage(HttpStatusCode.BadRequest)
+            {
+                Content = new StringContent("Invalid discount", Encoding.UTF8, "text/plain")
+            })
+        };
+
+        var httpClient = new HttpClient(handler);
+        var client = new BexioApiClient(httpClient, "dummy-token", 1, 1);
+
+        Func<Task> act = async () => await client.AddDiscountPositionAsync(100, 10m);
+        await act.Should().ThrowAsync<HttpRequestException>().WithMessage("*Error adding discount position to order 100*");
+    }
+
+    [Test]
+    public async Task PreFetchArticlesAsync_WhenBulkSearchEmpty_ShouldFallbackToIndividualSearch()
+    {
+        var handler = new MockHttpMessageHandler
+        {
+            SendAsyncFunc = (req, token) =>
+            {
+                string uri = req.RequestUri!.ToString();
+                if (uri.Contains("article/search"))
+                {
+                    return Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK)
+                    {
+                        Content = new StringContent("[{\"id\": 101, \"intern_code\": \"ART-999\", \"intern_name\": \"Fallback Article\"}]", Encoding.UTF8, "application/json")
+                    });
+                }
+                return Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK)
+                {
+                    Content = new StringContent("[]", Encoding.UTF8, "application/json")
+                });
+            }
+        };
+
+        var httpClient = new HttpClient(handler);
+        var client = new BexioApiClient(httpClient, "dummy-token", 1, 1);
+
+        await client.PreFetchArticlesAsync("SS26", ["ART-999"]);
+
+        var article = await client.FindArticleAsync("ART-999", "Red", "SS26");
+        article.Should().NotBeNull();
+        article!.Id.Should().Be(101);
     }
 }

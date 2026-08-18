@@ -5,6 +5,7 @@ using System.Text;
 
 namespace BexioOrderImport.Tests;
 
+[NotInParallel]
 public class UpdateServiceTests
 {
     private readonly UpdateService _updateService;
@@ -25,15 +26,15 @@ public class UpdateServiceTests
         }
     }
 
-    [Theory]
-    [InlineData("v1.1.0", "1.0.0", true)]
-    [InlineData("1.1.0", "1.0.0", true)]
-    [InlineData("v2.0.0", "1.9.9", true)]
-    [InlineData("v1.0.0", "1.0.0", false)]
-    [InlineData("1.0.0", "1.0.0", false)]
-    [InlineData("v0.9.0", "1.0.0", false)]
-    [InlineData("v1.0.0", null, false)]
-    [InlineData("invalid-version", "1.0.0", false)]
+    [Test]
+    [Arguments("v1.1.0", "1.0.0", true)]
+    [Arguments("1.1.0", "1.0.0", true)]
+    [Arguments("v2.0.0", "1.9.9", true)]
+    [Arguments("v1.0.0", "1.0.0", false)]
+    [Arguments("1.0.0", "1.0.0", false)]
+    [Arguments("v0.9.0", "1.0.0", false)]
+    [Arguments("v1.0.0", null, false)]
+    [Arguments("invalid-version", "1.0.0", false)]
     public void IsNewerVersion_ShouldCorrectlyCompareVersions(string rawTag, string? currentVersionStr, bool expectedResult)
     {
         // Arrange
@@ -47,7 +48,7 @@ public class UpdateServiceTests
     }
 
 
-    [Fact]
+    [Test]
     public async Task CheckForUpdatesAsync_WhenNewerVersionAvailable_ShouldReturnUpdateInfo()
     {
         // Delete last check cache if it exists, to ensure check runs
@@ -92,7 +93,7 @@ public class UpdateServiceTests
         result.ReleaseNotes.Should().Be("Release 99.9.9");
     }
 
-    [Fact]
+    [Test]
     public async Task CheckForUpdatesAsync_WhenCheckWithin4Hours_ShouldReturnNull()
     {
         // Arrange
@@ -113,7 +114,7 @@ public class UpdateServiceTests
         result.Should().BeNull();
     }
 
-    [Fact]
+    [Test]
     public async Task CheckForUpdatesAsync_WhenHttpError_ShouldReturnNull()
     {
         // Arrange
@@ -139,7 +140,7 @@ public class UpdateServiceTests
         result.Should().BeNull();
     }
 
-    [Fact]
+    [Test]
     public async Task CheckForUpdatesAsync_WhenNoMatchingAsset_ShouldReturnNull()
     {
         // Arrange
@@ -180,7 +181,7 @@ public class UpdateServiceTests
         result.Should().BeNull();
     }
 
-    [Fact]
+    [Test]
     public async Task DownloadAndInstallUpdateAsync_WithValidUrl_ShouldDownloadAndReportProgress()
     {
         // Arrange
@@ -220,7 +221,7 @@ public class UpdateServiceTests
         try { File.Delete(_lifecycleService.InstallerPathPassed!); } catch { }
     }
 
-    [Fact]
+    [Test]
     public async Task CheckForUpdatesAsync_WithCorruptCacheFile_ShouldIgnoreAndPerformCheck()
     {
         // Arrange
@@ -246,7 +247,7 @@ public class UpdateServiceTests
         result.Should().BeNull(); // Reached check and returned null on http error
     }
 
-    [Fact]
+    [Test]
     public async Task CheckForUpdatesAsync_WhenCacheFolderDoesNotExist_ShouldCreateDirectoryAndCheck()
     {
         // Arrange
@@ -274,7 +275,7 @@ public class UpdateServiceTests
         // Actually, we can just delete the cache file, which runs the check.
     }
 
-    [Fact]
+    [Test]
     public async Task DownloadAndInstallUpdateAsync_WhenTempDirDoesNotExistAndFileExists_ShouldHandleBoth()
     {
         // Arrange
@@ -315,7 +316,7 @@ public class UpdateServiceTests
         File.Exists(tempFilePath).Should().BeTrue();
     }
 
-    [Fact]
+    [Test]
     public async Task DownloadAndInstallUpdateAsync_WhenHttpError_ShouldThrowException()
     {
         // Arrange
@@ -331,7 +332,7 @@ public class UpdateServiceTests
         await act.Should().ThrowAsync<HttpRequestException>().WithMessage("Response status code does not indicate success: 400 (Bad Request).");
     }
 
-    [Fact]
+    [Test]
     public void Constructors_ShouldInitializeCorrectly()
     {
         var lifecycle = new FakeAppLifecycleService();

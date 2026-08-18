@@ -5,11 +5,11 @@ using System.Threading.Tasks;
 using BexioOrderImport.Tests.Utils;
 using BexioOrderImport.Wpf.Services;
 using FluentAssertions;
-using Xunit;
 using WpfApp = System.Windows.Application;
 
 namespace BexioOrderImport.Tests;
 
+[NotInParallel]
 public class WpfDispatcherServiceTests
 {
     private static void RunWithNullApplication(Action action)
@@ -30,7 +30,7 @@ public class WpfDispatcherServiceTests
         }
     }
 
-    [Fact]
+    [Test]
     public void Invoke_WhenApplicationIsNull_ExecutesActionSynchronouslyOnCallingThread()
     {
         RunWithNullApplication(() =>
@@ -51,7 +51,7 @@ public class WpfDispatcherServiceTests
         });
     }
 
-    [Fact]
+    [Test]
     public void BeginInvoke_WhenApplicationIsNull_ExecutesActionSynchronouslyOnCallingThread()
     {
         RunWithNullApplication(() =>
@@ -72,7 +72,7 @@ public class WpfDispatcherServiceTests
         });
     }
 
-    [Fact]
+    [Test]
     public void Invoke_WhenApplicationIsNull_PropagatesExceptionsImmediately()
     {
         RunWithNullApplication(() =>
@@ -85,7 +85,7 @@ public class WpfDispatcherServiceTests
         });
     }
 
-    [Fact]
+    [Test]
     public void BeginInvoke_WhenApplicationIsNull_PropagatesExceptionsImmediately()
     {
         RunWithNullApplication(() =>
@@ -98,7 +98,7 @@ public class WpfDispatcherServiceTests
         });
     }
 
-    [Fact]
+    [Test]
     public void InvokeAndBeginInvoke_WhenApplicationIsNull_ExecutesInSequence()
     {
         RunWithNullApplication(() =>
@@ -114,7 +114,7 @@ public class WpfDispatcherServiceTests
         });
     }
 
-    [Fact]
+    [Test]
     public async Task BeginInvoke_ExecutesAction()
     {
         var service = new WpfDispatcherService();
@@ -126,7 +126,7 @@ public class WpfDispatcherServiceTests
         executed.Should().BeTrue();
     }
 
-    [Fact]
+    [Test]
     public void Invoke_WithActiveApplication_ExecutesActionOnUIThread()
     {
         WpfTestApplication.EnsureInitialized();
@@ -144,7 +144,7 @@ public class WpfDispatcherServiceTests
         executedThreadId.Should().Be(WpfApp.Current!.Dispatcher.Thread.ManagedThreadId);
     }
 
-    [Fact]
+    [Test]
     public async Task BeginInvoke_WithActiveApplication_ExecutesActionOnUIThread()
     {
         WpfTestApplication.EnsureInitialized();

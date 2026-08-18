@@ -12,6 +12,7 @@ using Moq;
 
 namespace BexioOrderImport.Tests;
 
+[NotInParallel]
 public class MainViewModelTests : IDisposable
 {
     private readonly Mock<IUpdateService> _updateServiceMock;
@@ -73,7 +74,7 @@ public class MainViewModelTests : IDisposable
             _tempFilePath);
     }
 
-    [Fact]
+    [Test]
     public void Constructor_ShouldInitializeWithDefaultValues()
     {
         // Act
@@ -87,7 +88,7 @@ public class MainViewModelTests : IDisposable
         vm.HasLoadedFile.Should().BeFalse();
     }
 
-    [Fact]
+    [Test]
     public void SetFileProperties_ShouldUpdateStateCorrectly()
     {
         // Arrange
@@ -106,7 +107,7 @@ public class MainViewModelTests : IDisposable
         vm.HasLoadedFile.Should().BeTrue();
     }
 
-    [Fact]
+    [Test]
     public void SetLanguage_ShouldUpdateSelectedLanguage()
     {
         // Arrange
@@ -119,7 +120,7 @@ public class MainViewModelTests : IDisposable
         vm.SelectedLanguage.Should().Be("en");
     }
 
-    [Fact]
+    [Test]
     public void BexioTokenDisplay_WhenNotFocused_ShouldReturnDots()
     {
         // Arrange
@@ -131,7 +132,7 @@ public class MainViewModelTests : IDisposable
         vm.BexioTokenDisplay.Should().Be(new string('•', 24));
     }
 
-    [Fact]
+    [Test]
     public void BexioTokenDisplay_WhenFocused_ShouldReturnRealToken()
     {
         // Arrange
@@ -143,7 +144,7 @@ public class MainViewModelTests : IDisposable
         vm.BexioTokenDisplay.Should().Be("my-secret-token");
     }
 
-    [Fact]
+    [Test]
     public void BexioTokenDisplay_WhenNotFocusedAndEmpty_ShouldReturnEmpty()
     {
         // Arrange
@@ -155,7 +156,7 @@ public class MainViewModelTests : IDisposable
         vm.BexioTokenDisplay.Should().Be("");
     }
 
-    [Fact]
+    [Test]
     public void BexioTokenDisplay_WhenSetWhileFocused_ShouldUpdateBexioToken()
     {
         // Arrange
@@ -170,7 +171,7 @@ public class MainViewModelTests : IDisposable
         vm.BexioToken.Should().Be("new-token");
     }
 
-    [Fact]
+    [Test]
     public void BexioTokenDisplay_WhenSetWhileNotFocused_ShouldNotUpdateBexioToken()
     {
         // Arrange
@@ -185,7 +186,7 @@ public class MainViewModelTests : IDisposable
         vm.BexioToken.Should().Be("old-token");
     }
 
-    [Fact]
+    [Test]
     public void ImportCommand_WhenAccountOrTaxIdNull_ShouldShowErrorDialogAndAbort()
     {
         // Arrange
@@ -209,7 +210,7 @@ public class MainViewModelTests : IDisposable
         vm.IsImporting.Should().BeFalse();
     }
 
-    [Fact]
+    [Test]
     public async Task CheckBexioConnectionAsync_ShouldTriggerConnectionCheckAndPopulateLists()
     {
         // Arrange
@@ -241,7 +242,7 @@ public class MainViewModelTests : IDisposable
         vm.TaxesList[0].Id.Should().Be(5);
     }
 
-    [Fact]
+    [Test]
     public void DeleteProfile_ShouldAllowDeletingDefault_WhenMultipleProfilesExist()
     {
         // Arrange
@@ -261,7 +262,7 @@ public class MainViewModelTests : IDisposable
         vm.IsModified.Should().BeTrue();
     }
 
-    [Fact]
+    [Test]
     public void DeleteProfile_ShouldNotAllowDeleting_WhenOnlyOneProfileExists()
     {
         // Arrange
@@ -272,7 +273,7 @@ public class MainViewModelTests : IDisposable
         vm.DeleteProfileCommand.CanExecute(vm.Profiles[0]).Should().BeFalse();
     }
 
-    [Fact]
+    [Test]
     public void SelectedTabIndex_WhenUserDiscardsChanges_ShouldReloadSettingsAndSwitchTab()
     {
         // Arrange
@@ -290,7 +291,7 @@ public class MainViewModelTests : IDisposable
         vm.IsModified.Should().BeFalse(); // Settings reloaded, unsaved state cleared
     }
 
-    [Fact]
+    [Test]
     public void SelectedTabIndex_WhenUserCancelsPendingChanges_ShouldRemainOnSettingsTab()
     {
         // Arrange
@@ -306,7 +307,7 @@ public class MainViewModelTests : IDisposable
         vm.SelectedTabIndex.Should().Be(1); // User remains on Settings tab
     }
 
-    [Fact]
+    [Test]
     public void EditProfile_WhenProfileRenamedInDialog_ShouldUpdateNameAndSetModified()
     {
         // Arrange
@@ -325,7 +326,7 @@ public class MainViewModelTests : IDisposable
         vm.IsModified.Should().BeTrue();
     }
 
-    [Fact]
+    [Test]
     public void SetActiveProfile_ShouldNotSetIsModified()
     {
         // Arrange
@@ -342,7 +343,7 @@ public class MainViewModelTests : IDisposable
         vm.IsModified.Should().BeFalse();
     }
 
-    [Fact]
+    [Test]
     public void IsActiveRowDiscountEnabled_ShouldReflectActiveProfileMapping()
     {
         // Arrange
@@ -361,5 +362,59 @@ public class MainViewModelTests : IDisposable
 
         // Assert
         vm.IsActiveRowDiscountEnabled.Should().BeTrue();
+    }
+
+    [Test]
+    public async Task LoadExcelFileAsync_WhenFileParsingFails_ShouldShowErrorDialog()
+    {
+        // Arrange
+        var mockParser = new Mock<IExcelParser>();
+        mockParser.Setup(p => p.ParseOrderForm(It.IsAny<string>())).Throws(new Exception("Parsing failed custom error"));
+        var mockFactory = new Mock<IExcelParserFactory>();
+        mockFactory.Setup(f => f.Create(It.IsAny<BexioOrderImport.Application.Options.ExcelMappingOptions>())).Returns(mockParser.Object);
+
+        var vm = new MainViewModel(
+            _updateServiceMock.Object,
+            _clientFactoryMock.Object,
+            _dialogServiceMock.Object,
+            _dispatcherServiceMock.Object,
+            _encryptionServiceMock.Object,
+            mockFactory.Object,
+            _tempFilePath
+        );
+
+        // Act
+        await vm.LoadExcelFileAsync("invalid.xlsx");
+
+        // Assert
+        vm.HasLoadedFile.Should().BeFalse();
+        _dialogServiceMock.Verify(d => d.ShowErrorDialog("Parsing failed custom error", It.IsAny<string>()), Times.Once);
+    }
+
+    [Test]
+    public async Task LoadExcelFileAsync_WhenFileIsLocked_ShouldShowLockedDialog()
+    {
+        // Arrange
+        var mockParser = new Mock<IExcelParser>();
+        mockParser.Setup(p => p.ParseOrderForm(It.IsAny<string>())).Throws(new System.IO.IOException("The process cannot access the file because it is being used by another process."));
+        var mockFactory = new Mock<IExcelParserFactory>();
+        mockFactory.Setup(f => f.Create(It.IsAny<BexioOrderImport.Application.Options.ExcelMappingOptions>())).Returns(mockParser.Object);
+
+        var vm = new MainViewModel(
+            _updateServiceMock.Object,
+            _clientFactoryMock.Object,
+            _dialogServiceMock.Object,
+            _dispatcherServiceMock.Object,
+            _encryptionServiceMock.Object,
+            mockFactory.Object,
+            _tempFilePath
+        );
+
+        // Act
+        await vm.LoadExcelFileAsync("locked.xlsx");
+
+        // Assert
+        vm.HasLoadedFile.Should().BeFalse();
+        _dialogServiceMock.Verify(d => d.ShowErrorDialog(It.Is<string>(s => s.Contains("locked.xlsx")), It.IsAny<string>()), Times.Once);
     }
 }

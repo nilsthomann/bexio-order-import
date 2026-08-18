@@ -2,26 +2,25 @@ using BexioOrderImport.Application.Options;
 using BexioOrderImport.Application.Services;
 using BexioOrderImport.Domain.Models;
 using FluentAssertions;
-using Xunit;
 
 namespace BexioOrderImport.Tests;
 
 public class ExcelMappingEvaluatorTests
 {
-    [Theory]
-    [InlineData("A1", true)]
-    [InlineData("B12", true)]
-    [InlineData("Z999", true)]
-    [InlineData("AA100", true)]
-    [InlineData("a1", true)]
-    [InlineData("z50", true)]
-    [InlineData("", false)]
-    [InlineData("   ", false)]
-    [InlineData(null, false)]
-    [InlineData("123", false)]
-    [InlineData("ABC", false)]
-    [InlineData("A0", false)]
-    [InlineData("A-1", false)]
+    [Test]
+    [Arguments("A1", true)]
+    [Arguments("B12", true)]
+    [Arguments("Z999", true)]
+    [Arguments("AA100", true)]
+    [Arguments("a1", true)]
+    [Arguments("z50", true)]
+    [Arguments("", false)]
+    [Arguments("   ", false)]
+    [Arguments(null, false)]
+    [Arguments("123", false)]
+    [Arguments("ABC", false)]
+    [Arguments("A0", false)]
+    [Arguments("A-1", false)]
     public void IsValidCellAddress_ShouldValidateCorrectly(string? address, bool expectedResult)
     {
         // Act
@@ -31,8 +30,8 @@ public class ExcelMappingEvaluatorTests
         result.Should().Be(expectedResult);
     }
 
-    [Fact]
-    [Trait("Category", "Unit")]
+    [Test]
+    [Property("Category", "Unit")]
     public void CopyOptions_ShouldCopyAllValues()
     {
         // Arrange
@@ -102,8 +101,8 @@ public class ExcelMappingEvaluatorTests
         target.Data.RowDiscountColumn.Should().Be("N");
     }
 
-    [Fact]
-    [Trait("Category", "Unit")]
+    [Test]
+    [Property("Category", "Unit")]
     public void CopyOptions_WhenSourceOrTargetNull_ShouldThrowArgumentNullException()
     {
         // Act
@@ -115,8 +114,8 @@ public class ExcelMappingEvaluatorTests
         actNullTarget.Should().Throw<ArgumentNullException>();
     }
 
-    [Fact]
-    [Trait("Category", "Unit")]
+    [Test]
+    [Property("Category", "Unit")]
     public void CloneOptions_ShouldCreateDeepCopy()
     {
         // Arrange

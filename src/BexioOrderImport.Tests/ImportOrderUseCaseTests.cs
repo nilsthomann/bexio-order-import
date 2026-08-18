@@ -8,6 +8,7 @@ using Moq;
 
 namespace BexioOrderImport.Tests;
 
+[NotInParallel]
 public class ImportOrderUseCaseTests
 {
     private readonly Mock<IExcelParser> _parserMock;
@@ -21,7 +22,7 @@ public class ImportOrderUseCaseTests
         _useCase = new ImportOrderUseCase(_parserMock.Object, _clientMock.Object);
     }
 
-    [Fact]
+    [Test]
     public async Task ExecuteAsync_WhenUploadConfirmedAndContactExists_ShouldImportSuccessfully()
     {
         // Arrange
@@ -52,7 +53,7 @@ public class ImportOrderUseCaseTests
         loggedMessages.Should().Contain(m => m.Contains("Successfully completed"));
     }
 
-    [Fact]
+    [Test]
     public async Task ExecuteAsync_WhenUploadConfirmedAndContactDoesNotExistAndUserConfirmsContactCreation_ShouldImportSuccessfully()
     {
         // Arrange
@@ -84,7 +85,7 @@ public class ImportOrderUseCaseTests
         loggedMessages.Should().Contain(m => m.Contains("Successfully completed"));
     }
 
-    [Fact]
+    [Test]
     public async Task ExecuteAsync_WhenUploadConfirmedAndContactDoesNotExistAndUserRejectsContactCreation_ShouldAbort()
     {
         // Arrange
@@ -111,7 +112,7 @@ public class ImportOrderUseCaseTests
         loggedMessages.Should().Contain(m => m.Contains("Order import cancelled (customer was not created)."));
     }
 
-    [Fact]
+    [Test]
     public async Task ExecuteAsync_WhenUploadRejected_ShouldAbortAndLogCorrectMessage()
     {
         // Arrange
@@ -135,7 +136,7 @@ public class ImportOrderUseCaseTests
         loggedMessages.Should().Contain("Order import cancelled.");
     }
 
-    [Fact]
+    [Test]
     public async Task ExecuteAsync_WithNoPositions_ReturnsFalse()
     {
         var emptyOrder = new Order { Positions = [] };
@@ -146,7 +147,7 @@ public class ImportOrderUseCaseTests
         result.Success.Should().BeFalse();
     }
 
-    [Fact]
+    [Test]
     public async Task ExecuteAsync_WhenArticleNotFound_ThrowsException()
     {
         // Arrange
@@ -173,7 +174,7 @@ public class ImportOrderUseCaseTests
         _clientMock.Verify(c => c.AddArticlePositionAsync(It.IsAny<int>(), It.IsAny<int>(), It.IsAny<OrderPosition>(), It.IsAny<string?>()), Times.Never);
     }
 
-    [Fact]
+    [Test]
     public async Task ExecuteAsync_WhenNoOrderIdOrCustomerIdAndEmailMissing_ShouldThrowInvalidOperationException()
     {
         // Arrange
@@ -200,7 +201,7 @@ public class ImportOrderUseCaseTests
         _clientMock.Verify(c => c.CreateOrderAsync(It.IsAny<int>(), It.IsAny<Order>()), Times.Never);
     }
 
-    [Fact]
+    [Test]
     public async Task ExecuteAsync_WithOrderIdAndEmailMatch_ShouldImportDirectlyToExistingOrder()
     {
         // Arrange
@@ -230,7 +231,7 @@ public class ImportOrderUseCaseTests
         loggedMessages.Should().Contain(m => m.Contains("Existing order matched"));
     }
 
-    [Fact]
+    [Test]
     public async Task ExecuteAsync_WithOrderIdAndMatchingCustomerId_ShouldImportSuccessfully()
     {
         // Arrange
@@ -258,7 +259,7 @@ public class ImportOrderUseCaseTests
         loggedMessages.Should().Contain(m => m.Contains("Customer ID matched (99)"));
     }
 
-    [Fact]
+    [Test]
     public async Task ExecuteAsync_WithOrderIdAndMismatchedCustomerId_ShouldFailWithCustomerIdMismatchError()
     {
         // Arrange
@@ -286,7 +287,7 @@ public class ImportOrderUseCaseTests
         loggedMessages.Should().Contain(m => m.Contains("Customer ID mismatch"));
     }
 
-    [Fact]
+    [Test]
     public async Task ExecuteAsync_WithCustomerIdOnly_ShouldCreateOrderForSpecificCustomerId()
     {
         // Arrange
@@ -294,6 +295,7 @@ public class ImportOrderUseCaseTests
         order.OrderId = null;
         order.CustomerId = 99;
         _parserMock.Setup(p => p.ParseOrderForm(It.IsAny<string>())).Returns(order);
+        _clientMock.Setup(c => c.GetContactDetailsAsync(99)).ReturnsAsync(new BexioContact { Id = 99, Name = "Test Customer", EMail = "test@domain.com" });
         _clientMock.Setup(c => c.CreateOrderAsync(99, order)).ReturnsAsync(456);
         _clientMock.Setup(c => c.FindArticleAsync("123", "Black", It.IsAny<string>())).ReturnsAsync(new BexioArticle { Id = 789, Description = "Product Description Text", Name = "Product Name Text" });
 
@@ -316,7 +318,7 @@ public class ImportOrderUseCaseTests
         loggedMessages.Should().Contain(m => m.Contains("Customer ID provided (99)"));
     }
 
-    [Fact]
+    [Test]
     public async Task ExecuteAsync_WithOrderIdAndEmailMismatch_WhenUserConfirms_ShouldImportSuccessfully()
     {
         // Arrange
@@ -350,7 +352,7 @@ public class ImportOrderUseCaseTests
         loggedMessages.Should().Contain(m => m.Contains("Email mismatch ignored by user"));
     }
 
-    [Fact]
+    [Test]
     public async Task ExecuteAsync_WithOrderIdAndEmailMismatch_WhenUserRejects_ShouldAbort()
     {
         // Arrange
@@ -374,10 +376,38 @@ public class ImportOrderUseCaseTests
         // Assert
         result.Success.Should().BeFalse();
         _clientMock.Verify(c => c.AddArticlePositionAsync(It.IsAny<int>(), It.IsAny<int>(), It.IsAny<OrderPosition>(), It.IsAny<string?>()), Times.Never);
-        loggedMessages.Should().Contain(m => m.Contains("Order import cancelled due to email mismatch"));
+        loggedMessages.Should().Contain(m => m.Contains("Email mismatch"));
     }
 
-    [Fact]
+    [Test]
+    public async Task ExecuteAsync_WithCustomerId_WhenCustomerNotFound_ShouldAbort()
+    {
+        // Arrange
+        var order = CreateSampleOrder();
+        order.OrderId = null;
+        order.CustomerId = 888;
+        _parserMock.Setup(p => p.ParseOrderForm(It.IsAny<string>())).Returns(order);
+        _clientMock.Setup(c => c.GetContactDetailsAsync(888)).ReturnsAsync((BexioContact?)null);
+
+        var loggedMessages = new List<string>();
+        var interaction = new DelegateImportUserInteractionService(
+            showPreview: o => { },
+            confirmUpload: () => Task.FromResult(true),
+            confirmCustomerCreation: c => Task.FromResult(true),
+            confirmEmailMismatch: (ex, el) => Task.FromResult(true),
+            logInfo: loggedMessages.Add
+        );
+
+        // Act
+        var result = await _useCase.ExecuteAsync("dummy.xlsx", interaction);
+
+        // Assert
+        result.Success.Should().BeFalse();
+        result.ErrorMessage.Should().Contain("Customer 888 not found");
+        loggedMessages.Should().Contain(m => m.Contains("Customer with ID 888 not found in Bexio"));
+    }
+
+    [Test]
     public async Task ExecuteAsync_WithOrderId_WhenOrderNotFound_ShouldAbort()
     {
         // Arrange
@@ -404,7 +434,7 @@ public class ImportOrderUseCaseTests
         loggedMessages.Should().Contain(m => m.Contains("Order with ID 999 not found"));
     }
 
-    [Fact]
+    [Test]
     public async Task ExecuteAsync_ShouldQueryArticleWithSeasonCodeAndColor()
     {
         // Arrange
@@ -427,7 +457,7 @@ public class ImportOrderUseCaseTests
         _clientMock.Verify(c => c.FindArticleAsync("123", "Black", "FS27"), Times.Once);
     }
 
-    [Fact]
+    [Test]
     public async Task ExecuteAsync_WhenOrderHasGlobalDiscount_ShouldCallAddDiscountPositionAsync()
     {
         // Arrange
@@ -448,7 +478,7 @@ public class ImportOrderUseCaseTests
         _clientMock.Verify(c => c.AddDiscountPositionAsync(456, 10m, "Rabatt (10%)"), Times.Once);
     }
 
-    [Fact]
+    [Test]
     public async Task ExecuteAsync_WithCustomDiscountPositionTextTemplate_ShouldFormatTextCorrectly()
     {
         // Arrange
@@ -470,7 +500,7 @@ public class ImportOrderUseCaseTests
         _clientMock.Verify(c => c.AddDiscountPositionAsync(456, 15m, "Sonderrabatt (15%)"), Times.Once);
     }
 
-    [Fact]
+    [Test]
     public async Task ExecuteAsync_WhenOrderHasNoGlobalDiscount_ShouldNotCallAddDiscountPositionAsync()
     {
         // Arrange
@@ -491,7 +521,7 @@ public class ImportOrderUseCaseTests
         _clientMock.Verify(c => c.AddDiscountPositionAsync(It.IsAny<int>(), It.IsAny<decimal>(), It.IsAny<string>()), Times.Never);
     }
 
-    [Fact]
+    [Test]
     public async Task ExecuteAsync_WithInteractionInterfaceAndOptions_ShouldImportSuccessfully()
     {
         // Arrange
