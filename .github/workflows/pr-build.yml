@@ -23,8 +23,8 @@ jobs:
         with:
           dotnet-version: '10.0.x'
 
-      - name: Restore dependencies (incl. local tools)
-        run: dotnet tool restore && dotnet restore BexioOrderImport.slnx
+      - name: Restore dependencies
+        run: dotnet restore BexioOrderImport.slnx
 
       - name: Build solution
         run: dotnet build BexioOrderImport.slnx -c Release --no-restore
