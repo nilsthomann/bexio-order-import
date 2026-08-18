@@ -2,7 +2,6 @@ using System;
 using System.Globalization;
 using BexioOrderImport.Wpf.Converters;
 using FluentAssertions;
-using Xunit;
 
 namespace BexioOrderImport.Tests;
 
@@ -10,11 +9,11 @@ public class HtmlToNewLineConverterTests
 {
     private readonly HtmlToNewLineConverter _converter = new();
 
-    [Theory]
-    [InlineData("1x Size S<br />2x Size L", "1x Size S\n2x Size L")]
-    [InlineData("1x Size S<br/>2x Size L", "1x Size S\n2x Size L")]
-    [InlineData("1x Size S<br>2x Size L", "1x Size S\n2x Size L")]
-    [InlineData("1x Size S<BR />2x Size L", "1x Size S\n2x Size L")]
+    [Test]
+    [Arguments("1x Size S<br />2x Size L", "1x Size S\n2x Size L")]
+    [Arguments("1x Size S<br/>2x Size L", "1x Size S\n2x Size L")]
+    [Arguments("1x Size S<br>2x Size L", "1x Size S\n2x Size L")]
+    [Arguments("1x Size S<BR />2x Size L", "1x Size S\n2x Size L")]
     public void Convert_WithHtmlBreakTags_ShouldReplaceWithNewLine(string input, string expected)
     {
         // Act
@@ -24,7 +23,7 @@ public class HtmlToNewLineConverterTests
         result.Should().Be(expected.Replace("\n", Environment.NewLine));
     }
 
-    [Fact]
+    [Test]
     public void Convert_WithPlainText_ShouldReturnUnchanged()
     {
         // Arrange
@@ -37,7 +36,7 @@ public class HtmlToNewLineConverterTests
         result.Should().Be("120");
     }
 
-    [Fact]
+    [Test]
     public void Convert_WithNullOrEmpty_ShouldReturnEmptyString()
     {
         // Act & Assert
@@ -45,7 +44,7 @@ public class HtmlToNewLineConverterTests
         _converter.Convert(string.Empty, typeof(string), null!, CultureInfo.InvariantCulture).Should().Be(string.Empty);
     }
 
-    [Fact]
+    [Test]
     public void ConvertBack_ShouldThrowNotImplementedException()
     {
         // Act

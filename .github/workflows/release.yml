@@ -29,7 +29,7 @@ jobs:
  
       - name: Run unit tests & generate coverage
         working-directory: build
-        run: powershell -File run-coverage.ps1 -Configuration Release -CI
+        run: powershell -ExecutionPolicy Bypass -File run-coverage.ps1 -Configuration Release -CI
 
       - name: Publish WPF App (win-x64 Single File)
         run: |

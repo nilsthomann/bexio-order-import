@@ -4,7 +4,6 @@ using BexioOrderImport.Wpf.Models;
 using BexioOrderImport.Wpf.Services;
 using FluentAssertions;
 using Moq;
-using Xunit;
 
 namespace BexioOrderImport.Tests;
 
@@ -19,7 +18,7 @@ public class ProfileManagerServiceTests
         _service = new ProfileManagerService(_dialogMock.Object);
     }
 
-    [Fact]
+    [Test]
     public void CreateProfile_WhenNameIsValid_AddsAndReturnsNewProfile()
     {
         var profiles = new ObservableCollection<MappingProfile>
@@ -36,7 +35,7 @@ public class ProfileManagerServiceTests
         profiles.Should().HaveCount(2);
     }
 
-    [Fact]
+    [Test]
     public void CreateProfile_WhenNameAlreadyExists_ShowsErrorAndReturnsNull()
     {
         var profiles = new ObservableCollection<MappingProfile>
@@ -53,7 +52,7 @@ public class ProfileManagerServiceTests
         _dialogMock.Verify(d => d.ShowErrorDialog(It.IsAny<string>(), It.IsAny<string>()), Times.Once);
     }
 
-    [Fact]
+    [Test]
     public void DeleteProfile_WhenConfirmed_RemovesProfile()
     {
         var defaultP = new MappingProfile { Name = "Default", Mapping = new ExcelMappingOptions() };

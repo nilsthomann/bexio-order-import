@@ -40,24 +40,28 @@ Please help maintain a professional, respectful, and welcoming environment for e
 - Keep implementation simple and direct. Prefer standard library features over custom utilities, and keep external dependencies to a minimum.
 
 ### Testing Changes
-- Extend or modify tests inside the `src/BexioOrderImport.Tests/` directory if you modify parsing or business workflows.
+- Tests are built using **TUnit** and run on **Microsoft Testing Platform**. Extend or modify tests inside the `src/BexioOrderImport.Tests/` directory when modifying parsing or business workflows.
 - Run all tests before submitting your changes:
   ```bash
   dotnet test BexioOrderImport.slnx
   ```
+  *or directly via the TUnit executable:*
+  ```bash
+  dotnet run --project src/BexioOrderImport.Tests/BexioOrderImport.Tests.csproj
+  ```
 - Run a specific test class:
   ```bash
-  dotnet test BexioOrderImport.slnx --filter "FullyQualifiedName~ImportOrderUseCaseTests"
+  dotnet run --project src/BexioOrderImport.Tests/BexioOrderImport.Tests.csproj -- --filter "Name~ImportOrderUseCaseTests"
   ```
 - Run a single test:
   ```bash
-  dotnet test BexioOrderImport.slnx --filter "FullyQualifiedName=BexioOrderImport.Tests.ImportOrderUseCaseTests.ExecuteAsync_WithNoPositions_ReturnsFalse"
+  dotnet run --project src/BexioOrderImport.Tests/BexioOrderImport.Tests.csproj -- --filter "Name=ExecuteAsync_WithNoPositions_ReturnsFalse"
   ```
 - To collect code coverage and generate/view the HTML report locally:
   ```powershell
   ./build/run-coverage.ps1
   ```
-- Pull requests with failing tests or decreased test coverage cannot be approved.
+- **PR Quality Gate**: Pull requests are automatically analyzed by `bibipkins/dotnet-test-reporter` in CI. PRs with failing tests or code coverage below **90%** will automatically fail and cannot be merged.
 
 ### Building the Installer
 

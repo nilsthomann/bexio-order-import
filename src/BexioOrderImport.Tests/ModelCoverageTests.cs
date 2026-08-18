@@ -3,13 +3,13 @@ using BexioOrderImport.Domain.Models.Bexio;
 using BexioOrderImport.Tests.Utils;
 using BexioOrderImport.Wpf.Helpers;
 using FluentAssertions;
-using Xunit;
 
 namespace BexioOrderImport.Tests;
 
+[NotInParallel]
 public class ModelCoverageTests : StaTestBase
 {
-    [Fact]
+    [Test]
     public void BindingProxy_DataPropertyAndClone_ShouldWork()
     {
         RunInSta(() =>
@@ -23,7 +23,7 @@ public class ModelCoverageTests : StaTestBase
         });
     }
 
-    [Fact]
+    [Test]
     public void BexioOrder_Properties_ShouldSetAndGet()
     {
         var order = new BexioOrder
@@ -48,7 +48,7 @@ public class ModelCoverageTests : StaTestBase
         order.ContactId.Should().Be(456);
     }
 
-    [Fact]
+    [Test]
     public void BexioArticle_Properties_ShouldSetAndGet()
     {
         var article = new BexioArticle
@@ -65,7 +65,7 @@ public class ModelCoverageTests : StaTestBase
         article.Description.Should().Be("Initial Desc");
     }
 
-    [Fact]
+    [Test]
     public void ImportResult_Properties_ShouldWork()
     {
         var successResult = new ImportResult(Success: true, OrderId: 99, UploadedPositionsCount: 15);

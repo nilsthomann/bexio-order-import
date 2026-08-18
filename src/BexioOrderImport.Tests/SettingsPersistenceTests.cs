@@ -2,7 +2,6 @@ using System;
 using System.IO;
 using System.Text.Json;
 using System.Threading.Tasks;
-using Xunit;
 using FluentAssertions;
 using BexioOrderImport.Application.Interfaces;
 using BexioOrderImport.Domain.Models;
@@ -14,10 +13,9 @@ using BexioOrderImport.Application.Options;
 using Moq;
 using BexioOrderImport.Tests.Utils;
 
-[assembly: Xunit.CollectionBehavior(DisableTestParallelization = true)]
-
 namespace BexioOrderImport.Tests;
 
+[NotInParallel]
 public class SettingsPersistenceTests : StaTestBase, IDisposable
 {
     private readonly string _tempFilePath;
@@ -112,7 +110,7 @@ public class SettingsPersistenceTests : StaTestBase, IDisposable
         return vm;
     }
 
-    [Fact]
+    [Test]
     public void EnsureAppSettingsFile_WhenFileDoesNotExist_ShouldCreateDefaultFile()
     {
         RunInSta(() =>
@@ -128,7 +126,7 @@ public class SettingsPersistenceTests : StaTestBase, IDisposable
         });
     }
 
-    [Fact]
+    [Test]
     public void LoadSettings_WithValidJson_ShouldLoadValuesCorrectly()
     {
         RunInSta(() =>
@@ -172,7 +170,7 @@ public class SettingsPersistenceTests : StaTestBase, IDisposable
         });
     }
 
-    [Fact]
+    [Test]
     public void SaveSettings_ShouldWriteJsonCorrectly()
     {
         RunInSta(() =>
@@ -198,7 +196,7 @@ public class SettingsPersistenceTests : StaTestBase, IDisposable
         });
     }
 
-    [Fact]
+    [Test]
     public void DeleteProfile_ShouldRemoveProfileFromList()
     {
         RunInSta(() =>
@@ -218,7 +216,7 @@ public class SettingsPersistenceTests : StaTestBase, IDisposable
         });
     }
 
-    [Fact]
+    [Test]
     public void SetActiveProfile_ShouldChangeActiveProfileAndPersistWithoutIsModified()
     {
         RunInSta(() =>
@@ -269,7 +267,7 @@ public class SettingsPersistenceTests : StaTestBase, IDisposable
         throw new FileNotFoundException($"Excel file {filename} not found in any parent directories.");
     }
 
-    [Fact]
+    [Test]
     public async Task LoadExcelFileAsync_WithValidFile_ShouldPopulateViewModelCorrectly()
     {
         RunInSta(async () =>
@@ -291,7 +289,7 @@ public class SettingsPersistenceTests : StaTestBase, IDisposable
         });
     }
 
-    [Fact]
+    [Test]
     public async Task ImportToBexioAsync_ShouldExecuteImportSuccessfully()
     {
         RunInSta(async () =>
@@ -344,7 +342,7 @@ public class SettingsPersistenceTests : StaTestBase, IDisposable
         });
     }
 
-    [Fact]
+    [Test]
     public void CreateProfile_WithValidName_ShouldAddProfile()
     {
         RunInSta(() =>
@@ -364,7 +362,7 @@ public class SettingsPersistenceTests : StaTestBase, IDisposable
         });
     }
 
-    [Fact]
+    [Test]
     public void CreateProfile_WithDuplicateName_ShouldShowErrorAndNotAdd()
     {
         RunInSta(() =>
@@ -378,7 +376,7 @@ public class SettingsPersistenceTests : StaTestBase, IDisposable
         });
     }
 
-    [Fact]
+    [Test]
     public void CloneProfile_WithValidName_ShouldCloneProfile()
     {
         RunInSta(() =>
@@ -397,7 +395,7 @@ public class SettingsPersistenceTests : StaTestBase, IDisposable
         });
     }
 
-    [Fact]
+    [Test]
     public void EditProfile_ShouldModifyProfile()
     {
         RunInSta(() =>
@@ -417,7 +415,7 @@ public class SettingsPersistenceTests : StaTestBase, IDisposable
         });
     }
 
-    [Fact]
+    [Test]
     public void ExportAndImportProfiles_ShouldExportToAndImportFromDisk()
     {
         RunInSta(() =>
@@ -460,7 +458,7 @@ public class SettingsPersistenceTests : StaTestBase, IDisposable
         });
     }
 
-    [Fact]
+    [Test]
     public void MainViewModel_Properties_ShouldRaisePropertyChanged()
     {
         RunInSta(() =>
@@ -565,7 +563,7 @@ public class SettingsPersistenceTests : StaTestBase, IDisposable
         });
     }
 
-    [Fact]
+    [Test]
     public async Task CheckBexioConnectionAsync_WhenSuccess_ShouldUpdateStatus()
     {
         RunInSta(async () =>
@@ -585,7 +583,7 @@ public class SettingsPersistenceTests : StaTestBase, IDisposable
         });
     }
 
-    [Fact]
+    [Test]
     public async Task CheckBexioConnectionAsync_WhenFailure_ShouldUpdateStatus()
     {
         RunInSta(async () =>
@@ -605,7 +603,7 @@ public class SettingsPersistenceTests : StaTestBase, IDisposable
         });
     }
 
-    [Fact]
+    [Test]
     public void ActiveProfile_ChangeWhenFileLoadedAndExists_ShouldTriggerFileReload()
     {
         RunInSta(() =>
@@ -644,7 +642,7 @@ public class SettingsPersistenceTests : StaTestBase, IDisposable
 
 
 
-    [Fact]
+    [Test]
     public void LoadExcelFileAsync_WithNullFilePath_ShouldCallOpenFileDialogProvider()
     {
         RunInSta(async () =>
@@ -664,7 +662,7 @@ public class SettingsPersistenceTests : StaTestBase, IDisposable
         });
     }
 
-    [Fact]
+    [Test]
     public void CheckBexioConnectionAsync_WhenExceptionThrown_ShouldUpdateStatusToDisconnected()
     {
         RunInSta(async () =>
@@ -682,7 +680,7 @@ public class SettingsPersistenceTests : StaTestBase, IDisposable
         });
     }
 
-    [Fact]
+    [Test]
     public void ImportToBexioAsync_WhenConfirmUploadReturnsFalse_ShouldCancelImport()
     {
         RunInSta(async () =>
@@ -708,7 +706,7 @@ public class SettingsPersistenceTests : StaTestBase, IDisposable
         });
     }
 
-    [Fact]
+    [Test]
     public void ImportToBexioAsync_WhenExceptionThrown_ShouldCatchAndLog()
     {
         RunInSta(async () =>
@@ -736,7 +734,7 @@ public class SettingsPersistenceTests : StaTestBase, IDisposable
         });
     }
 
-    [Fact]
+    [Test]
     public void SaveSettings_WithLanguageChangedAndReloadConfirmed_ShouldAttemptMainWindowReload()
     {
         RunInSta(() =>
@@ -752,7 +750,7 @@ public class SettingsPersistenceTests : StaTestBase, IDisposable
         });
     }
 
-    [Fact]
+    [Test]
     public void SaveSettings_WithLanguageChangedAndReloadCancelled_ShouldOnlyChangeInitialLanguage()
     {
         RunInSta(() =>
@@ -768,7 +766,7 @@ public class SettingsPersistenceTests : StaTestBase, IDisposable
         });
     }
 
-    [Fact]
+    [Test]
     public void LoadSettings_WithLegacySingleProfile_ShouldMigrateCorrectly()
     {
         RunInSta(() =>
@@ -814,7 +812,7 @@ public class SettingsPersistenceTests : StaTestBase, IDisposable
         });
     }
 
-    [Fact]
+    [Test]
     public void LoadSettings_WhenInvalidJson_ShouldShowError()
     {
         RunInSta(() =>
@@ -843,7 +841,7 @@ public class SettingsPersistenceTests : StaTestBase, IDisposable
         });
     }
 
-    [Fact]
+    [Test]
     public void SaveSettings_WhenWriteFails_ShouldShowError()
     {
         RunInSta(() =>
@@ -876,7 +874,7 @@ public class SettingsPersistenceTests : StaTestBase, IDisposable
         });
     }
 
-    [Fact]
+    [Test]
     public void EditProfile_WithActiveProfileAndFileLoaded_ShouldTriggerReload()
     {
         RunInSta(() =>
@@ -903,7 +901,7 @@ public class SettingsPersistenceTests : StaTestBase, IDisposable
         });
     }
 
-    [Fact]
+    [Test]
     public void DeleteProfile_WithActiveOrSelectedProfile_ShouldFallbackToDefault()
     {
         RunInSta(() =>
@@ -926,7 +924,7 @@ public class SettingsPersistenceTests : StaTestBase, IDisposable
         });
     }
 
-    [Fact]
+    [Test]
     public void ExportProfiles_WhenSaveFileDialogCancelled_ShouldDoNothing()
     {
         RunInSta(() =>
@@ -942,7 +940,7 @@ public class SettingsPersistenceTests : StaTestBase, IDisposable
         });
     }
 
-    [Fact]
+    [Test]
     public void ExportProfiles_WhenException_ShouldShowError()
     {
         RunInSta(() =>
@@ -958,7 +956,7 @@ public class SettingsPersistenceTests : StaTestBase, IDisposable
         });
     }
 
-    [Fact]
+    [Test]
     public void ImportProfiles_WhenOpenFileDialogCancelled_ShouldDoNothing()
     {
         RunInSta(() =>
@@ -974,7 +972,7 @@ public class SettingsPersistenceTests : StaTestBase, IDisposable
         });
     }
 
-    [Fact]
+    [Test]
     public void ImportProfiles_WhenDeserializationReturnsNull_ShouldShowError()
     {
         RunInSta(() =>
@@ -1000,7 +998,7 @@ public class SettingsPersistenceTests : StaTestBase, IDisposable
         });
     }
 
-    [Fact]
+    [Test]
     public void ImportProfiles_WithActiveProfileAndFileLoaded_ShouldTriggerReload()
     {
         RunInSta(() =>
@@ -1034,7 +1032,7 @@ public class SettingsPersistenceTests : StaTestBase, IDisposable
         });
     }
 
-    [Fact]
+    [Test]
     public void CheckForUpdatesAsync_WhenUpdateAvailable_ShouldSetProperties()
     {
         RunInSta(async () =>
@@ -1059,7 +1057,7 @@ public class SettingsPersistenceTests : StaTestBase, IDisposable
         });
     }
 
-    [Fact]
+    [Test]
     public void InstallUpdateAsync_WhenSuccess_ShouldReportProgress()
     {
         RunInSta(async () =>
@@ -1100,7 +1098,7 @@ public class SettingsPersistenceTests : StaTestBase, IDisposable
         });
     }
 
-    [Fact]
+    [Test]
     public void InstallUpdateAsync_WhenException_ShouldReportError()
     {
         RunInSta(async () =>
@@ -1131,7 +1129,7 @@ public class SettingsPersistenceTests : StaTestBase, IDisposable
         });
     }
 
-    [Fact]
+    [Test]
     public void EnsureAppSettingsFile_WhenDirectoryDoesNotExist_ShouldCreateIt()
     {
         RunInSta(() =>
@@ -1155,7 +1153,7 @@ public class SettingsPersistenceTests : StaTestBase, IDisposable
         });
     }
 
-    [Fact]
+    [Test]
     public void EnsureAppSettingsFile_WhenTemplateExists_ShouldCopyTemplate()
     {
         RunInSta(() =>

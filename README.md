@@ -39,9 +39,10 @@ The project features a modern, clean **WPF Desktop Application** built following
   - Triggers a low-privilege silent background installer (`/SILENT`), closes the active process, updates, and restarts.
   - **Settings Preservation**: User profiles and API keys are stored in `%LocalAppData%\BexioOrderImport\appsettings.json`, remaining fully intact across updates.
 - **Enterprise CI/CD & Automated Testing**:
-  - Automated PR builds and test runs on GitHub Actions.
-  - Code coverage reporting printed directly in the GitHub Run Summary.
-  - Dedicated local script (`./build/run-coverage.ps1`) to run tests and automatically generate and open an interactive HTML coverage report.
+  - Unit and VM tests powered by **[TUnit](https://github.com/thomhurst/TUnit)** and **Microsoft Testing Platform**.
+  - Automated PR build checks with PR commenting and status enforcement via `bibipkins/dotnet-test-reporter`.
+  - **Strict Quality Gate**: Pull requests automatically fail if code coverage falls below **90%**.
+  - Dedicated local script (`./build/run-coverage.ps1`) to run tests with native MTP coverage and generate/open an interactive HTML report.
 
 ---
 
@@ -67,7 +68,7 @@ src/
 ├── BexioOrderImport.Application/     # Core business logic & interfaces (UseCases, Interfaces)
 ├── BexioOrderImport.Infrastructure/  # External integrations (Bexio REST Client, ClosedXML Parser)
 ├── BexioOrderImport.Wpf/             # WPF Desktop App (MVVM views, custom dialogs, styles)
-└── BexioOrderImport.Tests/           # Unit and VM tests (xUnit & Coverlet)
+└── BexioOrderImport.Tests/           # Unit and VM tests (TUnit & Microsoft Testing Platform)
 ```
 
 ---
@@ -106,6 +107,10 @@ src/
 
    ```bash
    dotnet test BexioOrderImport.slnx
+   ```
+   *or execute the TUnit test executable directly:*
+   ```bash
+   dotnet run --project src/BexioOrderImport.Tests/BexioOrderImport.Tests.csproj
    ```
 
    To collect code coverage and view the HTML report locally:

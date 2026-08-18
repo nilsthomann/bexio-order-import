@@ -64,7 +64,7 @@ public class ExcelParserTests
         throw new FileNotFoundException($"Excel file {filename} not found in any parent directories.");
     }
 
-    [Fact]
+    [Test]
     public void ParseOrderForm_WithValidFile_ShouldExtractOrderCorrectly()
     {
         // Arrange
@@ -123,7 +123,7 @@ public class ExcelParserTests
         itemPos.TotalPrice.Should().Be(18.2m);
     }
 
-    [Fact]
+    [Test]
     public void ParseOrderForm_WithNonExistentFile_ShouldThrowFileNotFoundException()
     {
         // Arrange
@@ -137,7 +137,7 @@ public class ExcelParserTests
            .WithMessage("*Excel file not found*");
     }
 
-    [Fact]
+    [Test]
     public void ParseOrderForm_WithFileStreamOpenWithReadWriteShare_ShouldSucceed()
     {
         // Arrange
@@ -173,7 +173,7 @@ public class ExcelParserTests
         }
     }
 
-    [Fact]
+    [Test]
     public void InMemoryExcelParser_ShouldReturnProvidedOrder()
     {
         // Arrange
@@ -188,7 +188,7 @@ public class ExcelParserTests
         order.Should().BeSameAs(expectedOrder);
     }
 
-    [Fact]
+    [Test]
     public void ParseOrderForm_WhenCategoryNotInMatrix_ShouldThrowInvalidOperationException()
     {
         using var workbook = new ClosedXML.Excel.XLWorkbook();
@@ -223,7 +223,7 @@ public class ExcelParserTests
         }
     }
 
-    [Fact]
+    [Test]
     public void ParseOrderForm_WhenSizeHeaderMissing_ShouldThrowInvalidOperationException()
     {
         using var workbook = new ClosedXML.Excel.XLWorkbook();
@@ -257,7 +257,7 @@ public class ExcelParserTests
         }
     }
 
-    [Fact]
+    [Test]
     public void ExtractZipAndCity_ShouldHandleEdgeCases()
     {
         ClosedXmlExcelParser.ExtractZipAndCity("").City.Should().Be("");
@@ -299,7 +299,7 @@ public class ExcelParserTests
         return tempPath;
     }
 
-    [Fact]
+    [Test]
     public void ParseOrderForm_WithDecimalDiscount_ShouldScaleToPercentage()
     {
         // Arrange
@@ -319,7 +319,7 @@ public class ExcelParserTests
         }
     }
 
-    [Fact]
+    [Test]
     public void ParseOrderForm_WithInvalidOrderId_ShouldReturnNullOrderId()
     {
         // Arrange
@@ -342,7 +342,7 @@ public class ExcelParserTests
         }
     }
 
-    [Fact]
+    [Test]
     public void ParseOrderForm_WithValidOrderId_WhenEnableOrderIdIsTrue_ShouldParseOrderIdCorrectly()
     {
         // Arrange
@@ -365,7 +365,7 @@ public class ExcelParserTests
         }
     }
 
-    [Fact]
+    [Test]
     public void ParseOrderForm_WithValidOrderId_WhenEnableOrderIdIsFalse_ShouldReturnNullOrderId()
     {
         // Arrange
@@ -388,7 +388,7 @@ public class ExcelParserTests
         }
     }
 
-    [Fact]
+    [Test]
     public void ParseOrderForm_WithValidCustomerId_WhenEnableCustomerIdIsTrue_ShouldParseCustomerIdCorrectly()
     {
         // Arrange
@@ -434,7 +434,7 @@ public class ExcelParserTests
         }
     }
 
-    [Fact]
+    [Test]
     public void ParseOrderForm_WithRowDiscountEnabled_ShouldSetPositionDiscountPercent()
     {
         // Arrange
@@ -484,7 +484,7 @@ public class ExcelParserTests
         }
     }
 
-    [Fact]
+    [Test]
     public void ParseOrderForm_WithRowDiscountDisabled_ShouldKeepPositionDiscountNull()
     {
         // Arrange
@@ -534,8 +534,8 @@ public class ExcelParserTests
         }
     }
 
-    [Fact]
-    [Trait("Category", "Unit")]
+    [Test]
+    [Property("Category", "Unit")]
     public void ParseOrderForm_WithRowDiscountEnabled_ShouldCalculateNetUnitPriceAndTotalCorrectly()
     {
         // Arrange
@@ -614,7 +614,7 @@ public class ExcelParserTests
         }
     }
 
-    [Fact]
+    [Test]
     public void ParseOrderForm_WithGroupedSizePositionMode_ShouldCreateSinglePositionPerArticleAndFormatSize()
     {
         // Arrange
@@ -682,7 +682,7 @@ public class ExcelParserTests
         }
     }
 
-    [Fact]
+    [Test]
     public void ParseOrderForm_WithCustomSizeRowTemplate_ShouldFormatCustomSizesRows()
     {
         // Arrange

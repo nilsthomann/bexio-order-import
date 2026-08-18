@@ -2,13 +2,12 @@ using BexioOrderImport.Application.Options;
 using BexioOrderImport.Infrastructure.Excel;
 using FluentAssertions;
 using Microsoft.Extensions.Options;
-using Xunit;
 
 namespace BexioOrderImport.Tests;
 
 public class ExcelParserEdgeCaseTests
 {
-    [Fact]
+    [Test]
     public void ParseOrderForm_WithNonExistentFile_ThrowsFileNotFoundException()
     {
         var parser = new ClosedXmlExcelParser(Options.Create(new ExcelMappingOptions()));
@@ -18,7 +17,7 @@ public class ExcelParserEdgeCaseTests
         act.Should().Throw<FileNotFoundException>();
     }
 
-    [Fact]
+    [Test]
     public void ParseOrderForm_WithInvalidWorksheetIndex_ThrowsInvalidOperationException()
     {
         var options = new ExcelMappingOptions
@@ -47,7 +46,7 @@ public class ExcelParserEdgeCaseTests
         }
     }
 
-    [Fact]
+    [Test]
     public void ParseOrderForm_WithMatrixHavingEmptyAndNonNumericCells_IgnoresInvalidQty()
     {
         var options = new ExcelMappingOptions();

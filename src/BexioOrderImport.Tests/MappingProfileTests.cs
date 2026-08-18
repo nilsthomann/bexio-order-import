@@ -1,13 +1,12 @@
 using BexioOrderImport.Application.Options;
 using BexioOrderImport.Wpf.Models;
 using FluentAssertions;
-using Xunit;
 
 namespace BexioOrderImport.Tests;
 
 public class MappingProfileTests
 {
-    [Fact]
+    [Test]
     public void NameProperty_WhenChanged_ShouldRaisePropertyChangedEvent()
     {
         // Arrange
@@ -26,7 +25,7 @@ public class MappingProfileTests
         propertyChangedName.Should().Be(nameof(MappingProfile.Name));
     }
 
-    [Fact]
+    [Test]
     public void MappingProperty_WhenChanged_ShouldRaisePropertyChangedEvent()
     {
         // Arrange
