@@ -12,6 +12,7 @@ $rootDir = Resolve-Path (Join-Path $PSScriptRoot "..")
 $testProjPath = Join-Path $rootDir "src\BexioOrderImport.Tests\BexioOrderImport.Tests.csproj"
 $testResultsDir = Join-Path $rootDir "TestResults"
 $coverageFile = Join-Path $testResultsDir "coverage.cobertura.xml"
+$coverageConfigFile = Join-Path $rootDir "coverage.config"
 
 Write-Host "1. Cleaning previous test results..." -ForegroundColor Cyan
 if (Test-Path $testResultsDir) {
@@ -20,7 +21,7 @@ if (Test-Path $testResultsDir) {
 New-Item -ItemType Directory -Path $testResultsDir -Force | Out-Null
 
 Write-Host "2. Running TUnit unit tests and collecting coverage..." -ForegroundColor Cyan
-dotnet run --project $testProjPath -c $Configuration -- --results-directory $testResultsDir --coverage --coverage-output-format cobertura --coverage-output $coverageFile --report-trx --report-trx-filename test-results.trx
+dotnet run --project $testProjPath -c $Configuration -- --results-directory $testResultsDir --coverage --coverage-settings $coverageConfigFile --coverage-output-format cobertura --coverage-output $coverageFile --report-trx --report-trx-filename test-results.trx
 
 if (-not (Test-Path $coverageFile)) {
     Write-Error "No coverage.cobertura.xml found at $coverageFile!"
