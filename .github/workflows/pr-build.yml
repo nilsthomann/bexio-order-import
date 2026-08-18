@@ -33,11 +33,6 @@ jobs:
         working-directory: build
         run: powershell -ExecutionPolicy Bypass -File run-coverage.ps1 -Configuration Release -CI
 
-      - name: Publish Coverage to GitHub Run Summary
-        run: |
-          Get-Content -Path TestResults/CoverageReport/Summary.md | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Append -Encoding utf8
-        shell: powershell
-
       - name: Report Test Results & Coverage to PR
         uses: bibipkins/dotnet-test-reporter@v1.6.4
         if: always()

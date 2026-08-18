@@ -380,6 +380,34 @@ public class ImportOrderUseCaseTests
     }
 
     [Test]
+    public async Task ExecuteAsync_WithCustomerId_WhenCustomerNotFound_ShouldAbort()
+    {
+        // Arrange
+        var order = CreateSampleOrder();
+        order.OrderId = null;
+        order.CustomerId = 888;
+        _parserMock.Setup(p => p.ParseOrderForm(It.IsAny<string>())).Returns(order);
+        _clientMock.Setup(c => c.GetContactDetailsAsync(888)).ReturnsAsync((BexioContact?)null);
+
+        var loggedMessages = new List<string>();
+        var interaction = new DelegateImportUserInteractionService(
+            showPreview: o => { },
+            confirmUpload: () => Task.FromResult(true),
+            confirmCustomerCreation: c => Task.FromResult(true),
+            confirmEmailMismatch: (ex, el) => Task.FromResult(true),
+            logInfo: loggedMessages.Add
+        );
+
+        // Act
+        var result = await _useCase.ExecuteAsync("dummy.xlsx", interaction);
+
+        // Assert
+        result.Success.Should().BeFalse();
+        result.ErrorMessage.Should().Contain("Customer 888 not found");
+        loggedMessages.Should().Contain(m => m.Contains("Customer with ID 888 not found in Bexio"));
+    }
+
+    [Test]
     public async Task ExecuteAsync_WithOrderId_WhenOrderNotFound_ShouldAbort()
     {
         // Arrange

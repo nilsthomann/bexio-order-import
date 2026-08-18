@@ -129,7 +129,7 @@ public class BexioApiClient : IBexioClient
         var order = await response.Content.ReadFromJsonAsync<BexioOrder>();
         if (order == null) return null;
 
-        return await GetOrderContactDetailsAsync(order.ContactId);
+        return await GetContactDetailsAsync(order.ContactId);
     }
 
     public async Task<BexioContact?> GetContactDetailsAsync(int contactId)

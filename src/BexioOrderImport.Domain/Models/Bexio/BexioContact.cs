@@ -11,6 +11,6 @@ namespace BexioOrderImport.Domain.Models.Bexio
         public string? EMail { get; set; }
 
         [JsonPropertyName("name_1")]
-        public string Name { get; set; }
+        public string Name { get; set; } = string.Empty;
     }
 }

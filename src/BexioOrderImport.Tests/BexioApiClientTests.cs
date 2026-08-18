@@ -731,4 +731,124 @@ public class BexioApiClientTests
         id.Should().Be(888);
         callCount.Should().Be(1);
     }
+
+    [Test]
+    public async Task GetOrderContactDetailsAsync_WhenOrderExists_ShouldReturnContactDetails()
+    {
+        var handler = new MockHttpMessageHandler
+        {
+            SendAsyncFunc = (req, token) =>
+            {
+                string uri = req.RequestUri!.ToString();
+                if (uri.Contains("kb_order/456"))
+                {
+                    return Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK)
+                    {
+                        Content = new StringContent("{\"id\": 456, \"contact_id\": 123}", Encoding.UTF8, "application/json")
+                    });
+                }
+                if (uri.Contains("contact/123"))
+                {
+                    return Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK)
+                    {
+                        Content = new StringContent("{\"id\": 123, \"name_1\": \"Acme Ltd\", \"mail\": \"acme@ltd.com\"}", Encoding.UTF8, "application/json")
+                    });
+                }
+                return Task.FromResult(new HttpResponseMessage(HttpStatusCode.NotFound));
+            }
+        };
+
+        var httpClient = new HttpClient(handler);
+        var client = new BexioApiClient(httpClient, "dummy-token", 1, 1);
+
+        var contact = await client.GetOrderContactDetailsAsync(456);
+        contact.Should().NotBeNull();
+        contact!.Id.Should().Be(123);
+        contact.Name.Should().Be("Acme Ltd");
+        contact.EMail.Should().Be("acme@ltd.com");
+    }
+
+    [Test]
+    public async Task GetOrderContactDetailsAsync_WhenOrderHttpError_ShouldReturnNull()
+    {
+        var handler = new MockHttpMessageHandler
+        {
+            SendAsyncFunc = (req, token) => Task.FromResult(new HttpResponseMessage(HttpStatusCode.NotFound))
+        };
+
+        var httpClient = new HttpClient(handler);
+        var client = new BexioApiClient(httpClient, "dummy-token", 1, 1);
+
+        var contact = await client.GetOrderContactDetailsAsync(999);
+        contact.Should().BeNull();
+    }
+
+    [Test]
+    public async Task AddArticlePositionAsync_WhenHttpFails_ShouldThrowHttpRequestException()
+    {
+        var handler = new MockHttpMessageHandler
+        {
+            SendAsyncFunc = (req, token) => Task.FromResult(new HttpResponseMessage(HttpStatusCode.BadRequest)
+            {
+                Content = new StringContent("Invalid position data", Encoding.UTF8, "text/plain")
+            })
+        };
+
+        var httpClient = new HttpClient(handler);
+        var client = new BexioApiClient(httpClient, "dummy-token", 1, 1);
+        var pos = new OrderPosition { Quantity = 1, UnitPrice = 10m };
+
+        Func<Task> act = async () => await client.AddArticlePositionAsync(100, 200, pos);
+        await act.Should().ThrowAsync<HttpRequestException>().WithMessage("*Error adding article position to order 100*");
+    }
+
+    [Test]
+    public async Task AddDiscountPositionAsync_WhenHttpFails_ShouldThrowHttpRequestException()
+    {
+        var handler = new MockHttpMessageHandler
+        {
+            SendAsyncFunc = (req, token) => Task.FromResult(new HttpResponseMessage(HttpStatusCode.BadRequest)
+            {
+                Content = new StringContent("Invalid discount", Encoding.UTF8, "text/plain")
+            })
+        };
+
+        var httpClient = new HttpClient(handler);
+        var client = new BexioApiClient(httpClient, "dummy-token", 1, 1);
+
+        Func<Task> act = async () => await client.AddDiscountPositionAsync(100, 10m);
+        await act.Should().ThrowAsync<HttpRequestException>().WithMessage("*Error adding discount position to order 100*");
+    }
+
+    [Test]
+    public async Task PreFetchArticlesAsync_WhenBulkSearchEmpty_ShouldFallbackToIndividualSearch()
+    {
+        var handler = new MockHttpMessageHandler
+        {
+            SendAsyncFunc = (req, token) =>
+            {
+                string uri = req.RequestUri!.ToString();
+                if (uri.Contains("article/search"))
+                {
+                    return Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK)
+                    {
+                        Content = new StringContent("[{\"id\": 101, \"intern_code\": \"ART-999\", \"intern_name\": \"Fallback Article\"}]", Encoding.UTF8, "application/json")
+                    });
+                }
+                return Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK)
+                {
+                    Content = new StringContent("[]", Encoding.UTF8, "application/json")
+                });
+            }
+        };
+
+        var httpClient = new HttpClient(handler);
+        var client = new BexioApiClient(httpClient, "dummy-token", 1, 1);
+
+        await client.PreFetchArticlesAsync("SS26", ["ART-999"]);
+
+        var article = await client.FindArticleAsync("ART-999", "Red", "SS26");
+        article.Should().NotBeNull();
+        article!.Id.Should().Be(101);
+    }
 }

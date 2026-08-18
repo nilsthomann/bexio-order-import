@@ -1,3 +1,5 @@
+#pragma warning disable TUnit0018
+
 using System;
 using System.IO;
 using System.Text.Json;
