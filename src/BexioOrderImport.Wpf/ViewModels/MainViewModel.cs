@@ -59,8 +59,8 @@ public partial class MainViewModel : ViewModelBase
     private string _buyerName = string.Empty;
     private string _email = string.Empty;
     private string _address = string.Empty;
-    private string _orderId = string.Empty;
-    private string _customerId = string.Empty;
+    private string _orderNumber = string.Empty;
+    private string _customerNumber = string.Empty;
     private string _paymentTerms = string.Empty;
 
     public bool HasLoadedFile
@@ -358,16 +358,16 @@ public partial class MainViewModel : ViewModelBase
         set => SetProperty(ref _address, value);
     }
 
-    public string OrderId
+    public string OrderNumber
     {
-        get => _orderId;
-        set => SetProperty(ref _orderId, value);
+        get => _orderNumber;
+        set => SetProperty(ref _orderNumber, value);
     }
 
-    public string CustomerId
+    public string CustomerNumber
     {
-        get => _customerId;
-        set => SetProperty(ref _customerId, value);
+        get => _customerNumber;
+        set => SetProperty(ref _customerNumber, value);
     }
 
     public string PaymentTerms
@@ -419,8 +419,8 @@ public partial class MainViewModel : ViewModelBase
     }
 
     public bool IsActiveRowDiscountEnabled => ActiveProfile?.Mapping.Data.EnableRowDiscount ?? false;
-    public bool IsActiveOrderIdEnabled => ActiveProfile?.Mapping.Header.EnableOrderId ?? false;
-    public bool IsActiveCustomerIdEnabled => ActiveProfile?.Mapping.Header.EnableCustomerId ?? false;
+    public bool IsActiveOrderNumberEnabled => ActiveProfile?.Mapping.Header.EnableOrderNumber ?? false;
+    public bool IsActiveCustomerNumberEnabled => ActiveProfile?.Mapping.Header.EnableCustomerNumber ?? false;
 
     public Models.MappingProfile? ActiveProfile
     {
@@ -438,8 +438,8 @@ public partial class MainViewModel : ViewModelBase
     {
         OnPropertyChanged(nameof(ActiveProfile));
         OnPropertyChanged(nameof(IsActiveRowDiscountEnabled));
-        OnPropertyChanged(nameof(IsActiveOrderIdEnabled));
-        OnPropertyChanged(nameof(IsActiveCustomerIdEnabled));
+        OnPropertyChanged(nameof(IsActiveOrderNumberEnabled));
+        OnPropertyChanged(nameof(IsActiveCustomerNumberEnabled));
     }
 
 

@@ -51,6 +51,54 @@ public class BexioApiClient : IBexioClient
         return request;
     }
 
+    public async Task<BexioContact?> FindContactByNrAsync(string customerNumber)
+    {
+        if (string.IsNullOrWhiteSpace(customerNumber)) return null;
+
+        var searchPayload = new[]
+        {
+            new BexioSearchCriteria { Field = "nr", Value = customerNumber.Trim(), Criteria = "=" }
+        };
+
+        var body = new StringContent(JsonSerializer.Serialize(searchPayload), Encoding.UTF8, "application/json");
+        var response = await SendWithRateLimitCheckAsync(CreateRequest(HttpMethod.Post, "2.0/contact/search", body));
+
+        if (response.IsSuccessStatusCode)
+        {
+            var contacts = await response.Content.ReadFromJsonAsync<List<BexioContact>>();
+            if (contacts != null && contacts.Count > 0)
+            {
+                return contacts[0];
+            }
+        }
+
+        return null;
+    }
+
+    public async Task<BexioOrder?> FindOrderByDocumentNrAsync(string orderNumber)
+    {
+        if (string.IsNullOrWhiteSpace(orderNumber)) return null;
+
+        var searchPayload = new[]
+        {
+            new BexioSearchCriteria { Field = "document_nr", Value = orderNumber.Trim(), Criteria = "=" }
+        };
+
+        var body = new StringContent(JsonSerializer.Serialize(searchPayload), Encoding.UTF8, "application/json");
+        var response = await SendWithRateLimitCheckAsync(CreateRequest(HttpMethod.Post, "2.0/kb_order/search", body));
+
+        if (response.IsSuccessStatusCode)
+        {
+            var orders = await response.Content.ReadFromJsonAsync<List<BexioOrder>>();
+            if (orders != null && orders.Count > 0)
+            {
+                return orders[0];
+            }
+        }
+
+        return null;
+    }
+
     public async Task<int?> FindContactIdAsync(string email)
     {
         var searchPayload = new[]
@@ -95,7 +143,7 @@ public class BexioApiClient : IBexioClient
         return newContact?.Id ?? throw new InvalidOperationException("Bexio returned an empty response when creating a contact.");
     }
 
-    public async Task<int> CreateOrderAsync(int contactId, Order order)
+    public async Task<BexioOrder> CreateOrderAsync(int contactId, Order order)
     {
         var orderPayload = new BexioCreateOrderRequest
         {
@@ -115,7 +163,7 @@ public class BexioApiClient : IBexioClient
         response.EnsureSuccessStatusCode();
 
         var createdOrder = await response.Content.ReadFromJsonAsync<BexioOrder>();
-        return createdOrder?.Id ?? throw new InvalidOperationException("Bexio returned an empty response when creating an order.");
+        return createdOrder ?? throw new InvalidOperationException("Bexio returned an empty response when creating an order.");
     }
 
     public async Task<BexioContact?> GetOrderContactDetailsAsync(int orderId)

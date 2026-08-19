@@ -51,10 +51,10 @@ public class ExcelMappingEvaluatorTests
                 ZipCityCell = "A3",
                 BuyerEmailCell = "A4",
                 BuyerNameCell = "A5",
-                EnableOrderId = true,
-                OrderIdCell = "A6",
-                EnableCustomerId = true,
-                CustomerIdCell = "A9",
+                EnableOrderNumber = true,
+                OrderNumberCell = "A6",
+                EnableCustomerNumber = true,
+                CustomerNumberCell = "A9",
                 PaymentTermsCell = "A7",
                 DiscountCell = "A8"
             },
@@ -94,9 +94,9 @@ public class ExcelMappingEvaluatorTests
         target.SizeRowTemplate.Should().Be("{Amount}x {Size}");
         target.Header.CompanyNameCell.Should().Be("A1");
         target.Header.BuyerEmailCell.Should().Be("A4");
-        target.Header.EnableOrderId.Should().BeTrue();
-        target.Header.EnableCustomerId.Should().BeTrue();
-        target.Header.CustomerIdCell.Should().Be("A9");
+        target.Header.EnableOrderNumber.Should().BeTrue();
+        target.Header.EnableCustomerNumber.Should().BeTrue();
+        target.Header.CustomerNumberCell.Should().Be("A9");
         target.Data.EnableRowDiscount.Should().BeTrue();
         target.Data.RowDiscountColumn.Should().Be("N");
     }
@@ -133,5 +133,13 @@ public class ExcelMappingEvaluatorTests
         clone.Should().NotBeSameAs(source);
         clone.DefaultOrderName.Should().Be("Clone Test");
         clone.SeasonCode.Should().Be("FW25");
+    }
+
+    [Test]
+    [Property("Category", "Unit")]
+    public void CloneOptions_WhenSourceNull_ShouldThrowArgumentNullException()
+    {
+        Action act = () => ExcelMappingEvaluator.CloneOptions(null!);
+        act.Should().Throw<ArgumentNullException>();
     }
 }

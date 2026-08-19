@@ -96,7 +96,64 @@ public class BexioApiClientTests
     }
 
     [Test]
-    public async Task CreateOrderAsync_WithValidOrder_ReturnsOrderId()
+    public async Task FindContactByNrAsync_WhenContactExists_ShouldReturnContact()
+    {
+        // Arrange
+        var handler = new MockHttpMessageHandler
+        {
+            SendAsyncFunc = (req, token) =>
+            {
+                var response = new HttpResponseMessage(HttpStatusCode.OK)
+                {
+                    Content = new StringContent("[{\"id\": 12345, \"nr\": \"10001\", \"name_1\": \"Test Company\"}]", System.Text.Encoding.UTF8, "application/json")
+                };
+                return Task.FromResult(response);
+            }
+        };
+
+        var httpClient = new HttpClient(handler);
+        var client = new BexioApiClient(httpClient, "dummy-token", 1, 1);
+
+        // Act
+        var result = await client.FindContactByNrAsync("10001");
+
+        // Assert
+        result.Should().NotBeNull();
+        result!.Id.Should().Be(12345);
+        result.Nr.Should().Be("10001");
+    }
+
+    [Test]
+    public async Task FindOrderByDocumentNrAsync_WhenOrderExists_ShouldReturnOrder()
+    {
+        // Arrange
+        var handler = new MockHttpMessageHandler
+        {
+            SendAsyncFunc = (req, token) =>
+            {
+                var response = new HttpResponseMessage(HttpStatusCode.OK)
+                {
+                    Content = new StringContent("[{\"id\": 555, \"document_nr\": \"AU-00123\", \"contact_id\": 12345}]", System.Text.Encoding.UTF8, "application/json")
+                };
+                return Task.FromResult(response);
+            }
+        };
+
+        var httpClient = new HttpClient(handler);
+        var client = new BexioApiClient(httpClient, "dummy-token", 1, 1);
+
+        // Act
+        var result = await client.FindOrderByDocumentNrAsync("AU-00123");
+
+        // Assert
+        result.Should().NotBeNull();
+        result!.Id.Should().Be(555);
+        result.DocumentNr.Should().Be("AU-00123");
+        result.ContactId.Should().Be(12345);
+    }
+
+    [Test]
+    public async Task CreateOrderAsync_WithValidOrder_ReturnsCreatedOrder()
     {
         // Arrange
         var handler = new MockHttpMessageHandler
@@ -105,7 +162,7 @@ public class BexioApiClientTests
             {
                 var response = new HttpResponseMessage(HttpStatusCode.Created)
                 {
-                    Content = new StringContent("{\"id\": 11111}", System.Text.Encoding.UTF8, "application/json")
+                    Content = new StringContent("{\"id\": 11111, \"document_nr\": \"AU-00001\"}", System.Text.Encoding.UTF8, "application/json")
                 };
                 return Task.FromResult(response);
             }
@@ -120,7 +177,9 @@ public class BexioApiClientTests
         var result = await client.CreateOrderAsync(12345, order);
 
         // Assert
-        result.Should().Be(11111);
+        result.Should().NotBeNull();
+        result.Id.Should().Be(11111);
+        result.DocumentNr.Should().Be("AU-00001");
     }
 
     [Test]
@@ -850,5 +909,60 @@ public class BexioApiClientTests
         var article = await client.FindArticleAsync("ART-999", "Red", "SS26");
         article.Should().NotBeNull();
         article!.Id.Should().Be(101);
+    }
+
+    [Test]
+    public async Task FindContactByNrAsync_WhenContactNotFound_ReturnsNull()
+    {
+        var handler = new MockHttpMessageHandler
+        {
+            SendAsyncFunc = (req, token) => Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK)
+            {
+                Content = new StringContent("[]", Encoding.UTF8, "application/json")
+            })
+        };
+
+        var httpClient = new HttpClient(handler);
+        var client = new BexioApiClient(httpClient, "dummy-token", 1, 1);
+
+        var contact = await client.FindContactByNrAsync("NON_EXISTENT");
+        contact.Should().BeNull();
+    }
+
+    [Test]
+    public async Task FindOrderByDocumentNrAsync_WhenOrderNotFound_ReturnsNull()
+    {
+        var handler = new MockHttpMessageHandler
+        {
+            SendAsyncFunc = (req, token) => Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK)
+            {
+                Content = new StringContent("[]", Encoding.UTF8, "application/json")
+            })
+        };
+
+        var httpClient = new HttpClient(handler);
+        var client = new BexioApiClient(httpClient, "dummy-token", 1, 1);
+
+        var order = await client.FindOrderByDocumentNrAsync("NON_EXISTENT");
+        order.Should().BeNull();
+    }
+
+    [Test]
+    public async Task FindArticleByArticleNumberAndFilterAsync_WithMultipleMatchesAndFilterFallback_ReturnsMatchingArticle()
+    {
+        var handler = new MockHttpMessageHandler
+        {
+            SendAsyncFunc = (req, token) => Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK)
+            {
+                Content = new StringContent("[{\"id\": 10, \"intern_code\": \"ART123\", \"intern_name\": \"Shirt Blue SS26\"}, {\"id\": 20, \"intern_code\": \"ART123\", \"intern_name\": \"Shirt Red FW26\"}]", Encoding.UTF8, "application/json")
+            })
+        };
+
+        var httpClient = new HttpClient(handler);
+        var client = new BexioApiClient(httpClient, "dummy-token", 1, 1);
+
+        var article = await client.FindArticleAsync("ART123", "Red", "FW26");
+        article.Should().NotBeNull();
+        article!.Id.Should().Be(20);
     }
 }

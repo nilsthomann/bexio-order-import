@@ -301,7 +301,7 @@ public class SettingsPersistenceTests : StaTestBase, IDisposable
             var mockFactory = new Mock<IBexioClientFactory>();
             var mockClient = new Mock<IBexioClient>();
             mockClient.Setup(c => c.CheckConnectionAsync()).ReturnsAsync(true);
-            mockClient.Setup(c => c.CreateOrderAsync(It.IsAny<int>(), It.IsAny<Order>())).ReturnsAsync(12345);
+            mockClient.Setup(c => c.CreateOrderAsync(It.IsAny<int>(), It.IsAny<Order>())).ReturnsAsync(new BexioOrder { Id = 12345, DocumentNr = "AU-12345" });
             mockClient.Setup(c => c.FindArticleAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>())).ReturnsAsync(new BexioArticle { Id = 999, Description = "Product Description", Name = "Product Name" });
             mockFactory.Setup(f => f.Create(It.IsAny<string>(), It.IsAny<int?>(), It.IsAny<int?>())).Returns(mockClient.Object);
 
@@ -485,8 +485,10 @@ public class SettingsPersistenceTests : StaTestBase, IDisposable
 
             // Import runtime fields
 
-            vm.OrderId = "12345";
-            vm.OrderId.Should().Be("12345");
+            vm.OrderNumber = "AU-12345";
+            vm.OrderNumber.Should().Be("AU-12345");
+            vm.CustomerNumber = "KB10001";
+            vm.CustomerNumber.Should().Be("KB10001");
 
             vm.PaymentTerms = "30 Days";
             vm.PaymentTerms.Should().Be("30 Days");

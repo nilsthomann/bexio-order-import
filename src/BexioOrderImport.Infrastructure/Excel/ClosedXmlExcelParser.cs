@@ -29,8 +29,8 @@ public class ClosedXmlExcelParser : IExcelParser
         {
             // Parse header data
             Customer = ParseCustomerHeader(sheet),
-            OrderId = ParseOrderId(sheet),
-            CustomerId = ParseCustomerId(sheet)
+            OrderNumber = ParseOrderNumber(sheet),
+            CustomerNumber = ParseCustomerNumber(sheet)
         };
 
         string paymentTermsVal = sheet.Cell(_options.Header.PaymentTermsCell).Value.ToString().Trim();
@@ -196,18 +196,18 @@ public class ClosedXmlExcelParser : IExcelParser
         };
     }
 
-    private int? ParseOrderId(IXLWorksheet sheet)
+    private string? ParseOrderNumber(IXLWorksheet sheet)
     {
-        if (!_options.Header.EnableOrderId) return null;
-        string val = sheet.Cell(_options.Header.OrderIdCell).Value.ToString();
-        return IdNormalizationHelper.NormalizeOrderId(val);
+        if (!_options.Header.EnableOrderNumber) return null;
+        string val = sheet.Cell(_options.Header.OrderNumberCell).Value.ToString().Trim();
+        return string.IsNullOrWhiteSpace(val) ? null : val;
     }
 
-    private int? ParseCustomerId(IXLWorksheet sheet)
+    private string? ParseCustomerNumber(IXLWorksheet sheet)
     {
-        if (!_options.Header.EnableCustomerId) return null;
-        string val = sheet.Cell(_options.Header.CustomerIdCell).Value.ToString();
-        return IdNormalizationHelper.NormalizeCustomerId(val);
+        if (!_options.Header.EnableCustomerNumber) return null;
+        string val = sheet.Cell(_options.Header.CustomerNumberCell).Value.ToString().Trim();
+        return string.IsNullOrWhiteSpace(val) ? null : val;
     }
 
     private Dictionary<string, Dictionary<int, string>> ParseSizeMatrices(IXLWorksheet sheet)

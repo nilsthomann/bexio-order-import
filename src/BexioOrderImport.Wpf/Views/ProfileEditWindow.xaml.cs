@@ -63,10 +63,10 @@ public partial class ProfileEditWindow : Window
         ZipCityCellInput.Text = _profile.Mapping.Header.ZipCityCell;
         BuyerEmailCellInput.Text = _profile.Mapping.Header.BuyerEmailCell;
         BuyerNameCellInput.Text = _profile.Mapping.Header.BuyerNameCell;
-        EnableOrderIdCheckBox.IsChecked = _profile.Mapping.Header.EnableOrderId;
-        OrderIdCellInput.Text = _profile.Mapping.Header.OrderIdCell;
-        EnableCustomerIdCheckBox.IsChecked = _profile.Mapping.Header.EnableCustomerId;
-        CustomerIdCellInput.Text = _profile.Mapping.Header.CustomerIdCell;
+        EnableOrderNumberCheckBox.IsChecked = _profile.Mapping.Header.EnableOrderNumber;
+        OrderNumberCellInput.Text = _profile.Mapping.Header.OrderNumberCell;
+        EnableCustomerNumberCheckBox.IsChecked = _profile.Mapping.Header.EnableCustomerNumber;
+        CustomerNumberCellInput.Text = _profile.Mapping.Header.CustomerNumberCell;
         PaymentTermsCellInput.Text = _profile.Mapping.Header.PaymentTermsCell;
         DiscountCellInput.Text = _profile.Mapping.Header.DiscountCell;
 
@@ -161,10 +161,10 @@ public partial class ProfileEditWindow : Window
             _profile.Mapping.Header.ZipCityCell = ZipCityCellInput.Text.Trim();
             _profile.Mapping.Header.BuyerEmailCell = BuyerEmailCellInput.Text.Trim();
             _profile.Mapping.Header.BuyerNameCell = BuyerNameCellInput.Text.Trim();
-            _profile.Mapping.Header.EnableOrderId = EnableOrderIdCheckBox.IsChecked == true;
-            _profile.Mapping.Header.OrderIdCell = OrderIdCellInput.Text.Trim();
-            _profile.Mapping.Header.EnableCustomerId = EnableCustomerIdCheckBox.IsChecked == true;
-            _profile.Mapping.Header.CustomerIdCell = CustomerIdCellInput.Text.Trim();
+            _profile.Mapping.Header.EnableOrderNumber = EnableOrderNumberCheckBox.IsChecked == true;
+            _profile.Mapping.Header.OrderNumberCell = OrderNumberCellInput.Text.Trim();
+            _profile.Mapping.Header.EnableCustomerNumber = EnableCustomerNumberCheckBox.IsChecked == true;
+            _profile.Mapping.Header.CustomerNumberCell = CustomerNumberCellInput.Text.Trim();
             _profile.Mapping.Header.PaymentTermsCell = PaymentTermsCellInput.Text.Trim();
             _profile.Mapping.Header.DiscountCell = DiscountCellInput.Text.Trim();
 

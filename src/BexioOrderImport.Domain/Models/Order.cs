@@ -4,8 +4,8 @@ public class Order
 {
     public string Title { get; set; } = string.Empty;
     public Customer Customer { get; set; } = new();
-    public int? OrderId { get; set; }
-    public int? CustomerId { get; set; }
+    public string? OrderNumber { get; set; }
+    public string? CustomerNumber { get; set; }
     public string PaymentTerms { get; set; } = string.Empty;
     public decimal DiscountPercent { get; set; }
     public List<OrderPosition> Positions { get; set; } = [];

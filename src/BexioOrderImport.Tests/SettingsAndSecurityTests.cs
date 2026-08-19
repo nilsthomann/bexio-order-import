@@ -62,4 +62,17 @@ public class SettingsAndSecurityTests
         _encryptionService.Decrypt(null!).Should().BeEmpty();
         _encryptionService.Decrypt("").Should().BeEmpty();
     }
+
+    [Test]
+    public void Decrypt_WithCorruptedCiphertextBase64_ShouldCatchExceptionAndReturnEmptyString()
+    {
+        // Arrange: Valid base64 encoding of non-DPAPI bytes, which causes ProtectedData.Unprotect to throw CryptographicException
+        string corruptedBase64 = Convert.ToBase64String(new byte[] { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 });
+
+        // Act
+        string decrypted = _encryptionService.Decrypt(corruptedBase64);
+
+        // Assert
+        decrypted.Should().Be(string.Empty);
+    }
 }

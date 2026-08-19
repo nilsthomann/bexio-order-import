@@ -2,7 +2,7 @@ namespace BexioOrderImport.Application.Models;
 
 public record ImportResult(
     bool Success,
-    int? OrderId = null,
+    string? OrderNumber = null,
     int UploadedPositionsCount = 0,
     string? ErrorMessage = null
 );

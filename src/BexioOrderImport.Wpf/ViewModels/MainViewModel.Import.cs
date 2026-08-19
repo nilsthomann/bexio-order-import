@@ -57,8 +57,8 @@ public partial class MainViewModel
             string rawAddress = $"{street}, {zip} {city}".Trim(',', ' ');
             Address = string.IsNullOrWhiteSpace(rawAddress) ? "-" : rawAddress;
 
-            OrderId = (_loadedOrder.OrderId.HasValue && _loadedOrder.OrderId.Value > 0) ? _loadedOrder.OrderId.Value.ToString() : "-";
-            CustomerId = (_loadedOrder.CustomerId.HasValue && _loadedOrder.CustomerId.Value > 0) ? _loadedOrder.CustomerId.Value.ToString() : "-";
+            OrderNumber = !string.IsNullOrWhiteSpace(_loadedOrder.OrderNumber) ? _loadedOrder.OrderNumber : "-";
+            CustomerNumber = !string.IsNullOrWhiteSpace(_loadedOrder.CustomerNumber) ? _loadedOrder.CustomerNumber : "-";
             PaymentTerms = string.IsNullOrWhiteSpace(_loadedOrder.PaymentTerms) ? "-" : _loadedOrder.PaymentTerms;
 
             OrderPositions.Clear();
@@ -126,8 +126,8 @@ public partial class MainViewModel
         BuyerName = string.Empty;
         Email = string.Empty;
         Address = string.Empty;
-        OrderId = string.Empty;
-        CustomerId = string.Empty;
+        OrderNumber = string.Empty;
+        CustomerNumber = string.Empty;
         PaymentTerms = string.Empty;
         OrderPositions.Clear();
         UpdateTotalsSummary();
@@ -200,7 +200,10 @@ public partial class MainViewModel
 
             if (result.Success)
             {
-                int createdOrderId = result.OrderId ?? 0;
+                string displayOrderNr = !string.IsNullOrWhiteSpace(result.OrderNumber)
+                    ? result.OrderNumber
+                    : "?";
+
                 importStopwatch.Stop();
                 TimeSpan duration = importStopwatch.Elapsed;
                 string formattedDuration = string.Format("{0:D2}:{1:D2} Min", (int)duration.TotalMinutes, duration.Seconds);
@@ -210,7 +213,7 @@ public partial class MainViewModel
                 InvokeOnUi(() =>
                 {
                     ImportSuccessTitle = Resources.Translations.Import_SuccessTitle;
-                    ImportSuccessMessage = string.Format(Resources.Translations.Import_SuccessMessage, createdOrderId > 0 ? createdOrderId.ToString() : "?");
+                    ImportSuccessMessage = string.Format(Resources.Translations.Import_SuccessMessage, displayOrderNr);
                     ImportDurationText = string.Format(Resources.Translations.Import_SuccessDuration, formattedDuration);
                     IsImportSuccess = true;
                 });

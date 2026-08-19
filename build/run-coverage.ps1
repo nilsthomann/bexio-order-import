@@ -13,6 +13,8 @@ $testProjPath = Join-Path $rootDir "src\BexioOrderImport.Tests\BexioOrderImport.
 $testResultsDir = Join-Path $rootDir "TestResults"
 $coverageFile = Join-Path $testResultsDir "coverage.cobertura.xml"
 
+$coverageReportDir = Join-Path $testResultsDir "CoverageReport"
+
 Write-Host "1. Cleaning previous test results..." -ForegroundColor Cyan
 if (Test-Path $testResultsDir) {
     Remove-Item -Recurse -Force $testResultsDir
@@ -30,9 +32,13 @@ if (-not (Test-Path $coverageFile)) {
 Write-Host "Found coverage file: $coverageFile" -ForegroundColor Green
 
 if (-not ($CI -or $env:GITHUB_ACTIONS)) {
-    $htmlReport = Get-ChildItem -Path $testResultsDir -Filter "*.html" | Select-Object -First 1
-    if ($htmlReport) {
-        Write-Host "3. Opening coverage report in default browser: $($htmlReport.FullName)" -ForegroundColor Green
-        Start-Process $htmlReport.FullName
+    Write-Host "3. Generating detailed ReportGenerator HTML coverage report..." -ForegroundColor Cyan
+    dotnet tool restore
+    dotnet reportgenerator "-reports:$coverageFile" "-targetdir:$coverageReportDir" "-reporttypes:Html"
+    
+    $indexHtml = Join-Path $coverageReportDir "index.html"
+    if (Test-Path $indexHtml) {
+        Write-Host "4. Opening coverage report in default browser: $indexHtml" -ForegroundColor Green
+        Start-Process $indexHtml
     }
 }
