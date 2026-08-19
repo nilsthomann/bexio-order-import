@@ -910,4 +910,59 @@ public class BexioApiClientTests
         article.Should().NotBeNull();
         article!.Id.Should().Be(101);
     }
+
+    [Test]
+    public async Task FindContactByNrAsync_WhenContactNotFound_ReturnsNull()
+    {
+        var handler = new MockHttpMessageHandler
+        {
+            SendAsyncFunc = (req, token) => Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK)
+            {
+                Content = new StringContent("[]", Encoding.UTF8, "application/json")
+            })
+        };
+
+        var httpClient = new HttpClient(handler);
+        var client = new BexioApiClient(httpClient, "dummy-token", 1, 1);
+
+        var contact = await client.FindContactByNrAsync("NON_EXISTENT");
+        contact.Should().BeNull();
+    }
+
+    [Test]
+    public async Task FindOrderByDocumentNrAsync_WhenOrderNotFound_ReturnsNull()
+    {
+        var handler = new MockHttpMessageHandler
+        {
+            SendAsyncFunc = (req, token) => Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK)
+            {
+                Content = new StringContent("[]", Encoding.UTF8, "application/json")
+            })
+        };
+
+        var httpClient = new HttpClient(handler);
+        var client = new BexioApiClient(httpClient, "dummy-token", 1, 1);
+
+        var order = await client.FindOrderByDocumentNrAsync("NON_EXISTENT");
+        order.Should().BeNull();
+    }
+
+    [Test]
+    public async Task FindArticleByArticleNumberAndFilterAsync_WithMultipleMatchesAndFilterFallback_ReturnsMatchingArticle()
+    {
+        var handler = new MockHttpMessageHandler
+        {
+            SendAsyncFunc = (req, token) => Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK)
+            {
+                Content = new StringContent("[{\"id\": 10, \"intern_code\": \"ART123\", \"intern_name\": \"Shirt Blue SS26\"}, {\"id\": 20, \"intern_code\": \"ART123\", \"intern_name\": \"Shirt Red FW26\"}]", Encoding.UTF8, "application/json")
+            })
+        };
+
+        var httpClient = new HttpClient(handler);
+        var client = new BexioApiClient(httpClient, "dummy-token", 1, 1);
+
+        var article = await client.FindArticleAsync("ART123", "Red", "FW26");
+        article.Should().NotBeNull();
+        article!.Id.Should().Be(20);
+    }
 }

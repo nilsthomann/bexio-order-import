@@ -134,4 +134,12 @@ public class ExcelMappingEvaluatorTests
         clone.DefaultOrderName.Should().Be("Clone Test");
         clone.SeasonCode.Should().Be("FW25");
     }
+
+    [Test]
+    [Property("Category", "Unit")]
+    public void CloneOptions_WhenSourceNull_ShouldThrowArgumentNullException()
+    {
+        Action act = () => ExcelMappingEvaluator.CloneOptions(null!);
+        act.Should().Throw<ArgumentNullException>();
+    }
 }

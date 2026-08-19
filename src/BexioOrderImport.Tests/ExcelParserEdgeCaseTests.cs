@@ -229,4 +229,70 @@ public class ExcelParserEdgeCaseTests
             if (File.Exists(tempPath)) File.Delete(tempPath);
         }
     }
+
+    [Test]
+    public void ExtractZipAndCity_WithWhitespaceOnly_ShouldReturnEmptyTuple()
+    {
+        var result = ClosedXmlExcelParser.ExtractZipAndCity("   ");
+        result.Zip.Should().BeEmpty();
+        result.City.Should().BeEmpty();
+    }
+
+    [Test]
+    public void ParseOrderForm_WhenGroupedSizePositionModeAndSizeHeaderMissing_ShouldThrowInvalidOperationException()
+    {
+        var options = new ExcelMappingOptions
+        {
+            PositionGroupingMode = BexioOrderImport.Domain.Models.PositionGroupingMode.GroupedSizePosition
+        };
+        options.Header.CompanyNameCell = "B1";
+        options.Header.BuyerEmailCell = "B4";
+
+        options.SizeMatrix.StartRow = 10;
+        options.SizeMatrix.EndRow = 10;
+        options.SizeMatrix.CategoryColumn = "D";
+        options.SizeMatrix.StartSizeColumn = "E";
+        options.SizeMatrix.EndSizeColumn = "E";
+
+        options.Data.StartRow = 11;
+        options.Data.ArticleNumberColumn = "A";
+        options.Data.ArticleNameColumn = "B";
+        options.Data.ColorColumn = "C";
+        options.Data.CategoryColumn = "D";
+        options.Data.StartQtyColumn = "E";
+        options.Data.EndQtyColumn = "E";
+        options.Data.UnitPriceColumn = "G";
+
+        string tempPath = Path.Combine(Path.GetTempPath(), $"test_{Guid.NewGuid():N}.xlsx");
+        try
+        {
+            using (var wb = new ClosedXML.Excel.XLWorkbook())
+            {
+                var ws = wb.AddWorksheet("Sheet1");
+                ws.Cell("B1").Value = "ACME Corp";
+                ws.Cell("B4").Value = "test@acme.com";
+
+                ws.Cell(10, 4).Value = "CAT1";
+                // Note: Size header in Cell(10, 5) left empty!
+
+                ws.Cell(11, 1).Value = "ART001";
+                ws.Cell(11, 2).Value = "Shirt";
+                ws.Cell(11, 3).Value = "Blue";
+                ws.Cell(11, 4).Value = "CAT1";
+                ws.Cell(11, 5).Value = 2; // Quantity 2
+                ws.Cell(11, 7).Value = 50.0;
+
+                wb.SaveAs(tempPath);
+            }
+
+            var parser = new ClosedXmlExcelParser(Options.Create(options));
+            Action act = () => parser.ParseOrderForm(tempPath);
+
+            act.Should().Throw<InvalidOperationException>().WithMessage("*Size header for column 5*was not defined*");
+        }
+        finally
+        {
+            if (File.Exists(tempPath)) File.Delete(tempPath);
+        }
+    }
 }

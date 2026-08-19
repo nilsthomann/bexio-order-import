@@ -182,6 +182,35 @@ public class UpdateServiceTests
     }
 
     [Test]
+    public async Task CheckForUpdatesAsync_WhenJsonInvalid_ShouldReturnNull()
+    {
+        // Arrange
+        string appDataFolder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "BexioOrderImport");
+        string cacheFilePath = Path.Combine(appDataFolder, "last_update_check.txt");
+        if (File.Exists(cacheFilePath))
+        {
+            try { File.Delete(cacheFilePath); } catch { }
+        }
+
+        var handler = new MockHttpMessageHandler
+        {
+            SendAsyncFunc = (req, token) => Task.FromResult(new HttpResponseMessage(System.Net.HttpStatusCode.OK)
+            {
+                Content = new StringContent("INVALID_JSON_CONTENT", Encoding.UTF8, "application/json")
+            })
+        };
+
+        var httpClient = new HttpClient(handler);
+        var updateService = new UpdateService(httpClient, _lifecycleService);
+
+        // Act
+        var result = await updateService.CheckForUpdatesAsync();
+
+        // Assert
+        result.Should().BeNull();
+    }
+
+    [Test]
     public async Task DownloadAndInstallUpdateAsync_WithValidUrl_ShouldDownloadAndReportProgress()
     {
         // Arrange
