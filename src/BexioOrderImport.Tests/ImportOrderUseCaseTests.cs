@@ -558,6 +558,34 @@ public class ImportOrderUseCaseTests
         interactionMock.Verify(i => i.LogInfo(It.Is<string>(s => s.Contains("Successfully completed"))), Times.Once);
     }
 
+    [Test]
+    public async Task ExecuteAsync_WhenExcelParserIsNull_ShouldThrowInvalidOperationException()
+    {
+        var useCase = new ImportOrderUseCase(_clientMock.Object);
+        var interaction = new DelegateImportUserInteractionService();
+
+        Func<Task> act = async () => await useCase.ExecuteAsync("file.xlsx", interaction);
+        await act.Should().ThrowAsync<InvalidOperationException>().WithMessage("*IExcelParser is required*");
+    }
+
+    [Test]
+    public async Task ExecuteAsync_WhenCustomerCreationRefusedByUser_ShouldReturnCancelledResult()
+    {
+        var order = CreateSampleOrder();
+        _parserMock.Setup(p => p.ParseOrderForm(It.IsAny<string>())).Returns(order);
+        _clientMock.Setup(c => c.FindContactIdAsync(order.Customer.Email)).ReturnsAsync((int?)null);
+
+        var interactionMock = new Mock<IImportUserInteractionService>();
+        interactionMock.Setup(i => i.ConfirmUploadAsync()).ReturnsAsync(true);
+        interactionMock.Setup(i => i.ConfirmCustomerCreationAsync(It.IsAny<Customer>())).ReturnsAsync(false);
+
+        var result = await _useCase.ExecuteAsync("file.xlsx", interactionMock.Object);
+
+        result.Success.Should().BeFalse();
+        result.ErrorMessage.Should().Contain("customer creation refused");
+        _clientMock.Verify(c => c.CreateContactAsync(It.IsAny<Customer>()), Times.Never);
+    }
+
     private static Order CreateSampleOrder()
     {
         var order = new Order

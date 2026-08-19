@@ -142,4 +142,30 @@ public class ExcelMappingEvaluatorTests
         Action act = () => ExcelMappingEvaluator.CloneOptions(null!);
         act.Should().Throw<ArgumentNullException>();
     }
+
+    [Test]
+    [Property("Category", "Unit")]
+    public void PositionTextTemplate_WhenGroupedMode_ShouldGetAndSetGroupedPositionTextTemplate()
+    {
+        var options = new ExcelMappingOptions
+        {
+            PositionGroupingMode = PositionGroupingMode.GroupedSizePosition
+        };
+        options.PositionTextTemplate.Should().Be(options.GroupedPositionTextTemplate);
+
+        options.PositionTextTemplate = "Custom Grouped {SizesRows}";
+        options.GroupedPositionTextTemplate.Should().Be("Custom Grouped {SizesRows}");
+    }
+
+    [Test]
+    [Property("Category", "Unit")]
+    public void IsValidColumnLetter_ShouldValidateCorrectly()
+    {
+        ExcelMappingEvaluator.IsValidColumnLetter("A").Should().BeTrue();
+        ExcelMappingEvaluator.IsValidColumnLetter("AA").Should().BeTrue();
+        ExcelMappingEvaluator.IsValidColumnLetter("123").Should().BeTrue();
+        ExcelMappingEvaluator.IsValidColumnLetter(null).Should().BeFalse();
+        ExcelMappingEvaluator.IsValidColumnLetter("0").Should().BeFalse();
+        ExcelMappingEvaluator.IsValidColumnLetter("A#1").Should().BeFalse();
+    }
 }
