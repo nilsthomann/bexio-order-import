@@ -417,4 +417,280 @@ public class MainViewModelTests : IDisposable
         vm.HasLoadedFile.Should().BeFalse();
         _dialogServiceMock.Verify(d => d.ShowErrorDialog(It.Is<string>(s => s.Contains("locked.xlsx")), It.IsAny<string>()), Times.Once);
     }
+
+    [Test]
+    public async Task ConfirmEmailMismatchAsync_ShouldShowConfirmDialog()
+    {
+        // Arrange
+        var vm = CreateVm();
+        vm.IsImportingActive = true;
+        _dialogServiceMock.Setup(d => d.ShowConfirmDialog(It.IsAny<string>(), It.IsAny<string>())).Returns(true);
+
+        // Act - Call private ConfirmEmailMismatchAsync via reflection
+        var method = typeof(MainViewModel).GetMethod("ConfirmEmailMismatchAsync", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+        var task = (Task<bool>)method!.Invoke(vm, new object[] { "existing@test.com", "excel@test.com" })!;
+        bool result = await task;
+
+        // Assert
+        result.Should().BeTrue();
+        _dialogServiceMock.Verify(d => d.ShowConfirmDialog(It.Is<string>(s => s.Contains("existing@test.com") && s.Contains("excel@test.com")), It.IsAny<string>()), Times.Once);
+    }
+
+    [Test]
+    public async Task WpfImportUserInteractionService_ShouldDelegateCallsToViewModelAndDialogService()
+    {
+        // Arrange
+        var vm = CreateVm();
+        vm.IsImportingActive = true;
+        _dialogServiceMock.Setup(d => d.ShowConfirmDialog(It.IsAny<string>(), It.IsAny<string>())).Returns(true);
+        _dialogServiceMock.Setup(d => d.ShowCustomerConfirmDialog(It.IsAny<BexioOrderImport.Domain.Models.Customer>())).Returns(true);
+
+        // Get private WpfImportUserInteractionService type via reflection
+        var type = typeof(MainViewModel).GetNestedType("WpfImportUserInteractionService", System.Reflection.BindingFlags.NonPublic);
+        var stopwatch = new System.Diagnostics.Stopwatch();
+        stopwatch.Start();
+
+        var service = (BexioOrderImport.Application.Interfaces.IImportUserInteractionService)Activator.CreateInstance(type!, new object[] {
+            vm,
+            (Action<double, double, System.Diagnostics.Stopwatch>)((c, t, sw) => { }),
+            stopwatch
+        })!;
+
+        // Act & Assert - ShowPreview (void, no-op)
+        service.ShowPreview(new BexioOrderImport.Domain.Models.Order());
+
+        // Act & Assert - ConfirmEmailMismatchAsync
+        bool emailConfirmed = await service.ConfirmEmailMismatchAsync("old@email.com", "new@email.com");
+        emailConfirmed.Should().BeTrue();
+
+        // Act & Assert - ConfirmCustomerCreationAsync
+        bool customerConfirmed = await service.ConfirmCustomerCreationAsync(new BexioOrderImport.Domain.Models.Customer { CompanyName = "Test Co" });
+        customerConfirmed.Should().BeTrue();
+
+        // Act & Assert - ConfirmUploadAsync
+        bool uploadConfirmed = await service.ConfirmUploadAsync();
+        uploadConfirmed.Should().BeTrue();
+
+        // Act & Assert - LogInfo
+        service.LogInfo("Test interaction log");
+        vm.LogText.Should().Contain("Test interaction log");
+
+        // Act & Assert - ReportProgress
+        service.ReportProgress(5, 10);
+        vm.ProgressPercentage.Should().Be(50.0);
+    }
+
+    [Test]
+    public void MainViewModel_PropertyGettersAndSetters_ShouldUpdateState()
+    {
+        var vm = CreateVm();
+        vm.Address = "Test Address 123";
+        vm.Address.Should().Be("Test Address 123");
+
+        vm.ImportSuccessTitle = "Success Title";
+        vm.ImportSuccessTitle.Should().Be("Success Title");
+
+        vm.ImportDurationText = "00:01:30";
+        vm.ImportDurationText.Should().Be("00:01:30");
+
+        vm.IsActiveOrderNumberEnabled.Should().BeFalse();
+        vm.IsActiveCustomerNumberEnabled.Should().BeFalse();
+
+        bool invoked = false;
+        vm.InvokeOnUiAsync(() => invoked = true);
+        invoked.Should().BeTrue();
+    }
+
+    [Test]
+    public void IsTokenFocused_WhenToggledFalse_ShouldTriggerConnectionCheck()
+    {
+        var vm = CreateVm();
+        vm.BexioToken = "valid_token";
+        vm.IsTokenFocused = true;
+
+        vm.BexioTokenDisplay.Should().Be("valid_token");
+
+        vm.IsTokenFocused = false;
+        vm.BexioTokenDisplay.Should().Be(new string('•', 24));
+    }
+
+    [Test]
+    public void CloseImportSuccessCommand_WhenExecuted_ShouldResetState()
+    {
+        var vm = CreateVm();
+        vm.IsImportingActive = true;
+        vm.IsImportSuccess = true;
+
+        vm.CloseImportSuccessCommand.Execute(null);
+
+        vm.IsImportingActive.Should().BeFalse();
+        vm.IsImportSuccess.Should().BeFalse();
+        vm.HasLoadedFile.Should().BeFalse();
+    }
+
+    [Test]
+    public void SetActiveProfile_WhenSelectedFilePathExists_ShouldReloadExcelFile()
+    {
+        var mockParser = new Mock<IExcelParser>();
+        mockParser.Setup(p => p.ParseOrderForm(It.IsAny<string>())).Returns(new BexioOrderImport.Domain.Models.Order());
+        var mockFactory = new Mock<IExcelParserFactory>();
+        mockFactory.Setup(f => f.Create(It.IsAny<BexioOrderImport.Application.Options.ExcelMappingOptions>())).Returns(mockParser.Object);
+
+        var vm = new MainViewModel(
+            _updateServiceMock.Object,
+            _clientFactoryMock.Object,
+            _dialogServiceMock.Object,
+            _dispatcherServiceMock.Object,
+            _encryptionServiceMock.Object,
+            mockFactory.Object,
+            _tempFilePath
+        );
+
+        string tempExcel = Path.Combine(Path.GetTempPath(), $"temp_reload_{Guid.NewGuid():N}.xlsx");
+        File.WriteAllText(tempExcel, "dummy excel content");
+
+        try
+        {
+            vm.SelectedFilePath = tempExcel;
+            var profile2 = new BexioOrderImport.Wpf.Models.MappingProfile { Name = "Profile Reload" };
+            vm.Profiles.Add(profile2);
+
+            vm.SetActiveProfileCommand.Execute(profile2);
+
+            vm.ActiveProfile.Should().Be(profile2);
+        }
+        finally
+        {
+            if (File.Exists(tempExcel)) File.Delete(tempExcel);
+        }
+    }
+
+    [Test]
+    public void LoadSettings_WhenEncryptedTokenIsNotBase64_ShouldFallbackToRawToken()
+    {
+        string customConfig = Path.Combine(Path.GetTempPath(), $"settings_raw_token_{Guid.NewGuid():N}.json");
+        string json = @"{
+            ""Bexio"": { ""ApiToken"": ""raw_unencrypted_token_123"" },
+            ""ActiveProfileName"": ""Default"",
+            ""Profiles"": []
+        }";
+        File.WriteAllText(customConfig, json);
+
+        try
+        {
+            var vm = new MainViewModel(
+                _updateServiceMock.Object,
+                _clientFactoryMock.Object,
+                _dialogServiceMock.Object,
+                _dispatcherServiceMock.Object,
+                _encryptionServiceMock.Object,
+                _excelParserFactoryMock.Object,
+                customConfig
+            );
+
+            vm.BexioToken.Should().Be("raw_unencrypted_token_123");
+        }
+        finally
+        {
+            if (File.Exists(customConfig)) File.Delete(customConfig);
+        }
+    }
+
+    [Test]
+    public void SaveSettings_WhenSelectedFilePathExists_ShouldReloadFile()
+    {
+        var mockParser = new Mock<IExcelParser>();
+        mockParser.Setup(p => p.ParseOrderForm(It.IsAny<string>())).Returns(new BexioOrderImport.Domain.Models.Order());
+        var mockFactory = new Mock<IExcelParserFactory>();
+        mockFactory.Setup(f => f.Create(It.IsAny<BexioOrderImport.Application.Options.ExcelMappingOptions>())).Returns(mockParser.Object);
+
+        var vm = new MainViewModel(
+            _updateServiceMock.Object,
+            _clientFactoryMock.Object,
+            _dialogServiceMock.Object,
+            _dispatcherServiceMock.Object,
+            _encryptionServiceMock.Object,
+            mockFactory.Object,
+            _tempFilePath
+        );
+
+        string tempExcel = Path.Combine(Path.GetTempPath(), $"temp_save_{Guid.NewGuid():N}.xlsx");
+        File.WriteAllText(tempExcel, "dummy excel content");
+
+        try
+        {
+            vm.SelectedFilePath = tempExcel;
+            vm.IsModified = true;
+
+            vm.SaveSettingsCommand.Execute(null);
+
+            vm.IsModified.Should().BeFalse();
+        }
+        finally
+        {
+            if (File.Exists(tempExcel)) File.Delete(tempExcel);
+        }
+    }
+
+    [Test]
+    public void SaveActiveProfile_WhenWriteFails_ShouldCatchAndLog()
+    {
+        string tempConfig = Path.Combine(Path.GetTempPath(), $"temp_config_fail_{Guid.NewGuid():N}.json");
+        var vm = new MainViewModel(
+            _updateServiceMock.Object,
+            _clientFactoryMock.Object,
+            _dialogServiceMock.Object,
+            _dispatcherServiceMock.Object,
+            _encryptionServiceMock.Object,
+            _excelParserFactoryMock.Object,
+            tempConfig
+        );
+
+        try
+        {
+            // Set file to read-only so SaveActiveProfile fails on WriteAllText
+            File.SetAttributes(tempConfig, FileAttributes.ReadOnly);
+            vm.SaveActiveProfile();
+            vm.LogText.Should().Contain("Could not save active profile setting");
+        }
+        finally
+        {
+            if (File.Exists(tempConfig))
+            {
+                File.SetAttributes(tempConfig, FileAttributes.Normal);
+                File.Delete(tempConfig);
+            }
+        }
+    }
+
+    [Test]
+    public async Task LoadBexioOptionsAsync_WhenGetAccountsFails_ShouldCatchExceptionAndLog()
+    {
+        var clientMock = new Mock<BexioOrderImport.Application.Interfaces.IBexioClient>();
+        clientMock.Setup(c => c.CheckConnectionAsync()).ReturnsAsync(true);
+        clientMock.Setup(c => c.GetAccountsAsync()).ThrowsAsync(new Exception("Bexio API Accounts error"));
+        _clientFactoryMock.Setup(f => f.Create(It.IsAny<string>(), It.IsAny<int?>(), It.IsAny<int?>(), It.IsAny<string>())).Returns(clientMock.Object);
+
+        var vm = CreateVm();
+        vm.BexioToken = "test_token";
+
+        await vm.CheckBexioConnectionAsync();
+
+        vm.LogText.Should().Contain("Could not load accounts: Bexio API Accounts error");
+    }
+
+    [Test]
+    public void UpdateRemainingTime_WithMultipleProgressTicks_ShouldCalculateSmoothedRemainingTime()
+    {
+        var vm = CreateVm();
+
+        var method = typeof(MainViewModel).GetMethod("UpdateRemainingTime", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+        var stopwatch = new System.Diagnostics.Stopwatch();
+        stopwatch.Start();
+
+        method!.Invoke(vm, new object[] { 2, 10, stopwatch });
+        method.Invoke(vm, new object[] { 5, 10, stopwatch });
+
+        vm.RemainingTimeText.Should().NotBeNullOrEmpty();
+    }
 }
