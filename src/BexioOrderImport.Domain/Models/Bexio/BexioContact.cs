@@ -7,6 +7,9 @@ namespace BexioOrderImport.Domain.Models.Bexio
         [JsonPropertyName("id")]
         public int Id { get; set; }
 
+        [JsonPropertyName("nr")]
+        public string? Nr { get; set; }
+
         [JsonPropertyName("mail")]
         public string? EMail { get; set; }
 

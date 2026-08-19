@@ -67,71 +67,77 @@ public class ImportOrderUseCase
         // 2. Start API upload
         interaction.LogInfo("Connecting to Bexio API...");
         int orderId;
+        string orderNumberDisplay;
 
-        if (order.OrderId.HasValue)
+        if (!string.IsNullOrWhiteSpace(order.OrderNumber))
         {
-            interaction.LogInfo($"Checking existing order {order.OrderId.Value} in Bexio...");
-            var contactInfo = await _bexioClient.GetOrderContactDetailsAsync(order.OrderId.Value);
-            if (contactInfo == null)
+            interaction.LogInfo($"Searching order #{order.OrderNumber} in Bexio...");
+            var existingOrder = await _bexioClient.FindOrderByDocumentNrAsync(order.OrderNumber);
+            if (existingOrder == null)
             {
-                interaction.LogInfo($"⛔ Order with ID {order.OrderId.Value} not found in Bexio.");
-                return new ImportResult(Success: false, ErrorMessage: $"Order {order.OrderId.Value} not found.");
+                interaction.LogInfo($"⛔ Order #{order.OrderNumber} not found in Bexio.");
+                return new ImportResult(Success: false, ErrorMessage: $"Order {order.OrderNumber} not found.");
             }
 
-            if (order.CustomerId.HasValue)
+            var contactInfo = await _bexioClient.GetContactDetailsAsync(existingOrder.ContactId);
+
+            if (!string.IsNullOrWhiteSpace(order.CustomerNumber))
             {
-                if (contactInfo.Id != order.CustomerId.Value)
+                string contactNr = contactInfo?.Nr ?? contactInfo?.Id.ToString() ?? string.Empty;
+                if (int.Parse(contactNr) != int.Parse(order.CustomerNumber))
                 {
-                    interaction.LogInfo($"⛔ Customer ID mismatch: Existing order {order.OrderId.Value} belongs to contact ID {contactInfo.Id}, but Customer ID {order.CustomerId.Value} was specified.");
-                    return new ImportResult(Success: false, ErrorMessage: $"Customer ID mismatch: order belongs to contact {contactInfo.Id}, specified customer ID is {order.CustomerId.Value}.");
+                    interaction.LogInfo($"⛔ Customer number mismatch: Existing order #{order.OrderNumber} belongs to customer #{contactNr}, but customer #{order.CustomerNumber} was specified.");
+                    return new ImportResult(Success: false, ErrorMessage: $"Customer number mismatch: order belongs to contact {contactNr}, specified customer number is {order.CustomerNumber}.");
                 }
-                interaction.LogInfo($"Customer ID matched ({order.CustomerId.Value}).");
+                interaction.LogInfo($"Customer number matched ({order.CustomerNumber}).");
             }
             else
             {
-                string? existingEmail = contactInfo.EMail;
+                string? existingEmail = contactInfo?.EMail;
                 if (!string.Equals(existingEmail, order.Customer.Email, StringComparison.OrdinalIgnoreCase))
                 {
                     bool ignoreMismatch = await interaction.ConfirmEmailMismatchAsync(existingEmail ?? string.Empty, order.Customer.Email);
                     if (!ignoreMismatch)
                     {
-                        interaction.LogInfo($"⛔ Email mismatch: Existing order {order.OrderId.Value} belongs to contact ID {contactInfo.Id} with email {contactInfo.EMail}, but Email {order.Customer.Email} was specified.");
-                        return new ImportResult(Success: false, ErrorMessage: "Email mismatch: Existing order {order.OrderId.Value} belongs to contact ID {contactInfo.Id} with email {contactInfo.EMail}, but Email {order.Customer.Email} was specified.");
+                        interaction.LogInfo($"⛔ Email mismatch: Existing order #{order.OrderNumber} belongs to contact #{contactInfo?.Nr ?? contactInfo?.Id.ToString()} with email {contactInfo?.EMail}, but Email {order.Customer.Email} was specified.");
+                        return new ImportResult(Success: false, ErrorMessage: $"Email mismatch: Existing order {order.OrderNumber} belongs to contact {contactInfo?.Nr ?? contactInfo?.Id.ToString()} with email {contactInfo?.EMail}, but Email {order.Customer.Email} was specified.");
                     }
                     interaction.LogInfo("Email mismatch ignored by user. Proceeding with existing order...");
                 }
             }
 
-            orderId = order.OrderId.Value;
-            interaction.LogInfo($"Existing order matched (Bexio ID: {orderId}). Uploading positions...");
+            orderId = existingOrder.Id;
+            orderNumberDisplay = existingOrder.DocumentNr;
+            interaction.LogInfo($"Existing order matched (Order #{orderNumberDisplay}). Uploading positions...");
         }
-        else if (order.CustomerId.HasValue)
+        else if (!string.IsNullOrWhiteSpace(order.CustomerNumber))
         {
-            int contactId = order.CustomerId.Value;
-            interaction.LogInfo($"Customer ID provided ({contactId}). Creating order...");
-            var contactInfo = await _bexioClient.GetContactDetailsAsync(order.CustomerId.Value);
-            if(contactInfo == null)
+            interaction.LogInfo($"Customer number provided ({order.CustomerNumber}). Searching customer in Bexio...");
+            var contactInfo = await _bexioClient.FindContactByNrAsync(order.CustomerNumber);
+            if (contactInfo == null)
             {
-                interaction.LogInfo($"⛔ Customer with ID {order.CustomerId.Value} not found in Bexio.");
-                return new ImportResult(Success: false, ErrorMessage: $"Customer {order.CustomerId.Value} not found.");
+                interaction.LogInfo($"⛔ Customer #{order.CustomerNumber} not found in Bexio.");
+                return new ImportResult(Success: false, ErrorMessage: $"Customer {order.CustomerNumber} not found.");
             }
 
-            interaction.LogInfo($"Customer found: {contactInfo.Name} {contactInfo.EMail}");
+            interaction.LogInfo($"Customer found: {contactInfo.Name} ({contactInfo.EMail})");
 
             string titleTemplate = options.DefaultOrderName ?? "Order: {CustomerName} {SeasonCode}";
             order.Title = titleTemplate
                 .Replace("{CustomerName}", order.Customer.CompanyName ?? string.Empty)
                 .Replace("{SeasonCode}", options.SeasonCode ?? string.Empty);
 
-            orderId = await _bexioClient.CreateOrderAsync(contactId, order);
-            interaction.LogInfo($"Order created successfully (Bexio ID: {orderId}). Uploading positions...");
+            var createdOrder = await _bexioClient.CreateOrderAsync(contactInfo.Id, order);
+            orderId = createdOrder.Id;
+            orderNumberDisplay = createdOrder.DocumentNr;
+            interaction.LogInfo($"Order created successfully (Order #{orderNumberDisplay}). Uploading positions...");
         }
         else
         {
             if (string.IsNullOrWhiteSpace(order.Customer.Email))
             {
                 interaction.LogInfo("⛔ Email address is required when creating an order by customer email, but no email was provided in the order sheet.");
-                throw new InvalidOperationException("Email address is required when no Order ID or Customer ID is specified.");
+                throw new InvalidOperationException("Email address is required when no Order Number or Customer Number is specified.");
             }
 
             int? contactId = await _bexioClient.FindContactIdAsync(order.Customer.Email);
@@ -153,8 +159,10 @@ public class ImportOrderUseCase
                 .Replace("{CustomerName}", order.Customer.CompanyName ?? string.Empty)
                 .Replace("{SeasonCode}", options.SeasonCode ?? string.Empty);
 
-            orderId = await _bexioClient.CreateOrderAsync(contactId.Value, order);
-            interaction.LogInfo($"Order created successfully (Bexio ID: {orderId}). Uploading positions...");
+            var createdOrder = await _bexioClient.CreateOrderAsync(contactId.Value, order);
+            orderId = createdOrder.Id;
+            orderNumberDisplay = createdOrder.DocumentNr;
+            interaction.LogInfo($"Order created successfully (Order #{orderNumberDisplay}). Uploading positions...");
         }
 
         interaction.LogInfo("Pre-fetching article data from Bexio...");
@@ -207,10 +215,10 @@ public class ImportOrderUseCase
             interaction.LogInfo("Global discount position added successfully.");
         }
 
-        interaction.LogInfo($"Successfully completed! Order #{orderId} has been imported into Bexio.");
+        interaction.LogInfo($"Successfully completed! Order #{orderNumberDisplay} has been imported into Bexio.");
         return new ImportResult(
             Success: true,
-            OrderId: orderId,
+            OrderNumber: orderNumberDisplay,
             UploadedPositionsCount: count);
     }
 }

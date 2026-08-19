@@ -9,6 +9,16 @@ namespace BexioOrderImport.Application.Interfaces;
 public interface IBexioClient
 {
     /// <summary>
+    /// Searches for an existing contact by contact number (nr).
+    /// </summary>
+    Task<BexioContact?> FindContactByNrAsync(string customerNumber);
+
+    /// <summary>
+    /// Searches for an existing order by document number (document_nr).
+    /// </summary>
+    Task<BexioOrder?> FindOrderByDocumentNrAsync(string orderNumber);
+
+    /// <summary>
     /// Searches for an existing contact by email address.
     /// </summary>
     Task<int?> FindContactIdAsync(string email);
@@ -21,7 +31,7 @@ public interface IBexioClient
     /// <summary>
     /// Creates a new order header in Bexio.
     /// </summary>
-    Task<int> CreateOrderAsync(int contactId, Order order);
+    Task<BexioOrder> CreateOrderAsync(int contactId, Order order);
 
     /// <summary>
     /// Fetches contact details associated with an existing Bexio order ID.

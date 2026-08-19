@@ -153,8 +153,8 @@
   <data name="Import_Buyer" xml:space="preserve">
     <value>Einkäufer</value>
   </data>
-  <data name="Import_OrderId" xml:space="preserve">
-    <value>Auftrags-ID</value>
+  <data name="Import_OrderNumber" xml:space="preserve">
+    <value>Auftrags-Nr.</value>
   </data>
   <data name="Import_Conditions" xml:space="preserve">
     <value>Konditionen</value>
@@ -263,17 +263,17 @@ Bitte schliessen Sie die Datei in Excel und versuchen Sie es erneut.</value>
   <data name="Settings_CellBuyerName" xml:space="preserve">
     <value>Zelle Einkäufer</value>
   </data>
-  <data name="Settings_CellOrderId" xml:space="preserve">
-    <value>Zelle Auftrags-ID</value>
+  <data name="Settings_CellOrderNumber" xml:space="preserve">
+    <value>Zelle Auftrags-Nr.</value>
   </data>
-  <data name="Settings_EnableOrderId" xml:space="preserve">
-    <value>Auftrags-ID aktivieren</value>
+  <data name="Settings_EnableOrderNumber" xml:space="preserve">
+    <value>Auftrags-Nr. aktivieren</value>
   </data>
-  <data name="Settings_CellCustomerId" xml:space="preserve">
-    <value>Zelle Kunden-ID</value>
+  <data name="Settings_CellCustomerNumber" xml:space="preserve">
+    <value>Zelle Kunden-Nr.</value>
   </data>
-  <data name="Settings_EnableCustomerId" xml:space="preserve">
-    <value>Kunden-ID aktivieren</value>
+  <data name="Settings_EnableCustomerNumber" xml:space="preserve">
+    <value>Kunden-Nr. aktivieren</value>
   </data>
   <data name="Settings_CellPaymentTerms" xml:space="preserve">
     <value>Zelle Konditionen</value>
@@ -515,8 +515,8 @@ Bitte schliessen Sie die Datei in Excel und versuchen Sie es erneut.</value>
   <data name="Update_Error" xml:space="preserve">
     <value>Fehler beim Aktualisieren: {0}</value>
   </data>
-  <data name="Import_CustomerId" xml:space="preserve">
-    <value>Kunden-ID</value>
+  <data name="Import_CustomerNumber" xml:space="preserve">
+    <value>Kunden-Nr.</value>
   </data>
   <data name="Settings_DefaultOrderNameLabel" xml:space="preserve">
     <value>Auftragstitel Vorlage:</value>

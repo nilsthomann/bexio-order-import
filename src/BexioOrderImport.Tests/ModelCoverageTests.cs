@@ -68,15 +68,15 @@ public class ModelCoverageTests : StaTestBase
     [Test]
     public void ImportResult_Properties_ShouldWork()
     {
-        var successResult = new ImportResult(Success: true, OrderId: 99, UploadedPositionsCount: 15);
+        var successResult = new ImportResult(Success: true, UploadedPositionsCount: 15, OrderNumber: "AU-00099");
         successResult.Success.Should().BeTrue();
-        successResult.OrderId.Should().Be(99);
+        successResult.OrderNumber.Should().Be("AU-00099");
         successResult.UploadedPositionsCount.Should().Be(15);
         successResult.ErrorMessage.Should().BeNull();
 
         var failureResult = new ImportResult(Success: false, ErrorMessage: "Error occurred");
         failureResult.Success.Should().BeFalse();
-        failureResult.OrderId.Should().BeNull();
+        failureResult.OrderNumber.Should().BeNull();
         failureResult.UploadedPositionsCount.Should().Be(0);
         failureResult.ErrorMessage.Should().Be("Error occurred");
     }

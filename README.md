@@ -27,9 +27,9 @@ The project features a modern, clean **WPF Desktop Application** built following
   - **Connection Reconnect Button**: Retry establishing connection and refreshing options easily when connection is lost.
   - **Completely Localized**: German and English language support out of the box.
 - **Bexio API Integration**:
-  - Searches contacts dynamically by email.
+  - Searches contacts dynamically by exact customer number or email.
   - Interactive validation card to review and update new customer details before automatic DB insertion.
-  - Appends positions directly to existing Bexio order IDs if present, with email mismatch confirmation.
+  - Appends positions directly to existing Bexio orders by order number (`document_nr`) if present, with email mismatch confirmation.
   - Pre-fetches articles in bulk and uploads positions concurrently for maximum performance.
   - Customizable position text templates supporting `{Color}`, `{Size}`, `{ArticleNumber}`, `{ArticleName}`, `{BexioArticleName}`, and `{BexioArticleDescription}`.
   - Strict article validation: If an article is not found by article number in Bexio, the import is immediately aborted and an error is shown.
@@ -151,7 +151,10 @@ Configuration is stored in `%LocalAppData%\BexioOrderImport\appsettings.json`. I
           "ZipCityCell": "B6",
           "BuyerEmailCell": "E5",
           "BuyerNameCell": "E4",
-          "OrderIdCell": "E6",
+          "EnableOrderNumber": true,
+          "OrderNumberCell": "E6",
+          "EnableCustomerNumber": false,
+          "CustomerNumberCell": "E3",
           "PaymentTermsCell": "A9",
           "DiscountCell": "V12"
         },

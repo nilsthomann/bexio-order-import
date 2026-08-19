@@ -153,8 +153,8 @@
   <data name="Import_Buyer" xml:space="preserve">
     <value>Buyer</value>
   </data>
-  <data name="Import_OrderId" xml:space="preserve">
-    <value>Order ID</value>
+  <data name="Import_OrderNumber" xml:space="preserve">
+    <value>Order Number</value>
   </data>
   <data name="Import_Conditions" xml:space="preserve">
     <value>Terms</value>
@@ -263,17 +263,17 @@ Please close the file in Excel and try again.</value>
   <data name="Settings_CellBuyerName" xml:space="preserve">
     <value>Buyer Name cell</value>
   </data>
-  <data name="Settings_CellOrderId" xml:space="preserve">
-    <value>Order ID cell</value>
+  <data name="Settings_CellOrderNumber" xml:space="preserve">
+    <value>Order Number cell</value>
   </data>
-  <data name="Settings_EnableOrderId" xml:space="preserve">
-    <value>Enable Order ID</value>
+  <data name="Settings_EnableOrderNumber" xml:space="preserve">
+    <value>Enable Order Number</value>
   </data>
-  <data name="Settings_CellCustomerId" xml:space="preserve">
-    <value>Customer ID cell</value>
+  <data name="Settings_CellCustomerNumber" xml:space="preserve">
+    <value>Customer Number cell</value>
   </data>
-  <data name="Settings_EnableCustomerId" xml:space="preserve">
-    <value>Enable Customer ID</value>
+  <data name="Settings_EnableCustomerNumber" xml:space="preserve">
+    <value>Enable Customer Number</value>
   </data>
   <data name="Settings_CellPaymentTerms" xml:space="preserve">
     <value>Payment Terms cell</value>
@@ -515,8 +515,8 @@ Please close the file in Excel and try again.</value>
   <data name="Update_Error" xml:space="preserve">
     <value>Update error: {0}</value>
   </data>
-  <data name="Import_CustomerId" xml:space="preserve">
-    <value>Customer ID</value>
+  <data name="Import_CustomerNumber" xml:space="preserve">
+    <value>Customer Number</value>
   </data>
   <data name="Settings_DefaultOrderNameLabel" xml:space="preserve">
     <value>Order Title Template:</value>

@@ -20,7 +20,7 @@ public static class Translations
     public static string Import_Address => ResourceManager.GetString(nameof(Import_Address)) ?? string.Empty;
     public static string Import_Email => ResourceManager.GetString(nameof(Import_Email)) ?? string.Empty;
     public static string Import_Buyer => ResourceManager.GetString(nameof(Import_Buyer)) ?? string.Empty;
-    public static string Import_OrderId => ResourceManager.GetString(nameof(Import_OrderId)) ?? string.Empty;
+    public static string Import_OrderNumber => ResourceManager.GetString(nameof(Import_OrderNumber)) ?? string.Empty;
     public static string Import_Conditions => ResourceManager.GetString(nameof(Import_Conditions)) ?? string.Empty;
     public static string Import_PositionsHeader => ResourceManager.GetString(nameof(Import_PositionsHeader)) ?? string.Empty;
     public static string Import_ColArtNum => ResourceManager.GetString(nameof(Import_ColArtNum)) ?? string.Empty;
@@ -50,10 +50,10 @@ public static class Translations
     public static string Settings_CellZipCodeCity => ResourceManager.GetString(nameof(Settings_CellZipCodeCity)) ?? string.Empty;
     public static string Settings_CellEmail => ResourceManager.GetString(nameof(Settings_CellEmail)) ?? string.Empty;
     public static string Settings_CellBuyerName => ResourceManager.GetString(nameof(Settings_CellBuyerName)) ?? string.Empty;
-    public static string Settings_CellOrderId => ResourceManager.GetString(nameof(Settings_CellOrderId)) ?? string.Empty;
-    public static string Settings_EnableOrderId => ResourceManager.GetString(nameof(Settings_EnableOrderId)) ?? string.Empty;
-    public static string Settings_CellCustomerId => ResourceManager.GetString(nameof(Settings_CellCustomerId)) ?? string.Empty;
-    public static string Settings_EnableCustomerId => ResourceManager.GetString(nameof(Settings_EnableCustomerId)) ?? string.Empty;
+    public static string Settings_CellOrderNumber => ResourceManager.GetString(nameof(Settings_CellOrderNumber)) ?? string.Empty;
+    public static string Settings_EnableOrderNumber => ResourceManager.GetString(nameof(Settings_EnableOrderNumber)) ?? string.Empty;
+    public static string Settings_CellCustomerNumber => ResourceManager.GetString(nameof(Settings_CellCustomerNumber)) ?? string.Empty;
+    public static string Settings_EnableCustomerNumber => ResourceManager.GetString(nameof(Settings_EnableCustomerNumber)) ?? string.Empty;
     public static string Settings_CellPaymentTerms => ResourceManager.GetString(nameof(Settings_CellPaymentTerms)) ?? string.Empty;
     public static string Settings_CellDiscount => ResourceManager.GetString(nameof(Settings_CellDiscount)) ?? string.Empty;
     public static string Settings_MatrixSection => ResourceManager.GetString(nameof(Settings_MatrixSection)) ?? string.Empty;
@@ -134,7 +134,7 @@ public static class Translations
     public static string Update_InstallNow => ResourceManager.GetString(nameof(Update_InstallNow)) ?? string.Empty;
     public static string Update_Downloading => ResourceManager.GetString(nameof(Update_Downloading)) ?? string.Empty;
     public static string Update_Error => ResourceManager.GetString(nameof(Update_Error)) ?? string.Empty;
-    public static string Import_CustomerId => ResourceManager.GetString(nameof(Import_CustomerId)) ?? string.Empty;
+    public static string Import_CustomerNumber => ResourceManager.GetString(nameof(Import_CustomerNumber)) ?? string.Empty;
     public static string Settings_DefaultOrderNameLabel => ResourceManager.GetString(nameof(Settings_DefaultOrderNameLabel)) ?? string.Empty;
     public static string Settings_DefaultOrderNameHint => ResourceManager.GetString(nameof(Settings_DefaultOrderNameHint)) ?? string.Empty;
     public static string Settings_SeasonCodeLabel => ResourceManager.GetString(nameof(Settings_SeasonCodeLabel)) ?? string.Empty;

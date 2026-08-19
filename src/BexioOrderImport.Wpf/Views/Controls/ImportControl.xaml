@@ -199,12 +199,12 @@
                         <TextBlock Text="{Binding PaymentTerms}" FontWeight="SemiBold"/>
                     </StackPanel>
                     <StackPanel Grid.Column="2" Grid.Row="1" Margin="0,4">
-                        <TextBlock Text="{x:Static lex:Translations.Import_OrderId}" Style="{StaticResource MutedTextBlockStyle}"/>
-                        <TextBlock Text="{Binding OrderId}" FontWeight="SemiBold"/>
+                        <TextBlock Text="{x:Static lex:Translations.Import_OrderNumber}" Style="{StaticResource MutedTextBlockStyle}"/>
+                        <TextBlock Text="{Binding OrderNumber}" FontWeight="SemiBold"/>
                     </StackPanel>
                     <StackPanel Grid.Column="3" Grid.Row="1" Margin="0,4">
-                        <TextBlock Text="{x:Static lex:Translations.Import_CustomerId}" Style="{StaticResource MutedTextBlockStyle}"/>
-                        <TextBlock Text="{Binding CustomerId}" FontWeight="SemiBold"/>
+                        <TextBlock Text="{x:Static lex:Translations.Import_CustomerNumber}" Style="{StaticResource MutedTextBlockStyle}"/>
+                        <TextBlock Text="{Binding CustomerNumber}" FontWeight="SemiBold"/>
                     </StackPanel>
                 </Grid>
             </Grid>

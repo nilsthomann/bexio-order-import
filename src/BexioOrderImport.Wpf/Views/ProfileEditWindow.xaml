@@ -148,21 +148,21 @@
                                         <TextBox x:Name="DiscountCellInput" Height="32"/>
                                     </StackPanel>
 
-                                    <CheckBox x:Name="EnableOrderIdCheckBox" Grid.Row="2" Grid.Column="0" 
-                                              Content="{x:Static lex:Translations.Settings_EnableOrderId}" 
+                                    <CheckBox x:Name="EnableOrderNumberCheckBox" Grid.Row="2" Grid.Column="0" 
+                                              Content="{x:Static lex:Translations.Settings_EnableOrderNumber}" 
                                               VerticalAlignment="Center" Margin="0,16,8,0"
                                               Foreground="{StaticResource TextBrush}" FontWeight="Medium"/>
                                     <StackPanel Grid.Row="2" Grid.Column="1" Margin="0,0,8,0">
-                                        <TextBlock Text="{x:Static lex:Translations.Settings_CellOrderId}" Style="{StaticResource MutedTextBlockStyle}"/>
-                                        <TextBox x:Name="OrderIdCellInput" Height="32" IsEnabled="{Binding ElementName=EnableOrderIdCheckBox, Path=IsChecked}"/>
+                                        <TextBlock Text="{x:Static lex:Translations.Settings_CellOrderNumber}" Style="{StaticResource MutedTextBlockStyle}"/>
+                                        <TextBox x:Name="OrderNumberCellInput" Height="32" IsEnabled="{Binding ElementName=EnableOrderNumberCheckBox, Path=IsChecked}"/>
                                     </StackPanel>
-                                    <CheckBox x:Name="EnableCustomerIdCheckBox" Grid.Row="2" Grid.Column="2" 
-                                              Content="{x:Static lex:Translations.Settings_EnableCustomerId}" 
+                                    <CheckBox x:Name="EnableCustomerNumberCheckBox" Grid.Row="2" Grid.Column="2" 
+                                              Content="{x:Static lex:Translations.Settings_EnableCustomerNumber}" 
                                               VerticalAlignment="Center" Margin="0,16,8,0"
                                               Foreground="{StaticResource TextBrush}" FontWeight="Medium"/>
                                     <StackPanel Grid.Row="2" Grid.Column="3" Margin="0,0,0,0">
-                                        <TextBlock Text="{x:Static lex:Translations.Settings_CellCustomerId}" Style="{StaticResource MutedTextBlockStyle}"/>
-                                        <TextBox x:Name="CustomerIdCellInput" Height="32" IsEnabled="{Binding ElementName=EnableCustomerIdCheckBox, Path=IsChecked}"/>
+                                        <TextBlock Text="{x:Static lex:Translations.Settings_CellCustomerNumber}" Style="{StaticResource MutedTextBlockStyle}"/>
+                                        <TextBox x:Name="CustomerNumberCellInput" Height="32" IsEnabled="{Binding ElementName=EnableCustomerNumberCheckBox, Path=IsChecked}"/>
                                     </StackPanel>
                                 </Grid>
                             </StackPanel>

@@ -41,10 +41,43 @@ public class HeaderMapping
     public string ZipCityCell { get; set; } = "B6";
     public string BuyerEmailCell { get; set; } = "E5";
     public string BuyerNameCell { get; set; } = "E4";
-    public bool EnableOrderId { get; set; } = false;
-    public string OrderIdCell { get; set; } = "E6";
-    public bool EnableCustomerId { get; set; } = false;
-    public string CustomerIdCell { get; set; } = "E3";
+    public bool EnableOrderNumber { get; set; } = false;
+    public string OrderNumberCell { get; set; } = "E6";
+    public bool EnableCustomerNumber { get; set; } = false;
+    public string CustomerNumberCell { get; set; } = "E3";
+
+    // TODO: [Backward Compatibility] Remove in future version
+    [JsonPropertyName("EnableOrderId")]
+    public bool EnableOrderId
+    {
+        get => EnableOrderNumber;
+        set => EnableOrderNumber = value;
+    }
+
+    // TODO: [Backward Compatibility] Remove in future version
+    [JsonPropertyName("OrderIdCell")]
+    public string OrderIdCell
+    {
+        get => OrderNumberCell;
+        set => OrderNumberCell = value;
+    }
+
+    // TODO: [Backward Compatibility] Remove in future version
+    [JsonPropertyName("EnableCustomerId")]
+    public bool EnableCustomerId
+    {
+        get => EnableCustomerNumber;
+        set => EnableCustomerNumber = value;
+    }
+
+    // TODO: [Backward Compatibility] Remove in future version
+    [JsonPropertyName("CustomerIdCell")]
+    public string CustomerIdCell
+    {
+        get => CustomerNumberCell;
+        set => CustomerNumberCell = value;
+    }
+
     public string PaymentTermsCell { get; set; } = "A9";
     public string DiscountCell { get; set; } = "V12";
 }

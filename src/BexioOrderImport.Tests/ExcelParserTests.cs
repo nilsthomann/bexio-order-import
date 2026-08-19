@@ -100,7 +100,7 @@ public class ExcelParserTests
         order.Customer.BuyerName.Should().Be("Hans Muster");
 
         // 2. Delivery & payment terms assertions
-        order.OrderId.Should().BeNull();
+        order.OrderNumber.Should().BeNull();
         order.PaymentTerms.Should().Be("10 Tage 4% Skonto, 30 Tage netto");
 
         // 3. Totals assertions
@@ -320,13 +320,13 @@ public class ExcelParserTests
     }
 
     [Test]
-    public void ParseOrderForm_WithInvalidOrderId_ShouldReturnNullOrderId()
+    public void ParseOrderForm_WithValidOrderNumber_WhenEnableOrderNumberIsTrue_ShouldParseOrderNumberCorrectly()
     {
         // Arrange
         var options = new ExcelMappingOptions();
-        options.Header.EnableOrderId = true;
+        options.Header.EnableOrderNumber = true;
         var parser = new ClosedXmlExcelParser(Microsoft.Extensions.Options.Options.Create(options));
-        string filePath = CreateTemporaryExcelFile("invalid-id-value", "5%");
+        string filePath = CreateTemporaryExcelFile("AU-00123", "5%");
 
         try
         {
@@ -334,7 +334,7 @@ public class ExcelParserTests
             var order = parser.ParseOrderForm(filePath);
 
             // Assert
-            order.OrderId.Should().BeNull();
+            order.OrderNumber.Should().Be("AU-00123");
         }
         finally
         {
@@ -343,13 +343,13 @@ public class ExcelParserTests
     }
 
     [Test]
-    public void ParseOrderForm_WithValidOrderId_WhenEnableOrderIdIsTrue_ShouldParseOrderIdCorrectly()
+    public void ParseOrderForm_WithValidOrderNumber_WhenEnableOrderNumberIsFalse_ShouldReturnNullOrderNumber()
     {
         // Arrange
         var options = new ExcelMappingOptions();
-        options.Header.EnableOrderId = true;
+        options.Header.EnableOrderNumber = false;
         var parser = new ClosedXmlExcelParser(Microsoft.Extensions.Options.Options.Create(options));
-        string filePath = CreateTemporaryExcelFile("12345", "5%");
+        string filePath = CreateTemporaryExcelFile("AU-00123", "5%");
 
         try
         {
@@ -357,7 +357,7 @@ public class ExcelParserTests
             var order = parser.ParseOrderForm(filePath);
 
             // Assert
-            order.OrderId.Should().Be(12345);
+            order.OrderNumber.Should().BeNull();
         }
         finally
         {
@@ -366,35 +366,12 @@ public class ExcelParserTests
     }
 
     [Test]
-    public void ParseOrderForm_WithValidOrderId_WhenEnableOrderIdIsFalse_ShouldReturnNullOrderId()
+    public void ParseOrderForm_WithValidCustomerNumber_WhenEnableCustomerNumberIsTrue_ShouldParseCustomerNumberCorrectly()
     {
         // Arrange
         var options = new ExcelMappingOptions();
-        options.Header.EnableOrderId = false;
-        var parser = new ClosedXmlExcelParser(Microsoft.Extensions.Options.Options.Create(options));
-        string filePath = CreateTemporaryExcelFile("12345", "5%");
-
-        try
-        {
-            // Act
-            var order = parser.ParseOrderForm(filePath);
-
-            // Assert
-            order.OrderId.Should().BeNull();
-        }
-        finally
-        {
-            try { File.Delete(filePath); } catch { }
-        }
-    }
-
-    [Test]
-    public void ParseOrderForm_WithValidCustomerId_WhenEnableCustomerIdIsTrue_ShouldParseCustomerIdCorrectly()
-    {
-        // Arrange
-        var options = new ExcelMappingOptions();
-        options.Header.EnableCustomerId = true;
-        options.Header.CustomerIdCell = "E3";
+        options.Header.EnableCustomerNumber = true;
+        options.Header.CustomerNumberCell = "E3";
         var parser = new ClosedXmlExcelParser(Microsoft.Extensions.Options.Options.Create(options));
 
         using var wb = new ClosedXML.Excel.XLWorkbook();
@@ -403,7 +380,7 @@ public class ExcelParserTests
         ws.Cell("B5").Value = "Musterstrasse 1";
         ws.Cell("B6").Value = "8000 Zurich";
         ws.Cell("E5").Value = "info@firma.ch";
-        ws.Cell("E3").Value = "9876";
+        ws.Cell("E3").Value = "KB10099";
 
         // Size matrix
         ws.Cell(10, 4).Value = "KIDS";
@@ -426,7 +403,7 @@ public class ExcelParserTests
             var order = parser.ParseOrderForm(tempPath);
 
             // Assert
-            order.CustomerId.Should().Be(9876);
+            order.CustomerNumber.Should().Be("KB10099");
         }
         finally
         {
