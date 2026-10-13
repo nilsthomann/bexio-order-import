@@ -240,7 +240,7 @@ Bitte schliessen Sie die Datei in Excel und versuchen Sie es erneut.</value>
     <value>Neues API-Token unter </value>
   </data>
   <data name="Settings_TokenHintSuffix" xml:space="preserve">
-    <value> erstellen, dies ist 6 Monate gültig</value>
+    <value> erstellen, dies ist 60 Tage gültig</value>
   </data>
   <data name="Settings_AccountLabel" xml:space="preserve">
     <value>Konto</value>

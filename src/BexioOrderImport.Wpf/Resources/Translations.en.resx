@@ -240,7 +240,7 @@ Please close the file in Excel and try again.</value>
     <value>Get a new API Token here </value>
   </data>
   <data name="Settings_TokenHintSuffix" xml:space="preserve">
-    <value>, it's valid for 6 months</value>
+    <value>, it's valid for 60 days</value>
   </data>
   <data name="Settings_AccountLabel" xml:space="preserve">
     <value>Account</value>
