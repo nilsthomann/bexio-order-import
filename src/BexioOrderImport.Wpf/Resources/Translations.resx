@@ -527,6 +527,12 @@ Bitte schliessen Sie die Datei in Excel und versuchen Sie es erneut.</value>
   <data name="Settings_SeasonCodeLabel" xml:space="preserve">
     <value>Saison-Code:</value>
   </data>
+  <data name="Settings_SeasonFallbackCodesLabel" xml:space="preserve">
+    <value>Saison-Fallback-Codes:</value>
+  </data>
+  <data name="Settings_SeasonFallbackCodesHint" xml:space="preserve">
+    <value>Kommagetrennt. Beispiel: NOOS, EX</value>
+  </data>
   <data name="Settings_PositionTextTemplateLabel" xml:space="preserve">
     <value>Positionstext Vorlage:</value>
   </data>

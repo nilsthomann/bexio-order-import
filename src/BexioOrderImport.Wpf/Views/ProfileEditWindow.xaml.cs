@@ -88,6 +88,7 @@ public partial class ProfileEditWindow : Window
         ColRowDiscountInput.Text = _profile.Mapping.Data.RowDiscountColumn;
         DefaultOrderNameInput.Text = _profile.Mapping.DefaultOrderName;
         SeasonCodeInput.Text = _profile.Mapping.SeasonCode;
+        SeasonFallbackCodesInput.Text = string.Join(", ", _profile.Mapping.SeasonFallbackCodes);
         SinglePositionTextTemplateInput.Text = _profile.Mapping.SinglePositionTextTemplate;
         GroupedPositionTextTemplateInput.Text = _profile.Mapping.GroupedPositionTextTemplate;
         DiscountPositionTextTemplateInput.Text = _profile.Mapping.DiscountPositionTextTemplate;
@@ -186,6 +187,7 @@ public partial class ProfileEditWindow : Window
             _profile.Mapping.Data.RowDiscountColumn = Application.Helpers.ExcelColumnHelper.NormalizeColumnLetter(ColRowDiscountInput.Text, "U");
             _profile.Mapping.DefaultOrderName = DefaultOrderNameInput.Text.Trim();
             _profile.Mapping.SeasonCode = SeasonCodeInput.Text.Trim();
+            _profile.Mapping.SeasonFallbackCodes = [.. SeasonFallbackCodesInput.Text.Split([',', ';'], StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)];
             _profile.Mapping.PositionGroupingMode = selectedGroupingMode;
             _profile.Mapping.SinglePositionTextTemplate = singleTemplate;
             _profile.Mapping.GroupedPositionTextTemplate = groupedTemplate;

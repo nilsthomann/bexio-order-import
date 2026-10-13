@@ -45,8 +45,9 @@ public interface IBexioClient
 
     /// <summary>
     /// Finds a Bexio article matching the article number, color, and season code.
+    /// Fallback season codes are tried in order (exact intern code match only) when the season code yields no match.
     /// </summary>
-    Task<BexioArticle?> FindArticleAsync(string articleNumber, string color, string seasonCode);
+    Task<BexioArticle?> FindArticleAsync(string articleNumber, string color, string seasonCode, IReadOnlyList<string>? fallbackSeasonCodes = null);
 
     /// <summary>
     /// Pre-fetches articles from Bexio matching the season code and filters relevant article numbers into cache to accelerate batch imports.

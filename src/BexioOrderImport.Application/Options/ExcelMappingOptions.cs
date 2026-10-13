@@ -9,6 +9,7 @@ public class ExcelMappingOptions
     public int WorksheetIndex { get; set; } = 1;
     public string DefaultOrderName { get; set; } = "Order: {CustomerName} {SeasonCode}";
     public string SeasonCode { get; set; } = "FS27";
+    public List<string> SeasonFallbackCodes { get; set; } = [];
     public string SinglePositionTextTemplate { get; set; } = "<strong>{BexioArticleName} Size {Size}</strong><br />{BexioArticleDescription}";
     public string GroupedPositionTextTemplate { get; set; } = "<strong>{BexioArticleName}</strong><br />{SizesRows}<br />{BexioArticleDescription}";
 

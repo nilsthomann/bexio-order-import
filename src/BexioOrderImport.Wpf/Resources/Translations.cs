@@ -138,6 +138,8 @@ public static class Translations
     public static string Settings_DefaultOrderNameLabel => ResourceManager.GetString(nameof(Settings_DefaultOrderNameLabel)) ?? string.Empty;
     public static string Settings_DefaultOrderNameHint => ResourceManager.GetString(nameof(Settings_DefaultOrderNameHint)) ?? string.Empty;
     public static string Settings_SeasonCodeLabel => ResourceManager.GetString(nameof(Settings_SeasonCodeLabel)) ?? string.Empty;
+    public static string Settings_SeasonFallbackCodesLabel => ResourceManager.GetString(nameof(Settings_SeasonFallbackCodesLabel)) ?? string.Empty;
+    public static string Settings_SeasonFallbackCodesHint => ResourceManager.GetString(nameof(Settings_SeasonFallbackCodesHint)) ?? string.Empty;
     public static string Settings_PositionTextTemplateLabel => ResourceManager.GetString(nameof(Settings_PositionTextTemplateLabel)) ?? string.Empty;
     public static string Error_SelectAccountAndTax => ResourceManager.GetString(nameof(Error_SelectAccountAndTax)) ?? string.Empty;
     public static string Import_EmailMismatchTitle => ResourceManager.GetString(nameof(Import_EmailMismatchTitle)) ?? string.Empty;
