@@ -187,19 +187,24 @@ public class BexioApiClient : IBexioClient
         return await response.Content.ReadFromJsonAsync<BexioContact>();
     }
 
-    public async Task<BexioArticle?> FindArticleAsync(string articleNumber, string color, string seasonCode)
+    public async Task<BexioArticle?> FindArticleAsync(string articleNumber, string color, string seasonCode, IReadOnlyList<string>? fallbackSeasonCodes = null)
     {
         // Color can be "Black" or eg. "140 Black", we need only the Color Name
         string cleanColor = Regex.Replace(color, @"^\d+", "").Trim();
 
-        var articles = await FindArticlesByInternCodeAsync(articleNumber, cleanColor, seasonCode);
-
-        if (articles?.Count == 1)
+        // Season code first, then the fallback codes of multi-season articles (eg. "NOOS", "EX")
+        // ponytail: a fallback article costs one missed season code lookup per position; cache missed intern codes if that gets slow
+        foreach (var code in (string[])[seasonCode, .. fallbackSeasonCodes ?? []])
         {
-            return articles[0];
+            var articles = await FindArticlesByInternCodeAsync(articleNumber, cleanColor, code);
+
+            if (articles?.Count == 1)
+            {
+                return articles[0];
+            }
         }
 
-        // Fallback 
+        // Fallback
         return await FindArticleByArticleNumberAndFilterAsync(articleNumber, cleanColor, seasonCode);
     }
 

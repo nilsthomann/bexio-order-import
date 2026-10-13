@@ -193,7 +193,8 @@ public partial class MainViewModel
                 SeasonCode: mappingOpts.SeasonCode,
                 PositionTextTemplate: mappingOpts.PositionTextTemplate,
                 DiscountPositionTextTemplate: mappingOpts.DiscountPositionTextTemplate,
-                SizeRowTemplate: mappingOpts.SizeRowTemplate
+                SizeRowTemplate: mappingOpts.SizeRowTemplate,
+                SeasonFallbackCodes: mappingOpts.SeasonFallbackCodes
             );
 
             var result = await useCase.ExecuteAsync(_loadedOrder, interaction, options);

@@ -240,7 +240,7 @@ Please close the file in Excel and try again.</value>
     <value>Get a new API Token here </value>
   </data>
   <data name="Settings_TokenHintSuffix" xml:space="preserve">
-    <value>, it's valid for 6 months</value>
+    <value>, it's valid for 60 days</value>
   </data>
   <data name="Settings_AccountLabel" xml:space="preserve">
     <value>Account</value>
@@ -526,6 +526,12 @@ Please close the file in Excel and try again.</value>
   </data>
   <data name="Settings_SeasonCodeLabel" xml:space="preserve">
     <value>Season Code:</value>
+  </data>
+  <data name="Settings_SeasonFallbackCodesLabel" xml:space="preserve">
+    <value>Season Fallback Codes:</value>
+  </data>
+  <data name="Settings_SeasonFallbackCodesHint" xml:space="preserve">
+    <value>Comma-separated. Example: NOOS, EX</value>
   </data>
   <data name="Settings_PositionTextTemplateLabel" xml:space="preserve">
     <value>Position Text Template:</value>

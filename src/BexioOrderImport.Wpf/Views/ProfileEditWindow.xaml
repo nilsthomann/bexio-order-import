@@ -98,6 +98,26 @@
                                     <TextBlock Text="{x:Static lex:Translations.Settings_SeasonCodeLabel}" VerticalAlignment="Center" Margin="0,0,12,0"/>
                                     <TextBox x:Name="SeasonCodeInput" Grid.Column="1" Height="32" VerticalAlignment="Center" Width="200" HorizontalAlignment="Left"/>
                                 </Grid>
+
+                                <!-- Season Fallback Codes -->
+                                <Grid Margin="0,4,0,4">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="200"/>
+                                        <ColumnDefinition Width="*"/>
+                                    </Grid.ColumnDefinitions>
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="Auto"/>
+                                    </Grid.RowDefinitions>
+                                    <TextBlock Text="{x:Static lex:Translations.Settings_SeasonFallbackCodesLabel}" VerticalAlignment="Center" Margin="0,0,12,0"/>
+                                    <TextBox x:Name="SeasonFallbackCodesInput" Grid.Column="1" Height="32" VerticalAlignment="Center" Width="200" HorizontalAlignment="Left"/>
+                                    <TextBlock Text="{x:Static lex:Translations.Settings_SeasonFallbackCodesHint}"
+                                               Style="{StaticResource MutedTextBlockStyle}"
+                                               Grid.Row="1"
+                                               Grid.Column="1"
+                                               Margin="0,4,0,0"
+                                               FontStyle="Italic"/>
+                                </Grid>
                             </StackPanel>
                         </Border>
 

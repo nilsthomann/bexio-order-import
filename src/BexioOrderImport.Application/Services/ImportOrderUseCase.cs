@@ -167,7 +167,13 @@ public class ImportOrderUseCase
 
         interaction.LogInfo("Pre-fetching article data from Bexio...");
         var uniqueArticleNumbers = order.Positions.Select(p => p.ArticleNumber).Distinct();
-        await _bexioClient.PreFetchArticlesAsync(options.SeasonCode ?? string.Empty, uniqueArticleNumbers);
+        string seasonCode = options.SeasonCode ?? string.Empty;
+        string[] fallbackSeasonCodes = [.. (options.SeasonFallbackCodes ?? []).Where(c => !string.IsNullOrWhiteSpace(c)).Select(c => c.Trim())];
+        string[] allSeasonCodes = [seasonCode, .. fallbackSeasonCodes];
+        foreach (var code in allSeasonCodes)
+        {
+            await _bexioClient.PreFetchArticlesAsync(code, uniqueArticleNumbers);
+        }
 
         interaction.LogInfo($"Uploading {order.Positions.Count} positions to Bexio...");
 
@@ -176,7 +182,7 @@ public class ImportOrderUseCase
         {
             OrderPosition pos = order.Positions[i];
 
-            var article = await _bexioClient.FindArticleAsync(pos.ArticleNumber, pos.Color, options.SeasonCode ?? string.Empty);
+            var article = await _bexioClient.FindArticleAsync(pos.ArticleNumber, pos.Color, seasonCode, fallbackSeasonCodes);
             if (article != null)
             {
                 string positionText = (options.PositionTextTemplate ?? string.Empty)
@@ -192,8 +198,9 @@ public class ImportOrderUseCase
             }
             else
             {
-                interaction.LogInfo($"⛔ Article '{pos.ArticleNumber}' with color '{pos.Color}' and season code '{options.SeasonCode}' not found in Bexio.");
-                throw new InvalidOperationException($"Article '{pos.ArticleNumber}' with color '{pos.Color}' and season code '{options.SeasonCode}' not found in Bexio.");
+                string triedCodes = string.Join("', '", allSeasonCodes);
+                interaction.LogInfo($"⛔ Article '{pos.ArticleNumber}' with color '{pos.Color}' and season code '{triedCodes}' not found in Bexio.");
+                throw new InvalidOperationException($"Article '{pos.ArticleNumber}' with color '{pos.Color}' and season code '{triedCodes}' not found in Bexio.");
             }
 
             count++;

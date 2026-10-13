@@ -40,6 +40,7 @@ public class ExcelMappingEvaluatorTests
             WorksheetIndex = 2,
             DefaultOrderName = "Test Order",
             SeasonCode = "SS26",
+            SeasonFallbackCodes = ["NOOS", "EX"],
             PositionTextTemplate = "{ArtNo}",
             DiscountPositionTextTemplate = "Disc",
             SizeRowTemplate = "{Amount}x {Size}",
@@ -90,6 +91,7 @@ public class ExcelMappingEvaluatorTests
         target.WorksheetIndex.Should().Be(2);
         target.DefaultOrderName.Should().Be("Test Order");
         target.SeasonCode.Should().Be("SS26");
+        target.SeasonFallbackCodes.Should().Equal("NOOS", "EX");
         target.PositionGroupingMode.Should().Be(PositionGroupingMode.GroupedSizePosition);
         target.SizeRowTemplate.Should().Be("{Amount}x {Size}");
         target.Header.CompanyNameCell.Should().Be("A1");

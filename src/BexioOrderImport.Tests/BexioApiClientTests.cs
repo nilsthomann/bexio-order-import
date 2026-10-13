@@ -270,6 +270,108 @@ public class BexioApiClientTests
     }
 
     [Test]
+    public async Task FindArticleAsync_WhenSeasonCodeMisses_ShouldMatchFallbackCodesInOrder()
+    {
+        // Arrange
+        var requestBodies = new List<string>();
+        var handler = new MockHttpMessageHandler
+        {
+            SendAsyncFunc = async (req, token) =>
+            {
+                string requestBody = await req.Content!.ReadAsStringAsync(token);
+                requestBodies.Add(requestBody);
+                string json = requestBody.Contains("\"EXART-001Black\"")
+                    ? "[{\"id\": 555, \"intern_code\": \"EXART-001Black\", \"intern_name\": \"Sample Product Name\"}]"
+                    : "[]";
+                return new HttpResponseMessage(HttpStatusCode.OK)
+                {
+                    Content = new StringContent(json, System.Text.Encoding.UTF8, "application/json")
+                };
+            }
+        };
+
+        var httpClient = new HttpClient(handler);
+        var client = new BexioApiClient(httpClient, "dummy-token", 1, 1);
+
+        // Act
+        var result = await client.FindArticleAsync("ART-001", "Black", "FS27", ["NOOS", "EX"]);
+
+        // Assert
+        result.Should().NotBeNull();
+        result!.Id.Should().Be(555);
+        requestBodies.Should().HaveCount(3);
+        requestBodies[0].Should().Contain("\"FS27ART-001Black\"");
+        requestBodies[1].Should().Contain("\"NOOSART-001Black\"");
+        requestBodies[2].Should().Contain("\"EXART-001Black\"");
+    }
+
+    [Test]
+    public async Task FindArticleAsync_WhenSeasonCodeMatches_ShouldNotQueryFallbackCodes()
+    {
+        // Arrange
+        var requestBodies = new List<string>();
+        var handler = new MockHttpMessageHandler
+        {
+            SendAsyncFunc = async (req, token) =>
+            {
+                string requestBody = await req.Content!.ReadAsStringAsync(token);
+                requestBodies.Add(requestBody);
+                string json = requestBody.Contains("\"FS27ART-001Black\"")
+                    ? "[{\"id\": 111, \"intern_code\": \"FS27ART-001Black\", \"intern_name\": \"Season Product\"}]"
+                    : "[{\"id\": 555, \"intern_code\": \"EXART-001Black\", \"intern_name\": \"Fallback Product\"}]";
+                return new HttpResponseMessage(HttpStatusCode.OK)
+                {
+                    Content = new StringContent(json, System.Text.Encoding.UTF8, "application/json")
+                };
+            }
+        };
+
+        var httpClient = new HttpClient(handler);
+        var client = new BexioApiClient(httpClient, "dummy-token", 1, 1);
+
+        // Act
+        var result = await client.FindArticleAsync("ART-001", "Black", "FS27", ["EX"]);
+
+        // Assert
+        result.Should().NotBeNull();
+        result!.Id.Should().Be(111);
+        requestBodies.Should().ContainSingle();
+    }
+
+    [Test]
+    public async Task FindArticleAsync_WhenNoCodeMatchesExactly_ShouldFilterByNameWithSeasonCodeOnly()
+    {
+        // Arrange
+        var handler = new MockHttpMessageHandler
+        {
+            SendAsyncFunc = async (req, token) =>
+            {
+                string requestBody = await req.Content!.ReadAsStringAsync(token);
+                // Only the "like" search by article number returns articles, both exact intern code searches miss
+                string json = requestBody.Contains("\"ART-001\"")
+                    ? "[" +
+                      "{\"id\": 555, \"intern_code\": \"X1ART-001\", \"intern_name\": \"EX Sample Product Name Black\"}," +
+                      "{\"id\": 111, \"intern_code\": \"X2ART-001\", \"intern_name\": \"FS27 Sample Product Name Black\"}]"
+                    : "[]";
+                return new HttpResponseMessage(HttpStatusCode.OK)
+                {
+                    Content = new StringContent(json, System.Text.Encoding.UTF8, "application/json")
+                };
+            }
+        };
+
+        var httpClient = new HttpClient(handler);
+        var client = new BexioApiClient(httpClient, "dummy-token", 1, 1);
+
+        // Act
+        var result = await client.FindArticleAsync("ART-001", "Black", "FS27", ["EX"]);
+
+        // Assert
+        result.Should().NotBeNull();
+        result!.Id.Should().Be(111);
+    }
+
+    [Test]
     public async Task AddArticlePositionAsync_Succeeds()
     {
         // Arrange

@@ -302,7 +302,7 @@ public class SettingsPersistenceTests : StaTestBase, IDisposable
             var mockClient = new Mock<IBexioClient>();
             mockClient.Setup(c => c.CheckConnectionAsync()).ReturnsAsync(true);
             mockClient.Setup(c => c.CreateOrderAsync(It.IsAny<int>(), It.IsAny<Order>())).ReturnsAsync(new BexioOrder { Id = 12345, DocumentNr = "AU-12345" });
-            mockClient.Setup(c => c.FindArticleAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>())).ReturnsAsync(new BexioArticle { Id = 999, Description = "Product Description", Name = "Product Name" });
+            mockClient.Setup(c => c.FindArticleAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<IReadOnlyList<string>>())).ReturnsAsync(new BexioArticle { Id = 999, Description = "Product Description", Name = "Product Name" });
             mockFactory.Setup(f => f.Create(It.IsAny<string>(), It.IsAny<int?>(), It.IsAny<int?>())).Returns(mockClient.Object);
 
             var vm = CreateVm(mockUpdate.Object, mockFactory.Object, _tempFilePath);
