@@ -1,6 +1,5 @@
-using BexioOrderImport.Application.Options;
+using BexioOrderImport.Format.Peakmile;
 using BexioOrderImport.Domain.Models;
-using BexioOrderImport.Infrastructure.Excel;
 using BexioOrderImport.Tests.Utils;
 using FluentAssertions;
 
@@ -8,12 +7,12 @@ namespace BexioOrderImport.Tests;
 
 public class ExcelParserTests
 {
-    private readonly ClosedXmlExcelParser _parser;
+    private readonly PeakmileExcelParser _parser;
 
     public ExcelParserTests()
     {
         // Setup default mapping options (matching appsettings.json)
-        var options = new ExcelMappingOptions
+        var options = new PeakmileSettings
         {
             WorksheetIndex = 1,
             Header = new HeaderMapping
@@ -48,8 +47,7 @@ public class ExcelParserTests
             }
         };
 
-        var optionsWrapper = Microsoft.Extensions.Options.Options.Create(options);
-        _parser = new ClosedXmlExcelParser(optionsWrapper);
+        _parser = new PeakmileExcelParser(options);
     }
 
     private static string FindExcelFile(string filename)
@@ -260,11 +258,11 @@ public class ExcelParserTests
     [Test]
     public void ExtractZipAndCity_ShouldHandleEdgeCases()
     {
-        ClosedXmlExcelParser.ExtractZipAndCity("").City.Should().Be("");
-        ClosedXmlExcelParser.ExtractZipAndCity("").Zip.Should().Be("");
+        PeakmileExcelParser.ExtractZipAndCity("").City.Should().Be("");
+        PeakmileExcelParser.ExtractZipAndCity("").Zip.Should().Be("");
 
-        ClosedXmlExcelParser.ExtractZipAndCity("8000").Zip.Should().Be("8000");
-        ClosedXmlExcelParser.ExtractZipAndCity("8000").City.Should().Be("");
+        PeakmileExcelParser.ExtractZipAndCity("8000").Zip.Should().Be("8000");
+        PeakmileExcelParser.ExtractZipAndCity("8000").City.Should().Be("");
     }
 
     private static string CreateTemporaryExcelFile(string orderIdStr, string discountStr)
@@ -323,9 +321,9 @@ public class ExcelParserTests
     public void ParseOrderForm_WithValidOrderNumber_WhenEnableOrderNumberIsTrue_ShouldParseOrderNumberCorrectly()
     {
         // Arrange
-        var options = new ExcelMappingOptions();
+        var options = new PeakmileSettings();
         options.Header.EnableOrderNumber = true;
-        var parser = new ClosedXmlExcelParser(Microsoft.Extensions.Options.Options.Create(options));
+        var parser = new PeakmileExcelParser(options);
         string filePath = CreateTemporaryExcelFile("AU-00123", "5%");
 
         try
@@ -346,9 +344,9 @@ public class ExcelParserTests
     public void ParseOrderForm_WithValidOrderNumber_WhenEnableOrderNumberIsFalse_ShouldReturnNullOrderNumber()
     {
         // Arrange
-        var options = new ExcelMappingOptions();
+        var options = new PeakmileSettings();
         options.Header.EnableOrderNumber = false;
-        var parser = new ClosedXmlExcelParser(Microsoft.Extensions.Options.Options.Create(options));
+        var parser = new PeakmileExcelParser(options);
         string filePath = CreateTemporaryExcelFile("AU-00123", "5%");
 
         try
@@ -369,10 +367,10 @@ public class ExcelParserTests
     public void ParseOrderForm_WithValidCustomerNumber_WhenEnableCustomerNumberIsTrue_ShouldParseCustomerNumberCorrectly()
     {
         // Arrange
-        var options = new ExcelMappingOptions();
+        var options = new PeakmileSettings();
         options.Header.EnableCustomerNumber = true;
         options.Header.CustomerNumberCell = "E3";
-        var parser = new ClosedXmlExcelParser(Microsoft.Extensions.Options.Options.Create(options));
+        var parser = new PeakmileExcelParser(options);
 
         using var wb = new ClosedXML.Excel.XLWorkbook();
         var ws = wb.Worksheets.Add("Bestellformular");
@@ -415,10 +413,10 @@ public class ExcelParserTests
     public void ParseOrderForm_WithRowDiscountEnabled_ShouldSetPositionDiscountPercent()
     {
         // Arrange
-        var options = new ExcelMappingOptions();
+        var options = new PeakmileSettings();
         options.Data.EnableRowDiscount = true;
         options.Data.RowDiscountColumn = "U";
-        var parser = new ClosedXmlExcelParser(Microsoft.Extensions.Options.Options.Create(options));
+        var parser = new PeakmileExcelParser(options);
 
         using var wb = new ClosedXML.Excel.XLWorkbook();
         var ws = wb.Worksheets.Add("Bestellformular");
@@ -465,10 +463,10 @@ public class ExcelParserTests
     public void ParseOrderForm_WithRowDiscountDisabled_ShouldKeepPositionDiscountNull()
     {
         // Arrange
-        var options = new ExcelMappingOptions();
+        var options = new PeakmileSettings();
         options.Data.EnableRowDiscount = false;
         options.Data.RowDiscountColumn = "U";
-        var parser = new ClosedXmlExcelParser(Microsoft.Extensions.Options.Options.Create(options));
+        var parser = new PeakmileExcelParser(options);
 
         using var wb = new ClosedXML.Excel.XLWorkbook();
         var ws = wb.Worksheets.Add("Bestellformular");
@@ -516,7 +514,7 @@ public class ExcelParserTests
     public void ParseOrderForm_WithRowDiscountEnabled_ShouldCalculateNetUnitPriceAndTotalCorrectly()
     {
         // Arrange
-        var options = new ExcelMappingOptions
+        var options = new PeakmileSettings
         {
             Header = new HeaderMapping
             {
@@ -552,7 +550,7 @@ public class ExcelParserTests
             }
         };
 
-        var parser = new ClosedXmlExcelParser(Microsoft.Extensions.Options.Options.Create(options));
+        var parser = new PeakmileExcelParser(options);
 
         using var wb = new ClosedXML.Excel.XLWorkbook();
         var ws = wb.Worksheets.Add("Sheet1");
@@ -595,7 +593,7 @@ public class ExcelParserTests
     public void ParseOrderForm_WithGroupedSizePositionMode_ShouldCreateSinglePositionPerArticleAndFormatSize()
     {
         // Arrange
-        var options = new ExcelMappingOptions
+        var options = new PeakmileSettings
         {
             PositionGroupingMode = PositionGroupingMode.GroupedSizePosition,
             Header = new HeaderMapping { CompanyNameCell = "A1", StreetCell = "A2", ZipCityCell = "A3", BuyerEmailCell = "A4", BuyerNameCell = "A5" },
@@ -613,7 +611,7 @@ public class ExcelParserTests
             }
         };
 
-        var parser = new ClosedXmlExcelParser(Microsoft.Extensions.Options.Options.Create(options));
+        var parser = new PeakmileExcelParser(options);
 
         using var wb = new ClosedXML.Excel.XLWorkbook();
         var ws = wb.AddWorksheet("Sheet1");
@@ -663,7 +661,7 @@ public class ExcelParserTests
     public void ParseOrderForm_WithCustomSizeRowTemplate_ShouldFormatCustomSizesRows()
     {
         // Arrange
-        var options = new ExcelMappingOptions
+        var options = new PeakmileSettings
         {
             PositionGroupingMode = PositionGroupingMode.GroupedSizePosition,
             SizeRowTemplate = "{Amount} Stk. ({Size})",
@@ -682,7 +680,7 @@ public class ExcelParserTests
             }
         };
 
-        var parser = new ClosedXmlExcelParser(Microsoft.Extensions.Options.Options.Create(options));
+        var parser = new PeakmileExcelParser(options);
 
         using var wb = new ClosedXML.Excel.XLWorkbook();
         var ws = wb.AddWorksheet("Sheet1");

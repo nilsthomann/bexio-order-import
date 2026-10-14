@@ -3,8 +3,8 @@ using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
 using System.Text.Json;
-using BexioOrderImport.Application.Options;
-using BexioOrderImport.Application.Services;
+using BexioOrderImport.Abstractions.Formats;
+using BexioOrderImport.Format.Peakmile;
 using BexioOrderImport.Wpf.Models;
 
 namespace BexioOrderImport.Wpf.Services;
@@ -12,10 +12,14 @@ namespace BexioOrderImport.Wpf.Services;
 public class ProfileManagerService : IProfileManagerService
 {
     private readonly IDialogService _dialogService;
+    private readonly IFormatRegistry _registry;
+    private readonly ProfileSerializer _serializer;
 
-    public ProfileManagerService(IDialogService dialogService)
+    public ProfileManagerService(IDialogService dialogService, IFormatRegistry registry)
     {
         _dialogService = dialogService ?? throw new ArgumentNullException(nameof(dialogService));
+        _registry = registry ?? throw new ArgumentNullException(nameof(registry));
+        _serializer = new ProfileSerializer(registry);
     }
 
     public string? ShowProfileCreateDialogAndValidateName(ObservableCollection<MappingProfile> profiles, bool isClone)
@@ -38,10 +42,13 @@ public class ProfileManagerService : IProfileManagerService
         string? name = ShowProfileCreateDialogAndValidateName(profiles, isClone: false);
         if (name != null)
         {
+            // ponytail: the format is fixed to Peakmile until the create dialog offers the format selection
+            var adapter = _registry.Find(PeakmileFormatAdapter.Id)!;
             var newProfile = new MappingProfile
             {
                 Name = name,
-                Mapping = new ExcelMappingOptions()
+                FormatId = adapter.FormatId,
+                Settings = adapter.CreateDefaultSettings()
             };
             profiles.Add(newProfile);
             return newProfile;
@@ -55,10 +62,13 @@ public class ProfileManagerService : IProfileManagerService
         string? name = ShowProfileCreateDialogAndValidateName(profiles, isClone: true);
         if (name != null)
         {
+            var adapter = _registry.Find(sourceProfile.FormatId);
             var newProfile = new MappingProfile
             {
                 Name = name,
-                Mapping = ExcelMappingEvaluator.CloneOptions(sourceProfile.Mapping)
+                FormatId = sourceProfile.FormatId,
+                Settings = adapter != null && sourceProfile.Settings != null ? adapter.CloneSettings(sourceProfile.Settings) : null,
+                RawSettings = sourceProfile.RawSettings
             };
             profiles.Add(newProfile);
             return newProfile;
@@ -91,11 +101,7 @@ public class ProfileManagerService : IProfileManagerService
             string? fileName = _dialogService.ShowSaveFileDialog("JSON files (*.json)|*.json", ".json", "bexio_mapping_profiles.json");
             if (fileName != null)
             {
-                var exportList = profiles.Select(p => new MappingProfileDto
-                {
-                    Name = p.Name,
-                    ExcelMapping = p.Mapping
-                }).ToList();
+                var exportList = profiles.Select(_serializer.ToDto).ToList();
 
                 string json = JsonSerializer.Serialize(exportList, new JsonSerializerOptions { WriteIndented = true });
                 File.WriteAllText(fileName, json);
@@ -129,15 +135,21 @@ public class ProfileManagerService : IProfileManagerService
                 {
                     if (string.IsNullOrEmpty(dto.Name)) continue;
 
-                    ExcelMappingOptions mapping = dto.ExcelMapping;
+                    var imported = _serializer.FromDto(dto);
                     var existing = profiles.FirstOrDefault(p => p.Name.Equals(dto.Name, StringComparison.OrdinalIgnoreCase));
-                    if (existing != null)
+                    if (existing == null)
                     {
-                        existing.Mapping = mapping;
+                        profiles.Add(imported);
+                    }
+                    else if (existing.FormatId == imported.FormatId && existing.Settings != null && imported.Settings != null)
+                    {
+                        // Keep the instance, it may be the active or selected profile
+                        existing.Settings = imported.Settings;
                     }
                     else
                     {
-                        profiles.Add(new MappingProfile { Name = dto.Name, Mapping = mapping });
+                        // The format of a profile can't change, so a different format replaces the profile
+                        profiles[profiles.IndexOf(existing)] = imported;
                     }
                     importedAny = true;
                 }

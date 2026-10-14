@@ -539,6 +539,9 @@ Bitte schliessen Sie die Datei in Excel und versuchen Sie es erneut.</value>
   <data name="Error_SelectAccountAndTax" xml:space="preserve">
     <value>Bitte wählen Sie ein Standard-Konto und einen Standard-Steuersatz in den Einstellungen.</value>
   </data>
+  <data name="Error_FormatUnavailable" xml:space="preserve">
+    <value>Das Format '{0}' des aktiven Profils ist in dieser Version nicht verfügbar.</value>
+  </data>
   <data name="Import_EmailMismatchTitle" xml:space="preserve">
     <value>E-Mail Abweichung</value>
   </data>

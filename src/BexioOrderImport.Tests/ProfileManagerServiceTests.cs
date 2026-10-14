@@ -1,5 +1,6 @@
 using System.Collections.ObjectModel;
-using BexioOrderImport.Application.Options;
+using BexioOrderImport.Format.Peakmile;
+using BexioOrderImport.Tests.Utils;
 using BexioOrderImport.Wpf.Models;
 using BexioOrderImport.Wpf.Services;
 using FluentAssertions;
@@ -15,7 +16,7 @@ public class ProfileManagerServiceTests
     public ProfileManagerServiceTests()
     {
         _dialogMock = new Mock<IDialogService>();
-        _service = new ProfileManagerService(_dialogMock.Object);
+        _service = new ProfileManagerService(_dialogMock.Object, new BexioOrderImport.Abstractions.Formats.FormatRegistry([new PeakmileFormatAdapter()]));
     }
 
     [Test]
@@ -23,7 +24,7 @@ public class ProfileManagerServiceTests
     {
         var profiles = new ObservableCollection<MappingProfile>
         {
-            new MappingProfile { Name = "Default", Mapping = new ExcelMappingOptions() }
+            ProfileTestExtensions.PeakmileProfile("Default")
         };
 
         _dialogMock.Setup(d => d.ShowProfileCreateDialog(false)).Returns("Custom Profile");
@@ -40,7 +41,7 @@ public class ProfileManagerServiceTests
     {
         var profiles = new ObservableCollection<MappingProfile>
         {
-            new MappingProfile { Name = "Default", Mapping = new ExcelMappingOptions() }
+            ProfileTestExtensions.PeakmileProfile("Default")
         };
 
         _dialogMock.Setup(d => d.ShowProfileCreateDialog(false)).Returns("Default");
@@ -55,8 +56,8 @@ public class ProfileManagerServiceTests
     [Test]
     public void DeleteProfile_WhenConfirmed_RemovesProfile()
     {
-        var defaultP = new MappingProfile { Name = "Default", Mapping = new ExcelMappingOptions() };
-        var customP = new MappingProfile { Name = "Custom", Mapping = new ExcelMappingOptions() };
+        var defaultP = ProfileTestExtensions.PeakmileProfile("Default");
+        var customP = ProfileTestExtensions.PeakmileProfile("Custom");
         var profiles = new ObservableCollection<MappingProfile> { defaultP, customP };
 
         _dialogMock.Setup(d => d.ShowConfirmDialog(It.IsAny<string>(), It.IsAny<string>())).Returns(true);
@@ -73,7 +74,7 @@ public class ProfileManagerServiceTests
     {
         var profiles = new ObservableCollection<MappingProfile>
         {
-            new MappingProfile { Name = "Default", Mapping = new ExcelMappingOptions() }
+            ProfileTestExtensions.PeakmileProfile("Default")
         };
 
         _dialogMock.Setup(d => d.ShowProfileCreateDialog(false)).Returns((string?)null);
@@ -87,7 +88,7 @@ public class ProfileManagerServiceTests
     [Test]
     public void CloneProfile_WhenUserCancels_ReturnsNull()
     {
-        var defaultP = new MappingProfile { Name = "Default", Mapping = new ExcelMappingOptions() };
+        var defaultP = ProfileTestExtensions.PeakmileProfile("Default");
         var profiles = new ObservableCollection<MappingProfile> { defaultP };
 
         _dialogMock.Setup(d => d.ShowProfileCreateDialog(true)).Returns((string?)null);

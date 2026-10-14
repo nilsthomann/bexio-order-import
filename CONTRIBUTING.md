@@ -83,8 +83,8 @@ To compile the Windows installer executable (`BexioOrderImportSetup.exe`) locall
 When adding a new field from an Excel template, follow these steps in order to keep all layers in sync:
 
 1. **Domain model**: Add the property to the relevant class in `src/BexioOrderImport.Domain/Models/`
-2. **ExcelMappingOptions**: Add the corresponding cell/column config property in `src/BexioOrderImport.Application/Options/ExcelMappingOptions.cs`
-3. **Parser**: Read the new cell in `src/BexioOrderImport.Infrastructure/Excel/ClosedXmlExcelParser.cs`
+2. **PeakmileSettings**: Add the corresponding cell/column config property in `src/BexioOrderImport.Format.Peakmile/PeakmileSettings.cs`
+3. **Parser**: Read the new cell in `src/BexioOrderImport.Format.Peakmile/PeakmileExcelParser.cs`
 4. **AppSettingsDto**: Add the new property to the matching DTO class in `src/BexioOrderImport.Wpf/Models/AppSettingsDto.cs`
 5. **MainViewModel**: Add the corresponding VM property and wire it in `CopyVmToProfile`/`CopyProfileToVm` in `MainViewModel.Settings.cs`
 6. **XAML**: Add the UI binding in the Settings tab in `MainWindow.xaml` or `ProfileEditWindow.xaml`

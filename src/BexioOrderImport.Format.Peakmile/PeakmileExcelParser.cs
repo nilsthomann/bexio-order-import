@@ -1,19 +1,16 @@
 using BexioOrderImport.Abstractions.Excel;
-using BexioOrderImport.Application.Interfaces;
-using BexioOrderImport.Application.Options;
 using BexioOrderImport.Domain.Models;
 using ClosedXML.Excel;
-using Microsoft.Extensions.Options;
 
-namespace BexioOrderImport.Infrastructure.Excel;
+namespace BexioOrderImport.Format.Peakmile;
 
-public class ClosedXmlExcelParser : IExcelParser
+public class PeakmileExcelParser : IExcelParser
 {
-    private readonly ExcelMappingOptions _options;
+    private readonly PeakmileSettings _options;
 
-    public ClosedXmlExcelParser(IOptions<ExcelMappingOptions> options)
+    public PeakmileExcelParser(PeakmileSettings options)
     {
-        _options = options.Value;
+        _options = options ?? throw new ArgumentNullException(nameof(options));
     }
 
     public Order ParseOrderForm(string filePath)

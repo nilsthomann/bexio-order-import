@@ -5,7 +5,8 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
 using BexioOrderImport.Abstractions.Bexio;
-using BexioOrderImport.Application.Interfaces;
+using BexioOrderImport.Abstractions.Formats;
+using BexioOrderImport.Format.Peakmile;
 using BexioOrderImport.Domain.Models;
 using BexioOrderImport.Domain.Models.Bexio;
 using BexioOrderImport.Wpf.Resources;
@@ -37,7 +38,8 @@ public partial class MainViewModel : ViewModelBase
 
     private readonly IUpdateService _updateService;
     private readonly IBexioServiceFactory _bexioClientFactory;
-    private readonly IExcelParserFactory _excelParserFactory;
+    private readonly IFormatRegistry _formatRegistry;
+    private readonly ProfileSerializer _profileSerializer;
     private readonly IDialogService _dialogService;
     private readonly IDispatcherService _dispatcherService;
     private readonly IEncryptionService _encryptionService;
@@ -127,7 +129,7 @@ public partial class MainViewModel : ViewModelBase
         IDialogService dialogService,
         IDispatcherService dispatcherService,
         IEncryptionService encryptionService,
-        IExcelParserFactory excelParserFactory,
+        IFormatRegistry formatRegistry,
         string? configFilePath = null,
         IProfileManagerService? profileManagerService = null)
     {
@@ -136,8 +138,9 @@ public partial class MainViewModel : ViewModelBase
         _dialogService = dialogService ?? throw new ArgumentNullException(nameof(dialogService));
         _dispatcherService = dispatcherService ?? throw new ArgumentNullException(nameof(dispatcherService));
         _encryptionService = encryptionService ?? throw new ArgumentNullException(nameof(encryptionService));
-        _excelParserFactory = excelParserFactory ?? throw new ArgumentNullException(nameof(excelParserFactory));
-        _profileManagerService = profileManagerService ?? new ProfileManagerService(_dialogService);
+        _formatRegistry = formatRegistry ?? throw new ArgumentNullException(nameof(formatRegistry));
+        _profileSerializer = new ProfileSerializer(_formatRegistry);
+        _profileManagerService = profileManagerService ?? new ProfileManagerService(_dialogService, _formatRegistry);
 
         // Commands
         LoadFileCommand = new RelayCommand(async () => await LoadExcelFileAsync());
@@ -419,9 +422,9 @@ public partial class MainViewModel : ViewModelBase
         }
     }
 
-    public bool IsActiveRowDiscountEnabled => ActiveProfile?.Mapping.Data.EnableRowDiscount ?? false;
-    public bool IsActiveOrderNumberEnabled => ActiveProfile?.Mapping.Header.EnableOrderNumber ?? false;
-    public bool IsActiveCustomerNumberEnabled => ActiveProfile?.Mapping.Header.EnableCustomerNumber ?? false;
+    public bool IsActiveRowDiscountEnabled => ActiveProfile?.Settings is PeakmileSettings { Data.EnableRowDiscount: true };
+    public bool IsActiveOrderNumberEnabled => ActiveProfile?.Settings is PeakmileSettings { Header.EnableOrderNumber: true };
+    public bool IsActiveCustomerNumberEnabled => ActiveProfile?.Settings is PeakmileSettings { Header.EnableCustomerNumber: true };
 
     public Models.MappingProfile? ActiveProfile
     {

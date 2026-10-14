@@ -3,10 +3,10 @@
 WPF desktop app (.NET 10, Windows only) that parses Excel order forms and imports customers and order positions into Bexio through its REST API. Solution: `BexioOrderImport.slnx`.
 
 - `src/BexioOrderImport.Domain`: models (`Order`, `OrderPosition`, Bexio DTOs)
-- `src/BexioOrderImport.Abstractions`: shared contracts (`IBexioService`, `IImportUserInteractionService`, `ImportResult`), `ExcelColumnHelper`
-- `src/BexioOrderImport.Application`: use cases, `IExcelParser`, options
-- `src/BexioOrderImport.Infrastructure`: `BexioApiClient`, `ClosedXmlExcelParser`
-- `src/BexioOrderImport.Wpf`: MVVM UI, mapping profiles, settings, auto-updater
+- `src/BexioOrderImport.Abstractions`: shared contracts (`IBexioService`, `IFormatAdapter`, `IFormatRegistry`, `IImportUserInteractionService`, `ImportResult`), `ExcelColumnHelper`
+- `src/BexioOrderImport.Format.Peakmile`: Peakmile import format (`PeakmileFormatAdapter`, `PeakmileSettings`, `PeakmileExcelParser`, `PeakmileImporter`) with its own translations
+- `src/BexioOrderImport.Infrastructure`: `BexioApiClient`
+- `src/BexioOrderImport.Wpf`: MVVM UI, mapping profiles (`ProfileSerializer`), settings, auto-updater; registers the formats in `App.xaml.cs`
 - `src/BexioOrderImport.Tests`: TUnit tests with Moq and FluentAssertions
 
 `src/BexioOrderImport.Cli` holds only build output and is not part of the solution.
@@ -48,11 +48,13 @@ dotnet run --project src\BexioOrderImport.Tests -- --treenode-filter "/*/*/*/*Fa
 
 ## Adding a profile setting
 
-1. Add the property with a default to `ExcelMappingOptions`. It is serialized as is into `%LocalAppData%\BexioOrderImport\appsettings.json` and into profile exports, so existing profiles must load without it.
+Profiles store a format id (`Format`) and the format's settings (`Settings`) in `%LocalAppData%\BexioOrderImport\appsettings.json` and in profile exports. Profiles from v1.6.0 and older have no format and keep their Peakmile settings in `ExcelMapping`; `ProfileSerializer` still reads them. For a Peakmile setting:
+
+1. Add the property with a default to `PeakmileSettings`. It is serialized as is, so existing profiles must load without it.
 2. Add it to `ExcelMappingEvaluator.CopyOptions`, which copies property by property, and extend `CopyOptions_ShouldCopyAllValues`.
 3. Add the input to `ProfileEditWindow.xaml` and load/save it in `ProfileEditWindow.xaml.cs`.
 4. Add the label and hint to the three translation files.
-5. If the import needs it, add it to `ImportOrderOptions` and pass it in `MainViewModel.Import.cs`.
+5. If the import needs it, add it to `PeakmileImportOptions` and map it in `PeakmileFormatAdapter.CreateImportOptions`.
 
 ## Bexio article lookup
 

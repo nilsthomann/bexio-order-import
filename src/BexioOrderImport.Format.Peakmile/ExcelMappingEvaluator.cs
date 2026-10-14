@@ -1,9 +1,8 @@
 using System.Text.Json;
 using System.Text.RegularExpressions;
 using BexioOrderImport.Abstractions.Excel;
-using BexioOrderImport.Application.Options;
 
-namespace BexioOrderImport.Application.Services;
+namespace BexioOrderImport.Format.Peakmile;
 
 public static class ExcelMappingEvaluator
 {
@@ -20,13 +19,13 @@ public static class ExcelMappingEvaluator
         return ExcelColumnHelper.IsValidColumnLetter(columnLetter);
     }
 
-    public static void CopyOptions(ExcelMappingOptions source, ExcelMappingOptions target)
+    public static void CopyOptions(PeakmileSettings source, PeakmileSettings target)
     {
         ArgumentNullException.ThrowIfNull(source);
         ArgumentNullException.ThrowIfNull(target);
 
         var json = JsonSerializer.Serialize(source);
-        var temp = JsonSerializer.Deserialize<ExcelMappingOptions>(json);
+        var temp = JsonSerializer.Deserialize<PeakmileSettings>(json);
         if (temp != null)
         {
             target.WorksheetIndex = temp.WorksheetIndex;
@@ -44,10 +43,10 @@ public static class ExcelMappingEvaluator
         }
     }
 
-    public static ExcelMappingOptions CloneOptions(ExcelMappingOptions source)
+    public static PeakmileSettings CloneOptions(PeakmileSettings source)
     {
         ArgumentNullException.ThrowIfNull(source);
         var json = JsonSerializer.Serialize(source);
-        return JsonSerializer.Deserialize<ExcelMappingOptions>(json) ?? new ExcelMappingOptions();
+        return JsonSerializer.Deserialize<PeakmileSettings>(json) ?? new PeakmileSettings();
     }
 }

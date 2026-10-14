@@ -1,6 +1,6 @@
-namespace BexioOrderImport.Application.Models;
+namespace BexioOrderImport.Format.Peakmile;
 
-public record ImportOrderOptions(
+public record PeakmileImportOptions(
     string DefaultOrderName = "Order: {CustomerName} {SeasonCode}",
     string SeasonCode = "FS27",
     string PositionTextTemplate = "<strong>{BexioArticleName} Size {Size}</strong><br />{BexioArticleDescription}",

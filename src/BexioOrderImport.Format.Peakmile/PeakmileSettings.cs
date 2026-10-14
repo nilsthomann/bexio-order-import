@@ -1,10 +1,10 @@
 using System.Text.Json.Serialization;
 using BexioOrderImport.Abstractions.Excel;
-using BexioOrderImport.Domain.Models;
+using BexioOrderImport.Abstractions.Formats;
 
-namespace BexioOrderImport.Application.Options;
+namespace BexioOrderImport.Format.Peakmile;
 
-public class ExcelMappingOptions
+public class PeakmileSettings : IFormatSettings
 {
     public int WorksheetIndex { get; set; } = 1;
     public string DefaultOrderName { get; set; } = "Order: {CustomerName} {SeasonCode}";

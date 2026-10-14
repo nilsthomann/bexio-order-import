@@ -2,7 +2,7 @@ using System;
 using System.IO;
 using System.Linq;
 using System.Text.Json;
-using BexioOrderImport.Application.Options;
+using BexioOrderImport.Format.Peakmile;
 
 namespace BexioOrderImport.Wpf.ViewModels;
 
@@ -39,7 +39,7 @@ public partial class MainViewModel
                 ActiveProfileName = "Default",
                 Profiles = new System.Collections.Generic.List<Models.MappingProfileDto>
                 {
-                    new Models.MappingProfileDto { Name = "Default", ExcelMapping = new Application.Options.ExcelMappingOptions() }
+                    new Models.MappingProfileDto { Name = "Default", Format = PeakmileFormatAdapter.Id }
                 }
             };
             File.WriteAllText(_configFilePath, JsonSerializer.Serialize(defaultSettings, new JsonSerializerOptions { WriteIndented = true }));
@@ -70,12 +70,12 @@ public partial class MainViewModel
             {
                 foreach (var p in dto.Profiles)
                 {
-                    Profiles.Add(new Models.MappingProfile { Name = p.Name, Mapping = p.ExcelMapping });
+                    Profiles.Add(_profileSerializer.FromDto(p));
                 }
             }
             else
             {
-                Profiles.Add(new Models.MappingProfile { Name = "Default", Mapping = new ExcelMappingOptions() });
+                Profiles.Add(_profileSerializer.FromDto(new Models.MappingProfileDto { Name = "Default", Format = PeakmileFormatAdapter.Id }));
             }
 
             var active = Profiles.FirstOrDefault(p => p.Name.Equals(dto.ActiveProfileName, StringComparison.OrdinalIgnoreCase)) ?? Profiles[0];
@@ -107,13 +107,10 @@ public partial class MainViewModel
                     Language = SelectedLanguage
                 },
                 ActiveProfileName = ActiveProfile?.Name ?? "Default",
-                Profiles = Profiles.Select(p => new Models.MappingProfileDto
-                {
-                    Name = p.Name,
-                    ExcelMapping = p.Mapping
-                }).ToList()
+                Profiles = Profiles.Select(_profileSerializer.ToDto).ToList()
             };
 
+            BackupLegacySettings();
             File.WriteAllText(_configFilePath, JsonSerializer.Serialize(settingsObj, new JsonSerializerOptions { WriteIndented = true }));
 
             _ = CheckBexioConnectionAsync();
@@ -177,9 +174,19 @@ public partial class MainViewModel
         _initialLanguage = SelectedLanguage;
     }
 
-    private ExcelMappingOptions BuildMappingOptions()
+    /// <summary>
+    /// Copies a settings file from before formats existed once, as older versions can't read the new profile layout.
+    /// </summary>
+    internal void BackupLegacySettings()
     {
-        return ActiveProfile != null ? ActiveProfile.Mapping : new ExcelMappingOptions();
+        string backupPath = Path.ChangeExtension(_configFilePath, ".v1.bak.json");
+        if (File.Exists(backupPath) || !File.Exists(_configFilePath)) return;
+
+        var dto = JsonSerializer.Deserialize<Models.AppSettingsDto>(File.ReadAllText(_configFilePath));
+        if (dto?.Profiles?.Any(p => p.Format == null) == true)
+        {
+            File.Copy(_configFilePath, backupPath);
+        }
     }
 
     private void ApplyLanguage(string lang)
