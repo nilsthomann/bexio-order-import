@@ -71,7 +71,7 @@ public class UpdateServiceTests
                         ""assets"": [
                             {
                                 ""name"": ""BexioOrderImportSetup.exe"",
-                                ""browser_download_url"": ""https://github.com/nils-thomann/bexio-order-import/releases/download/v99.9.9/BexioOrderImportSetup.exe""
+                                ""browser_download_url"": ""https://github.com/nilsthomann/bexio-order-import/releases/download/v99.9.9/BexioOrderImportSetup.exe""
                             }
                         ]
                     }", System.Text.Encoding.UTF8, "application/json")
@@ -89,7 +89,7 @@ public class UpdateServiceTests
         // Assert
         result.Should().NotBeNull();
         result!.LatestVersion.Should().Be("v99.9.9");
-        result.DownloadUrl.Should().Be("https://github.com/nils-thomann/bexio-order-import/releases/download/v99.9.9/BexioOrderImportSetup.exe");
+        result.DownloadUrl.Should().Be("https://github.com/nilsthomann/bexio-order-import/releases/download/v99.9.9/BexioOrderImportSetup.exe");
         result.ReleaseNotes.Should().Be("Release 99.9.9");
     }
 
@@ -162,7 +162,7 @@ public class UpdateServiceTests
                         ""assets"": [
                             {
                                 ""name"": ""some_other_file.txt"",
-                                ""browser_download_url"": ""https://github.com/nils-thomann/bexio-order-import/releases/download/v99.9.9/some_other_file.txt""
+                                ""browser_download_url"": ""https://github.com/nilsthomann/bexio-order-import/releases/download/v99.9.9/some_other_file.txt""
                             }
                         ]
                     }", Encoding.UTF8, "application/json")
