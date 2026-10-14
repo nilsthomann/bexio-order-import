@@ -2,9 +2,8 @@ using System;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Text.RegularExpressions;
-using BexioOrderImport.Application.Options;
 
-namespace BexioOrderImport.Application.Helpers;
+namespace BexioOrderImport.Abstractions.Excel;
 
 public static class ExcelColumnHelper
 {

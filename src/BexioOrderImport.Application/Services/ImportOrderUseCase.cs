@@ -1,3 +1,5 @@
+using BexioOrderImport.Abstractions.Bexio;
+using BexioOrderImport.Abstractions.Import;
 using BexioOrderImport.Application.Interfaces;
 using BexioOrderImport.Application.Models;
 using BexioOrderImport.Domain.Models;
@@ -8,14 +10,14 @@ namespace BexioOrderImport.Application.Services;
 public class ImportOrderUseCase
 {
     private readonly IExcelParser? _excelParser;
-    private readonly IBexioClient _bexioClient;
+    private readonly IBexioService _bexioClient;
 
-    public ImportOrderUseCase(IBexioClient bexioClient)
+    public ImportOrderUseCase(IBexioService bexioClient)
         : this(excelParser: null, bexioClient: bexioClient)
     {
     }
 
-    public ImportOrderUseCase(IExcelParser? excelParser, IBexioClient bexioClient)
+    public ImportOrderUseCase(IExcelParser? excelParser, IBexioService bexioClient)
     {
         _excelParser = excelParser;
         _bexioClient = bexioClient ?? throw new ArgumentNullException(nameof(bexioClient));
@@ -140,7 +142,7 @@ public class ImportOrderUseCase
                 throw new InvalidOperationException("Email address is required when no Order Number or Customer Number is specified.");
             }
 
-            int? contactId = await _bexioClient.FindContactIdAsync(order.Customer.Email);
+            int? contactId = (await _bexioClient.FindContactByEmailAsync(order.Customer.Email))?.Id;
             if (!contactId.HasValue)
             {
                 bool createCustomerConfirmed = await interaction.ConfirmCustomerCreationAsync(order.Customer);

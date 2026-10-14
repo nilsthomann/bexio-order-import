@@ -12,7 +12,7 @@ namespace BexioOrderImport.Tests;
 public class BexioApiClientTests
 {
     [Test]
-    public async Task FindContactIdAsync_WhenContactExists_ShouldReturnContactId()
+    public async Task FindContactByEmailAsync_WhenContactExists_ShouldReturnContact()
     {
         // Arrange
         var handler = new MockHttpMessageHandler
@@ -31,14 +31,14 @@ public class BexioApiClientTests
         var client = new BexioApiClient(httpClient, "dummy-token", 1, 1);
 
         // Act
-        var result = await client.FindContactIdAsync("test@company.com");
+        var result = await client.FindContactByEmailAsync("test@company.com");
 
         // Assert
-        result.Should().Be(12345);
+        result!.Id.Should().Be(12345);
     }
 
     [Test]
-    public async Task FindContactIdAsync_WhenContactDoesNotExist_ShouldReturnNull()
+    public async Task FindContactByEmailAsync_WhenContactDoesNotExist_ShouldReturnNull()
     {
         // Arrange
         var handler = new MockHttpMessageHandler
@@ -57,7 +57,7 @@ public class BexioApiClientTests
         var client = new BexioApiClient(httpClient, "dummy-token", 1, 1);
 
         // Act
-        var result = await client.FindContactIdAsync("none@company.com");
+        var result = await client.FindContactByEmailAsync("none@company.com");
 
         // Assert
         result.Should().BeNull();
@@ -418,7 +418,7 @@ public class BexioApiClientTests
 
 
     [Test]
-    public async Task FindContactIdAsync_WhenApiReturns500_ThrowsHttpRequestException()
+    public async Task FindContactByEmailAsync_WhenApiReturns500_ThrowsHttpRequestException()
     {
         // Arrange
         var handler = new MockHttpMessageHandler
@@ -430,7 +430,7 @@ public class BexioApiClientTests
         var client = new BexioApiClient(httpClient, "dummy-token", 1, 1);
 
         // Act & Assert
-        Func<Task> act = async () => await client.FindContactIdAsync("error@error.com");
+        Func<Task> act = async () => await client.FindContactByEmailAsync("error@error.com");
         await act.Should().ThrowAsync<HttpRequestException>();
     }
 
@@ -441,7 +441,7 @@ public class BexioApiClientTests
         // Arrange
         var mockFactory = new Mock<IHttpClientFactory>();
         mockFactory.Setup(x => x.CreateClient(It.IsAny<string>())).Returns(() => new HttpClient());
-        var factory = new BexioClientFactory(mockFactory.Object);
+        var factory = new BexioServiceFactory(mockFactory.Object);
 
         // Act
         var client = factory.Create("my-token", 1, 1);
@@ -682,10 +682,10 @@ public class BexioApiClientTests
         var client = new BexioApiClient(httpClient, "dummy-token", 1, 1);
 
         // Act
-        var result = await client.FindContactIdAsync("test@retry.com");
+        var result = await client.FindContactByEmailAsync("test@retry.com");
 
         // Assert
-        result.Should().Be(555);
+        result!.Id.Should().Be(555);
         callCount.Should().Be(2);
     }
 
@@ -734,7 +734,7 @@ public class BexioApiClientTests
     }
 
     [Test]
-    public async Task FindContactIdAsync_WhenRateLimited429_ShouldRetryAndSucceed()
+    public async Task FindContactByEmailAsync_WhenRateLimited429_ShouldRetryAndSucceed()
     {
         // Arrange
         int attempt = 0;
@@ -762,11 +762,11 @@ public class BexioApiClientTests
         var client = new BexioApiClient(httpClient, "dummy-token", 1, 1);
 
         // Act
-        var result = await client.FindContactIdAsync("retry@company.com");
+        var result = await client.FindContactByEmailAsync("retry@company.com");
 
         // Assert
         attempt.Should().Be(2);
-        result.Should().Be(555);
+        result!.Id.Should().Be(555);
     }
 
     [Test]
@@ -866,7 +866,7 @@ public class BexioApiClientTests
     }
 
     [Test]
-    public async Task FindContactIdAsync_WhenRateLimitHeaderUsesUnixTimestamp_ShouldHandleCorrectly()
+    public async Task FindContactByEmailAsync_WhenRateLimitHeaderUsesUnixTimestamp_ShouldHandleCorrectly()
     {
         int callCount = 0;
         var handler = new MockHttpMessageHandler
@@ -888,8 +888,8 @@ public class BexioApiClientTests
         var httpClient = new HttpClient(handler);
         var client = new BexioApiClient(httpClient, "dummy-token", 1, 1);
 
-        var id = await client.FindContactIdAsync("unix@test.com");
-        id.Should().Be(888);
+        var id = await client.FindContactByEmailAsync("unix@test.com");
+        id!.Id.Should().Be(888);
         callCount.Should().Be(1);
     }
 

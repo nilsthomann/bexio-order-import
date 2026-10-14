@@ -20,6 +20,7 @@
     <ProjectReference Include="..\BexioOrderImport.Domain\BexioOrderImport.Domain.csproj" />
     <ProjectReference Include="..\BexioOrderImport.Application\BexioOrderImport.Application.csproj" />
     <ProjectReference Include="..\BexioOrderImport.Infrastructure\BexioOrderImport.Infrastructure.csproj" />
+    <ProjectReference Include="..\BexioOrderImport.Abstractions\BexioOrderImport.Abstractions.csproj" />
   </ItemGroup>
 
   <ItemGroup>

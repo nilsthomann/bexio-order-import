@@ -4,6 +4,7 @@ using System.Text;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
+using BexioOrderImport.Abstractions.Bexio;
 using BexioOrderImport.Application.Interfaces;
 using BexioOrderImport.Domain.Models;
 using BexioOrderImport.Domain.Models.Bexio;
@@ -35,7 +36,7 @@ public partial class MainViewModel : ViewModelBase
     private Models.MappingProfile? _activeProfile;
 
     private readonly IUpdateService _updateService;
-    private readonly IBexioClientFactory _bexioClientFactory;
+    private readonly IBexioServiceFactory _bexioClientFactory;
     private readonly IExcelParserFactory _excelParserFactory;
     private readonly IDialogService _dialogService;
     private readonly IDispatcherService _dispatcherService;
@@ -122,7 +123,7 @@ public partial class MainViewModel : ViewModelBase
 
     public MainViewModel(
         IUpdateService updateService,
-        IBexioClientFactory bexioClientFactory,
+        IBexioServiceFactory bexioClientFactory,
         IDialogService dialogService,
         IDispatcherService dispatcherService,
         IEncryptionService encryptionService,

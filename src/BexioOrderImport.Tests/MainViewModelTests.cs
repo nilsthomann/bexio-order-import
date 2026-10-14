@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using BexioOrderImport.Abstractions.Bexio;
+using BexioOrderImport.Abstractions.Import;
 using BexioOrderImport.Application.Interfaces;
 using BexioOrderImport.Domain.Models;
 using BexioOrderImport.Domain.Models.Bexio;
@@ -16,8 +18,8 @@ namespace BexioOrderImport.Tests;
 public class MainViewModelTests : IDisposable
 {
     private readonly Mock<IUpdateService> _updateServiceMock;
-    private readonly Mock<IBexioClientFactory> _clientFactoryMock;
-    private readonly Mock<IBexioClient> _clientMock;
+    private readonly Mock<IBexioServiceFactory> _clientFactoryMock;
+    private readonly Mock<IBexioService> _clientMock;
     private readonly Mock<IDialogService> _dialogServiceMock;
     private readonly Mock<IDispatcherService> _dispatcherServiceMock;
     private readonly Mock<IEncryptionService> _encryptionServiceMock;
@@ -31,8 +33,8 @@ public class MainViewModelTests : IDisposable
         _tempFilePath = System.IO.Path.Combine(System.IO.Path.GetTempPath(), Guid.NewGuid().ToString() + "_appsettings.json");
 
         _updateServiceMock = new Mock<IUpdateService>();
-        _clientMock = new Mock<IBexioClient>();
-        _clientFactoryMock = new Mock<IBexioClientFactory>();
+        _clientMock = new Mock<IBexioService>();
+        _clientFactoryMock = new Mock<IBexioServiceFactory>();
         _clientFactoryMock.Setup(f => f.Create(It.IsAny<string>(), It.IsAny<int?>(), It.IsAny<int?>(), It.IsAny<string>())).Returns(_clientMock.Object);
         _dialogServiceMock = new Mock<IDialogService>();
         _dispatcherServiceMock = new Mock<IDispatcherService>();
@@ -450,7 +452,7 @@ public class MainViewModelTests : IDisposable
         var stopwatch = new System.Diagnostics.Stopwatch();
         stopwatch.Start();
 
-        var service = (BexioOrderImport.Application.Interfaces.IImportUserInteractionService)Activator.CreateInstance(type!, new object[] {
+        var service = (IImportUserInteractionService)Activator.CreateInstance(type!, new object[] {
             vm,
             (Action<double, double, System.Diagnostics.Stopwatch>)((c, t, sw) => { }),
             stopwatch
@@ -666,7 +668,7 @@ public class MainViewModelTests : IDisposable
     [Test]
     public async Task LoadBexioOptionsAsync_WhenGetAccountsFails_ShouldCatchExceptionAndLog()
     {
-        var clientMock = new Mock<BexioOrderImport.Application.Interfaces.IBexioClient>();
+        var clientMock = new Mock<IBexioService>();
         clientMock.Setup(c => c.CheckConnectionAsync()).ReturnsAsync(true);
         clientMock.Setup(c => c.GetAccountsAsync()).ThrowsAsync(new Exception("Bexio API Accounts error"));
         _clientFactoryMock.Setup(f => f.Create(It.IsAny<string>(), It.IsAny<int?>(), It.IsAny<int?>(), It.IsAny<string>())).Returns(clientMock.Object);

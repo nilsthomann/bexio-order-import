@@ -5,6 +5,8 @@ using System.IO;
 using System.Text.Json;
 using System.Threading.Tasks;
 using FluentAssertions;
+using BexioOrderImport.Abstractions.Bexio;
+using BexioOrderImport.Abstractions.Import;
 using BexioOrderImport.Application.Interfaces;
 using BexioOrderImport.Domain.Models;
 using BexioOrderImport.Domain.Models.Bexio;
@@ -50,14 +52,14 @@ public class SettingsPersistenceTests : StaTestBase, IDisposable
     private MainViewModel CreateVm()
     {
         var mockUpdate = new Mock<IUpdateService>();
-        var mockFactory = new Mock<IBexioClientFactory>();
-        var mockClient = new Mock<IBexioClient>();
+        var mockFactory = new Mock<IBexioServiceFactory>();
+        var mockClient = new Mock<IBexioService>();
         mockClient.Setup(c => c.CheckConnectionAsync()).ReturnsAsync(true);
         mockFactory.Setup(f => f.Create(It.IsAny<string>(), It.IsAny<int?>(), It.IsAny<int?>(), It.IsAny<string>())).Returns(mockClient.Object);
         return CreateVm(mockUpdate.Object, mockFactory.Object, _tempFilePath);
     }
 
-    private MainViewModel CreateVm(IUpdateService updateService, IBexioClientFactory clientFactory, string? configFilePath = null)
+    private MainViewModel CreateVm(IUpdateService updateService, IBexioServiceFactory clientFactory, string? configFilePath = null)
     {
         _profileCreateDialogFunc = null;
         _profileEditDialogFunc = null;
@@ -228,8 +230,8 @@ public class SettingsPersistenceTests : StaTestBase, IDisposable
             try
             {
                 var mockUpdate = new Mock<IUpdateService>();
-                var mockFactory = new Mock<IBexioClientFactory>();
-                var mockClient = new Mock<IBexioClient>();
+                var mockFactory = new Mock<IBexioServiceFactory>();
+                var mockClient = new Mock<IBexioService>();
                 mockClient.Setup(c => c.CheckConnectionAsync()).ReturnsAsync(true);
                 mockFactory.Setup(f => f.Create(It.IsAny<string>(), It.IsAny<int?>(), It.IsAny<int?>(), It.IsAny<string>())).Returns(mockClient.Object);
 
@@ -298,8 +300,8 @@ public class SettingsPersistenceTests : StaTestBase, IDisposable
         {
             // Arrange
             var mockUpdate = new Mock<IUpdateService>();
-            var mockFactory = new Mock<IBexioClientFactory>();
-            var mockClient = new Mock<IBexioClient>();
+            var mockFactory = new Mock<IBexioServiceFactory>();
+            var mockClient = new Mock<IBexioService>();
             mockClient.Setup(c => c.CheckConnectionAsync()).ReturnsAsync(true);
             mockClient.Setup(c => c.CreateOrderAsync(It.IsAny<int>(), It.IsAny<Order>())).ReturnsAsync(new BexioOrder { Id = 12345, DocumentNr = "AU-12345" });
             mockClient.Setup(c => c.FindArticleAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<IReadOnlyList<string>>())).ReturnsAsync(new BexioArticle { Id = 999, Description = "Product Description", Name = "Product Name" });
@@ -573,8 +575,8 @@ public class SettingsPersistenceTests : StaTestBase, IDisposable
         RunInSta(async () =>
         {
             var updateServiceMock = new Mock<IUpdateService>();
-            var bexioClientFactoryMock = new Mock<IBexioClientFactory>();
-            var bexioClientMock = new Mock<IBexioClient>();
+            var bexioClientFactoryMock = new Mock<IBexioServiceFactory>();
+            var bexioClientMock = new Mock<IBexioService>();
             bexioClientMock.Setup(c => c.CheckConnectionAsync()).ReturnsAsync(true);
             bexioClientFactoryMock.Setup(f => f.Create(It.IsAny<string>(), It.IsAny<int?>(), It.IsAny<int?>(), It.IsAny<string>())).Returns(bexioClientMock.Object);
 
@@ -593,8 +595,8 @@ public class SettingsPersistenceTests : StaTestBase, IDisposable
         RunInSta(async () =>
         {
             var updateServiceMock = new Mock<IUpdateService>();
-            var bexioClientFactoryMock = new Mock<IBexioClientFactory>();
-            var bexioClientMock = new Mock<IBexioClient>();
+            var bexioClientFactoryMock = new Mock<IBexioServiceFactory>();
+            var bexioClientMock = new Mock<IBexioService>();
             bexioClientMock.Setup(c => c.CheckConnectionAsync()).ReturnsAsync(false);
             bexioClientFactoryMock.Setup(f => f.Create(It.IsAny<string>(), It.IsAny<int?>(), It.IsAny<int?>(), It.IsAny<string>())).Returns(bexioClientMock.Object);
 
@@ -614,8 +616,8 @@ public class SettingsPersistenceTests : StaTestBase, IDisposable
         {
             // Arrange
             var updateServiceMock = new Mock<IUpdateService>();
-            var bexioClientFactoryMock = new Mock<IBexioClientFactory>();
-            var bexioClientMock = new Mock<IBexioClient>();
+            var bexioClientFactoryMock = new Mock<IBexioServiceFactory>();
+            var bexioClientMock = new Mock<IBexioService>();
             bexioClientFactoryMock.Setup(f => f.Create(It.IsAny<string>(), It.IsAny<int?>(), It.IsAny<int?>(), It.IsAny<string>())).Returns(bexioClientMock.Object);
             var vm = CreateVm(updateServiceMock.Object, bexioClientFactoryMock.Object);
 
@@ -672,7 +674,7 @@ public class SettingsPersistenceTests : StaTestBase, IDisposable
         RunInSta(async () =>
         {
             var updateServiceMock = new Mock<IUpdateService>();
-            var bexioClientFactoryMock = new Mock<IBexioClientFactory>();
+            var bexioClientFactoryMock = new Mock<IBexioServiceFactory>();
             bexioClientFactoryMock.Setup(f => f.Create(It.IsAny<string>(), It.IsAny<int?>(), It.IsAny<int?>(), It.IsAny<string>()))
                 .Throws(new InvalidOperationException("Factory failed"));
             var vm = CreateVm(updateServiceMock.Object, bexioClientFactoryMock.Object);
@@ -716,7 +718,7 @@ public class SettingsPersistenceTests : StaTestBase, IDisposable
         RunInSta(async () =>
         {
             var updateServiceMock = new Mock<IUpdateService>();
-            var throwClientFactoryMock = new Mock<IBexioClientFactory>();
+            var throwClientFactoryMock = new Mock<IBexioServiceFactory>();
             throwClientFactoryMock.Setup(f => f.Create(It.IsAny<string>(), It.IsAny<int?>(), It.IsAny<int?>(), It.IsAny<string>()))
                 .Throws(new InvalidOperationException("Factory failed"));
             var vm = CreateVm(updateServiceMock.Object, throwClientFactoryMock.Object, _tempFilePath);
@@ -799,8 +801,8 @@ public class SettingsPersistenceTests : StaTestBase, IDisposable
             try
             {
                 var updateServiceMock = new Mock<IUpdateService>();
-                var clientFactoryMock = new Mock<IBexioClientFactory>();
-                var clientMock = new Mock<IBexioClient>();
+                var clientFactoryMock = new Mock<IBexioServiceFactory>();
+                var clientMock = new Mock<IBexioService>();
                 clientFactoryMock.Setup(f => f.Create(It.IsAny<string>(), It.IsAny<int?>(), It.IsAny<int?>(), It.IsAny<string>())).Returns(clientMock.Object);
                 var vm = CreateVm(updateServiceMock.Object, clientFactoryMock.Object, path);
 
@@ -829,7 +831,7 @@ public class SettingsPersistenceTests : StaTestBase, IDisposable
             {
                 bool errorCalled = false;
                 var updateServiceMock = new Mock<IUpdateService>();
-                var clientFactoryMock = new Mock<IBexioClientFactory>();
+                var clientFactoryMock = new Mock<IBexioServiceFactory>();
                 var vm = CreateVm(updateServiceMock.Object, clientFactoryMock.Object, path);
                 _errorDialogAction = (msg, title) => errorCalled = true;
 
@@ -854,7 +856,7 @@ public class SettingsPersistenceTests : StaTestBase, IDisposable
             bool errorCalled = false;
 
             var updateServiceMock = new Mock<IUpdateService>();
-            var clientFactoryMock = new Mock<IBexioClientFactory>();
+            var clientFactoryMock = new Mock<IBexioServiceFactory>();
             var vm = CreateVm(updateServiceMock.Object, clientFactoryMock.Object, validPath);
 
             try
@@ -1045,7 +1047,7 @@ public class SettingsPersistenceTests : StaTestBase, IDisposable
             var updateInfo = new UpdateInfo { LatestVersion = "2.0.0", DownloadUrl = "http://download.url", ReleaseNotes = "release_notes" };
             updateServiceMock.Setup(u => u.CheckForUpdatesAsync()).ReturnsAsync(updateInfo);
 
-            var clientFactoryMock = new Mock<IBexioClientFactory>();
+            var clientFactoryMock = new Mock<IBexioServiceFactory>();
             var vm = CreateVm(updateServiceMock.Object, clientFactoryMock.Object);
 
             // Wait for completion (command runs async task in background on load)
@@ -1077,7 +1079,7 @@ public class SettingsPersistenceTests : StaTestBase, IDisposable
                     return Task.CompletedTask;
                 });
 
-            var clientFactoryMock = new Mock<IBexioClientFactory>();
+            var clientFactoryMock = new Mock<IBexioServiceFactory>();
             var vm = CreateVm(updateServiceMock.Object, clientFactoryMock.Object);
 
             // Set update available state
@@ -1113,7 +1115,7 @@ public class SettingsPersistenceTests : StaTestBase, IDisposable
             updateServiceMock.Setup(u => u.DownloadAndInstallUpdateAsync(It.IsAny<string>(), It.IsAny<Action<double>>()))
                 .Throws(new InvalidOperationException("Download failed"));
 
-            var clientFactoryMock = new Mock<IBexioClientFactory>();
+            var clientFactoryMock = new Mock<IBexioServiceFactory>();
             var vm = CreateVm(updateServiceMock.Object, clientFactoryMock.Object);
 
             int timeout = 100;
@@ -1144,7 +1146,7 @@ public class SettingsPersistenceTests : StaTestBase, IDisposable
             try
             {
                 var updateServiceMock = new Mock<IUpdateService>();
-                var clientFactoryMock = new Mock<IBexioClientFactory>();
+                var clientFactoryMock = new Mock<IBexioServiceFactory>();
                 var vm = CreateVm(updateServiceMock.Object, clientFactoryMock.Object, path);
 
                 Directory.Exists(nonExistentDir).Should().BeTrue();
@@ -1177,7 +1179,7 @@ public class SettingsPersistenceTests : StaTestBase, IDisposable
             try
             {
                 var updateServiceMock = new Mock<IUpdateService>();
-                var clientFactoryMock = new Mock<IBexioClientFactory>();
+                var clientFactoryMock = new Mock<IBexioServiceFactory>();
                 var vm = CreateVm(updateServiceMock.Object, clientFactoryMock.Object, path);
 
                 vm.BexioToken.Should().Be("template_token");

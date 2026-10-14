@@ -171,20 +171,20 @@ public partial class ProfileEditWindow : Window
 
             _profile.Mapping.SizeMatrix.StartRow = int.Parse(MatrixStartRowInput.Text.Trim());
             _profile.Mapping.SizeMatrix.EndRow = int.Parse(MatrixEndRowInput.Text.Trim());
-            _profile.Mapping.SizeMatrix.CategoryColumn = Application.Helpers.ExcelColumnHelper.NormalizeColumnLetter(MatrixCategoryColInput.Text, "D");
-            _profile.Mapping.SizeMatrix.StartSizeColumn = Application.Helpers.ExcelColumnHelper.NormalizeColumnLetter(MatrixStartSizeColInput.Text, "E");
-            _profile.Mapping.SizeMatrix.EndSizeColumn = Application.Helpers.ExcelColumnHelper.NormalizeColumnLetter(MatrixEndSizeColInput.Text, "R");
+            _profile.Mapping.SizeMatrix.CategoryColumn = Abstractions.Excel.ExcelColumnHelper.NormalizeColumnLetter(MatrixCategoryColInput.Text, "D");
+            _profile.Mapping.SizeMatrix.StartSizeColumn = Abstractions.Excel.ExcelColumnHelper.NormalizeColumnLetter(MatrixStartSizeColInput.Text, "E");
+            _profile.Mapping.SizeMatrix.EndSizeColumn = Abstractions.Excel.ExcelColumnHelper.NormalizeColumnLetter(MatrixEndSizeColInput.Text, "R");
 
             _profile.Mapping.Data.StartRow = int.Parse(DataStartRowInput.Text.Trim());
-            _profile.Mapping.Data.ArticleNumberColumn = Application.Helpers.ExcelColumnHelper.NormalizeColumnLetter(ColArtNumInput.Text, "A");
-            _profile.Mapping.Data.ArticleNameColumn = Application.Helpers.ExcelColumnHelper.NormalizeColumnLetter(ColArtNameInput.Text, "B");
-            _profile.Mapping.Data.ColorColumn = Application.Helpers.ExcelColumnHelper.NormalizeColumnLetter(ColColorInput.Text, "C");
-            _profile.Mapping.Data.CategoryColumn = Application.Helpers.ExcelColumnHelper.NormalizeColumnLetter(ColSizeCategoryInput.Text, "D");
-            _profile.Mapping.Data.StartQtyColumn = Application.Helpers.ExcelColumnHelper.NormalizeColumnLetter(ColStartQtyInput.Text, "E");
-            _profile.Mapping.Data.EndQtyColumn = Application.Helpers.ExcelColumnHelper.NormalizeColumnLetter(ColEndQtyInput.Text, "R");
-            _profile.Mapping.Data.UnitPriceColumn = Application.Helpers.ExcelColumnHelper.NormalizeColumnLetter(ColUnitPriceInput.Text, "T");
+            _profile.Mapping.Data.ArticleNumberColumn = Abstractions.Excel.ExcelColumnHelper.NormalizeColumnLetter(ColArtNumInput.Text, "A");
+            _profile.Mapping.Data.ArticleNameColumn = Abstractions.Excel.ExcelColumnHelper.NormalizeColumnLetter(ColArtNameInput.Text, "B");
+            _profile.Mapping.Data.ColorColumn = Abstractions.Excel.ExcelColumnHelper.NormalizeColumnLetter(ColColorInput.Text, "C");
+            _profile.Mapping.Data.CategoryColumn = Abstractions.Excel.ExcelColumnHelper.NormalizeColumnLetter(ColSizeCategoryInput.Text, "D");
+            _profile.Mapping.Data.StartQtyColumn = Abstractions.Excel.ExcelColumnHelper.NormalizeColumnLetter(ColStartQtyInput.Text, "E");
+            _profile.Mapping.Data.EndQtyColumn = Abstractions.Excel.ExcelColumnHelper.NormalizeColumnLetter(ColEndQtyInput.Text, "R");
+            _profile.Mapping.Data.UnitPriceColumn = Abstractions.Excel.ExcelColumnHelper.NormalizeColumnLetter(ColUnitPriceInput.Text, "T");
             _profile.Mapping.Data.EnableRowDiscount = EnableRowDiscountCheckBox.IsChecked == true;
-            _profile.Mapping.Data.RowDiscountColumn = Application.Helpers.ExcelColumnHelper.NormalizeColumnLetter(ColRowDiscountInput.Text, "U");
+            _profile.Mapping.Data.RowDiscountColumn = Abstractions.Excel.ExcelColumnHelper.NormalizeColumnLetter(ColRowDiscountInput.Text, "U");
             _profile.Mapping.DefaultOrderName = DefaultOrderNameInput.Text.Trim();
             _profile.Mapping.SeasonCode = SeasonCodeInput.Text.Trim();
             _profile.Mapping.SeasonFallbackCodes = [.. SeasonFallbackCodesInput.Text.Split([',', ';'], StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)];

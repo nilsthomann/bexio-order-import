@@ -1,6 +1,6 @@
 using BexioOrderImport.Domain.Models;
 
-namespace BexioOrderImport.Application.Interfaces;
+namespace BexioOrderImport.Abstractions.Import;
 
 public interface IImportUserInteractionService
 {

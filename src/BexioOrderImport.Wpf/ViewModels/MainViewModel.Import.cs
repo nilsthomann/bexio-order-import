@@ -2,7 +2,8 @@ using System;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
-using BexioOrderImport.Application.Interfaces;
+using BexioOrderImport.Abstractions.Bexio;
+using BexioOrderImport.Abstractions.Import;
 using BexioOrderImport.Application.Services;
 using BexioOrderImport.Domain.Models;
 using BexioOrderImport.Domain.Models.Bexio;
@@ -416,7 +417,7 @@ public partial class MainViewModel
         }
     }
 
-    private async Task LoadBexioOptionsAsync(IBexioClient client)
+    private async Task LoadBexioOptionsAsync(IBexioService client)
     {
         try
         {
