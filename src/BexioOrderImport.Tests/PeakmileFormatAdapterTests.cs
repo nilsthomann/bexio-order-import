@@ -45,7 +45,7 @@ public class PeakmileFormatAdapterTests
             WorksheetIndex = 3,
             SeasonCode = "HW26",
             SeasonFallbackCodes = ["NOOS", "EX"],
-            PositionGroupingMode = PositionGroupingMode.SinglePositionPerSize,
+            PositionGroupingMode = PositionGroupingMode.GroupedSizePosition,
             Header = new HeaderMapping { CompanyNameCell = "C3", EnableCustomerNumber = true },
             Data = new DataMapping { UnitPriceColumn = "X", EnableRowDiscount = true }
         };

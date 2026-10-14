@@ -22,7 +22,7 @@ public class ProfileSerializerTests
         GroupedPositionTextTemplate = "{BexioArticleName}<br />{SizesRows}",
         DiscountPositionTextTemplate = "Rabatt {DiscountInPercent}",
         SizeRowTemplate = "{Amount} x {Size}",
-        PositionGroupingMode = PositionGroupingMode.SinglePositionPerSize,
+        PositionGroupingMode = PositionGroupingMode.GroupedSizePosition,
         Header = new HeaderMapping
         {
             CompanyNameCell = "C4",

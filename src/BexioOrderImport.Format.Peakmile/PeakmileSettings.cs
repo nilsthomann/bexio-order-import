@@ -4,15 +4,30 @@ using BexioOrderImport.Abstractions.Formats;
 
 namespace BexioOrderImport.Format.Peakmile;
 
-public class PeakmileSettings : IFormatSettings
+public class PeakmileSettings : IFormatSettings, IJsonOnDeserialized
 {
+    private string _singlePositionTextTemplate = "<strong>{BexioArticleName} Size {Size}</strong><br />{BexioArticleDescription}";
+    private bool _hasSinglePositionTextTemplate;
+    private string? _legacyPositionTextTemplate;
+
     public int WorksheetIndex { get; set; } = 1;
     public string DefaultOrderName { get; set; } = "Order: {CustomerName} {SeasonCode}";
     public string SeasonCode { get; set; } = "FS27";
     public List<string> SeasonFallbackCodes { get; set; } = [];
-    public string SinglePositionTextTemplate { get; set; } = "<strong>{BexioArticleName} Size {Size}</strong><br />{BexioArticleDescription}";
+
+    public string SinglePositionTextTemplate
+    {
+        get => _singlePositionTextTemplate;
+        set
+        {
+            _singlePositionTextTemplate = value;
+            _hasSinglePositionTextTemplate = true;
+        }
+    }
+
     public string GroupedPositionTextTemplate { get; set; } = "<strong>{BexioArticleName}</strong><br />{SizesRows}<br />{BexioArticleDescription}";
 
+    [JsonIgnore]
     public string PositionTextTemplate
     {
         get => PositionGroupingMode == PositionGroupingMode.GroupedSizePosition
@@ -33,6 +48,27 @@ public class PeakmileSettings : IFormatSettings
     public HeaderMapping Header { get; set; } = new();
     public SizeMatrixMapping SizeMatrix { get; set; } = new();
     public DataMapping Data { get; set; } = new();
+
+    // TODO: [Backward Compatibility] Remove in future version
+    // Up to v1.3.0 profiles only stored "PositionTextTemplate". v1.4.0 to v1.6.0 also wrote it, but before the grouping mode,
+    // so reading it back replaced the single template with the grouped one. It now only fills a missing single template.
+    [JsonInclude]
+    [JsonPropertyName("PositionTextTemplate")]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    private string? LegacyPositionTextTemplate
+    {
+        get => null;
+        set => _legacyPositionTextTemplate = value;
+    }
+
+    void IJsonOnDeserialized.OnDeserialized()
+    {
+        if (_legacyPositionTextTemplate != null && !_hasSinglePositionTextTemplate)
+        {
+            _singlePositionTextTemplate = _legacyPositionTextTemplate;
+        }
+        _legacyPositionTextTemplate = null;
+    }
 }
 
 public class HeaderMapping
