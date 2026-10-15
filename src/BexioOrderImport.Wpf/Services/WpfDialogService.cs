@@ -1,5 +1,6 @@
 using System;
 using System.Windows;
+using BexioOrderImport.Abstractions.Formats;
 using BexioOrderImport.Domain.Models;
 
 namespace BexioOrderImport.Wpf.Services;
@@ -7,6 +8,15 @@ namespace BexioOrderImport.Wpf.Services;
 [System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
 public class WpfDialogService : IDialogService
 {
+    private readonly IFormatRegistry _formats;
+    private readonly FormatUiRegistry _formatUis;
+
+    public WpfDialogService(IFormatRegistry formats, FormatUiRegistry formatUis)
+    {
+        _formats = formats ?? throw new ArgumentNullException(nameof(formats));
+        _formatUis = formatUis ?? throw new ArgumentNullException(nameof(formatUis));
+    }
+
     private T InvokeOnDispatcher<T>(Func<T> func)
     {
         if (System.Windows.Application.Current != null && !System.Windows.Application.Current.Dispatcher.CheckAccess())
@@ -26,21 +36,24 @@ public class WpfDialogService : IDialogService
         action();
     }
 
-    public string? ShowProfileCreateDialog(bool isClone)
+    public ProfileCreateResult? ShowProfileCreateDialog(string? fixedFormatId)
     {
         return InvokeOnDispatcher(() =>
         {
-            var dialog = new Views.ProfileCreateDialog(isClone);
+            var dialog = new Views.ProfileCreateDialog(_formats.Formats, fixedFormatId);
             dialog.Owner = System.Windows.Application.Current?.MainWindow;
-            return dialog.ShowDialog() == true ? dialog.ProfileName : null;
+            return dialog.ShowDialog() == true ? new ProfileCreateResult(dialog.ProfileName, dialog.FormatId) : null;
         });
     }
 
     public bool ShowProfileEditDialog(Models.MappingProfile profile, System.Collections.Generic.IEnumerable<Models.MappingProfile>? existingProfiles = null)
     {
+        var format = _formats.Find(profile.FormatId) ?? throw new InvalidOperationException($"Format '{profile.FormatId}' is not registered.");
+        var formatUi = _formatUis.Find(profile.FormatId) ?? throw new InvalidOperationException($"Format '{profile.FormatId}' has no UI provider.");
+
         return InvokeOnDispatcher(() =>
         {
-            var editWindow = new Views.ProfileEditWindow(profile, existingProfiles);
+            var editWindow = new Views.ProfileEditWindow(profile, format, formatUi, existingProfiles);
             editWindow.Owner = System.Windows.Application.Current?.MainWindow;
             return editWindow.ShowDialog() == true;
         });

@@ -1,6 +1,6 @@
 using System.Windows;
 
-namespace BexioOrderImport.Wpf.Helpers;
+namespace BexioOrderImport.Abstractions.Wpf;
 
 public class BindingProxy : Freezable
 {

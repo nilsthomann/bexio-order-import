@@ -48,7 +48,7 @@ public partial class MainViewModel
             var (format, settings) = GetActiveFormat();
 
             // Parse on background thread to keep UI responsive and allow spinner animation
-            _loadedOrder = await Task.Run(() => format.Parse(filePath, settings));
+            var order = await Task.Run(() => format.Parse(filePath, settings));
 
             // Populate file info
             var fileInfo = new FileInfo(filePath);
@@ -56,35 +56,14 @@ public partial class MainViewModel
             SelectedFileName = Path.GetFileName(filePath);
             HasLoadedFile = true;
 
-            // Populate GUI bindings
-            CompanyName = string.IsNullOrWhiteSpace(_loadedOrder.Customer.CompanyName) ? "-" : _loadedOrder.Customer.CompanyName;
-            BuyerName = string.IsNullOrWhiteSpace(_loadedOrder.Customer.BuyerName) ? "-" : _loadedOrder.Customer.BuyerName;
-            Email = string.IsNullOrWhiteSpace(_loadedOrder.Customer.Email) ? "-" : _loadedOrder.Customer.Email;
-
-            string street = _loadedOrder.Customer.Street?.Trim() ?? string.Empty;
-            string zip = _loadedOrder.Customer.ZipCode?.Trim() ?? string.Empty;
-            string city = _loadedOrder.Customer.City?.Trim() ?? string.Empty;
-            string rawAddress = $"{street}, {zip} {city}".Trim(',', ' ');
-            Address = string.IsNullOrWhiteSpace(rawAddress) ? "-" : rawAddress;
-
-            OrderNumber = !string.IsNullOrWhiteSpace(_loadedOrder.OrderNumber) ? _loadedOrder.OrderNumber : "-";
-            CustomerNumber = !string.IsNullOrWhiteSpace(_loadedOrder.CustomerNumber) ? _loadedOrder.CustomerNumber : "-";
-            PaymentTerms = string.IsNullOrWhiteSpace(_loadedOrder.PaymentTerms) ? "-" : _loadedOrder.PaymentTerms;
-
-            OrderPositions.Clear();
-            foreach (var pos in _loadedOrder.Positions)
-            {
-                OrderPositions.Add(pos);
-            }
-
-            UpdateTotalsSummary();
+            LoadedOrder = order;
             ImportCommand.RaiseCanExecuteChanged();
-            AppendLog($"Successfully read: {_loadedOrder.Positions.Count} positions found.");
+            AppendLog($"Successfully read: {order.Positions.Count} positions found.");
         }
         catch (Exception ex)
         {
             AppendLog($"⛔ Error reading Excel file: {ex.Message}");
-            _loadedOrder = null;
+            LoadedOrder = null;
             HasLoadedFile = false;
             ImportCommand.RaiseCanExecuteChanged();
 
@@ -106,41 +85,13 @@ public partial class MainViewModel
         }
     }
 
-    public void UpdateTotalsSummary()
-    {
-        if (_loadedOrder == null)
-        {
-            TotalQuantity = 0;
-            TotalGrossAmount = 0;
-            DiscountPercentVal = 0;
-            TotalNetAmount = 0;
-            return;
-        }
-
-        // Recalculate based on currently edited positions in the grid
-        TotalQuantity = OrderPositions.Sum(p => p.Quantity);
-        TotalGrossAmount = OrderPositions.Sum(p => p.TotalPrice);
-        DiscountPercentVal = _loadedOrder.DiscountPercent;
-        decimal discountAmount = TotalGrossAmount * (DiscountPercentVal / 100m);
-        TotalNetAmount = TotalGrossAmount - discountAmount;
-    }
-
     private void ClearLoadedFileInternal(string logMessage)
     {
-        _loadedOrder = null;
+        LoadedOrder = null;
         SelectedFilePath = null;
         SelectedFileName = string.Empty;
         FileSizeText = string.Empty;
         HasLoadedFile = false;
-        CompanyName = string.Empty;
-        BuyerName = string.Empty;
-        Email = string.Empty;
-        Address = string.Empty;
-        OrderNumber = string.Empty;
-        CustomerNumber = string.Empty;
-        PaymentTerms = string.Empty;
-        OrderPositions.Clear();
-        UpdateTotalsSummary();
         ImportCommand.RaiseCanExecuteChanged();
         AppendLog(logMessage);
     }
@@ -186,9 +137,6 @@ public partial class MainViewModel
 
         try
         {
-            // Sync values from DataGrid back to Order Positions
-            _loadedOrder.Positions = OrderPositions.ToList();
-
             var (format, settings) = GetActiveFormat();
             var bexioClient = _bexioClientFactory.Create(BexioToken, AccountId, TaxId, SelectedLanguage);
             var interaction = new WpfImportUserInteractionService(

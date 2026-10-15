@@ -1,6 +1,6 @@
 using System;
 using System.Globalization;
-using BexioOrderImport.Wpf.Converters;
+using BexioOrderImport.Abstractions.Wpf.Converters;
 using FluentAssertions;
 
 namespace BexioOrderImport.Tests;

@@ -53,7 +53,7 @@ public class SettingsPersistenceTests : StaTestBase, IDisposable
     private Mock<IDialogService> _dialogServiceMock = null!;
 
     // Delegated fields for dialog stubs
-    private Func<bool, string?>? _profileCreateDialogFunc;
+    private Func<string?, ProfileCreateResult?>? _profileCreateDialogFunc;
     private Func<MappingProfile, bool>? _profileEditDialogFunc;
     private Func<string, string, string?>? _openFileDialogFunc;
     private Func<string, string, string, string?>? _saveFileDialogFunc;
@@ -84,8 +84,8 @@ public class SettingsPersistenceTests : StaTestBase, IDisposable
         _infoDialogAction = null;
 
         _dialogServiceMock = new Mock<IDialogService>();
-        _dialogServiceMock.Setup(d => d.ShowProfileCreateDialog(It.IsAny<bool>()))
-            .Returns((bool isClone) => _profileCreateDialogFunc != null ? _profileCreateDialogFunc(isClone) : "MockProfile");
+        _dialogServiceMock.Setup(d => d.ShowProfileCreateDialog(It.IsAny<string?>()))
+            .Returns((string? fixedFormatId) => _profileCreateDialogFunc != null ? _profileCreateDialogFunc(fixedFormatId) : new ProfileCreateResult("MockProfile", fixedFormatId ?? PeakmileFormatAdapter.Id));
         _dialogServiceMock.Setup(d => d.ShowProfileEditDialog(It.IsAny<MappingProfile>(), It.IsAny<IEnumerable<MappingProfile>>()))
             .Returns((MappingProfile p, IEnumerable<MappingProfile> list) => _profileEditDialogFunc == null || _profileEditDialogFunc(p));
         _dialogServiceMock.Setup(d => d.ShowOpenFileDialog(It.IsAny<string>(), It.IsAny<string>()))
@@ -295,11 +295,11 @@ public class SettingsPersistenceTests : StaTestBase, IDisposable
 
             // Assert
             vm.HasLoadedFile.Should().BeTrue();
-            vm.CompanyName.Should().Be("Muster Fashion AG");
-            vm.BuyerName.Should().Be("Hans Muster");
-            vm.Email.Should().Be("test@test.com");
-            vm.TotalQuantity.Should().Be(4);
-            vm.TotalGrossAmount.Should().Be(72.8m);
+            vm.LoadedOrder!.Customer.CompanyName.Should().Be("Muster Fashion AG");
+            vm.LoadedOrder!.Customer.BuyerName.Should().Be("Hans Muster");
+            vm.LoadedOrder!.Customer.Email.Should().Be("test@test.com");
+            vm.LoadedOrder!.TotalQuantity.Should().Be(4);
+            vm.LoadedOrder!.TotalAmount.Should().Be(72.8m);
         });
     }
 
@@ -364,7 +364,7 @@ public class SettingsPersistenceTests : StaTestBase, IDisposable
             var vm = CreateVm();
             vm.Profiles.Count.Should().Be(1);
 
-            _profileCreateDialogFunc = isClone => "NewCustomProfile";
+            _profileCreateDialogFunc = fixedFormatId => new ProfileCreateResult("NewCustomProfile", fixedFormatId ?? PeakmileFormatAdapter.Id);
             _profileEditDialogFunc = p => true; // Close edit window with OK
 
             vm.CreateProfileCommand.Execute(null);
@@ -382,7 +382,7 @@ public class SettingsPersistenceTests : StaTestBase, IDisposable
         RunInSta(() =>
         {
             var vm = CreateVm();
-            _profileCreateDialogFunc = isClone => "Default"; // Duplicate name
+            _profileCreateDialogFunc = fixedFormatId => new ProfileCreateResult("Default", fixedFormatId ?? PeakmileFormatAdapter.Id); // Duplicate name
 
             vm.CreateProfileCommand.Execute(null);
 
@@ -399,7 +399,7 @@ public class SettingsPersistenceTests : StaTestBase, IDisposable
             var sourceProfile = vm.Profiles[0];
             sourceProfile.Peakmile().Header.CompanyNameCell = "Z99";
 
-            _profileCreateDialogFunc = isClone => "ClonedDefault";
+            _profileCreateDialogFunc = fixedFormatId => new ProfileCreateResult("ClonedDefault", fixedFormatId ?? PeakmileFormatAdapter.Id);
 
             vm.CloneProfileCommand.Execute(sourceProfile);
 
@@ -496,15 +496,6 @@ public class SettingsPersistenceTests : StaTestBase, IDisposable
             vm.SelectedLanguage.Should().Be("en");
 
             // Import runtime fields
-
-            vm.OrderNumber = "AU-12345";
-            vm.OrderNumber.Should().Be("AU-12345");
-            vm.CustomerNumber = "KB10001";
-            vm.CustomerNumber.Should().Be("KB10001");
-
-            vm.PaymentTerms = "30 Days";
-            vm.PaymentTerms.Should().Be("30 Days");
-
             vm.ProgressPercentage = 50;
             vm.ProgressPercentage.Should().Be(50);
 
@@ -525,19 +516,6 @@ public class SettingsPersistenceTests : StaTestBase, IDisposable
 
             vm.FileSizeText = "15 KB";
             vm.FileSizeText.Should().Be("15 KB");
-
-            vm.TotalQuantity = 100;
-            vm.TotalQuantity.Should().Be(100);
-
-            vm.TotalGrossAmount = 2500m;
-            vm.TotalGrossAmount.Should().Be(2500m);
-
-            vm.DiscountPercentVal = 10m;
-            vm.DiscountPercentVal.Should().Be(10m);
-
-            vm.TotalNetAmount = 2250m;
-            vm.TotalNetAmount.Should().Be(2250m);
-
             // Verify remaining getters/setters
             vm.ConnectionStatusText = "Connected";
             vm.ConnectionStatusText.Should().Be("Connected");

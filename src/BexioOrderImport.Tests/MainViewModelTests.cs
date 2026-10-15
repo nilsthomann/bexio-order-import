@@ -344,28 +344,6 @@ public class MainViewModelTests : IDisposable
     }
 
     [Test]
-    public void IsActiveRowDiscountEnabled_ShouldReflectActiveProfileMapping()
-    {
-        // Arrange
-        var vm = CreateVm();
-        var profileWithDiscount = new BexioOrderImport.Wpf.Models.MappingProfile
-        {
-            Name = "DiscountProfile",
-            FormatId = PeakmileFormatAdapter.Id,
-            Settings = new BexioOrderImport.Format.Peakmile.PeakmileSettings
-            {
-                Data = new BexioOrderImport.Format.Peakmile.DataMapping { EnableRowDiscount = true }
-            }
-        };
-
-        // Act
-        vm.ActiveProfile = profileWithDiscount;
-
-        // Assert
-        vm.IsActiveRowDiscountEnabled.Should().BeTrue();
-    }
-
-    [Test]
     public async Task LoadExcelFileAsync_WhenFileParsingFails_ShouldShowErrorDialog()
     {
         // Arrange
@@ -483,17 +461,11 @@ public class MainViewModelTests : IDisposable
     public void MainViewModel_PropertyGettersAndSetters_ShouldUpdateState()
     {
         var vm = CreateVm();
-        vm.Address = "Test Address 123";
-        vm.Address.Should().Be("Test Address 123");
-
         vm.ImportSuccessTitle = "Success Title";
         vm.ImportSuccessTitle.Should().Be("Success Title");
 
         vm.ImportDurationText = "00:01:30";
         vm.ImportDurationText.Should().Be("00:01:30");
-
-        vm.IsActiveOrderNumberEnabled.Should().BeFalse();
-        vm.IsActiveCustomerNumberEnabled.Should().BeFalse();
 
         bool invoked = false;
         vm.InvokeOnUiAsync(() => invoked = true);

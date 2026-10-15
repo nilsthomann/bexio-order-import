@@ -114,10 +114,11 @@ Below is a typical order template layout showing how the parser reads the metada
 
 ### Step 2: Review Mapped Data & Preview
 
+The preview depends on the format of the active profile. For Peakmile order forms:
+
 1. The **Header Details** card displays the extracted customer metadata, Order Number / Customer Number (if provided), and payment conditions.
 2. The **Positions preview grid** displays all parsed item rows. Only sizes with a quantity greater than zero will generate a row.
-3. You can double-click cells in the DataGrid to manually override quantities or prices before uploading.
-4. The bottom totals bar dynamically reflects the gross amount, discounts, and net total.
+3. The totals below the grid show the quantity, gross amount, discount and net total.
 
 ### Step 3: Trigger the Import
 
@@ -141,28 +142,33 @@ Below is a typical order template layout showing how the parser reads the metada
 
 ## 6. Managing Profiles
 
-The application supports multiple **Excel Mapping Profiles**. Each profile stores a complete, independent set of cell and column coordinates for a different Excel template format. Profiles are managed on the **Settings** tab.
+The application supports multiple **Excel Mapping Profiles**. Each profile has an **import format** (eg. *Peakmile order form*) and stores the settings of that format, such as cell and column coordinates. Profiles are managed on the **Settings** tab; the profile list shows the format of each profile.
+
+The **Import formats** card on the **Settings** tab lists all formats installed in the application.
 
 ### Create a new profile
 
 1. In the **Settings** tab, click **Create Profile**.
-2. Enter a unique name for the new profile.
-3. Configure all cell/column coordinates for your Excel template.
+2. Enter a unique name for the new profile and choose its format.
+3. Configure the settings of the format for your Excel template.
 4. Save – the new profile is now available in the profile list.
+
+> [!NOTE]
+> The format of a profile can't be changed later. To use another format, create a new profile.
 
 ### Clone a profile
 
 1. Select the profile you want to use as a base.
 2. Click **Clone**.
-3. Enter a name for the cloned profile.
+3. Enter a name for the cloned profile. The clone keeps the format of the original.
 4. Adjust only the settings that differ from the original.
 
 ### Edit a profile
 
 1. Select the profile from the list.
-2. Click **Edit** to open the profile editor dialog.
-3. Modify the desired cell or column values.
-4. Confirm with **Save**.
+2. Click **Edit** to open the profile editor dialog. The format is shown but can't be changed.
+3. Modify the desired values. Invalid numbers (eg. a row of 0) are reported when saving.
+4. Confirm with **Save**, or **Cancel** to discard all changes.
 
 ### Set a profile as active
 

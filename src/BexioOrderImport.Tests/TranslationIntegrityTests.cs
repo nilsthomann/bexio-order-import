@@ -1,5 +1,6 @@
 using System.Globalization;
 using System.Reflection;
+using BexioOrderImport.Format.Peakmile.Resources;
 using BexioOrderImport.Wpf.Resources;
 using FluentAssertions;
 
@@ -7,44 +8,47 @@ namespace BexioOrderImport.Tests;
 
 public class TranslationIntegrityTests
 {
+    private static readonly Type[] TranslationClasses = [typeof(Translations), typeof(PeakmileTranslations)];
+
+    private static Dictionary<string, string?> ReadAll(Type translations, string cultureName)
+    {
+        var originalCulture = CultureInfo.CurrentUICulture;
+        try
+        {
+            CultureInfo.CurrentUICulture = new CultureInfo(cultureName);
+            return translations
+                .GetProperties(BindingFlags.Public | BindingFlags.Static)
+                .Where(p => p.PropertyType == typeof(string))
+                .ToDictionary(p => $"{translations.Name}.{p.Name}", p => p.GetValue(null) as string);
+        }
+        finally
+        {
+            CultureInfo.CurrentUICulture = originalCulture;
+        }
+    }
+
     [Test]
     [Arguments("de-CH")]
     [Arguments("en-US")]
     public void AllTranslationProperties_ShouldReturnNonEmptyString_ForSupportedCultures(string cultureName)
     {
-        // Arrange
-        var originalCulture = CultureInfo.CurrentUICulture;
-        var testCulture = new CultureInfo(cultureName);
-
-        try
+        foreach (var translations in TranslationClasses)
         {
-            CultureInfo.CurrentUICulture = testCulture;
+            var values = ReadAll(translations, cultureName);
 
-            var properties = typeof(Translations)
-                .GetProperties(BindingFlags.Public | BindingFlags.Static)
-                .Where(p => p.PropertyType == typeof(string))
-                .ToList();
-
-            properties.Should().NotBeEmpty("Translations class should define static string properties");
-
-            // Act & Assert
-            var missingKeys = new List<string>();
-
-            foreach (var prop in properties)
-            {
-                var value = prop.GetValue(null) as string;
-                if (string.IsNullOrWhiteSpace(value))
-                {
-                    missingKeys.Add(prop.Name);
-                }
-            }
-
-            missingKeys.Should().BeEmpty(
-                $"All Translation properties in Translations.cs must resolve to non-empty strings in resx for culture '{cultureName}'");
+            values.Should().NotBeEmpty($"{translations.Name} should define static string properties");
+            values.Where(v => string.IsNullOrWhiteSpace(v.Value)).Select(v => v.Key).Should().BeEmpty(
+                $"all properties of {translations.Name} must resolve to non-empty strings for culture '{cultureName}'");
         }
-        finally
+    }
+
+    [Test]
+    public void GermanTranslations_ShouldUseSwissSpelling()
+    {
+        foreach (var translations in TranslationClasses)
         {
-            CultureInfo.CurrentUICulture = originalCulture;
+            ReadAll(translations, "de-CH").Where(v => v.Value!.Contains('ß')).Select(v => v.Key).Should().BeEmpty(
+                "Swiss German writes \"ss\" instead of \"ß\"");
         }
     }
 }

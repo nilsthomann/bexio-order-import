@@ -6,7 +6,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using BexioOrderImport.Abstractions.Bexio;
 using BexioOrderImport.Abstractions.Formats;
-using BexioOrderImport.Format.Peakmile;
+using BexioOrderImport.Abstractions.Wpf;
 using BexioOrderImport.Domain.Models;
 using BexioOrderImport.Domain.Models.Bexio;
 using BexioOrderImport.Wpf.Resources;
@@ -52,19 +52,19 @@ public partial class MainViewModel : ViewModelBase
     private string _updateStatusText = string.Empty;
     private double _updateProgress;
 
-    private int _totalQuantity;
-    private decimal _totalGrossAmount;
-    private decimal _discountPercentVal;
-    private decimal _totalNetAmount;
+    /// <summary>
+    /// The parsed order of the loaded file, shown by the preview control of the active format.
+    /// </summary>
+    public Order? LoadedOrder
+    {
+        get => _loadedOrder;
+        private set => SetProperty(ref _loadedOrder, value);
+    }
 
-    // Excel Order header properties (bound to UI fields)
-    private string _companyName = string.Empty;
-    private string _buyerName = string.Empty;
-    private string _email = string.Empty;
-    private string _address = string.Empty;
-    private string _orderNumber = string.Empty;
-    private string _customerNumber = string.Empty;
-    private string _paymentTerms = string.Empty;
+    /// <summary>
+    /// The registered import formats, listed in the settings.
+    /// </summary>
+    public IReadOnlyList<IFormatAdapter> Formats => _formatRegistry.Formats;
 
     public bool HasLoadedFile
     {
@@ -82,30 +82,6 @@ public partial class MainViewModel : ViewModelBase
     {
         get => _fileSizeText;
         set => SetProperty(ref _fileSizeText, value);
-    }
-
-    public int TotalQuantity
-    {
-        get => _totalQuantity;
-        set => SetProperty(ref _totalQuantity, value);
-    }
-
-    public decimal TotalGrossAmount
-    {
-        get => _totalGrossAmount;
-        set => SetProperty(ref _totalGrossAmount, value);
-    }
-
-    public decimal DiscountPercentVal
-    {
-        get => _discountPercentVal;
-        set => SetProperty(ref _discountPercentVal, value);
-    }
-
-    public decimal TotalNetAmount
-    {
-        get => _totalNetAmount;
-        set => SetProperty(ref _totalNetAmount, value);
     }
 
     // Settings fields (bound to Bexio API connection)
@@ -232,9 +208,6 @@ public partial class MainViewModel : ViewModelBase
         ClearLoadedFileInternal("Import completed successfully. File selection reset.");
     }
 
-    // Properties for UI
-    public ObservableCollection<OrderPosition> OrderPositions { get; } = new();
-
     public string ConnectionStatusText
     {
         get => _connectionStatusText;
@@ -337,49 +310,6 @@ public partial class MainViewModel : ViewModelBase
         set => SetProperty(ref _selectedFilePath, value);
     }
 
-    // Order properties
-    public string CompanyName
-    {
-        get => _companyName;
-        set => SetProperty(ref _companyName, value);
-    }
-
-    public string BuyerName
-    {
-        get => _buyerName;
-        set => SetProperty(ref _buyerName, value);
-    }
-
-    public string Email
-    {
-        get => _email;
-        set => SetProperty(ref _email, value);
-    }
-
-    public string Address
-    {
-        get => _address;
-        set => SetProperty(ref _address, value);
-    }
-
-    public string OrderNumber
-    {
-        get => _orderNumber;
-        set => SetProperty(ref _orderNumber, value);
-    }
-
-    public string CustomerNumber
-    {
-        get => _customerNumber;
-        set => SetProperty(ref _customerNumber, value);
-    }
-
-    public string PaymentTerms
-    {
-        get => _paymentTerms;
-        set => SetProperty(ref _paymentTerms, value);
-    }
-
     public ObservableCollection<Models.MappingProfile> Profiles { get; } = new();
 
     public Models.MappingProfile? SelectedProfile
@@ -422,10 +352,6 @@ public partial class MainViewModel : ViewModelBase
         }
     }
 
-    public bool IsActiveRowDiscountEnabled => ActiveProfile?.Settings is PeakmileSettings { Data.EnableRowDiscount: true };
-    public bool IsActiveOrderNumberEnabled => ActiveProfile?.Settings is PeakmileSettings { Header.EnableOrderNumber: true };
-    public bool IsActiveCustomerNumberEnabled => ActiveProfile?.Settings is PeakmileSettings { Header.EnableCustomerNumber: true };
-
     public Models.MappingProfile? ActiveProfile
     {
         get => _activeProfile;
@@ -441,9 +367,6 @@ public partial class MainViewModel : ViewModelBase
     public void NotifyActiveProfileChanged()
     {
         OnPropertyChanged(nameof(ActiveProfile));
-        OnPropertyChanged(nameof(IsActiveRowDiscountEnabled));
-        OnPropertyChanged(nameof(IsActiveOrderNumberEnabled));
-        OnPropertyChanged(nameof(IsActiveCustomerNumberEnabled));
     }
 
 

@@ -3,7 +3,7 @@ using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Windows.Input;
 
-namespace BexioOrderImport.Wpf.ViewModels;
+namespace BexioOrderImport.Abstractions.Wpf;
 
 public abstract class ViewModelBase : INotifyPropertyChanged
 {

@@ -1,6 +1,7 @@
 using BexioOrderImport.Abstractions.Import;
 using BexioOrderImport.Domain.Models.Bexio;
 using BexioOrderImport.Tests.Utils;
+using BexioOrderImport.Abstractions.Wpf;
 using BexioOrderImport.Wpf.Helpers;
 using FluentAssertions;
 
