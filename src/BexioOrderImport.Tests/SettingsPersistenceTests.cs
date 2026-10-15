@@ -53,7 +53,7 @@ public class SettingsPersistenceTests : StaTestBase, IDisposable
         var mockFactory = new Mock<IBexioClientFactory>();
         var mockClient = new Mock<IBexioClient>();
         mockClient.Setup(c => c.CheckConnectionAsync()).ReturnsAsync(true);
-        mockFactory.Setup(f => f.Create(It.IsAny<string>(), It.IsAny<int?>(), It.IsAny<int?>())).Returns(mockClient.Object);
+        mockFactory.Setup(f => f.Create(It.IsAny<string>(), It.IsAny<int?>(), It.IsAny<int?>(), It.IsAny<string>())).Returns(mockClient.Object);
         return CreateVm(mockUpdate.Object, mockFactory.Object, _tempFilePath);
     }
 
@@ -106,7 +106,7 @@ public class SettingsPersistenceTests : StaTestBase, IDisposable
             dispatcherMock.Object,
             encryptionMock.Object,
             excelParserFactoryMock.Object,
-            configFilePath);
+            configFilePath ?? _tempFilePath); // never fall back to the real %LocalAppData% settings
         if (vm.AccountId == null) vm.AccountId = 1;
         if (vm.TaxId == null) vm.TaxId = 1;
         return vm;
@@ -231,7 +231,7 @@ public class SettingsPersistenceTests : StaTestBase, IDisposable
                 var mockFactory = new Mock<IBexioClientFactory>();
                 var mockClient = new Mock<IBexioClient>();
                 mockClient.Setup(c => c.CheckConnectionAsync()).ReturnsAsync(true);
-                mockFactory.Setup(f => f.Create(It.IsAny<string>(), It.IsAny<int?>(), It.IsAny<int?>())).Returns(mockClient.Object);
+                mockFactory.Setup(f => f.Create(It.IsAny<string>(), It.IsAny<int?>(), It.IsAny<int?>(), It.IsAny<string>())).Returns(mockClient.Object);
 
                 var vm = CreateVm(mockUpdate.Object, mockFactory.Object, tempFile);
                 var newProfile = new MappingProfile { Name = "ActiveTest", Mapping = new ExcelMappingOptions() };
@@ -303,7 +303,7 @@ public class SettingsPersistenceTests : StaTestBase, IDisposable
             mockClient.Setup(c => c.CheckConnectionAsync()).ReturnsAsync(true);
             mockClient.Setup(c => c.CreateOrderAsync(It.IsAny<int>(), It.IsAny<Order>())).ReturnsAsync(new BexioOrder { Id = 12345, DocumentNr = "AU-12345" });
             mockClient.Setup(c => c.FindArticleAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<IReadOnlyList<string>>())).ReturnsAsync(new BexioArticle { Id = 999, Description = "Product Description", Name = "Product Name" });
-            mockFactory.Setup(f => f.Create(It.IsAny<string>(), It.IsAny<int?>(), It.IsAny<int?>())).Returns(mockClient.Object);
+            mockFactory.Setup(f => f.Create(It.IsAny<string>(), It.IsAny<int?>(), It.IsAny<int?>(), It.IsAny<string>())).Returns(mockClient.Object);
 
             var vm = CreateVm(mockUpdate.Object, mockFactory.Object, _tempFilePath);
             string filePath = FindExcelFile("AnonymizedOrder.xlsx");
@@ -576,7 +576,7 @@ public class SettingsPersistenceTests : StaTestBase, IDisposable
             var bexioClientFactoryMock = new Mock<IBexioClientFactory>();
             var bexioClientMock = new Mock<IBexioClient>();
             bexioClientMock.Setup(c => c.CheckConnectionAsync()).ReturnsAsync(true);
-            bexioClientFactoryMock.Setup(f => f.Create(It.IsAny<string>(), It.IsAny<int?>(), It.IsAny<int?>())).Returns(bexioClientMock.Object);
+            bexioClientFactoryMock.Setup(f => f.Create(It.IsAny<string>(), It.IsAny<int?>(), It.IsAny<int?>(), It.IsAny<string>())).Returns(bexioClientMock.Object);
 
             var vm = CreateVm(updateServiceMock.Object, bexioClientFactoryMock.Object);
 
@@ -596,7 +596,7 @@ public class SettingsPersistenceTests : StaTestBase, IDisposable
             var bexioClientFactoryMock = new Mock<IBexioClientFactory>();
             var bexioClientMock = new Mock<IBexioClient>();
             bexioClientMock.Setup(c => c.CheckConnectionAsync()).ReturnsAsync(false);
-            bexioClientFactoryMock.Setup(f => f.Create(It.IsAny<string>(), It.IsAny<int?>(), It.IsAny<int?>())).Returns(bexioClientMock.Object);
+            bexioClientFactoryMock.Setup(f => f.Create(It.IsAny<string>(), It.IsAny<int?>(), It.IsAny<int?>(), It.IsAny<string>())).Returns(bexioClientMock.Object);
 
             var vm = CreateVm(updateServiceMock.Object, bexioClientFactoryMock.Object);
 
@@ -616,7 +616,7 @@ public class SettingsPersistenceTests : StaTestBase, IDisposable
             var updateServiceMock = new Mock<IUpdateService>();
             var bexioClientFactoryMock = new Mock<IBexioClientFactory>();
             var bexioClientMock = new Mock<IBexioClient>();
-            bexioClientFactoryMock.Setup(f => f.Create(It.IsAny<string>(), It.IsAny<int?>(), It.IsAny<int?>())).Returns(bexioClientMock.Object);
+            bexioClientFactoryMock.Setup(f => f.Create(It.IsAny<string>(), It.IsAny<int?>(), It.IsAny<int?>(), It.IsAny<string>())).Returns(bexioClientMock.Object);
             var vm = CreateVm(updateServiceMock.Object, bexioClientFactoryMock.Object);
 
             // Create a temp dummy file to satisfy File.Exists check
@@ -673,7 +673,7 @@ public class SettingsPersistenceTests : StaTestBase, IDisposable
         {
             var updateServiceMock = new Mock<IUpdateService>();
             var bexioClientFactoryMock = new Mock<IBexioClientFactory>();
-            bexioClientFactoryMock.Setup(f => f.Create(It.IsAny<string>(), It.IsAny<int?>(), It.IsAny<int?>()))
+            bexioClientFactoryMock.Setup(f => f.Create(It.IsAny<string>(), It.IsAny<int?>(), It.IsAny<int?>(), It.IsAny<string>()))
                 .Throws(new InvalidOperationException("Factory failed"));
             var vm = CreateVm(updateServiceMock.Object, bexioClientFactoryMock.Object);
 
@@ -717,7 +717,7 @@ public class SettingsPersistenceTests : StaTestBase, IDisposable
         {
             var updateServiceMock = new Mock<IUpdateService>();
             var throwClientFactoryMock = new Mock<IBexioClientFactory>();
-            throwClientFactoryMock.Setup(f => f.Create(It.IsAny<string>(), It.IsAny<int?>(), It.IsAny<int?>()))
+            throwClientFactoryMock.Setup(f => f.Create(It.IsAny<string>(), It.IsAny<int?>(), It.IsAny<int?>(), It.IsAny<string>()))
                 .Throws(new InvalidOperationException("Factory failed"));
             var vm = CreateVm(updateServiceMock.Object, throwClientFactoryMock.Object, _tempFilePath);
             _confirmDialogFunc = (msg, title) => true;
@@ -801,7 +801,7 @@ public class SettingsPersistenceTests : StaTestBase, IDisposable
                 var updateServiceMock = new Mock<IUpdateService>();
                 var clientFactoryMock = new Mock<IBexioClientFactory>();
                 var clientMock = new Mock<IBexioClient>();
-                clientFactoryMock.Setup(f => f.Create(It.IsAny<string>(), It.IsAny<int?>(), It.IsAny<int?>())).Returns(clientMock.Object);
+                clientFactoryMock.Setup(f => f.Create(It.IsAny<string>(), It.IsAny<int?>(), It.IsAny<int?>(), It.IsAny<string>())).Returns(clientMock.Object);
                 var vm = CreateVm(updateServiceMock.Object, clientFactoryMock.Object, path);
 
                 vm.BexioToken.Should().Be("legacy_token");

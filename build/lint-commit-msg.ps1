@@ -24,6 +24,9 @@ if (-not (Test-Path $resolvedPath)) {
 
 $commitMsg = (Get-Content -Path $resolvedPath -Raw).Trim()
 
+# Only the header (first line) must follow the spec, the body and trailers are free text
+$commitMsg = ($commitMsg -split "\r?\n", 2)[0].Trim()
+
 # Ignore merge commit messages or revert commit messages generated automatically
 if ($commitMsg -like "Merge branch *" -or $commitMsg -like "Merge remote-tracking branch *") {
     Write-Host "Automatic merge commit detected. Skipping validation." -ForegroundColor Gray

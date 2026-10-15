@@ -33,7 +33,7 @@ public class MainViewModelTests : IDisposable
         _updateServiceMock = new Mock<IUpdateService>();
         _clientMock = new Mock<IBexioClient>();
         _clientFactoryMock = new Mock<IBexioClientFactory>();
-        _clientFactoryMock.Setup(f => f.Create(It.IsAny<string>(), It.IsAny<int?>(), It.IsAny<int?>())).Returns(_clientMock.Object);
+        _clientFactoryMock.Setup(f => f.Create(It.IsAny<string>(), It.IsAny<int?>(), It.IsAny<int?>(), It.IsAny<string>())).Returns(_clientMock.Object);
         _dialogServiceMock = new Mock<IDialogService>();
         _dispatcherServiceMock = new Mock<IDispatcherService>();
         // Mock dispatcher service to execute actions immediately
