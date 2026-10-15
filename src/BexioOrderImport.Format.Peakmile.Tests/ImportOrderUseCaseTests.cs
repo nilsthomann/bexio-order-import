@@ -6,7 +6,7 @@ using BexioOrderImport.Domain.Models.Bexio;
 using FluentAssertions;
 using Moq;
 
-namespace BexioOrderImport.Tests;
+namespace BexioOrderImport.Format.Peakmile.Tests;
 
 [NotInParallel]
 public class ImportOrderUseCaseTests

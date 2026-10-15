@@ -1,7 +1,7 @@
 using BexioOrderImport.Format.Peakmile;
 using BexioOrderImport.Domain.Models;
 
-namespace BexioOrderImport.Tests.Utils;
+namespace BexioOrderImport.Format.Peakmile.Tests.Utils;
 
 public class InMemoryExcelParser : IExcelParser
 {

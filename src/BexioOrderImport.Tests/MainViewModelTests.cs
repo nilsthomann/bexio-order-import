@@ -4,7 +4,6 @@ using System.Threading.Tasks;
 using BexioOrderImport.Abstractions.Bexio;
 using BexioOrderImport.Abstractions.Formats;
 using BexioOrderImport.Abstractions.Import;
-using BexioOrderImport.Format.Peakmile;
 using BexioOrderImport.Domain.Models;
 using BexioOrderImport.Domain.Models.Bexio;
 using BexioOrderImport.Wpf.Services;
@@ -45,7 +44,10 @@ public class MainViewModelTests : IDisposable
         _encryptionServiceMock = new Mock<IEncryptionService>();
         _encryptionServiceMock.Setup(e => e.Encrypt(It.IsAny<string>())).Returns<string>(s => s);
         _encryptionServiceMock.Setup(e => e.Decrypt(It.IsAny<string>())).Returns<string>(s => s);
-        _formats = new FormatRegistry([new PeakmileFormatAdapter()]);
+        _formats = new FormatRegistry([new FakeFormatAdapter()]);
+
+        // The default profile uses the fake format, so loading a file never depends on a real format
+        File.WriteAllText(_tempFilePath, """{ "ActiveProfileName": "Default", "Profiles": [ { "Name": "Default", "Format": "fake" } ] }""");
     }
 
     private readonly FormatRegistry _formats;
@@ -247,7 +249,7 @@ public class MainViewModelTests : IDisposable
     {
         // Arrange
         var vm = CreateVm();
-        var secondProfile = ProfileTestExtensions.PeakmileProfile("Profile2");
+        var secondProfile = ProfileTestExtensions.FakeProfile("Profile2");
         vm.Profiles.Add(secondProfile);
         _dialogServiceMock.Setup(d => d.ShowConfirmDialog(It.IsAny<string>(), It.IsAny<string>())).Returns(true);
 
@@ -331,7 +333,7 @@ public class MainViewModelTests : IDisposable
     {
         // Arrange
         var vm = CreateVm();
-        var newProfile = ProfileTestExtensions.PeakmileProfile("Profile2");
+        var newProfile = ProfileTestExtensions.FakeProfile("Profile2");
         vm.Profiles.Add(newProfile);
         vm.IsModified = false;
 
@@ -347,9 +349,7 @@ public class MainViewModelTests : IDisposable
     public async Task LoadExcelFileAsync_WhenFileParsingFails_ShouldShowErrorDialog()
     {
         // Arrange
-        var mockParser = new Mock<IExcelParser>();
-        mockParser.Setup(p => p.ParseOrderForm(It.IsAny<string>())).Throws(new Exception("Parsing failed custom error"));
-        var formats = new FormatRegistry([new PeakmileFormatAdapter(_ => mockParser.Object)]);
+        var formats = new FormatRegistry([new FakeFormatAdapter { ParseFunc = _ => throw new Exception("Parsing failed custom error") }]);
 
         var vm = new MainViewModel(
             _updateServiceMock.Object,
@@ -373,9 +373,7 @@ public class MainViewModelTests : IDisposable
     public async Task LoadExcelFileAsync_WhenFileIsLocked_ShouldShowLockedDialog()
     {
         // Arrange
-        var mockParser = new Mock<IExcelParser>();
-        mockParser.Setup(p => p.ParseOrderForm(It.IsAny<string>())).Throws(new System.IO.IOException("The process cannot access the file because it is being used by another process."));
-        var formats = new FormatRegistry([new PeakmileFormatAdapter(_ => mockParser.Object)]);
+        var formats = new FormatRegistry([new FakeFormatAdapter { ParseFunc = _ => throw new System.IO.IOException("The process cannot access the file because it is being used by another process.") }]);
 
         var vm = new MainViewModel(
             _updateServiceMock.Object,
@@ -502,9 +500,7 @@ public class MainViewModelTests : IDisposable
     [Test]
     public void SetActiveProfile_WhenSelectedFilePathExists_ShouldReloadExcelFile()
     {
-        var mockParser = new Mock<IExcelParser>();
-        mockParser.Setup(p => p.ParseOrderForm(It.IsAny<string>())).Returns(new BexioOrderImport.Domain.Models.Order());
-        var formats = new FormatRegistry([new PeakmileFormatAdapter(_ => mockParser.Object)]);
+        var formats = new FormatRegistry([new FakeFormatAdapter { ParseFunc = _ => new BexioOrderImport.Domain.Models.Order() }]);
 
         var vm = new MainViewModel(
             _updateServiceMock.Object,
@@ -522,7 +518,7 @@ public class MainViewModelTests : IDisposable
         try
         {
             vm.SelectedFilePath = tempExcel;
-            var profile2 = ProfileTestExtensions.PeakmileProfile("Profile Reload");
+            var profile2 = ProfileTestExtensions.FakeProfile("Profile Reload");
             vm.Profiles.Add(profile2);
 
             vm.SetActiveProfileCommand.Execute(profile2);
@@ -569,9 +565,7 @@ public class MainViewModelTests : IDisposable
     [Test]
     public void SaveSettings_WhenSelectedFilePathExists_ShouldReloadFile()
     {
-        var mockParser = new Mock<IExcelParser>();
-        mockParser.Setup(p => p.ParseOrderForm(It.IsAny<string>())).Returns(new BexioOrderImport.Domain.Models.Order());
-        var formats = new FormatRegistry([new PeakmileFormatAdapter(_ => mockParser.Object)]);
+        var formats = new FormatRegistry([new FakeFormatAdapter { ParseFunc = _ => new BexioOrderImport.Domain.Models.Order() }]);
 
         var vm = new MainViewModel(
             _updateServiceMock.Object,

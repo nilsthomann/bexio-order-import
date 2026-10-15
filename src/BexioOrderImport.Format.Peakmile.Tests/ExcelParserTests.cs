@@ -1,9 +1,9 @@
 using BexioOrderImport.Format.Peakmile;
 using BexioOrderImport.Domain.Models;
-using BexioOrderImport.Tests.Utils;
+using BexioOrderImport.Format.Peakmile.Tests.Utils;
 using FluentAssertions;
 
-namespace BexioOrderImport.Tests;
+namespace BexioOrderImport.Format.Peakmile.Tests;
 
 public class ExcelParserTests
 {
@@ -50,26 +50,14 @@ public class ExcelParserTests
         _parser = new PeakmileExcelParser(options);
     }
 
-    private static string FindExcelFile(string filename)
-    {
-        string? dir = AppContext.BaseDirectory;
-        while (dir != null)
-        {
-            string path = Path.Combine(dir, filename);
-            if (File.Exists(path)) return path;
-            dir = Directory.GetParent(dir)?.FullName;
-        }
-        throw new FileNotFoundException($"Excel file {filename} not found in any parent directories.");
-    }
+    private static string FixturePath => Path.Combine(AppContext.BaseDirectory, "Fixtures", "PeakmileOrder.xlsx");
 
     [Test]
     public void ParseOrderForm_WithValidFile_ShouldExtractOrderCorrectly()
     {
-        // Arrange
-        string filePath = FindExcelFile("AnonymizedOrder.xlsx");
-
-        // Restore original AnonymizedOrder.xlsx matrix category names
-        using (var wb = new ClosedXML.Excel.XLWorkbook(filePath))
+        // Arrange: set the matrix category names and email on a copy, the fixture itself is never written
+        string filePath = Path.Combine(Path.GetTempPath(), $"peakmile_order_{Guid.NewGuid():N}.xlsx");
+        using (var wb = new ClosedXML.Excel.XLWorkbook(FixturePath))
         {
             var ws = wb.Worksheet(1);
             ws.Cell("D10").Value = "Mittens/Acc";
@@ -80,11 +68,19 @@ public class ExcelParserTests
             ws.Cell("D15").Value = "Shoes 32-41";
             ws.Cell("D16").Value = "Mini";
             ws.Cell("E5").Value = "test@test.com";
-            wb.Save();
+            wb.SaveAs(filePath);
         }
 
         // Act
-        var order = _parser.ParseOrderForm(filePath);
+        Order order;
+        try
+        {
+            order = _parser.ParseOrderForm(filePath);
+        }
+        finally
+        {
+            File.Delete(filePath);
+        }
 
         // Assert
         order.Should().NotBeNull();

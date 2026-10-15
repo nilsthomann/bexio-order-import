@@ -8,7 +8,8 @@ WPF desktop app (.NET 10, Windows only) that parses Excel order forms and import
 - `src/BexioOrderImport.Format.Peakmile`: Peakmile import format (`PeakmileFormatAdapter`, `PeakmileSettings`, `PeakmileExcelParser`, `PeakmileImporter`), its profile editor and preview controls (`PeakmileUiProvider`) and its own translations
 - `src/BexioOrderImport.Infrastructure`: `BexioApiClient`
 - `src/BexioOrderImport.Wpf`: MVVM UI, mapping profiles (`ProfileSerializer`), settings, auto-updater; registers the formats in `App.xaml.cs`
-- `src/BexioOrderImport.Tests`: TUnit tests with Moq and FluentAssertions
+- `src/BexioOrderImport.Tests`: host tests (Bexio client, profiles and settings, registries, view models, host views) with TUnit, Moq and FluentAssertions. They use `Utils/FakeFormat.cs` instead of a real format; only the legacy profile migration uses Peakmile.
+- `src/BexioOrderImport.Format.Peakmile.Tests`: Peakmile parser, import, settings, controls and translations, with the read-only fixture `Fixtures/PeakmileOrder.xlsx`
 
 `src/BexioOrderImport.Cli` holds only build output and is not part of the solution.
 
@@ -23,7 +24,7 @@ dotnet run --project src\BexioOrderImport.Wpf\BexioOrderImport.Wpf.csproj
 
 ## Tests
 
-Run the tests from the repository root with the coverage script (`dotnet test` does not work with this SDK):
+Run the tests from the repository root with the coverage script (`dotnet test` does not work with this SDK). It runs every test project listed in the script and merges the coverage into `TestResults/coverage.cobertura.xml`:
 
 ```powershell
 powershell -ExecutionPolicy Bypass -File build\run-coverage.ps1
@@ -32,11 +33,13 @@ powershell -ExecutionPolicy Bypass -File build\run-coverage.ps1
 Run selected tests only (the filter path is assembly/namespace/class/test):
 
 ```powershell
-dotnet run --project src\BexioOrderImport.Tests -- --treenode-filter "/*/*/*/*Fallback*"
+dotnet run --project src\BexioOrderImport.Format.Peakmile.Tests -- --treenode-filter "/*/*/*/*Fallback*"
 ```
 
 - Pull requests fail below 90% code coverage, so new logic needs tests.
-- A test run modifies `src/BexioOrderImport.Tests/AnonymizedOrder.xlsx`. Restore it with `git checkout -- src/BexioOrderImport.Tests/AnonymizedOrder.xlsx` and do not commit it.
+- A new test project must be added to `$testProjects` in `build\run-coverage.ps1`.
+- Fixtures are never written by tests; tests that need a changed workbook save a temp copy.
+- Tests never use the real `%LocalAppData%\BexioOrderImport\appsettings.json`; view model tests pass a temp config path.
 - Moq `Setup`/`Verify` calls must pass optional parameters explicitly, eg. `It.IsAny<IReadOnlyList<string>>()` for the fallback codes of `IBexioService.FindArticleAsync`.
 
 ## Conventions

@@ -1,7 +1,7 @@
 using System.Globalization;
 using BexioOrderImport.Abstractions.Formats;
 using BexioOrderImport.Abstractions.Wpf;
-using BexioOrderImport.Format.Peakmile;
+using BexioOrderImport.Tests.Utils;
 using BexioOrderImport.Wpf.Converters;
 using BexioOrderImport.Wpf.Resources;
 using BexioOrderImport.Wpf.Services;
@@ -20,15 +20,15 @@ public class FormatUiTests
         return ui.Object;
     }
 
-    private static readonly FormatRegistry Formats = new([new PeakmileFormatAdapter()]);
+    private static readonly FormatRegistry Formats = new([new FakeFormatAdapter()]);
 
     [Test]
     public void FormatUiRegistry_Find_ShouldReturnTheProviderOfTheFormat()
     {
-        var peakmileUi = Ui("peakmile");
-        var registry = new FormatUiRegistry(Formats, [peakmileUi]);
+        var fakeUi = Ui("fake");
+        var registry = new FormatUiRegistry(Formats, [fakeUi]);
 
-        registry.Find("Peakmile").Should().BeSameAs(peakmileUi);
+        registry.Find("Fake").Should().BeSameAs(fakeUi);
         registry.Find("ean-list").Should().BeNull();
         registry.Find(null).Should().BeNull();
     }
@@ -38,13 +38,13 @@ public class FormatUiTests
     {
         Action act = () => _ = new FormatUiRegistry(Formats, [Ui("other")]);
 
-        act.Should().Throw<InvalidOperationException>().WithMessage("*peakmile*");
+        act.Should().Throw<InvalidOperationException>().WithMessage("*fake*");
     }
 
     [Test]
     public void FormatUiRegistry_WhenFormatHasTwoProviders_ShouldThrow()
     {
-        Action act = () => _ = new FormatUiRegistry(Formats, [Ui("peakmile"), Ui("PEAKMILE")]);
+        Action act = () => _ = new FormatUiRegistry(Formats, [Ui("fake"), Ui("FAKE")]);
 
         act.Should().Throw<InvalidOperationException>().WithMessage("*more than one*");
     }
@@ -63,11 +63,11 @@ public class FormatUiTests
     public void AddFormat_ShouldRegisterAdapterAndUiProvider()
     {
         var provider = new ServiceCollection()
-            .AddFormat<PeakmileFormatAdapter, PeakmileUiProvider>()
+            .AddFormat<FakeFormatAdapter, FakeUiProvider>()
             .BuildServiceProvider();
 
-        provider.GetServices<IFormatAdapter>().Should().ContainSingle().Which.Should().BeOfType<PeakmileFormatAdapter>();
-        provider.GetServices<IFormatUiProvider>().Should().ContainSingle().Which.Should().BeOfType<PeakmileUiProvider>();
+        provider.GetServices<IFormatAdapter>().Should().ContainSingle().Which.Should().BeOfType<FakeFormatAdapter>();
+        provider.GetServices<IFormatUiProvider>().Should().ContainSingle().Which.Should().BeOfType<FakeUiProvider>();
     }
 
     [Test]
@@ -75,9 +75,9 @@ public class FormatUiTests
     {
         var converter = new FormatNameConverter();
 
-        var name = converter.Convert(["peakmile", Formats.Formats], typeof(string), null!, CultureInfo.InvariantCulture);
+        var name = converter.Convert(["fake", Formats.Formats], typeof(string), null!, CultureInfo.InvariantCulture);
 
-        name.Should().Be(new PeakmileFormatAdapter().DisplayName);
+        name.Should().Be(new FakeFormatAdapter().DisplayName);
     }
 
     [Test]

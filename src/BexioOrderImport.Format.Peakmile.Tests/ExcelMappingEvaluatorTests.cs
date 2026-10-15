@@ -2,7 +2,7 @@ using BexioOrderImport.Format.Peakmile;
 using BexioOrderImport.Domain.Models;
 using FluentAssertions;
 
-namespace BexioOrderImport.Tests;
+namespace BexioOrderImport.Format.Peakmile.Tests;
 
 public class ExcelMappingEvaluatorTests
 {

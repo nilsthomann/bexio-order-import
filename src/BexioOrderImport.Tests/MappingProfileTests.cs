@@ -1,4 +1,4 @@
-using BexioOrderImport.Format.Peakmile;
+using BexioOrderImport.Tests.Utils;
 using BexioOrderImport.Wpf.Models;
 using FluentAssertions;
 
@@ -10,7 +10,7 @@ public class MappingProfileTests
     public void NameProperty_WhenChanged_ShouldRaisePropertyChangedEvent()
     {
         // Arrange
-        var profile = new MappingProfile { Name = "InitialName", FormatId = PeakmileFormatAdapter.Id };
+        var profile = new MappingProfile { Name = "InitialName", FormatId = FakeFormatAdapter.Id };
         string? propertyChangedName = null;
         profile.PropertyChanged += (sender, args) =>
         {
@@ -29,14 +29,14 @@ public class MappingProfileTests
     public void SettingsProperty_WhenChanged_ShouldRaisePropertyChangedEvent()
     {
         // Arrange
-        var profile = new MappingProfile { FormatId = PeakmileFormatAdapter.Id };
+        var profile = new MappingProfile { FormatId = FakeFormatAdapter.Id };
         string? propertyChangedName = null;
         profile.PropertyChanged += (sender, args) =>
         {
             propertyChangedName = args.PropertyName;
         };
 
-        var newSettings = new PeakmileSettings { WorksheetIndex = 2 };
+        var newSettings = new FakeSettings { Value = "changed" };
 
         // Act
         profile.Settings = newSettings;

@@ -2,7 +2,7 @@ using System.Text.Json;
 using BexioOrderImport.Format.Peakmile;
 using FluentAssertions;
 
-namespace BexioOrderImport.Tests;
+namespace BexioOrderImport.Format.Peakmile.Tests;
 
 public class PeakmileSettingsTests
 {

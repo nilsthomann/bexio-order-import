@@ -70,7 +70,8 @@ src/
 ├── BexioOrderImport.Format.Peakmile/ # Peakmile import format (settings, ClosedXML parser, import, profile and preview controls)
 ├── BexioOrderImport.Infrastructure/  # External integrations (Bexio REST Client)
 ├── BexioOrderImport.Wpf/             # WPF Desktop App (MVVM views, custom dialogs, styles)
-└── BexioOrderImport.Tests/           # Unit and VM tests (TUnit & Microsoft Testing Platform)
+├── BexioOrderImport.Tests/           # Host tests: Bexio client, profiles, view models (TUnit & Microsoft Testing Platform)
+└── BexioOrderImport.Format.Peakmile.Tests/ # Peakmile format tests with their own Excel fixture
 ```
 
 ---
@@ -107,12 +108,10 @@ src/
 
 3. **Run unit tests**:
 
-   ```bash
-   dotnet test BexioOrderImport.slnx
-   ```
-   *or execute the TUnit test executable directly:*
+   Each test project is a TUnit executable:
    ```bash
    dotnet run --project src/BexioOrderImport.Tests/BexioOrderImport.Tests.csproj
+   dotnet run --project src/BexioOrderImport.Format.Peakmile.Tests/BexioOrderImport.Format.Peakmile.Tests.csproj
    ```
 
    To collect code coverage and view the HTML report locally:
