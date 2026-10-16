@@ -44,21 +44,15 @@ public interface IBexioService
     Task<BexioContact?> GetContactDetailsAsync(int contactId);
 
     /// <summary>
-    /// Finds a Bexio article matching the article number, color, and season code.
-    /// Fallback season codes are tried in order (exact intern code match only) when the season code yields no match.
-    /// </summary>
-    Task<BexioArticle?> FindArticleAsync(string articleNumber, string color, string seasonCode, IReadOnlyList<string>? fallbackSeasonCodes = null);
-
-    /// <summary>
     /// Finds the articles whose intern_code equals the given code exactly. Results are cached per client.
     /// Returns an empty list if none match.
     /// </summary>
     Task<IReadOnlyList<BexioArticle>> FindArticlesByInternCodeAsync(string internCode);
 
     /// <summary>
-    /// Pre-fetches articles from Bexio matching the season code and filters relevant article numbers into cache to accelerate batch imports.
+    /// Searches articles with the given criteria (eg. intern_code "like" a value). Not cached; empty if the search fails.
     /// </summary>
-    Task PreFetchArticlesAsync(string seasonCode, IEnumerable<string> articleNumbers);
+    Task<IReadOnlyList<BexioArticle>> SearchArticlesAsync(IReadOnlyList<BexioSearchCriteria> criteria);
 
     /// <summary>
     /// Appends an article position to an existing order in Bexio.

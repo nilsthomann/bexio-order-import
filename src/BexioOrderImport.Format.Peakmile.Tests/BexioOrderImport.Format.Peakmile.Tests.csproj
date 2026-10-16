@@ -27,10 +27,13 @@
     <Using Include="TUnit.Core" />
     <!-- UseWPF leaves System.IO out of the implicit usings -->
     <Using Include="System.IO" />
+    <Using Include="System.Net.Http" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\BexioOrderImport.Format.Peakmile\BexioOrderImport.Format.Peakmile.csproj" />
+    <!-- Only for PeakmileArticleMatcherTests, which run the matcher against the real Bexio client -->
+    <ProjectReference Include="..\BexioOrderImport.Infrastructure\BexioOrderImport.Infrastructure.csproj" />
   </ItemGroup>
 
   <ItemGroup>

@@ -13,13 +13,15 @@ public class ImportOrderUseCaseTests
 {
     private readonly Mock<IExcelParser> _parserMock;
     private readonly Mock<IBexioService> _clientMock;
+    private readonly Mock<IPeakmileArticleMatcher> _matcherMock;
     private readonly PeakmileImporter _useCase;
 
     public ImportOrderUseCaseTests()
     {
         _parserMock = new Mock<IExcelParser>();
         _clientMock = new Mock<IBexioService>();
-        _useCase = new PeakmileImporter(_parserMock.Object, _clientMock.Object);
+        _matcherMock = new Mock<IPeakmileArticleMatcher>();
+        _useCase = new PeakmileImporter(_parserMock.Object, _clientMock.Object, _matcherMock.Object);
     }
 
     [Test]
@@ -30,7 +32,7 @@ public class ImportOrderUseCaseTests
         _parserMock.Setup(p => p.ParseOrderForm(It.IsAny<string>())).Returns(order);
         _clientMock.Setup(c => c.FindContactByEmailAsync(order.Customer.Email)).ReturnsAsync(new BexioContact { Id = 123 });
         _clientMock.Setup(c => c.CreateOrderAsync(123, order)).ReturnsAsync(new BexioOrder { Id = 456, DocumentNr = "AU-00456" });
-        _clientMock.Setup(c => c.FindArticleAsync("123", "Black", It.IsAny<string>(), It.IsAny<IReadOnlyList<string>>())).ReturnsAsync(new BexioArticle { Id = 789, Description = "Product Description Text", Name = "Product Name Text" });
+        _matcherMock.Setup(c => c.FindArticleAsync("123", "Black", It.IsAny<string>(), It.IsAny<IReadOnlyList<string>>())).ReturnsAsync(new BexioArticle { Id = 789, Description = "Product Description Text", Name = "Product Name Text" });
 
         var loggedMessages = new List<string>();
         var interaction = new DelegateImportUserInteractionService(
@@ -64,7 +66,7 @@ public class ImportOrderUseCaseTests
         _clientMock.Setup(c => c.FindContactByEmailAsync(order.Customer.Email)).ReturnsAsync((BexioContact?)null);
         _clientMock.Setup(c => c.CreateContactAsync(order.Customer)).ReturnsAsync(123);
         _clientMock.Setup(c => c.CreateOrderAsync(123, order)).ReturnsAsync(new BexioOrder { Id = 456, DocumentNr = "AU-00456" });
-        _clientMock.Setup(c => c.FindArticleAsync("123", "Black", It.IsAny<string>(), It.IsAny<IReadOnlyList<string>>())).ReturnsAsync(new BexioArticle { Id = 789, Description = "Product Description Text", Name = "Product Name Text" });
+        _matcherMock.Setup(c => c.FindArticleAsync("123", "Black", It.IsAny<string>(), It.IsAny<IReadOnlyList<string>>())).ReturnsAsync(new BexioArticle { Id = 789, Description = "Product Description Text", Name = "Product Name Text" });
 
         var loggedMessages = new List<string>();
         var interaction = new DelegateImportUserInteractionService(
@@ -164,7 +166,7 @@ public class ImportOrderUseCaseTests
         _parserMock.Setup(p => p.ParseOrderForm(It.IsAny<string>())).Returns(order);
         _clientMock.Setup(c => c.FindContactByEmailAsync(order.Customer.Email)).ReturnsAsync(new BexioContact { Id = 123 });
         _clientMock.Setup(c => c.CreateOrderAsync(123, order)).ReturnsAsync(new BexioOrder { Id = 456, DocumentNr = "AU-00456" });
-        _clientMock.Setup(c => c.FindArticleAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<IReadOnlyList<string>>())).ReturnsAsync((BexioArticle?)null);
+        _matcherMock.Setup(c => c.FindArticleAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<IReadOnlyList<string>>())).ReturnsAsync((BexioArticle?)null);
 
         var interaction = new DelegateImportUserInteractionService();
 
@@ -212,7 +214,7 @@ public class ImportOrderUseCaseTests
         _parserMock.Setup(p => p.ParseOrderForm(It.IsAny<string>())).Returns(order);
         _clientMock.Setup(c => c.FindOrderByDocumentNrAsync("AU-00456")).ReturnsAsync(new BexioOrder { Id = 456, DocumentNr = "AU-00456", ContactId = 123 });
         _clientMock.Setup(c => c.GetContactDetailsAsync(123)).ReturnsAsync(new BexioContact { Id = 123, Nr = "10001", EMail = order.Customer.Email });
-        _clientMock.Setup(c => c.FindArticleAsync("123", "Black", It.IsAny<string>(), It.IsAny<IReadOnlyList<string>>())).ReturnsAsync(new BexioArticle { Id = 789, Description = "Product Description Text", Name = "Product Name Text" });
+        _matcherMock.Setup(c => c.FindArticleAsync("123", "Black", It.IsAny<string>(), It.IsAny<IReadOnlyList<string>>())).ReturnsAsync(new BexioArticle { Id = 789, Description = "Product Description Text", Name = "Product Name Text" });
 
         var loggedMessages = new List<string>();
         var interaction = new DelegateImportUserInteractionService(
@@ -245,7 +247,7 @@ public class ImportOrderUseCaseTests
         _parserMock.Setup(p => p.ParseOrderForm(It.IsAny<string>())).Returns(order);
         _clientMock.Setup(c => c.FindOrderByDocumentNrAsync("AU-00456")).ReturnsAsync(new BexioOrder { Id = 456, DocumentNr = "AU-00456", ContactId = 99 });
         _clientMock.Setup(c => c.GetContactDetailsAsync(99)).ReturnsAsync(new BexioContact { Id = 99, Nr = "10099", EMail = "different@domain.com" });
-        _clientMock.Setup(c => c.FindArticleAsync("123", "Black", It.IsAny<string>(), It.IsAny<IReadOnlyList<string>>())).ReturnsAsync(new BexioArticle { Id = 789, Description = "Product Description Text", Name = "Product Name Text" });
+        _matcherMock.Setup(c => c.FindArticleAsync("123", "Black", It.IsAny<string>(), It.IsAny<IReadOnlyList<string>>())).ReturnsAsync(new BexioArticle { Id = 789, Description = "Product Description Text", Name = "Product Name Text" });
 
         var loggedMessages = new List<string>();
         var interaction = new DelegateImportUserInteractionService(
@@ -304,7 +306,7 @@ public class ImportOrderUseCaseTests
         _parserMock.Setup(p => p.ParseOrderForm(It.IsAny<string>())).Returns(order);
         _clientMock.Setup(c => c.FindContactByNrAsync("10099")).ReturnsAsync(new BexioContact { Id = 99, Nr = "10099", Name = "Test Customer", EMail = "test@domain.com" });
         _clientMock.Setup(c => c.CreateOrderAsync(99, order)).ReturnsAsync(new BexioOrder { Id = 456, DocumentNr = "AU-00456" });
-        _clientMock.Setup(c => c.FindArticleAsync("123", "Black", It.IsAny<string>(), It.IsAny<IReadOnlyList<string>>())).ReturnsAsync(new BexioArticle { Id = 789, Description = "Product Description Text", Name = "Product Name Text" });
+        _matcherMock.Setup(c => c.FindArticleAsync("123", "Black", It.IsAny<string>(), It.IsAny<IReadOnlyList<string>>())).ReturnsAsync(new BexioArticle { Id = 789, Description = "Product Description Text", Name = "Product Name Text" });
 
         var loggedMessages = new List<string>();
         var interaction = new DelegateImportUserInteractionService(
@@ -335,7 +337,7 @@ public class ImportOrderUseCaseTests
         _parserMock.Setup(p => p.ParseOrderForm(It.IsAny<string>())).Returns(order);
         _clientMock.Setup(c => c.FindOrderByDocumentNrAsync("AU-00456")).ReturnsAsync(new BexioOrder { Id = 456, DocumentNr = "AU-00456", ContactId = 123 });
         _clientMock.Setup(c => c.GetContactDetailsAsync(123)).ReturnsAsync(new BexioContact() { Id = 123, Nr = "10001", EMail = "different@domain.com" });
-        _clientMock.Setup(c => c.FindArticleAsync("123", "Black", It.IsAny<string>(), It.IsAny<IReadOnlyList<string>>())).ReturnsAsync(new BexioArticle { Id = 789, Description = "Product Description Text", Name = "Product Name Text" });
+        _matcherMock.Setup(c => c.FindArticleAsync("123", "Black", It.IsAny<string>(), It.IsAny<IReadOnlyList<string>>())).ReturnsAsync(new BexioArticle { Id = 789, Description = "Product Description Text", Name = "Product Name Text" });
 
         var loggedMessages = new List<string>();
         bool mismatchCallbackCalled = false;
@@ -454,7 +456,7 @@ public class ImportOrderUseCaseTests
         _clientMock.Setup(c => c.FindContactByEmailAsync(order.Customer.Email)).ReturnsAsync(new BexioContact { Id = 123 });
         _clientMock.Setup(c => c.CreateOrderAsync(123, order)).ReturnsAsync(new BexioOrder { Id = 456, DocumentNr = "AU-00456" });
 
-        _clientMock.Setup(c => c.FindArticleAsync("123", "Black", "FS27", It.IsAny<IReadOnlyList<string>>()))
+        _matcherMock.Setup(c => c.FindArticleAsync("123", "Black", "FS27", It.IsAny<IReadOnlyList<string>>()))
             .ReturnsAsync(new BexioArticle { Id = 789, Description = "Product Description", Name = "Product Name" });
 
         var interaction = new DelegateImportUserInteractionService();
@@ -464,7 +466,7 @@ public class ImportOrderUseCaseTests
         await _useCase.ExecuteAsync("dummy.xlsx", interaction, options);
 
         // Assert
-        _clientMock.Verify(c => c.FindArticleAsync("123", "Black", "FS27", It.IsAny<IReadOnlyList<string>>()), Times.Once);
+        _matcherMock.Verify(c => c.FindArticleAsync("123", "Black", "FS27", It.IsAny<IReadOnlyList<string>>()), Times.Once);
     }
 
     [Test]
@@ -478,7 +480,7 @@ public class ImportOrderUseCaseTests
         _clientMock.Setup(c => c.CreateOrderAsync(123, order)).ReturnsAsync(new BexioOrder { Id = 456, DocumentNr = "AU-00456" });
 
         IReadOnlyList<string>? passedFallbackCodes = null;
-        _clientMock.Setup(c => c.FindArticleAsync("123", "Black", "FS27", It.IsAny<IReadOnlyList<string>>()))
+        _matcherMock.Setup(c => c.FindArticleAsync("123", "Black", "FS27", It.IsAny<IReadOnlyList<string>>()))
             .Callback((string _, string _, string _, IReadOnlyList<string>? fallbackCodes) => passedFallbackCodes = fallbackCodes)
             .ReturnsAsync(new BexioArticle { Id = 789, Description = "Product Description", Name = "Product Name" });
 
@@ -490,9 +492,9 @@ public class ImportOrderUseCaseTests
 
         // Assert
         passedFallbackCodes.Should().Equal("NOOS", "EX");
-        _clientMock.Verify(c => c.PreFetchArticlesAsync("FS27", It.IsAny<IEnumerable<string>>()), Times.Once);
-        _clientMock.Verify(c => c.PreFetchArticlesAsync("NOOS", It.IsAny<IEnumerable<string>>()), Times.Once);
-        _clientMock.Verify(c => c.PreFetchArticlesAsync("EX", It.IsAny<IEnumerable<string>>()), Times.Once);
+        _matcherMock.Verify(c => c.PreFetchArticlesAsync("FS27", It.IsAny<IEnumerable<string>>()), Times.Once);
+        _matcherMock.Verify(c => c.PreFetchArticlesAsync("NOOS", It.IsAny<IEnumerable<string>>()), Times.Once);
+        _matcherMock.Verify(c => c.PreFetchArticlesAsync("EX", It.IsAny<IEnumerable<string>>()), Times.Once);
     }
 
     [Test]
@@ -504,7 +506,7 @@ public class ImportOrderUseCaseTests
         _parserMock.Setup(p => p.ParseOrderForm(It.IsAny<string>())).Returns(order);
         _clientMock.Setup(c => c.FindContactByEmailAsync(order.Customer.Email)).ReturnsAsync(new BexioContact { Id = 123 });
         _clientMock.Setup(c => c.CreateOrderAsync(123, order)).ReturnsAsync(new BexioOrder { Id = 456, DocumentNr = "AU-00456" });
-        _clientMock.Setup(c => c.FindArticleAsync("123", "Black", It.IsAny<string>(), It.IsAny<IReadOnlyList<string>>()))
+        _matcherMock.Setup(c => c.FindArticleAsync("123", "Black", It.IsAny<string>(), It.IsAny<IReadOnlyList<string>>()))
             .ReturnsAsync(new BexioArticle { Id = 789, Description = "Desc", Name = "Name" });
 
         var interaction = new DelegateImportUserInteractionService();
@@ -525,7 +527,7 @@ public class ImportOrderUseCaseTests
         _parserMock.Setup(p => p.ParseOrderForm(It.IsAny<string>())).Returns(order);
         _clientMock.Setup(c => c.FindContactByEmailAsync(order.Customer.Email)).ReturnsAsync(new BexioContact { Id = 123 });
         _clientMock.Setup(c => c.CreateOrderAsync(123, order)).ReturnsAsync(new BexioOrder { Id = 456, DocumentNr = "AU-00456" });
-        _clientMock.Setup(c => c.FindArticleAsync("123", "Black", It.IsAny<string>(), It.IsAny<IReadOnlyList<string>>()))
+        _matcherMock.Setup(c => c.FindArticleAsync("123", "Black", It.IsAny<string>(), It.IsAny<IReadOnlyList<string>>()))
             .ReturnsAsync(new BexioArticle { Id = 789, Description = "Desc", Name = "Name" });
 
         var interaction = new DelegateImportUserInteractionService();
@@ -547,7 +549,7 @@ public class ImportOrderUseCaseTests
         _parserMock.Setup(p => p.ParseOrderForm(It.IsAny<string>())).Returns(order);
         _clientMock.Setup(c => c.FindContactByEmailAsync(order.Customer.Email)).ReturnsAsync(new BexioContact { Id = 123 });
         _clientMock.Setup(c => c.CreateOrderAsync(123, order)).ReturnsAsync(new BexioOrder { Id = 456, DocumentNr = "AU-00456" });
-        _clientMock.Setup(c => c.FindArticleAsync("123", "Black", It.IsAny<string>(), It.IsAny<IReadOnlyList<string>>()))
+        _matcherMock.Setup(c => c.FindArticleAsync("123", "Black", It.IsAny<string>(), It.IsAny<IReadOnlyList<string>>()))
             .ReturnsAsync(new BexioArticle { Id = 789, Description = "Desc", Name = "Name" });
 
         var interaction = new DelegateImportUserInteractionService();
@@ -567,7 +569,7 @@ public class ImportOrderUseCaseTests
         _parserMock.Setup(p => p.ParseOrderForm(It.IsAny<string>())).Returns(order);
         _clientMock.Setup(c => c.FindContactByEmailAsync(order.Customer.Email)).ReturnsAsync(new BexioContact { Id = 123 });
         _clientMock.Setup(c => c.CreateOrderAsync(123, order)).ReturnsAsync(new BexioOrder { Id = 456, DocumentNr = "AU-00456" });
-        _clientMock.Setup(c => c.FindArticleAsync("123", "Black", "SS26", It.IsAny<IReadOnlyList<string>>())).ReturnsAsync(new BexioArticle { Id = 789, Description = "Desc", Name = "Name" });
+        _matcherMock.Setup(c => c.FindArticleAsync("123", "Black", "SS26", It.IsAny<IReadOnlyList<string>>())).ReturnsAsync(new BexioArticle { Id = 789, Description = "Desc", Name = "Name" });
 
         var interactionMock = new Mock<IImportUserInteractionService>();
         interactionMock.Setup(i => i.ConfirmUploadAsync()).ReturnsAsync(true);
@@ -582,14 +584,14 @@ public class ImportOrderUseCaseTests
         // Assert
         result.Success.Should().BeTrue();
         result.OrderNumber.Should().Be("AU-00456");
-        _clientMock.Verify(c => c.FindArticleAsync("123", "Black", "SS26", It.IsAny<IReadOnlyList<string>>()), Times.Once);
+        _matcherMock.Verify(c => c.FindArticleAsync("123", "Black", "SS26", It.IsAny<IReadOnlyList<string>>()), Times.Once);
         interactionMock.Verify(i => i.LogInfo(It.Is<string>(s => s.Contains("Successfully completed"))), Times.Once);
     }
 
     [Test]
     public async Task ExecuteAsync_WhenExcelParserIsNull_ShouldThrowInvalidOperationException()
     {
-        var useCase = new PeakmileImporter(_clientMock.Object);
+        var useCase = new PeakmileImporter(_clientMock.Object, _matcherMock.Object);
         var interaction = new DelegateImportUserInteractionService();
 
         Func<Task> act = async () => await useCase.ExecuteAsync("file.xlsx", interaction);

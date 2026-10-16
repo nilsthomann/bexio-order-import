@@ -6,7 +6,6 @@ using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Text;
 using System.Text.Json;
-using System.Text.RegularExpressions;
 
 namespace BexioOrderImport.Infrastructure.Bexio;
 
@@ -187,112 +186,10 @@ public class BexioApiClient : IBexioService
         return await response.Content.ReadFromJsonAsync<BexioContact>();
     }
 
-    public async Task<BexioArticle?> FindArticleAsync(string articleNumber, string color, string seasonCode, IReadOnlyList<string>? fallbackSeasonCodes = null)
-    {
-        // Color can be "Black" or eg. "140 Black", we need only the Color Name
-        string cleanColor = Regex.Replace(color, @"^\d+", "").Trim();
-
-        // Season code first, then the fallback codes of multi-season articles (eg. "NOOS", "EX")
-        // ponytail: a fallback article costs one missed season code lookup per position; cache missed intern codes if that gets slow
-        foreach (var code in (string[])[seasonCode, .. fallbackSeasonCodes ?? []])
-        {
-            var articles = await FindArticlesByInternCodeAsync(articleNumber, cleanColor, code);
-
-            if (articles?.Count == 1)
-            {
-                return articles[0];
-            }
-        }
-
-        // Fallback
-        return await FindArticleByArticleNumberAndFilterAsync(articleNumber, cleanColor, seasonCode);
-    }
-
-    public async Task PreFetchArticlesAsync(string seasonCode, IEnumerable<string> articleNumbers)
-    {
-        var distinctNumbers = articleNumbers
-            .Where(n => !string.IsNullOrWhiteSpace(n))
-            .Select(n => n.Trim())
-            .Distinct()
-            .ToList();
-
-        if (distinctNumbers.Count == 0) return;
-
-        List<BexioArticle>? fetchedArticles = null;
-
-        if (!string.IsNullOrWhiteSpace(seasonCode))
-        {
-            var searchPayload = new[]
-            {
-                new BexioSearchCriteria { Field = "intern_code", Value = seasonCode.Trim(), Criteria = "like" }
-            };
-
-            var body = new StringContent(JsonSerializer.Serialize(searchPayload), Encoding.UTF8, "application/json");
-            var response = await SendWithRateLimitCheckAsync(CreateRequest(HttpMethod.Post, "2.0/article/search", body));
-
-            if (response.IsSuccessStatusCode)
-            {
-                fetchedArticles = await response.Content.ReadFromJsonAsync<List<BexioArticle>>();
-            }
-        }
-
-        if (fetchedArticles == null || fetchedArticles.Count == 0)
-        {
-            foreach (var artNo in distinctNumbers)
-            {
-                bool isCached;
-                lock (_cacheLock)
-                {
-                    isCached = _cachedArticles.Any(a => a.Code.Contains(artNo, StringComparison.OrdinalIgnoreCase));
-                }
-                if (isCached) continue;
-
-                var searchPayload = new[]
-                {
-                    new BexioSearchCriteria { Field = "intern_code", Value = artNo, Criteria = "like" }
-                };
-
-                var body = new StringContent(JsonSerializer.Serialize(searchPayload), Encoding.UTF8, "application/json");
-                var response = await SendWithRateLimitCheckAsync(CreateRequest(HttpMethod.Post, "2.0/article/search", body));
-
-                if (response.IsSuccessStatusCode)
-                {
-                    var articles = await response.Content.ReadFromJsonAsync<List<BexioArticle>>();
-                    if (articles != null && articles.Count > 0)
-                    {
-                        var relevant = articles.Where(a => distinctNumbers.Any(num => a.Code.Contains(num, StringComparison.OrdinalIgnoreCase)));
-                        lock (_cacheLock)
-                        {
-                            _cachedArticles = [.. _cachedArticles.UnionBy(relevant, x => x.Id)];
-                        }
-                    }
-                }
-            }
-            return;
-        }
-
-        // Save only articles in _cachedArticles that are present in the provided article numbers list
-        var matchingArticles = fetchedArticles.Where(a =>
-            distinctNumbers.Any(num => a.Code.Contains(num, StringComparison.OrdinalIgnoreCase)));
-
-        lock (_cacheLock)
-        {
-            _cachedArticles = [.. _cachedArticles.UnionBy(matchingArticles, x => x.Id)];
-        }
-    }
-
-    private Task<IReadOnlyList<BexioArticle>> FindArticlesByInternCodeAsync(string articleNumber, string cleanColor, string seasonCode)
-        => FindArticlesByInternCodeAsync($"{seasonCode?.Trim() ?? string.Empty}{articleNumber.Trim()}{cleanColor}".Trim());
-
     public async Task<IReadOnlyList<BexioArticle>> FindArticlesByInternCodeAsync(string internCode)
     {
         if (string.IsNullOrWhiteSpace(internCode)) return [];
         internCode = internCode.Trim();
-
-        var searchPayload = new[]
-        {
-            new BexioSearchCriteria { Field = "intern_code", Value = internCode, Criteria = "=" }
-        };
 
         lock (_cacheLock)
         {
@@ -300,71 +197,30 @@ public class BexioApiClient : IBexioService
                 return [.. _cachedArticles.Where(x => x.Code.Equals(internCode, StringComparison.OrdinalIgnoreCase))];
         }
 
-        var body = new StringContent(JsonSerializer.Serialize(searchPayload), Encoding.UTF8, "application/json");
+        var articles = await SearchArticlesAsync([new BexioSearchCriteria { Field = "intern_code", Value = internCode, Criteria = "=" }]);
+        if (articles.Count > 0)
+        {
+            lock (_cacheLock)
+            {
+                _cachedArticles = [.. _cachedArticles.UnionBy(articles, x => x.Id)];
+            }
+        }
+        return articles;
+    }
+
+    public async Task<IReadOnlyList<BexioArticle>> SearchArticlesAsync(IReadOnlyList<BexioSearchCriteria> criteria)
+    {
+        ArgumentNullException.ThrowIfNull(criteria);
+
+        var body = new StringContent(JsonSerializer.Serialize(criteria), Encoding.UTF8, "application/json");
         var response = await SendWithRateLimitCheckAsync(CreateRequest(HttpMethod.Post, "2.0/article/search", body));
 
         if (response.IsSuccessStatusCode)
         {
-            var articles = await response.Content.ReadFromJsonAsync<List<BexioArticle>>();
-            if (articles != null && articles.Count > 0)
-            {
-                lock (_cacheLock)
-                {
-                    _cachedArticles = [.. _cachedArticles.UnionBy(articles, x => x.Id)];
-                }
-                return articles;
-            }
+            return await response.Content.ReadFromJsonAsync<List<BexioArticle>>() ?? [];
         }
-
         return [];
     }
-
-    private async Task<BexioArticle?> FindArticleByArticleNumberAndFilterAsync(string articleNumber, string cleanColor, string seasonCode)
-    {
-        var searchPayload = new[]
-        {
-            new BexioSearchCriteria { Field = "intern_code", Value = articleNumber.Trim(), Criteria = "like" }
-        };
-
-        BexioArticle? cachedArticle;
-        lock (_cacheLock)
-        {
-            cachedArticle = _cachedArticles.FirstOrDefault(x =>
-                x.Code.Contains(articleNumber.Trim(), StringComparison.OrdinalIgnoreCase) &&
-                x.Name.Contains(cleanColor, StringComparison.OrdinalIgnoreCase) &&
-                x.Name.Contains(seasonCode, StringComparison.OrdinalIgnoreCase));
-        }
-        if (cachedArticle != null) return cachedArticle;
-
-        var body = new StringContent(JsonSerializer.Serialize(searchPayload), Encoding.UTF8, "application/json");
-        var response = await SendWithRateLimitCheckAsync(CreateRequest(HttpMethod.Post, "2.0/article/search", body));
-
-        if (response.IsSuccessStatusCode)
-        {
-            var articles = await response.Content.ReadFromJsonAsync<List<BexioArticle>>();
-            if (articles != null)
-            {
-                lock (_cacheLock)
-                {
-                    _cachedArticles = [.. _cachedArticles.UnionBy(articles, x => x.Id)];
-                }
-
-                if (articles.Count == 1)
-                {
-                    return articles[0];
-                }
-                else if (articles.Count > 1)
-                {
-                    return articles.FirstOrDefault(x =>
-                        x.Name.Contains(cleanColor, StringComparison.OrdinalIgnoreCase) &&
-                        x.Name.Contains(seasonCode, StringComparison.OrdinalIgnoreCase));
-                }
-            }
-        }
-
-        return null;
-    }
-
     public async Task AddArticlePositionAsync(int orderId, int articleId, OrderPosition position, string? positionText = null)
     {
         var text = !string.IsNullOrEmpty(positionText)

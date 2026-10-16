@@ -42,7 +42,7 @@ dotnet run --project src\BexioOrderImport.Format.Peakmile.Tests -- --treenode-fi
 - A new test project must be added to `$testProjects` in `build\run-coverage.ps1`.
 - Fixtures are never written by tests; tests that need a changed workbook save a temp copy.
 - Tests never use the real `%LocalAppData%\BexioOrderImport\appsettings.json`; view model tests pass a temp config path.
-- Moq `Setup`/`Verify` calls must pass optional parameters explicitly, eg. `It.IsAny<IReadOnlyList<string>>()` for the fallback codes of `IBexioService.FindArticleAsync`.
+- Moq `Setup`/`Verify` calls must pass optional parameters explicitly, eg. `It.IsAny<IReadOnlyList<string>>()` for the fallback codes of `IPeakmileArticleMatcher.FindArticleAsync`.
 
 ## Conventions
 
@@ -65,7 +65,7 @@ Profiles store a format id (`Format`) and the format's settings (`Settings`) in 
 
 ## Bexio article lookup
 
-`BexioApiClient.FindArticleAsync` matches the Bexio `intern_code` exactly as `{SeasonCode}{ArticleNumber}{Color}`, first with the season code of the profile, then with each season fallback code (multi-season articles, eg. `NOOS`, `EX`). Only if all miss, it searches by article number and filters by color and season code in the article name. An article that is not found aborts the import.
+`PeakmileArticleMatcher.FindArticleAsync` (in the Peakmile format) matches the Bexio `intern_code` exactly as `{SeasonCode}{ArticleNumber}{Color}`, first with the season code of the profile, then with each season fallback code (multi-season articles, eg. `NOOS`, `EX`). Only if all miss, it searches by article number and filters by color and season code in the article name. An article that is not found aborts the import. It uses only the generic `IBexioService.FindArticlesByInternCodeAsync` and `SearchArticlesAsync`, and caches the articles of one import; `PeakmileArticleMatcherTests` run it against the real `BexioApiClient` with a mocked HTTP handler.
 
 The EAN list format uses `FindArticlesByInternCodeAsync(ean)`: the EAN is the `intern_code`, exactly one article must match, and the position price is the article's `sale_price`.
 

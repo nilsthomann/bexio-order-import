@@ -73,6 +73,34 @@ public class BexioArticleLookupTests
     }
 
     [Test]
+    public async Task SearchArticlesAsync_ShouldPostTheCriteriaAndNotCache()
+    {
+        var (client, requests) = Client("""[{ "id": 1, "intern_code": "FS27ART" }]""");
+        BexioSearchCriteria[] criteria = [new() { Field = "intern_code", Value = "ART", Criteria = "like" }];
+
+        var first = await client.SearchArticlesAsync(criteria);
+        await client.SearchArticlesAsync(criteria);
+
+        first.Should().ContainSingle().Which.Id.Should().Be(1);
+        requests.Should().HaveCount(2);
+        requests[0].Should().Contain("\"like\"").And.Contain("\"ART\"");
+    }
+
+    [Test]
+    public async Task SearchArticlesAsync_WhenBexioFails_ShouldReturnEmpty()
+    {
+        var handler = new MockHttpMessageHandler
+        {
+            SendAsyncFunc = (req, token) => Task.FromResult(new HttpResponseMessage(HttpStatusCode.NotFound))
+        };
+        var client = new BexioApiClient(new HttpClient(handler), "dummy-token", 1, 1);
+
+        var articles = await client.SearchArticlesAsync([new BexioSearchCriteria { Field = "intern_code", Value = "X", Criteria = "like" }]);
+
+        articles.Should().BeEmpty();
+    }
+
+    [Test]
     [Arguments("12.5", "12.5")]
     [Arguments("\"12.50\"", "12.5")]
     [Arguments("null", null)]
