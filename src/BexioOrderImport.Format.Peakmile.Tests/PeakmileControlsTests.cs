@@ -52,4 +52,19 @@ public class PeakmileControlsTests
     {
         new PeakmileUiProvider().FormatId.Should().Be(PeakmileFormatAdapter.Id);
     }
-}
+
+    [Test]
+    public void ProfileConfigControl_InputsShouldKeepTheThemeStyle()
+    {
+        WpfTestApplication.RunOnUiThread(() =>
+        {
+            var control = new PeakmileUiProvider().CreateProfileConfigControl();
+
+            // A local TextBox style without BasedOn would replace the theme style (rounded border)
+            var localStyle = (System.Windows.Style)control.View.FindResource(typeof(System.Windows.Controls.TextBox));
+            var themeStyle = System.Windows.Application.Current.FindResource(typeof(System.Windows.Controls.TextBox));
+
+            localStyle.Should().NotBeSameAs(themeStyle);
+            localStyle.BasedOn.Should().BeSameAs(themeStyle);
+        });
+    }}
