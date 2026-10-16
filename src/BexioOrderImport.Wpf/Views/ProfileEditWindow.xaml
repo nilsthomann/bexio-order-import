@@ -17,7 +17,7 @@
         <Rectangle Fill="#99000000"/>
 
         <!-- Dialog Card — fixed width, auto height, centred, max height bounded -->
-        <Border Width="900"
+        <Border Width="1000"
                 MaxHeight="820"
                 HorizontalAlignment="Center"
                 VerticalAlignment="Center"

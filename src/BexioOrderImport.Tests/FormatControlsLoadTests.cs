@@ -109,6 +109,12 @@ public class FormatControlsLoadTests
         {
             new ImportControl().Should().NotBeNull();
             new SettingsControl().Should().NotBeNull();
+
+            // The dialogs use the theme of the application and must not merge it from an old path
+            var dialog = new CustomDialog();
+            var confirm = new CustomerConfirmWindow(new Customer());
+            dialog.Close();
+            confirm.Close();
         });
     }
 }

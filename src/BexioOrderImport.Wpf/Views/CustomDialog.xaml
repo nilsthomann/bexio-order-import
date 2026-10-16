@@ -7,14 +7,6 @@
         WindowStartupLocation="Manual"
         UseLayoutRounding="True"
         ShowInTaskbar="False">
-    <Window.Resources>
-        <ResourceDictionary>
-            <ResourceDictionary.MergedDictionaries>
-                <ResourceDictionary Source="/BexioOrderImport.Wpf;component/Styles/AppStyles.xaml"/>
-            </ResourceDictionary.MergedDictionaries>
-        </ResourceDictionary>
-    </Window.Resources>
-
     <!-- Full-window backdrop + centered card -->
     <Grid>
         <!-- Semi-transparent backdrop -->
