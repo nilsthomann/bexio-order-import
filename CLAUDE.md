@@ -3,7 +3,8 @@
 WPF desktop app (.NET 10, Windows only) that parses Excel order forms and imports customers and order positions into Bexio through its REST API. Solution: `BexioOrderImport.slnx`.
 
 - `src/BexioOrderImport.Domain`: models (`Order`, `OrderPosition`, Bexio DTOs)
-- `src/BexioOrderImport.Application`: use cases, interfaces (`IBexioClient`, `IExcelParser`), options
+- `src/BexioOrderImport.Abstractions`: shared contracts (`IBexioService`, `IImportUserInteractionService`, `ImportResult`), `ExcelColumnHelper`
+- `src/BexioOrderImport.Application`: use cases, `IExcelParser`, options
 - `src/BexioOrderImport.Infrastructure`: `BexioApiClient`, `ClosedXmlExcelParser`
 - `src/BexioOrderImport.Wpf`: MVVM UI, mapping profiles, settings, auto-updater
 - `src/BexioOrderImport.Tests`: TUnit tests with Moq and FluentAssertions
@@ -35,7 +36,7 @@ dotnet run --project src\BexioOrderImport.Tests -- --treenode-filter "/*/*/*/*Fa
 
 - Pull requests fail below 90% code coverage, so new logic needs tests.
 - A test run modifies `src/BexioOrderImport.Tests/AnonymizedOrder.xlsx`. Restore it with `git checkout -- src/BexioOrderImport.Tests/AnonymizedOrder.xlsx` and do not commit it.
-- Moq `Setup`/`Verify` calls must pass optional parameters explicitly, eg. `It.IsAny<IReadOnlyList<string>>()` for the fallback codes of `IBexioClient.FindArticleAsync`.
+- Moq `Setup`/`Verify` calls must pass optional parameters explicitly, eg. `It.IsAny<IReadOnlyList<string>>()` for the fallback codes of `IBexioService.FindArticleAsync`.
 
 ## Conventions
 

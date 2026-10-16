@@ -1,7 +1,6 @@
-using BexioOrderImport.Application.Interfaces;
 using BexioOrderImport.Domain.Models;
 
-namespace BexioOrderImport.Application.Services;
+namespace BexioOrderImport.Abstractions.Import;
 
 public class DelegateImportUserInteractionService : IImportUserInteractionService
 {

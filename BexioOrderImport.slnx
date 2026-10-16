@@ -30,6 +30,7 @@
     <File Path="README.md" />
   </Folder>
   <Folder Name="/src/">
+    <Project Path="src/BexioOrderImport.Abstractions/BexioOrderImport.Abstractions.csproj" />
     <Project Path="src/BexioOrderImport.Application/BexioOrderImport.Application.csproj" />
     <Project Path="src/BexioOrderImport.Domain/BexioOrderImport.Domain.csproj" />
     <Project Path="src/BexioOrderImport.Infrastructure/BexioOrderImport.Infrastructure.csproj" />

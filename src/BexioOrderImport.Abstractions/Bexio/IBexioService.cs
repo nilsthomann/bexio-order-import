@@ -1,12 +1,12 @@
 using BexioOrderImport.Domain.Models;
 using BexioOrderImport.Domain.Models.Bexio;
 
-namespace BexioOrderImport.Application.Interfaces;
+namespace BexioOrderImport.Abstractions.Bexio;
 
 /// <summary>
 /// Client interface for interacting with the Bexio REST API.
 /// </summary>
-public interface IBexioClient
+public interface IBexioService
 {
     /// <summary>
     /// Searches for an existing contact by contact number (nr).
@@ -21,7 +21,7 @@ public interface IBexioClient
     /// <summary>
     /// Searches for an existing contact by email address.
     /// </summary>
-    Task<int?> FindContactIdAsync(string email);
+    Task<BexioContact?> FindContactByEmailAsync(string email);
 
     /// <summary>
     /// Creates a new contact in Bexio for the given customer.

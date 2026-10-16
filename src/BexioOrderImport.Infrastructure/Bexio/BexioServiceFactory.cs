@@ -1,4 +1,4 @@
-using BexioOrderImport.Application.Interfaces;
+using BexioOrderImport.Abstractions.Bexio;
 
 namespace BexioOrderImport.Infrastructure.Bexio;
 
@@ -7,16 +7,16 @@ namespace BexioOrderImport.Infrastructure.Bexio;
 /// Registered as a singleton in the DI container so the underlying
 /// <see cref="HttpClient"/> is reused across calls.
 /// </summary>
-public class BexioClientFactory : IBexioClientFactory
+public class BexioServiceFactory : IBexioServiceFactory
 {
     private readonly IHttpClientFactory _httpClientFactory;
 
-    public BexioClientFactory(IHttpClientFactory httpClientFactory)
+    public BexioServiceFactory(IHttpClientFactory httpClientFactory)
     {
         _httpClientFactory = httpClientFactory;
     }
 
-    public IBexioClient Create(string apiToken, int? accountId, int? taxId, string language = "de")
+    public IBexioService Create(string apiToken, int? accountId, int? taxId, string language = "de")
     {
         var httpClient = _httpClientFactory.CreateClient("BexioApi");
         return new BexioApiClient(httpClient, apiToken, accountId, taxId, language);

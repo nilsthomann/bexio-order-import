@@ -1,4 +1,4 @@
-using BexioOrderImport.Application.Interfaces;
+using BexioOrderImport.Abstractions.Bexio;
 using BexioOrderImport.Domain.Models;
 using BexioOrderImport.Domain.Models.Bexio;
 using System.Diagnostics.CodeAnalysis;
@@ -10,7 +10,7 @@ using System.Text.RegularExpressions;
 
 namespace BexioOrderImport.Infrastructure.Bexio;
 
-public class BexioApiClient : IBexioClient
+public class BexioApiClient : IBexioService
 {
     private readonly HttpClient _httpClient;
     private readonly string _apiToken;
@@ -99,7 +99,7 @@ public class BexioApiClient : IBexioClient
         return null;
     }
 
-    public async Task<int?> FindContactIdAsync(string email)
+    public async Task<BexioContact?> FindContactByEmailAsync(string email)
     {
         var searchPayload = new[]
         {
@@ -114,7 +114,7 @@ public class BexioApiClient : IBexioClient
             var contacts = await response.Content.ReadFromJsonAsync<List<BexioContact>>();
             if (contacts != null && contacts.Count > 0)
             {
-                return contacts[0].Id;
+                return contacts[0];
             }
         }
 

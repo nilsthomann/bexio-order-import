@@ -1,4 +1,4 @@
-namespace BexioOrderImport.Application.Models;
+namespace BexioOrderImport.Abstractions.Import;
 
 public record ImportResult(
     bool Success,

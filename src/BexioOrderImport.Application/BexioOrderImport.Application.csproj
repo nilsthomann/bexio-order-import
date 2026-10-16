@@ -2,6 +2,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\BexioOrderImport.Domain\BexioOrderImport.Domain.csproj" />
+    <ProjectReference Include="..\BexioOrderImport.Abstractions\BexioOrderImport.Abstractions.csproj" />
   </ItemGroup>
 
   <PropertyGroup>

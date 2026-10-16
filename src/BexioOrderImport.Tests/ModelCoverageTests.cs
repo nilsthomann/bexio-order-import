@@ -1,4 +1,4 @@
-using BexioOrderImport.Application.Models;
+using BexioOrderImport.Abstractions.Import;
 using BexioOrderImport.Domain.Models.Bexio;
 using BexioOrderImport.Tests.Utils;
 using BexioOrderImport.Wpf.Helpers;

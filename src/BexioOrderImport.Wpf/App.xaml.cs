@@ -2,6 +2,7 @@ using System.IO;
 using System.Net.Http;
 using System.Text.Json;
 using System.Windows;
+using BexioOrderImport.Abstractions.Bexio;
 using BexioOrderImport.Application.Interfaces;
 using BexioOrderImport.Infrastructure.Bexio;
 using BexioOrderImport.Wpf.Helpers;
@@ -59,7 +60,7 @@ public partial class App : System.Windows.Application
              PooledConnectionLifetime = TimeSpan.FromMinutes(15),
              KeepAlivePingDelay = TimeSpan.FromSeconds(30)
          });
-        services.AddSingleton<IBexioClientFactory, BexioClientFactory>();
+        services.AddSingleton<IBexioServiceFactory, BexioServiceFactory>();
         services.AddSingleton<IExcelParserFactory, BexioOrderImport.Infrastructure.Excel.ClosedXmlExcelParserFactory>();
         services.AddSingleton<IEncryptionService, DpapiEncryptionService>();
         services.AddSingleton<IDispatcherService, WpfDispatcherService>();
