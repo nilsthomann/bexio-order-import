@@ -40,22 +40,18 @@ Please help maintain a professional, respectful, and welcoming environment for e
 - Keep implementation simple and direct. Prefer standard library features over custom utilities, and keep external dependencies to a minimum.
 
 ### Testing Changes
-- Tests are built using **TUnit** and run on **Microsoft Testing Platform**. Extend or modify tests inside the `src/BexioOrderImport.Tests/` directory when modifying parsing or business workflows.
-- Run all tests before submitting your changes:
+- Tests are built using **TUnit** and run on **Microsoft Testing Platform**. Each import format has its own test project with its own fixtures (eg. `src/BexioOrderImport.Format.Peakmile.Tests/`); `src/BexioOrderImport.Tests/` covers the host with a fake format.
+- Run all tests before submitting your changes (see the coverage script below), or a single test project directly:
   ```bash
-  dotnet test BexioOrderImport.slnx
+  dotnet run --project src/BexioOrderImport.Format.Peakmile.Tests/BexioOrderImport.Format.Peakmile.Tests.csproj
   ```
-  *or directly via the TUnit executable:*
+- Run a specific test class (the filter path is assembly/namespace/class/test):
   ```bash
-  dotnet run --project src/BexioOrderImport.Tests/BexioOrderImport.Tests.csproj
-  ```
-- Run a specific test class:
-  ```bash
-  dotnet run --project src/BexioOrderImport.Tests/BexioOrderImport.Tests.csproj -- --filter "Name~ImportOrderUseCaseTests"
+  dotnet run --project src/BexioOrderImport.Format.Peakmile.Tests/BexioOrderImport.Format.Peakmile.Tests.csproj -- --treenode-filter "/*/*/ImportOrderUseCaseTests/*"
   ```
 - Run a single test:
   ```bash
-  dotnet run --project src/BexioOrderImport.Tests/BexioOrderImport.Tests.csproj -- --filter "Name=ExecuteAsync_WithNoPositions_ReturnsFalse"
+  dotnet run --project src/BexioOrderImport.Format.Peakmile.Tests/BexioOrderImport.Format.Peakmile.Tests.csproj -- --treenode-filter "/*/*/*/ExecuteAsync_WithNoPositions_ReturnsFalse"
   ```
 - To collect code coverage and generate/view the HTML report locally:
   ```powershell

@@ -1,6 +1,6 @@
 using System.Windows;
+using System.Windows.Controls;
 using BexioOrderImport.Domain.Models;
-using BexioOrderImport.Format.Peakmile;
 using BexioOrderImport.Tests.Utils;
 using BexioOrderImport.Wpf.Views;
 using BexioOrderImport.Wpf.Views.Controls;
@@ -10,7 +10,8 @@ using WpfApp = System.Windows.Application;
 namespace BexioOrderImport.Tests;
 
 /// <summary>
-/// Loads the XAML of the format controls and host views with the shared theme, so missing resources fail here and not at runtime.
+/// Loads the XAML of the host views with the shared theme, so missing resources fail here and not at runtime.
+/// Each format tests its own controls in its test project.
 /// </summary>
 [NotInParallel]
 public class FormatControlsLoadTests
@@ -34,52 +35,18 @@ public class FormatControlsLoadTests
     }
 
     [Test]
-    public void PeakmileProfileConfigControl_ShouldLoadValidateAndSaveSettings()
-    {
-        RunOnUiThread(() =>
-        {
-            var control = new PeakmileUiProvider().CreateProfileConfigControl();
-
-            control.Load(new PeakmileSettings { SeasonCode = "HW26" });
-
-            control.View.Should().NotBeNull();
-            control.Validate().Should().BeEmpty();
-            control.Save().Should().BeOfType<PeakmileSettings>().Which.SeasonCode.Should().Be("HW26");
-        });
-    }
-
-    [Test]
-    public void PeakmilePreviewControl_ShouldShowAndClearAnOrder()
-    {
-        RunOnUiThread(() =>
-        {
-            var control = new PeakmileUiProvider().CreateImportPreviewControl();
-            var order = new Order { Positions = [new OrderPosition { ArticleNumber = "A1", Quantity = 2, GrossUnitPrice = 5m }] };
-
-            control.HeaderView.Should().BeOfType<PeakmileOrderHeaderControl>();
-            control.PositionsView.Should().BeOfType<PeakmilePositionsControl>();
-
-            control.Show(order, new PeakmileSettings());
-            control.HeaderView.DataContext.Should().BeOfType<PeakmilePreviewViewModel>();
-            control.PositionsView.DataContext.Should().BeSameAs(control.HeaderView.DataContext);
-
-            control.Clear();
-            control.HeaderView.DataContext.Should().BeNull();
-            control.PositionsView.DataContext.Should().BeNull();
-        });
-    }
-
-    [Test]
     public void ProfileEditWindow_ShouldHostTheFormatControl()
     {
         RunOnUiThread(() =>
         {
-            var profile = ProfileTestExtensions.PeakmileProfile("Default");
+            var profile = ProfileTestExtensions.FakeProfile("Default");
 
-            var window = new ProfileEditWindow(profile, new PeakmileFormatAdapter(), new PeakmileUiProvider());
+            var window = new ProfileEditWindow(profile, new FakeFormatAdapter(), new FakeUiProvider());
 
-            window.FormatSettingsHost.Content.Should().BeOfType<PeakmileProfileConfigControl>();
+            window.FormatSettingsHost.Content.Should().BeOfType<Border>();
             window.FormatInput.IsEnabled.Should().BeFalse();
+            window.FormatInput.SelectedValue.Should().BeOfType<FakeFormatAdapter>();
+            window.ProfileNameInput.Text.Should().Be("Default");
             window.Close();
         });
     }
@@ -89,13 +56,13 @@ public class FormatControlsLoadTests
     {
         RunOnUiThread(() =>
         {
-            var formats = new[] { new PeakmileFormatAdapter() };
+            var formats = new[] { new FakeFormatAdapter() };
 
             var create = new ProfileCreateDialog(formats);
-            var clone = new ProfileCreateDialog(formats, PeakmileFormatAdapter.Id);
+            var clone = new ProfileCreateDialog(formats, FakeFormatAdapter.Id);
 
             create.FormatInput.IsEnabled.Should().BeTrue();
-            create.FormatInput.SelectedValue.Should().Be(PeakmileFormatAdapter.Id);
+            create.FormatInput.SelectedValue.Should().Be(FakeFormatAdapter.Id);
             clone.FormatInput.IsEnabled.Should().BeFalse();
             create.Close();
             clone.Close();

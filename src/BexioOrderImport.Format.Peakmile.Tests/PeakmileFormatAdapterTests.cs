@@ -7,7 +7,7 @@ using BexioOrderImport.Format.Peakmile;
 using FluentAssertions;
 using Moq;
 
-namespace BexioOrderImport.Tests;
+namespace BexioOrderImport.Format.Peakmile.Tests;
 
 public class PeakmileFormatAdapterTests
 {

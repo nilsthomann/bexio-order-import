@@ -13,4 +13,11 @@ internal static class ProfileTestExtensions
     };
 
     public static PeakmileSettings Peakmile(this MappingProfile profile) => (PeakmileSettings)profile.Settings!;
+
+    public static MappingProfile FakeProfile(string name, FakeSettings? settings = null) => new()
+    {
+        Name = name,
+        FormatId = FakeFormatAdapter.Id,
+        Settings = settings ?? new FakeSettings()
+    };
 }

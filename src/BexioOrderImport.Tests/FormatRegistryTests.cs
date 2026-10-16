@@ -1,5 +1,5 @@
 using BexioOrderImport.Abstractions.Formats;
-using BexioOrderImport.Format.Peakmile;
+using BexioOrderImport.Tests.Utils;
 using FluentAssertions;
 using Moq;
 
@@ -17,15 +17,15 @@ public class FormatRegistryTests
     [Test]
     public void Find_ShouldIgnoreCase()
     {
-        var registry = new FormatRegistry([new PeakmileFormatAdapter()]);
+        var registry = new FormatRegistry([new FakeFormatAdapter()]);
 
-        registry.Find("PEAKMILE").Should().BeOfType<PeakmileFormatAdapter>();
+        registry.Find("FAKE").Should().BeOfType<FakeFormatAdapter>();
     }
 
     [Test]
     public void Find_WhenUnknownOrNull_ShouldReturnNull()
     {
-        var registry = new FormatRegistry([new PeakmileFormatAdapter()]);
+        var registry = new FormatRegistry([new FakeFormatAdapter()]);
 
         registry.Find("ean-list").Should().BeNull();
         registry.Find(null).Should().BeNull();

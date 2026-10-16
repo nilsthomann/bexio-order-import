@@ -33,6 +33,7 @@
     <Project Path="src/BexioOrderImport.Abstractions/BexioOrderImport.Abstractions.csproj" />
     <Project Path="src/BexioOrderImport.Abstractions.Wpf/BexioOrderImport.Abstractions.Wpf.csproj" />
     <Project Path="src/BexioOrderImport.Domain/BexioOrderImport.Domain.csproj" />
+    <Project Path="src/BexioOrderImport.Format.Peakmile.Tests/BexioOrderImport.Format.Peakmile.Tests.csproj" />
     <Project Path="src/BexioOrderImport.Format.Peakmile/BexioOrderImport.Format.Peakmile.csproj" />
     <Project Path="src/BexioOrderImport.Infrastructure/BexioOrderImport.Infrastructure.csproj" />
     <Project Path="src/BexioOrderImport.Tests/BexioOrderImport.Tests.csproj" />

@@ -23,15 +23,17 @@ namespace BexioOrderImport.Tests;
 public class SettingsPersistenceTests : StaTestBase, IDisposable
 {
     private readonly string _tempFilePath;
+    private readonly string _orderFilePath;
 
     public SettingsPersistenceTests()
     {
         _tempFilePath = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString() + "_appsettings.json");
+        _orderFilePath = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString() + "_order.xlsx");
     }
 
     public void Dispose()
     {
-        foreach (string path in new[] { _tempFilePath, BackupPath })
+        foreach (string path in new[] { _tempFilePath, BackupPath, _orderFilePath })
         {
             if (File.Exists(path))
             {
@@ -109,7 +111,7 @@ public class SettingsPersistenceTests : StaTestBase, IDisposable
         encryptionMock.Setup(e => e.Encrypt(It.IsAny<string>())).Returns((string clearText) => clearText);
         encryptionMock.Setup(e => e.Decrypt(It.IsAny<string>())).Returns((string encryptedText) => encryptedText);
 
-        var formats = new FormatRegistry([new PeakmileFormatAdapter()]);
+        var formats = new FormatRegistry([new PeakmileFormatAdapter(), new FakeFormatAdapter()]);
 
         var vm = new MainViewModel(
             updateService,
@@ -269,16 +271,13 @@ public class SettingsPersistenceTests : StaTestBase, IDisposable
         });
     }
 
-    private static string FindExcelFile(string filename)
+    /// <summary>
+    /// Any existing file will do: the fake format returns its order without reading the file.
+    /// </summary>
+    private string CreateOrderFile()
     {
-        string? dir = AppContext.BaseDirectory;
-        while (dir != null)
-        {
-            string path = Path.Combine(dir, filename);
-            if (File.Exists(path)) return path;
-            dir = Directory.GetParent(dir)?.FullName;
-        }
-        throw new FileNotFoundException($"Excel file {filename} not found in any parent directories.");
+        File.WriteAllText(_orderFilePath, "fake order");
+        return _orderFilePath;
     }
 
     [Test]
@@ -288,18 +287,17 @@ public class SettingsPersistenceTests : StaTestBase, IDisposable
         {
             // Arrange
             var vm = CreateVm();
-            string filePath = FindExcelFile("AnonymizedOrder.xlsx");
+            vm.ActiveProfile = ProfileTestExtensions.FakeProfile("Fake");
+            string filePath = CreateOrderFile();
 
             // Act
             await vm.LoadExcelFileAsync(filePath);
 
             // Assert
             vm.HasLoadedFile.Should().BeTrue();
-            vm.LoadedOrder!.Customer.CompanyName.Should().Be("Muster Fashion AG");
-            vm.LoadedOrder!.Customer.BuyerName.Should().Be("Hans Muster");
-            vm.LoadedOrder!.Customer.Email.Should().Be("test@test.com");
-            vm.LoadedOrder!.TotalQuantity.Should().Be(4);
-            vm.LoadedOrder!.TotalAmount.Should().Be(72.8m);
+            vm.LoadedOrder!.Customer.CompanyName.Should().Be("Fake Customer AG");
+            vm.LoadedOrder!.TotalQuantity.Should().Be(2);
+            vm.LoadedOrder!.TotalAmount.Should().Be(20m);
         });
     }
 
@@ -318,7 +316,8 @@ public class SettingsPersistenceTests : StaTestBase, IDisposable
             mockFactory.Setup(f => f.Create(It.IsAny<string>(), It.IsAny<int?>(), It.IsAny<int?>(), It.IsAny<string>())).Returns(mockClient.Object);
 
             var vm = CreateVm(mockUpdate.Object, mockFactory.Object, _tempFilePath);
-            string filePath = FindExcelFile("AnonymizedOrder.xlsx");
+            vm.ActiveProfile = ProfileTestExtensions.FakeProfile("Fake");
+            string filePath = CreateOrderFile();
             await vm.LoadExcelFileAsync(filePath);
             vm.HasLoadedFile.Should().BeTrue();
 
@@ -682,7 +681,9 @@ public class SettingsPersistenceTests : StaTestBase, IDisposable
             var vm = CreateVm();
             _confirmDialogFunc = (msg, title) => false; // Cancel upload confirmation
 
-            string filePath = FindExcelFile("AnonymizedOrder.xlsx");
+            vm.ActiveProfile = ProfileTestExtensions.FakeProfile("Fake");
+
+            string filePath = CreateOrderFile();
             await vm.LoadExcelFileAsync(filePath);
 
             vm.ImportCommand.Execute(null);
@@ -712,7 +713,9 @@ public class SettingsPersistenceTests : StaTestBase, IDisposable
             var vm = CreateVm(updateServiceMock.Object, throwClientFactoryMock.Object, _tempFilePath);
             _confirmDialogFunc = (msg, title) => true;
 
-            string filePath = FindExcelFile("AnonymizedOrder.xlsx");
+            vm.ActiveProfile = ProfileTestExtensions.FakeProfile("Fake");
+
+            string filePath = CreateOrderFile();
             await vm.LoadExcelFileAsync(filePath);
 
             vm.ImportCommand.Execute(null);
