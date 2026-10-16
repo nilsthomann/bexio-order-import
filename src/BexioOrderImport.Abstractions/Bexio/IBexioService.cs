@@ -50,6 +50,12 @@ public interface IBexioService
     Task<BexioArticle?> FindArticleAsync(string articleNumber, string color, string seasonCode, IReadOnlyList<string>? fallbackSeasonCodes = null);
 
     /// <summary>
+    /// Finds the articles whose intern_code equals the given code exactly. Results are cached per client.
+    /// Returns an empty list if none match.
+    /// </summary>
+    Task<IReadOnlyList<BexioArticle>> FindArticlesByInternCodeAsync(string internCode);
+
+    /// <summary>
     /// Pre-fetches articles from Bexio matching the season code and filters relevant article numbers into cache to accelerate batch imports.
     /// </summary>
     Task PreFetchArticlesAsync(string seasonCode, IEnumerable<string> articleNumbers);

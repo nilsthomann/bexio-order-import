@@ -1,0 +1,92 @@
+<UserControl x:Class="BexioOrderImport.Format.EanList.EanListProfileConfigControl"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:res="clr-namespace:BexioOrderImport.Format.EanList.Resources">
+    <UserControl.Resources>
+        <Style TargetType="TextBox">
+            <Setter Property="Height" Value="32"/>
+        </Style>
+    </UserControl.Resources>
+
+    <StackPanel>
+
+        <!-- 1. Excel source -->
+        <Border Style="{StaticResource CardBorderStyle}" Margin="0,0,0,16">
+            <StackPanel>
+                <TextBlock Text="{x:Static res:EanListTranslations.Settings_SourceSection}" Style="{StaticResource SectionHeaderTextBlockStyle}"/>
+
+                <Grid Margin="0,8,0,8">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="200"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Text="{x:Static res:EanListTranslations.Settings_WorksheetLabel}" VerticalAlignment="Center" Margin="0,0,12,0"/>
+                    <TextBox Grid.Column="1" Text="{Binding WorksheetIndex, UpdateSourceTrigger=PropertyChanged}" Width="100" HorizontalAlignment="Left"/>
+                </Grid>
+
+                <Grid Margin="0,0,0,12">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="200"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+                    <TextBlock Text="{x:Static res:EanListTranslations.Settings_StartRowLabel}" VerticalAlignment="Center" Margin="0,0,12,0"/>
+                    <TextBox Grid.Column="1" Text="{Binding StartRow, UpdateSourceTrigger=PropertyChanged}" Width="100" HorizontalAlignment="Left"/>
+                    <TextBlock Grid.Row="1" Grid.Column="1" Text="{x:Static res:EanListTranslations.Settings_StartRowHint}"
+                               Style="{StaticResource MutedTextBlockStyle}" FontStyle="Italic" Margin="0,4,0,0"/>
+                </Grid>
+
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+
+                    <StackPanel Grid.Column="0" Margin="0,0,8,0">
+                        <TextBlock Text="{x:Static res:EanListTranslations.Settings_EanColumn}" Style="{StaticResource MutedTextBlockStyle}"/>
+                        <TextBox Text="{Binding EanColumn, UpdateSourceTrigger=PropertyChanged}"/>
+                    </StackPanel>
+                    <StackPanel Grid.Column="1" Margin="0,0,8,0">
+                        <TextBlock Text="{x:Static res:EanListTranslations.Settings_QuantityColumn}" Style="{StaticResource MutedTextBlockStyle}"/>
+                        <TextBox Text="{Binding QuantityColumn, UpdateSourceTrigger=PropertyChanged}"/>
+                    </StackPanel>
+                    <StackPanel Grid.Column="2" Margin="0,0,8,0">
+                        <TextBlock Text="{x:Static res:EanListTranslations.Settings_CustomerNumberColumn}" Style="{StaticResource MutedTextBlockStyle}"/>
+                        <TextBox Text="{Binding CustomerNumberColumn, UpdateSourceTrigger=PropertyChanged}"/>
+                    </StackPanel>
+                    <StackPanel Grid.Column="3">
+                        <TextBlock Text="{x:Static res:EanListTranslations.Settings_OrderNumberColumn}" Style="{StaticResource MutedTextBlockStyle}"/>
+                        <TextBox Text="{Binding OrderNumberColumn, UpdateSourceTrigger=PropertyChanged}"/>
+                    </StackPanel>
+                </Grid>
+
+                <TextBlock Text="{x:Static res:EanListTranslations.Settings_NumbersHint}" Style="{StaticResource MutedTextBlockStyle}"
+                           FontStyle="Italic" TextWrapping="Wrap" Margin="0,8,0,0"/>
+            </StackPanel>
+        </Border>
+
+        <!-- 2. Texts and templates -->
+        <Border Style="{StaticResource CardBorderStyle}">
+            <StackPanel>
+                <TextBlock Text="{x:Static res:EanListTranslations.Settings_TextTemplatesSection}" Style="{StaticResource SectionHeaderTextBlockStyle}"/>
+
+                <StackPanel Margin="0,8,0,12">
+                    <TextBlock Text="{x:Static res:EanListTranslations.Settings_DefaultOrderNameLabel}" Margin="0,0,0,4" FontWeight="Medium"/>
+                    <TextBox Text="{Binding DefaultOrderName, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,4"/>
+                    <TextBlock Text="{x:Static res:EanListTranslations.Settings_DefaultOrderNameHint}" Style="{StaticResource MutedTextBlockStyle}" FontStyle="Italic"/>
+                </StackPanel>
+
+                <StackPanel Margin="0,0,0,4">
+                    <TextBlock Text="{x:Static res:EanListTranslations.Settings_PositionTextTemplateLabel}" Margin="0,0,0,4" FontWeight="Medium"/>
+                    <TextBox Text="{Binding PositionTextTemplate, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,4"/>
+                    <TextBlock Text="{x:Static res:EanListTranslations.Settings_PositionTextTemplateHint}" Style="{StaticResource MutedTextBlockStyle}" FontStyle="Italic"/>
+                </StackPanel>
+            </StackPanel>
+        </Border>
+    </StackPanel>
+</UserControl>

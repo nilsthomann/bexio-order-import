@@ -4,6 +4,7 @@ using System.Text.Json;
 using System.Windows;
 using BexioOrderImport.Abstractions.Bexio;
 using BexioOrderImport.Abstractions.Formats;
+using BexioOrderImport.Format.EanList;
 using BexioOrderImport.Format.Peakmile;
 using BexioOrderImport.Infrastructure.Bexio;
 using BexioOrderImport.Wpf.Helpers;
@@ -63,6 +64,7 @@ public partial class App : System.Windows.Application
          });
         services.AddSingleton<IBexioServiceFactory, BexioServiceFactory>();
         services.AddFormat<PeakmileFormatAdapter, PeakmileUiProvider>();
+        services.AddFormat<EanListFormatAdapter, EanListUiProvider>();
         services.AddSingleton<IFormatRegistry, FormatRegistry>();
         services.AddSingleton<FormatUiRegistry>();
         services.AddSingleton<IEncryptionService, DpapiEncryptionService>();

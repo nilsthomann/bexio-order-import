@@ -281,9 +281,13 @@ public class BexioApiClient : IBexioService
         }
     }
 
-    private async Task<List<BexioArticle>?> FindArticlesByInternCodeAsync(string articleNumber, string cleanColor, string seasonCode)
+    private Task<IReadOnlyList<BexioArticle>> FindArticlesByInternCodeAsync(string articleNumber, string cleanColor, string seasonCode)
+        => FindArticlesByInternCodeAsync($"{seasonCode?.Trim() ?? string.Empty}{articleNumber.Trim()}{cleanColor}".Trim());
+
+    public async Task<IReadOnlyList<BexioArticle>> FindArticlesByInternCodeAsync(string internCode)
     {
-        string internCode = $"{seasonCode?.Trim() ?? string.Empty}{articleNumber.Trim()}{cleanColor}".Trim();
+        if (string.IsNullOrWhiteSpace(internCode)) return [];
+        internCode = internCode.Trim();
 
         var searchPayload = new[]
         {
@@ -312,7 +316,7 @@ public class BexioApiClient : IBexioService
             }
         }
 
-        return null;
+        return [];
     }
 
     private async Task<BexioArticle?> FindArticleByArticleNumberAndFilterAsync(string articleNumber, string cleanColor, string seasonCode)
