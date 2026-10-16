@@ -63,13 +63,16 @@ public partial class MainViewModel
     {
         if (profile != null)
         {
+            bool changed = profile != ActiveProfile;
+            AppendLog($"Active profile set to: {profile.Name}");
+            // Another profile reads the loaded file again, see ActiveProfile
             ActiveProfile = profile;
             NotifyActiveProfileChanged();
-            AppendLog($"Active profile set to: {ActiveProfile.Name}");
             SaveActiveProfile();
-            if (!string.IsNullOrEmpty(SelectedFilePath) && System.IO.File.Exists(SelectedFilePath))
+            if (!changed)
             {
-                _ = LoadExcelFileAsync(SelectedFilePath);
+                // Selecting the active profile again refreshes the loaded file
+                ReloadLoadedFile();
             }
         }
     }

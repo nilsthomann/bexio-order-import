@@ -497,38 +497,105 @@ public class MainViewModelTests : IDisposable
         vm.HasLoadedFile.Should().BeFalse();
     }
 
-    [Test]
-    public void SetActiveProfile_WhenSelectedFilePathExists_ShouldReloadExcelFile()
+    /// <summary>
+    /// View model whose fake format returns a new order on each parse and counts the parses.
+    /// </summary>
+    private MainViewModel CreateCountingVm(Action countParse)
     {
-        var formats = new FormatRegistry([new FakeFormatAdapter { ParseFunc = _ => new BexioOrderImport.Domain.Models.Order() }]);
-
-        var vm = new MainViewModel(
+        var formats = new FormatRegistry([new FakeFormatAdapter
+        {
+            ParseFunc = _ =>
+            {
+                countParse();
+                return new BexioOrderImport.Domain.Models.Order();
+            }
+        }]);
+        return new MainViewModel(
             _updateServiceMock.Object,
             _clientFactoryMock.Object,
             _dialogServiceMock.Object,
             _dispatcherServiceMock.Object,
             _encryptionServiceMock.Object,
             formats,
-            _tempFilePath
-        );
+            _tempFilePath);
+    }
 
+    // The reload after a profile change runs in the background
+    private static async Task WaitUntilAsync(Func<bool> condition)
+    {
+        for (int i = 0; i < 100 && !condition(); i++)
+        {
+            await Task.Delay(50);
+        }
+        condition().Should().BeTrue();
+    }
+
+    [Test]
+    public async Task SetActiveProfile_WithLoadedFile_ShouldClearTheOrderAndReadTheFileWithTheNewProfile()
+    {
+        int parses = 0;
+        var vm = CreateCountingVm(() => Interlocked.Increment(ref parses));
         string tempExcel = Path.Combine(Path.GetTempPath(), $"temp_reload_{Guid.NewGuid():N}.xlsx");
         File.WriteAllText(tempExcel, "dummy excel content");
 
         try
         {
-            vm.SelectedFilePath = tempExcel;
+            await vm.LoadExcelFileAsync(tempExcel);
+            var firstOrder = vm.LoadedOrder;
             var profile2 = ProfileTestExtensions.FakeProfile("Profile Reload");
             vm.Profiles.Add(profile2);
+            // The preview must never get the old order together with the new profile (eg. another format)
+            var ordersOnProfileChange = new List<BexioOrderImport.Domain.Models.Order?>();
+            vm.PropertyChanged += (_, e) =>
+            {
+                if (e.PropertyName == nameof(MainViewModel.ActiveProfile)) ordersOnProfileChange.Add(vm.LoadedOrder);
+            };
 
             vm.SetActiveProfileCommand.Execute(profile2);
 
             vm.ActiveProfile.Should().Be(profile2);
+            ordersOnProfileChange.Should().NotBeEmpty().And.AllSatisfy(o => o.Should().BeNull());
+            await WaitUntilAsync(() => Volatile.Read(ref parses) == 2 && vm.LoadedOrder != null);
+            vm.LoadedOrder.Should().NotBeSameAs(firstOrder);
         }
         finally
         {
             if (File.Exists(tempExcel)) File.Delete(tempExcel);
         }
+    }
+
+    [Test]
+    public async Task SetActiveProfile_WithTheActiveProfile_ShouldReadTheFileAgain()
+    {
+        int parses = 0;
+        var vm = CreateCountingVm(() => Interlocked.Increment(ref parses));
+        string tempExcel = Path.Combine(Path.GetTempPath(), $"temp_reload_{Guid.NewGuid():N}.xlsx");
+        File.WriteAllText(tempExcel, "dummy excel content");
+
+        try
+        {
+            await vm.LoadExcelFileAsync(tempExcel);
+
+            vm.SetActiveProfileCommand.Execute(vm.ActiveProfile!);
+
+            await WaitUntilAsync(() => Volatile.Read(ref parses) == 2);
+        }
+        finally
+        {
+            if (File.Exists(tempExcel)) File.Delete(tempExcel);
+        }
+    }
+
+    [Test]
+    public void ActiveProfile_WithoutLoadedFile_ShouldNotReadAFile()
+    {
+        int parses = 0;
+        var vm = CreateCountingVm(() => Interlocked.Increment(ref parses));
+
+        vm.ActiveProfile = ProfileTestExtensions.FakeProfile("Other");
+
+        parses.Should().Be(0);
+        vm.LoadedOrder.Should().BeNull();
     }
 
     [Test]
