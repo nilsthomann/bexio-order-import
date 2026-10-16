@@ -68,7 +68,12 @@ _(See section 4 below for mapping detailed coordinates matching the order sheet)
 
 ## 4. Understanding the Excel Order Template
 
-The importer is built to parse complex order forms that list article rows horizontally but expand size quantities vertically (as a matrix).
+Each profile uses one of two import formats:
+
+- **Peakmile order form**: complex order forms with a size matrix, described below.
+- **EAN list**: a simple list with EAN, quantity and customer number, see [EAN List Format](#ean-list-format).
+
+The Peakmile importer is built to parse complex order forms that list article rows horizontally but expand size quantities vertically (as a matrix).
 
 ### Example Sheet Coordinates
 
@@ -99,6 +104,28 @@ Below is a typical order template layout showing how the parser reads the metada
   - **Color** [Column `3` / C]: Product color.
   - **Category** [Column `4` / D]: Product category matching the matrix headers.
   - **UnitPrice (EP)** [Column `20` / T]: Individual wholesale price.
+
+### EAN List Format
+
+An EAN list has one article per row. The columns and the first data row are set in the profile; the defaults are:
+
+| Column | Content | Notes |
+|---|---|---|
+| A | EAN | Digits only. EANs stored as numbers are read in full; store 14-digit codes as text, as Excel loses precision above 15 digits. |
+| B | Quantity | Whole number. Rows with an empty quantity or a quantity of 0 or less are ignored. |
+| C | Customer number | Bexio contact number (`nr`). **Only the first data row is read.** If it is empty, the import is cancelled. |
+| D | Order number | Bexio document number (`document_nr`). **Only the first data row is read.** If it is empty, a new order is created. |
+
+Row 1 is the header; data starts in row 2.
+
+During the import:
+
+1. The customer is searched by its customer number. There is no search by email and no new customer is created.
+2. With an order number, the positions are added to that existing order. Its contact must have the customer number of the list; otherwise the import stops.
+3. Each EAN must match the **internal code** (`intern_code`) of exactly one Bexio article. An EAN that matches no article or several articles stops the import.
+4. Every row becomes its own position, also when an EAN appears several times. The price is the **sale price of the Bexio article**; prices in the Excel file are not read.
+
+The preview before the import shows the customer and order number, every position with its Excel row, the total quantity and the number of ignored rows. It warns if the customer number is missing. Article names and prices are only taken from Bexio during the import.
 
 ---
 
@@ -218,3 +245,9 @@ The application checks for updates automatically from its GitHub repository on e
 
 - The importer queries your Bexio database for an article code matching the Excel `Art. No.` column.
 - If the article number is not found in your Bexio product catalog, the importer aborts the import process to prevent incomplete imports. Make sure the article codes in the Excel sheet match your Bexio catalog exactly.
+
+#### 4. EAN list import is cancelled or fails
+
+- **"No customer number in row …"**: The customer number column of the first data row is empty. Only that row is read, so put the customer number into the first data row.
+- **"EAN … not found" / "not unique"**: The EAN must equal the internal code (`intern_code`) of exactly one article in Bexio. Check the article in Bexio, and whether leading zeros were lost because the EAN was stored as a number.
+- **"Invalid quantity" / "Invalid EAN"**: The message names the Excel row. Quantities must be whole numbers, EANs digits only.

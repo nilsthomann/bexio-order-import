@@ -16,7 +16,8 @@ $coverageReportDir = Join-Path $testResultsDir "CoverageReport"
 # The host tests and one test project per import format
 $testProjects = @(
     "BexioOrderImport.Tests",
-    "BexioOrderImport.Format.Peakmile.Tests"
+    "BexioOrderImport.Format.Peakmile.Tests",
+    "BexioOrderImport.Format.EanList.Tests"
 )
 
 Write-Host "1. Cleaning previous test results..." -ForegroundColor Cyan

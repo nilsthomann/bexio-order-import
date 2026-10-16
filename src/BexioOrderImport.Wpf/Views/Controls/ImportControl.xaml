@@ -157,8 +157,7 @@
         
         <!-- Preview of the active format, its views are placed below -->
         <controls:FormatPreviewHost x:Name="FormatPreview"
-                                    FormatId="{Binding ActiveProfile.FormatId}"
-                                    Settings="{Binding ActiveProfile.Settings}"
+                                    Profile="{Binding ActiveProfile}"
                                     Order="{Binding LoadedOrder}"/>
 
         <!-- Order header across the full width, the file card above already has a bottom margin -->

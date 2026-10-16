@@ -6,10 +6,12 @@ WPF desktop app (.NET 10, Windows only) that parses Excel order forms and import
 - `src/BexioOrderImport.Abstractions`: shared contracts (`IBexioService`, `IFormatAdapter`, `IFormatRegistry`, `IImportUserInteractionService`, `ImportResult`), `ExcelColumnHelper`
 - `src/BexioOrderImport.Abstractions.Wpf`: UI contracts of the formats (`IFormatUiProvider`, `IProfileConfigControl`, `IImportPreviewControl`), `ViewModelBase`, `RelayCommand`, converters and the shared theme `Styles/AppStyles.xaml`
 - `src/BexioOrderImport.Format.Peakmile`: Peakmile import format (`PeakmileFormatAdapter`, `PeakmileSettings`, `PeakmileExcelParser`, `PeakmileImporter`), its profile editor and preview controls (`PeakmileUiProvider`) and its own translations
+- `src/BexioOrderImport.Format.EanList`: EAN list import format (`EanListFormatAdapter`, `EanListSettings`, `EanListExcelParser`, `EanListImporter`, `EanListUiProvider`) with its own translations
 - `src/BexioOrderImport.Infrastructure`: `BexioApiClient`
 - `src/BexioOrderImport.Wpf`: MVVM UI, mapping profiles (`ProfileSerializer`), settings, auto-updater; registers the formats in `App.xaml.cs`
 - `src/BexioOrderImport.Tests`: host tests (Bexio client, profiles and settings, registries, view models, host views) with TUnit, Moq and FluentAssertions. They use `Utils/FakeFormat.cs` instead of a real format; only the legacy profile migration uses Peakmile.
 - `src/BexioOrderImport.Format.Peakmile.Tests`: Peakmile parser, import, settings, controls and translations, with the read-only fixture `Fixtures/PeakmileOrder.xlsx`
+- `src/BexioOrderImport.Format.EanList.Tests`: EAN list parser, import, view models, controls and translations, with the read-only fixture `Fixtures/EanListOrder.xlsx`
 
 `src/BexioOrderImport.Cli` holds only build output and is not part of the solution.
 
@@ -64,6 +66,12 @@ Profiles store a format id (`Format`) and the format's settings (`Settings`) in 
 ## Bexio article lookup
 
 `BexioApiClient.FindArticleAsync` matches the Bexio `intern_code` exactly as `{SeasonCode}{ArticleNumber}{Color}`, first with the season code of the profile, then with each season fallback code (multi-season articles, eg. `NOOS`, `EX`). Only if all miss, it searches by article number and filters by color and season code in the article name. An article that is not found aborts the import.
+
+The EAN list format uses `FindArticlesByInternCodeAsync(ean)`: the EAN is the `intern_code`, exactly one article must match, and the position price is the article's `sale_price`.
+
+## Order and customer number
+
+`OrderTargetResolver` (in `Abstractions/Import`) is shared by the formats: with an order number it uses that existing order (a customer number must match its contact), otherwise with a customer number it creates a new order for that contact. Peakmile adds its email lookup and customer creation when neither number is set; the EAN list cancels without a customer number. Keep the log messages and results of the resolver unchanged, the Peakmile import tests assert them.
 
 ## graphify
 

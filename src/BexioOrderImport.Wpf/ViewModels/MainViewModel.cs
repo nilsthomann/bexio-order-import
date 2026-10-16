@@ -357,9 +357,16 @@ public partial class MainViewModel : ViewModelBase
         get => _activeProfile;
         set
         {
-            if (SetProperty(ref _activeProfile, value))
+            if (_activeProfile == value) return;
+
+            // The loaded order was parsed with the previous profile (maybe another format),
+            // clear it before the preview sees the new profile and read the file again
+            LoadedOrder = null;
+            SetProperty(ref _activeProfile, value);
+            NotifyActiveProfileChanged();
+            if (value != null)
             {
-                NotifyActiveProfileChanged();
+                ReloadLoadedFile();
             }
         }
     }

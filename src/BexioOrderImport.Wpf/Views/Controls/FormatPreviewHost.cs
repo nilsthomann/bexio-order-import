@@ -1,7 +1,8 @@
+using System.ComponentModel;
 using System.Windows;
-using BexioOrderImport.Abstractions.Formats;
 using BexioOrderImport.Abstractions.Wpf;
 using BexioOrderImport.Domain.Models;
+using BexioOrderImport.Wpf.Models;
 using BexioOrderImport.Wpf.Services;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -14,11 +15,8 @@ namespace BexioOrderImport.Wpf.Views.Controls;
 [System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
 public class FormatPreviewHost : FrameworkElement
 {
-    public static readonly DependencyProperty FormatIdProperty = DependencyProperty.Register(
-        nameof(FormatId), typeof(string), typeof(FormatPreviewHost), new PropertyMetadata(null, OnChanged));
-
-    public static readonly DependencyProperty SettingsProperty = DependencyProperty.Register(
-        nameof(Settings), typeof(IFormatSettings), typeof(FormatPreviewHost), new PropertyMetadata(null, OnChanged));
+    public static readonly DependencyProperty ProfileProperty = DependencyProperty.Register(
+        nameof(Profile), typeof(MappingProfile), typeof(FormatPreviewHost), new PropertyMetadata(null, OnProfileChanged));
 
     public static readonly DependencyProperty OrderProperty = DependencyProperty.Register(
         nameof(Order), typeof(Order), typeof(FormatPreviewHost), new PropertyMetadata(null, OnChanged));
@@ -47,16 +45,13 @@ public class FormatPreviewHost : FrameworkElement
         Visibility = Visibility.Collapsed;
     }
 
-    public string? FormatId
+    /// <summary>
+    /// Active profile. Its format and settings are read together, so the preview never gets the settings of another format.
+    /// </summary>
+    public MappingProfile? Profile
     {
-        get => (string?)GetValue(FormatIdProperty);
-        set => SetValue(FormatIdProperty, value);
-    }
-
-    public IFormatSettings? Settings
-    {
-        get => (IFormatSettings?)GetValue(SettingsProperty);
-        set => SetValue(SettingsProperty, value);
+        get => (MappingProfile?)GetValue(ProfileProperty);
+        set => SetValue(ProfileProperty, value);
     }
 
     public Order? Order
@@ -82,20 +77,45 @@ public class FormatPreviewHost : FrameworkElement
 
     private static void OnChanged(DependencyObject d, DependencyPropertyChangedEventArgs e) => ((FormatPreviewHost)d).Refresh();
 
+    private static void OnProfileChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+    {
+        var host = (FormatPreviewHost)d;
+        if (e.OldValue is MappingProfile oldProfile)
+        {
+            oldProfile.PropertyChanged -= host.OnProfilePropertyChanged;
+        }
+        if (e.NewValue is MappingProfile newProfile)
+        {
+            newProfile.PropertyChanged += host.OnProfilePropertyChanged;
+        }
+        host.Refresh();
+    }
+
+    // Editing the active profile replaces its settings
+    private void OnProfilePropertyChanged(object? sender, PropertyChangedEventArgs e)
+    {
+        if (e.PropertyName == nameof(MappingProfile.Settings))
+        {
+            Refresh();
+        }
+    }
+
     private void Refresh()
     {
-        if (FormatId != _shownFormatId)
+        string? formatId = Profile?.FormatId;
+        if (formatId != _shownFormatId)
         {
-            _shownFormatId = FormatId;
+            _shownFormatId = formatId;
             var formatUis = App.Services?.GetService<FormatUiRegistry>();
-            _preview = formatUis?.Find(FormatId)?.CreateImportPreviewControl();
+            _preview = formatUis?.Find(formatId)?.CreateImportPreviewControl();
             SetValue(HeaderViewPropertyKey, _preview?.HeaderView);
             SetValue(PositionsViewPropertyKey, _preview?.PositionsView);
         }
 
-        if (_preview != null && Order != null && Settings != null)
+        var settings = Profile?.Settings;
+        if (_preview != null && Order != null && settings != null)
         {
-            _preview.Show(Order, Settings);
+            _preview.Show(Order, settings);
             SetValue(IsShownPropertyKey, true);
         }
         else

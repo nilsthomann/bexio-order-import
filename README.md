@@ -68,10 +68,12 @@ src/
 ├── BexioOrderImport.Abstractions/    # Shared contracts (Bexio service, import formats, import interaction)
 ├── BexioOrderImport.Abstractions.Wpf/ # UI contracts of the formats, shared theme and converters
 ├── BexioOrderImport.Format.Peakmile/ # Peakmile import format (settings, ClosedXML parser, import, profile and preview controls)
+├── BexioOrderImport.Format.EanList/  # EAN list import format (EAN, quantity and customer number per row)
 ├── BexioOrderImport.Infrastructure/  # External integrations (Bexio REST Client)
 ├── BexioOrderImport.Wpf/             # WPF Desktop App (MVVM views, custom dialogs, styles)
 ├── BexioOrderImport.Tests/           # Host tests: Bexio client, profiles, view models (TUnit & Microsoft Testing Platform)
-└── BexioOrderImport.Format.Peakmile.Tests/ # Peakmile format tests with their own Excel fixture
+├── BexioOrderImport.Format.Peakmile.Tests/ # Peakmile format tests with their own Excel fixture
+└── BexioOrderImport.Format.EanList.Tests/  # EAN list format tests with their own Excel fixture
 ```
 
 ---

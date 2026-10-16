@@ -3,6 +3,16 @@ namespace BexioOrderImport.Domain.Models;
 public class OrderPosition
 {
     public string ArticleNumber { get; set; } = string.Empty;
+
+    /// <summary>
+    /// EAN barcode of the article, set by formats that identify articles by EAN.
+    /// </summary>
+    public string? Ean { get; set; }
+
+    /// <summary>
+    /// Excel row the position was read from, for messages. 0 if unknown.
+    /// </summary>
+    public int SourceRow { get; set; }
     public string ArticleName { get; set; } = string.Empty;
     public string Color { get; set; } = string.Empty;
     public string SizeCategory { get; set; } = string.Empty;

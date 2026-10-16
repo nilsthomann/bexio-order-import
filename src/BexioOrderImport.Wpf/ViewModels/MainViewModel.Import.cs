@@ -85,6 +85,17 @@ public partial class MainViewModel
         }
     }
 
+    /// <summary>
+    /// Reads the selected file again, eg. with the settings of another profile.
+    /// </summary>
+    private void ReloadLoadedFile()
+    {
+        if (!string.IsNullOrEmpty(SelectedFilePath) && File.Exists(SelectedFilePath))
+        {
+            _ = LoadExcelFileAsync(SelectedFilePath);
+        }
+    }
+
     private void ClearLoadedFileInternal(string logMessage)
     {
         LoadedOrder = null;
