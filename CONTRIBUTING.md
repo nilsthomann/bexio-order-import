@@ -85,11 +85,10 @@ When adding a new field from an Excel template, follow these steps in order to k
 1. **Domain model**: Add the property to the relevant class in `src/BexioOrderImport.Domain/Models/`
 2. **PeakmileSettings**: Add the corresponding cell/column config property in `src/BexioOrderImport.Format.Peakmile/PeakmileSettings.cs`
 3. **Parser**: Read the new cell in `src/BexioOrderImport.Format.Peakmile/PeakmileExcelParser.cs`
-4. **AppSettingsDto**: Add the new property to the matching DTO class in `src/BexioOrderImport.Wpf/Models/AppSettingsDto.cs`
-5. **MainViewModel**: Add the corresponding VM property and wire it in `CopyVmToProfile`/`CopyProfileToVm` in `MainViewModel.Settings.cs`
-6. **XAML**: Add the UI binding in the Settings tab in `MainWindow.xaml` or `ProfileEditWindow.xaml`
-7. **Translations**: Add the label key in `Translations.resx` and `Translations.en.resx`
-8. **Tests**: Add a test case in `ExcelParserTests.cs` covering the new field
+4. **Profile editor**: Add the input to `PeakmileProfileConfigControl.xaml` and load/save it in `PeakmileProfileConfigViewModel.cs`
+5. **Preview**: If the value should be shown before the import, add it to `PeakmilePreviewViewModel.cs` and to `PeakmileOrderHeaderControl.xaml` (order header, full width) or `PeakmilePositionsControl.xaml` (positions table)
+6. **Translations**: Add the label key in the format's `PeakmileTranslations.resx`, `PeakmileTranslations.en.resx` and `PeakmileTranslations.cs`
+7. **Tests**: Add test cases in `ExcelParserTests.cs` and `PeakmileProfileConfigViewModelTests.cs` covering the new field
 
 ### Commit Message Convention
 - Commit messages must follow the [Conventional Commits](https://www.conventionalcommits.org/) specification.
@@ -97,6 +96,6 @@ When adding a new field from an Excel template, follow these steps in order to k
 - In pull requests, the PR Title is validated in CI using `amannn/action-semantic-pull-request` to ensure squash merges stay conventional.
 
 ### Localization
-- User-facing strings in the WPF application should be maintained in [Translations.resx](src/BexioOrderImport.Wpf/Resources/Translations.resx) rather than hardcoded in XAML to ensure localization support.
+- User-facing strings in the WPF application should be maintained in [Translations.resx](src/BexioOrderImport.Wpf/Resources/Translations.resx) rather than hardcoded in XAML to ensure localization support. Strings of an import format live in that format's own resx files (eg. `PeakmileTranslations.resx`). German texts use Swiss spelling ("ss", never "ß").
 
 Thank you for contributing!

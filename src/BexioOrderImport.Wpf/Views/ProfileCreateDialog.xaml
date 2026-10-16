@@ -64,9 +64,19 @@
                             <ColumnDefinition Width="Auto"/>
                             <ColumnDefinition Width="*"/>
                         </Grid.ColumnDefinitions>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
                         <TextBlock Text="{x:Static lex:Translations.Settings_ProfileNameLabel}"
                                    VerticalAlignment="Center" Margin="0,0,12,0" FontWeight="Medium"/>
                         <TextBox x:Name="ProfileNameInput" Grid.Column="1" Height="36"/>
+
+                        <TextBlock Grid.Row="1" Text="{x:Static lex:Translations.Settings_FormatLabel}"
+                                   VerticalAlignment="Center" Margin="0,12,12,0" FontWeight="Medium"/>
+                        <ComboBox x:Name="FormatInput" Grid.Row="1" Grid.Column="1" Height="36" Margin="0,12,0,0"
+                                  DisplayMemberPath="DisplayName" SelectedValuePath="FormatId"
+                                  VerticalContentAlignment="Center"/>
                     </Grid>
                     <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
                         <Button Content="{x:Static lex:Translations.Dialog_Cancel}" Click="Cancel_Click"

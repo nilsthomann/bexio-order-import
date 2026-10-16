@@ -4,7 +4,6 @@ using System.IO;
 using System.Linq;
 using System.Text.Json;
 using BexioOrderImport.Abstractions.Formats;
-using BexioOrderImport.Format.Peakmile;
 using BexioOrderImport.Wpf.Models;
 
 namespace BexioOrderImport.Wpf.Services;
@@ -22,31 +21,30 @@ public class ProfileManagerService : IProfileManagerService
         _serializer = new ProfileSerializer(registry);
     }
 
-    public string? ShowProfileCreateDialogAndValidateName(ObservableCollection<MappingProfile> profiles, bool isClone)
+    public ProfileCreateResult? ShowProfileCreateDialogAndValidateName(ObservableCollection<MappingProfile> profiles, string? fixedFormatId)
     {
-        string? name = _dialogService.ShowProfileCreateDialog(isClone);
-        if (name != null)
+        var result = _dialogService.ShowProfileCreateDialog(fixedFormatId);
+        if (result != null)
         {
-            if (profiles.Any(p => p.Name.Equals(name, StringComparison.OrdinalIgnoreCase)))
+            if (profiles.Any(p => p.Name.Equals(result.Name, StringComparison.OrdinalIgnoreCase)))
             {
                 _dialogService.ShowErrorDialog(Resources.Translations.Dialog_ProfileNameExists, Resources.Translations.Dialog_ErrorTitle);
                 return null;
             }
-            return name;
+            return result;
         }
         return null;
     }
 
     public MappingProfile? CreateProfile(ObservableCollection<MappingProfile> profiles)
     {
-        string? name = ShowProfileCreateDialogAndValidateName(profiles, isClone: false);
-        if (name != null)
+        var result = ShowProfileCreateDialogAndValidateName(profiles, fixedFormatId: null);
+        var adapter = _registry.Find(result?.FormatId);
+        if (result != null && adapter != null)
         {
-            // ponytail: the format is fixed to Peakmile until the create dialog offers the format selection
-            var adapter = _registry.Find(PeakmileFormatAdapter.Id)!;
             var newProfile = new MappingProfile
             {
-                Name = name,
+                Name = result.Name,
                 FormatId = adapter.FormatId,
                 Settings = adapter.CreateDefaultSettings()
             };
@@ -59,13 +57,13 @@ public class ProfileManagerService : IProfileManagerService
     public MappingProfile? CloneProfile(ObservableCollection<MappingProfile> profiles, MappingProfile sourceProfile)
     {
         if (sourceProfile == null) return null;
-        string? name = ShowProfileCreateDialogAndValidateName(profiles, isClone: true);
-        if (name != null)
+        var result = ShowProfileCreateDialogAndValidateName(profiles, sourceProfile.FormatId);
+        if (result != null)
         {
             var adapter = _registry.Find(sourceProfile.FormatId);
             var newProfile = new MappingProfile
             {
-                Name = name,
+                Name = result.Name,
                 FormatId = sourceProfile.FormatId,
                 Settings = adapter != null && sourceProfile.Settings != null ? adapter.CloneSettings(sourceProfile.Settings) : null,
                 RawSettings = sourceProfile.RawSettings

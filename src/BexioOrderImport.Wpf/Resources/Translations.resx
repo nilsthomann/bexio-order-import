@@ -138,54 +138,6 @@
   <data name="Import_DragDropText" xml:space="preserve">
     <value>Excel-Auftragsformular hierher ziehen oder Datei auswählen</value>
   </data>
-  <data name="Import_OrderHeader" xml:space="preserve">
-    <value>Auftrags-Kopfdaten</value>
-  </data>
-  <data name="Import_Customer" xml:space="preserve">
-    <value>Kunde / Firma</value>
-  </data>
-  <data name="Import_Address" xml:space="preserve">
-    <value>Adresse</value>
-  </data>
-  <data name="Import_Email" xml:space="preserve">
-    <value>E-Mail</value>
-  </data>
-  <data name="Import_Buyer" xml:space="preserve">
-    <value>Einkäufer</value>
-  </data>
-  <data name="Import_OrderNumber" xml:space="preserve">
-    <value>Auftrags-Nr.</value>
-  </data>
-  <data name="Import_Conditions" xml:space="preserve">
-    <value>Konditionen</value>
-  </data>
-  <data name="Import_PositionsHeader" xml:space="preserve">
-    <value>Aufragspositionen</value>
-  </data>
-  <data name="Import_ColArtNum" xml:space="preserve">
-    <value>Art. Nr.</value>
-  </data>
-  <data name="Import_ColName" xml:space="preserve">
-    <value>Bezeichnung</value>
-  </data>
-  <data name="Import_ColColor" xml:space="preserve">
-    <value>Farbe</value>
-  </data>
-  <data name="Import_ColCategory" xml:space="preserve">
-    <value>Kategorie</value>
-  </data>
-  <data name="Import_ColSize" xml:space="preserve">
-    <value>Grösse</value>
-  </data>
-  <data name="Import_ColQuantity" xml:space="preserve">
-    <value>Menge</value>
-  </data>
-  <data name="Import_ColUnitPrice" xml:space="preserve">
-    <value>EP (CHF)</value>
-  </data>
-  <data name="Import_ColTotalPrice" xml:space="preserve">
-    <value>Betrag (CHF)</value>
-  </data>
   <data name="Import_UploadButton" xml:space="preserve">
     <value>In Bexio importieren</value>
   </data>
@@ -212,21 +164,6 @@
 
 Bitte schliessen Sie die Datei in Excel und versuchen Sie es erneut.</value>
   </data>
-  <data name="Settings_EnableRowDiscount" xml:space="preserve">
-    <value>Zeilenrabatt aktivieren</value>
-  </data>
-  <data name="Settings_ColRowDiscount" xml:space="preserve">
-    <value>Spalte Zeilenrabatt</value>
-  </data>
-  <data name="Import_ColDiscount" xml:space="preserve">
-    <value>Rabatt %</value>
-  </data>
-  <data name="Import_ColGrossPrice" xml:space="preserve">
-    <value>Brutto CHF</value>
-  </data>
-  <data name="Import_ColNetPrice" xml:space="preserve">
-    <value>Netto CHF</value>
-  </data>
   <data name="Settings_Header" xml:space="preserve">
     <value>Konfigurations-Einstellungen</value>
   </data>
@@ -247,66 +184,6 @@ Bitte schliessen Sie die Datei in Excel und versuchen Sie es erneut.</value>
   </data>
   <data name="Settings_TaxLabel" xml:space="preserve">
     <value>Steuersatz</value>
-  </data>
-  <data name="Settings_HeaderSection" xml:space="preserve">
-    <value>Excel-Header Zellen</value>
-  </data>
-  <data name="Settings_CellCustomerName" xml:space="preserve">
-    <value>Zelle Kundenname</value>
-  </data>
-  <data name="Settings_CellStreet" xml:space="preserve">
-    <value>Zelle Strasse</value>
-  </data>
-  <data name="Settings_CellEmail" xml:space="preserve">
-    <value>Zelle E-Mail</value>
-  </data>
-  <data name="Settings_CellBuyerName" xml:space="preserve">
-    <value>Zelle Einkäufer</value>
-  </data>
-  <data name="Settings_CellOrderNumber" xml:space="preserve">
-    <value>Zelle Auftrags-Nr.</value>
-  </data>
-  <data name="Settings_EnableOrderNumber" xml:space="preserve">
-    <value>Auftrags-Nr. aktivieren</value>
-  </data>
-  <data name="Settings_CellCustomerNumber" xml:space="preserve">
-    <value>Zelle Kunden-Nr.</value>
-  </data>
-  <data name="Settings_EnableCustomerNumber" xml:space="preserve">
-    <value>Kunden-Nr. aktivieren</value>
-  </data>
-  <data name="Settings_CellPaymentTerms" xml:space="preserve">
-    <value>Zelle Konditionen</value>
-  </data>
-  <data name="Settings_CellDiscount" xml:space="preserve">
-    <value>Zelle Rabatt %</value>
-  </data>
-  <data name="Settings_MatrixSection" xml:space="preserve">
-    <value>Grössen-Matrix</value>
-  </data>
-  <data name="Settings_MatrixStart" xml:space="preserve">
-    <value>Startzeile Matrix</value>
-  </data>
-  <data name="Settings_MatrixEnd" xml:space="preserve">
-    <value>Endzeile Matrix</value>
-  </data>
-  <data name="Settings_RowStart" xml:space="preserve">
-    <value>Erste Artikelzeile</value>
-  </data>
-  <data name="Settings_ColsSection" xml:space="preserve">
-    <value>Artikel-Tabellenspalten</value>
-  </data>
-  <data name="Settings_ColArtNum" xml:space="preserve">
-    <value>Spalte Artikel Nr.</value>
-  </data>
-  <data name="Settings_ColName" xml:space="preserve">
-    <value>Spalte Artikelbezeichnung</value>
-  </data>
-  <data name="Settings_ColColor" xml:space="preserve">
-    <value>Spalte Farbe</value>
-  </data>
-  <data name="Settings_ColSizeCategory" xml:space="preserve">
-    <value>Spalte Grössen-Kategorie</value>
   </data>
   <data name="Settings_SaveButton" xml:space="preserve">
     <value>Einstellungen speichern</value>
@@ -365,15 +242,6 @@ Bitte schliessen Sie die Datei in Excel und versuchen Sie es erneut.</value>
   <data name="Settings_LanguageEnglish" xml:space="preserve">
     <value>English</value>
   </data>
-  <data name="Settings_ColStartQty" xml:space="preserve">
-    <value>Erste Mengen-Spalte</value>
-  </data>
-  <data name="Settings_ColEndQty" xml:space="preserve">
-    <value>Letzte Mengen-Spalte</value>
-  </data>
-  <data name="Settings_ColUnitPrice" xml:space="preserve">
-    <value>Spalte Einzelpreis</value>
-  </data>
   <data name="Settings_ProfilesSection" xml:space="preserve">
     <value>Excel Mapping Profile</value>
   </data>
@@ -424,15 +292,6 @@ Bitte schliessen Sie die Datei in Excel und versuchen Sie es erneut.</value>
   </data>
   <data name="Settings_ProfileNameLabel" xml:space="preserve">
     <value>Profilname:</value>
-  </data>
-  <data name="Settings_MatrixCategoryCol" xml:space="preserve">
-    <value>Kategorie-Spalte</value>
-  </data>
-  <data name="Settings_MatrixStartSizeCol" xml:space="preserve">
-    <value>Erste Grössen-Spalte</value>
-  </data>
-  <data name="Settings_MatrixEndSizeCol" xml:space="preserve">
-    <value>Letzte Grössen-Spalte</value>
   </data>
   <data name="Settings_ProfilesExportButton" xml:space="preserve">
     <value>Exportieren</value>
@@ -485,15 +344,6 @@ Bitte schliessen Sie die Datei in Excel und versuchen Sie es erneut.</value>
   <data name="Dialog_ConfirmTitle" xml:space="preserve">
     <value>Bestätigung</value>
   </data>
-  <data name="Settings_WorksheetSection" xml:space="preserve">
-    <value>Profil-Informationen</value>
-  </data>
-  <data name="Settings_TextTemplatesSection" xml:space="preserve">
-    <value>Texte &amp; Vorlagen</value>
-  </data>
-  <data name="Settings_WorksheetLabel" xml:space="preserve">
-    <value>Excel Arbeitsblatt Index:</value>
-  </data>
   <data name="Import_LoadingExcel" xml:space="preserve">
     <value>Excel-Datei wird geladen...</value>
   </data>
@@ -514,27 +364,6 @@ Bitte schliessen Sie die Datei in Excel und versuchen Sie es erneut.</value>
   </data>
   <data name="Update_Error" xml:space="preserve">
     <value>Fehler beim Aktualisieren: {0}</value>
-  </data>
-  <data name="Import_CustomerNumber" xml:space="preserve">
-    <value>Kunden-Nr.</value>
-  </data>
-  <data name="Settings_DefaultOrderNameLabel" xml:space="preserve">
-    <value>Auftragstitel Vorlage:</value>
-  </data>
-  <data name="Settings_DefaultOrderNameHint" xml:space="preserve">
-    <value>Platzhalter: {CustomerName}, {SeasonCode}. Beispiel: Order: {CustomerName} {SeasonCode}</value>
-  </data>
-  <data name="Settings_SeasonCodeLabel" xml:space="preserve">
-    <value>Saison-Code:</value>
-  </data>
-  <data name="Settings_SeasonFallbackCodesLabel" xml:space="preserve">
-    <value>Saison-Fallback-Codes:</value>
-  </data>
-  <data name="Settings_SeasonFallbackCodesHint" xml:space="preserve">
-    <value>Kommagetrennt. Beispiel: NOOS, EX</value>
-  </data>
-  <data name="Settings_PositionTextTemplateLabel" xml:space="preserve">
-    <value>Positionstext Vorlage:</value>
   </data>
   <data name="Error_SelectAccountAndTax" xml:space="preserve">
     <value>Bitte wählen Sie ein Standard-Konto und einen Standard-Steuersatz in den Einstellungen.</value>
@@ -563,43 +392,25 @@ Bitte schliessen Sie die Datei in Excel und versuchen Sie es erneut.</value>
   <data name="Dialog_PendingChangesMessage" xml:space="preserve">
     <value>Sie haben ungespeicherte Änderungen in den Einstellungen. Möchten Sie diese verwerfen?</value>
   </data>
-  <data name="Settings_DiscountPositionTextTemplateLabel" xml:space="preserve">
-    <value>Rabatt-Positionstext Vorlage:</value>
-  </data>
-  <data name="Settings_DiscountPositionTextTemplateHint" xml:space="preserve">
-    <value>Verfügbare Platzhalter: {DiscountInPercent}</value>
-  </data>
-  <data name="Settings_CellZipCodeCity" xml:space="preserve">
-    <value>Zelle PLZ &amp; Ort</value>
-  </data>
-  <data name="Settings_PositionGroupingModeLabel" xml:space="preserve">
-    <value>Positionserstellung:</value>
-  </data>
-  <data name="Settings_PositionGroupingSingle" xml:space="preserve">
-    <value>Einzelne Position pro Grösse</value>
-  </data>
-  <data name="Settings_PositionGroupingGrouped" xml:space="preserve">
-    <value>Gruppierte Position pro Artikel</value>
-  </data>
-  <data name="Settings_SinglePositionTextTemplateHint" xml:space="preserve">
-    <value>Platzhalter: {Color}, {Size}, {ArticleNumber}, {ArticleName}, {BexioArticleName}, {BexioArticleDescription}</value>
-  </data>
-  <data name="Settings_GroupedPositionTextTemplateHint" xml:space="preserve">
-    <value>Platzhalter: {Color}, {SizesRows}, {ArticleNumber}, {ArticleName}, {BexioArticleName}, {BexioArticleDescription}</value>
-  </data>
-  <data name="Settings_SizeRowTemplateLabel" xml:space="preserve">
-    <value>Grössen-Zeilen Vorlage:</value>
-  </data>
-  <data name="Settings_SizeRowTemplateHint" xml:space="preserve">
-    <value>Platzhalter: {Amount}, {Size}. Beispiel: {Amount}x Size {Size}</value>
-  </data>
-  <data name="Dialog_SizesRowsPlaceholderRequiredForGrouped" xml:space="preserve">
-    <value>Wenn 'Gruppierte Position pro Artikel' gewählt ist, muss die Positionstext-Vorlage den Platzhalter {SizesRows} enthalten.</value>
-  </data>
   <data name="Import_SelectProfileHeader" xml:space="preserve">
     <value>Aktives Profil</value>
   </data>
   <data name="Import_ActiveProfileTooltip" xml:space="preserve">
     <value>Klicken zum Ändern des aktiven Profils</value>
+  </data>
+  <data name="Settings_FormatLabel" xml:space="preserve">
+    <value>Format:</value>
+  </data>
+  <data name="Settings_ProfilesTableColFormat" xml:space="preserve">
+    <value>Format</value>
+  </data>
+  <data name="Settings_FormatsSection" xml:space="preserve">
+    <value>Import-Formate</value>
+  </data>
+  <data name="Settings_FormatsHint" xml:space="preserve">
+    <value>Diese Formate sind installiert. Das Format eines Profils wird beim Erstellen gewählt und kann danach nicht mehr geändert werden.</value>
+  </data>
+  <data name="Settings_FormatUnavailable" xml:space="preserve">
+    <value>{0} (nicht verfügbar)</value>
   </data>
 </root>

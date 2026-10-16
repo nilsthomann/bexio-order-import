@@ -17,7 +17,7 @@
         <Rectangle Fill="#99000000"/>
 
         <!-- Dialog Card — fixed width, auto height, centred, max height bounded -->
-        <Border Width="900"
+        <Border Width="1000"
                 MaxHeight="820"
                 HorizontalAlignment="Center"
                 VerticalAlignment="Center"
@@ -63,14 +63,10 @@
                 <!-- Scrollable Content -->
                 <ScrollViewer Grid.Row="2" VerticalScrollBarVisibility="Auto" Margin="20,16,20,0">
                     <StackPanel>
-
-                        <!-- 1. General Profile Info Section -->
+                        <!-- Profile name and format (the format can't be changed) -->
                         <Border Style="{StaticResource CardBorderStyle}" Margin="0,0,0,16">
                             <StackPanel>
-                                <TextBlock Text="{x:Static lex:Translations.Settings_WorksheetSection}" Style="{StaticResource SectionHeaderTextBlockStyle}"/>
-                                
-                                <!-- Profile Name -->
-                                <Grid Margin="0,8,0,8">
+                                <Grid Margin="0,0,0,8">
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition Width="200"/>
                                         <ColumnDefinition Width="*"/>
@@ -78,336 +74,20 @@
                                     <TextBlock Text="{x:Static lex:Translations.Settings_ProfileNameLabel}" VerticalAlignment="Center" Margin="0,0,12,0" FontWeight="Medium"/>
                                     <TextBox x:Name="ProfileNameInput" Grid.Column="1" Height="32" VerticalAlignment="Center"/>
                                 </Grid>
-
-                                <!-- Worksheet Index -->
-                                <Grid Margin="0,0,0,8">
+                                <Grid>
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition Width="200"/>
                                         <ColumnDefinition Width="*"/>
                                     </Grid.ColumnDefinitions>
-                                    <TextBlock Text="{x:Static lex:Translations.Settings_WorksheetLabel}" VerticalAlignment="Center" Margin="0,0,12,0"/>
-                                    <TextBox x:Name="WorksheetIndexInput" Grid.Column="1" Height="32" VerticalAlignment="Center" Width="100" HorizontalAlignment="Left"/>
-                                </Grid>
-
-                                <!-- Season Code -->
-                                <Grid Margin="0,0,0,4">
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="200"/>
-                                        <ColumnDefinition Width="*"/>
-                                    </Grid.ColumnDefinitions>
-                                    <TextBlock Text="{x:Static lex:Translations.Settings_SeasonCodeLabel}" VerticalAlignment="Center" Margin="0,0,12,0"/>
-                                    <TextBox x:Name="SeasonCodeInput" Grid.Column="1" Height="32" VerticalAlignment="Center" Width="200" HorizontalAlignment="Left"/>
-                                </Grid>
-
-                                <!-- Season Fallback Codes -->
-                                <Grid Margin="0,4,0,4">
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="200"/>
-                                        <ColumnDefinition Width="*"/>
-                                    </Grid.ColumnDefinitions>
-                                    <Grid.RowDefinitions>
-                                        <RowDefinition Height="Auto"/>
-                                        <RowDefinition Height="Auto"/>
-                                    </Grid.RowDefinitions>
-                                    <TextBlock Text="{x:Static lex:Translations.Settings_SeasonFallbackCodesLabel}" VerticalAlignment="Center" Margin="0,0,12,0"/>
-                                    <TextBox x:Name="SeasonFallbackCodesInput" Grid.Column="1" Height="32" VerticalAlignment="Center" Width="200" HorizontalAlignment="Left"/>
-                                    <TextBlock Text="{x:Static lex:Translations.Settings_SeasonFallbackCodesHint}"
-                                               Style="{StaticResource MutedTextBlockStyle}"
-                                               Grid.Row="1"
-                                               Grid.Column="1"
-                                               Margin="0,4,0,0"
-                                               FontStyle="Italic"/>
+                                    <TextBlock Text="{x:Static lex:Translations.Settings_FormatLabel}" VerticalAlignment="Center" Margin="0,0,12,0" FontWeight="Medium"/>
+                                    <ComboBox x:Name="FormatInput" Grid.Column="1" Height="32" Width="300" HorizontalAlignment="Left"
+                                              DisplayMemberPath="DisplayName" IsEnabled="False" VerticalContentAlignment="Center"/>
                                 </Grid>
                             </StackPanel>
                         </Border>
 
-                        <!-- 2. Header Section -->
-                        <Border Style="{StaticResource CardBorderStyle}" Margin="0,0,0,16">
-                            <StackPanel>
-                                <TextBlock Text="{x:Static lex:Translations.Settings_HeaderSection}" Style="{StaticResource SectionHeaderTextBlockStyle}"/>
-                                <Grid Margin="0,8,0,0">
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="*"/>
-                                        <ColumnDefinition Width="*"/>
-                                        <ColumnDefinition Width="*"/>
-                                        <ColumnDefinition Width="*"/>
-                                    </Grid.ColumnDefinitions>
-                                    <Grid.RowDefinitions>
-                                        <RowDefinition Height="Auto"/>
-                                        <RowDefinition Height="Auto"/>
-                                        <RowDefinition Height="Auto"/>
-                                    </Grid.RowDefinitions>
-
-                                    <StackPanel Grid.Row="0" Grid.Column="0" Margin="0,0,8,12">
-                                        <TextBlock Text="{x:Static lex:Translations.Settings_CellCustomerName}" Style="{StaticResource MutedTextBlockStyle}"/>
-                                        <TextBox x:Name="CompanyNameCellInput" Height="32"/>
-                                    </StackPanel>
-                                    <StackPanel Grid.Row="0" Grid.Column="1" Margin="0,0,8,12">
-                                        <TextBlock Text="{x:Static lex:Translations.Settings_CellStreet}" Style="{StaticResource MutedTextBlockStyle}"/>
-                                        <TextBox x:Name="StreetCellInput" Height="32"/>
-                                    </StackPanel>
-                                    <StackPanel Grid.Row="0" Grid.Column="2" Margin="0,0,8,12">
-                                        <TextBlock Text="{x:Static lex:Translations.Settings_CellZipCodeCity}" Style="{StaticResource MutedTextBlockStyle}"/>
-                                        <TextBox x:Name="ZipCityCellInput" Height="32"/>
-                                    </StackPanel>
-                                    <StackPanel Grid.Row="0" Grid.Column="3" Margin="0,0,0,12">
-                                        <TextBlock Text="{x:Static lex:Translations.Settings_CellEmail}" Style="{StaticResource MutedTextBlockStyle}"/>
-                                        <TextBox x:Name="BuyerEmailCellInput" Height="32"/>
-                                    </StackPanel>
-
-                                    <StackPanel Grid.Row="1" Grid.Column="0" Margin="0,0,8,12">
-                                        <TextBlock Text="{x:Static lex:Translations.Settings_CellBuyerName}" Style="{StaticResource MutedTextBlockStyle}"/>
-                                        <TextBox x:Name="BuyerNameCellInput" Height="32"/>
-                                    </StackPanel>
-                                    <StackPanel Grid.Row="1" Grid.Column="1" Margin="0,0,8,12">
-                                        <TextBlock Text="{x:Static lex:Translations.Settings_CellPaymentTerms}" Style="{StaticResource MutedTextBlockStyle}"/>
-                                        <TextBox x:Name="PaymentTermsCellInput" Height="32"/>
-                                    </StackPanel>
-                                    <StackPanel Grid.Row="1" Grid.Column="2" Margin="0,0,8,12">
-                                        <TextBlock Text="{x:Static lex:Translations.Settings_CellDiscount}" Style="{StaticResource MutedTextBlockStyle}"/>
-                                        <TextBox x:Name="DiscountCellInput" Height="32"/>
-                                    </StackPanel>
-
-                                    <CheckBox x:Name="EnableOrderNumberCheckBox" Grid.Row="2" Grid.Column="0" 
-                                              Content="{x:Static lex:Translations.Settings_EnableOrderNumber}" 
-                                              VerticalAlignment="Center" Margin="0,16,8,0"
-                                              Foreground="{StaticResource TextBrush}" FontWeight="Medium"/>
-                                    <StackPanel Grid.Row="2" Grid.Column="1" Margin="0,0,8,0">
-                                        <TextBlock Text="{x:Static lex:Translations.Settings_CellOrderNumber}" Style="{StaticResource MutedTextBlockStyle}"/>
-                                        <TextBox x:Name="OrderNumberCellInput" Height="32" IsEnabled="{Binding ElementName=EnableOrderNumberCheckBox, Path=IsChecked}"/>
-                                    </StackPanel>
-                                    <CheckBox x:Name="EnableCustomerNumberCheckBox" Grid.Row="2" Grid.Column="2" 
-                                              Content="{x:Static lex:Translations.Settings_EnableCustomerNumber}" 
-                                              VerticalAlignment="Center" Margin="0,16,8,0"
-                                              Foreground="{StaticResource TextBrush}" FontWeight="Medium"/>
-                                    <StackPanel Grid.Row="2" Grid.Column="3" Margin="0,0,0,0">
-                                        <TextBlock Text="{x:Static lex:Translations.Settings_CellCustomerNumber}" Style="{StaticResource MutedTextBlockStyle}"/>
-                                        <TextBox x:Name="CustomerNumberCellInput" Height="32" IsEnabled="{Binding ElementName=EnableCustomerNumberCheckBox, Path=IsChecked}"/>
-                                    </StackPanel>
-                                </Grid>
-                            </StackPanel>
-                        </Border>
-
-                        <!-- 3. Size Matrix Section -->
-                        <Border Style="{StaticResource CardBorderStyle}" Margin="0,0,0,16">
-                            <StackPanel>
-                                <TextBlock Text="{x:Static lex:Translations.Settings_MatrixSection}" Style="{StaticResource SectionHeaderTextBlockStyle}"/>
-                                <Grid Margin="0,8,0,0">
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="*"/>
-                                        <ColumnDefinition Width="*"/>
-                                        <ColumnDefinition Width="*"/>
-                                        <ColumnDefinition Width="*"/>
-                                        <ColumnDefinition Width="*"/>
-                                    </Grid.ColumnDefinitions>
-
-                                    <StackPanel Grid.Column="0" Margin="0,0,8,0">
-                                        <TextBlock Text="{x:Static lex:Translations.Settings_MatrixStart}" Style="{StaticResource MutedTextBlockStyle}"/>
-                                        <TextBox x:Name="MatrixStartRowInput" Height="32"/>
-                                    </StackPanel>
-                                    <StackPanel Grid.Column="1" Margin="0,0,8,0">
-                                        <TextBlock Text="{x:Static lex:Translations.Settings_MatrixEnd}" Style="{StaticResource MutedTextBlockStyle}"/>
-                                        <TextBox x:Name="MatrixEndRowInput" Height="32"/>
-                                    </StackPanel>
-                                    <StackPanel Grid.Column="2" Margin="0,0,8,0">
-                                        <TextBlock Text="{x:Static lex:Translations.Settings_MatrixCategoryCol}" Style="{StaticResource MutedTextBlockStyle}"/>
-                                        <TextBox x:Name="MatrixCategoryColInput" Height="32"/>
-                                    </StackPanel>
-                                    <StackPanel Grid.Column="3" Margin="0,0,8,0">
-                                        <TextBlock Text="{x:Static lex:Translations.Settings_MatrixStartSizeCol}" Style="{StaticResource MutedTextBlockStyle}"/>
-                                        <TextBox x:Name="MatrixStartSizeColInput" Height="32"/>
-                                    </StackPanel>
-                                    <StackPanel Grid.Column="4" Margin="0,0,0,0">
-                                        <TextBlock Text="{x:Static lex:Translations.Settings_MatrixEndSizeCol}" Style="{StaticResource MutedTextBlockStyle}"/>
-                                        <TextBox x:Name="MatrixEndSizeColInput" Height="32"/>
-                                    </StackPanel>
-                                </Grid>
-                            </StackPanel>
-                        </Border>
-
-                        <!-- 4. Data Columns Section -->
-                        <Border Style="{StaticResource CardBorderStyle}" Margin="0,0,0,16">
-                            <StackPanel>
-                                <TextBlock Text="{x:Static lex:Translations.Settings_ColsSection}" Style="{StaticResource SectionHeaderTextBlockStyle}"/>
-                                <Grid Margin="0,8,0,0">
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="*"/>
-                                        <ColumnDefinition Width="*"/>
-                                        <ColumnDefinition Width="*"/>
-                                        <ColumnDefinition Width="*"/>
-                                        <ColumnDefinition Width="*"/>
-                                    </Grid.ColumnDefinitions>
-                                    <Grid.RowDefinitions>
-                                        <RowDefinition Height="Auto"/>
-                                        <RowDefinition Height="Auto"/>
-                                    </Grid.RowDefinitions>
-
-                                    <StackPanel Grid.Row="0" Grid.Column="0" Margin="0,0,8,12">
-                                        <TextBlock Text="{x:Static lex:Translations.Settings_RowStart}" Style="{StaticResource MutedTextBlockStyle}"/>
-                                        <TextBox x:Name="DataStartRowInput" Height="32"/>
-                                    </StackPanel>
-                                    <StackPanel Grid.Row="0" Grid.Column="1" Margin="0,0,8,12">
-                                        <TextBlock Text="{x:Static lex:Translations.Settings_ColArtNum}" Style="{StaticResource MutedTextBlockStyle}"/>
-                                        <TextBox x:Name="ColArtNumInput" Height="32"/>
-                                    </StackPanel>
-                                    <StackPanel Grid.Row="0" Grid.Column="2" Margin="0,0,8,12">
-                                        <TextBlock Text="{x:Static lex:Translations.Settings_ColName}" Style="{StaticResource MutedTextBlockStyle}"/>
-                                        <TextBox x:Name="ColArtNameInput" Height="32"/>
-                                    </StackPanel>
-                                    <StackPanel Grid.Row="0" Grid.Column="3" Margin="0,0,8,12">
-                                        <TextBlock Text="{x:Static lex:Translations.Settings_ColColor}" Style="{StaticResource MutedTextBlockStyle}"/>
-                                        <TextBox x:Name="ColColorInput" Height="32"/>
-                                    </StackPanel>
-                                    <StackPanel Grid.Row="0" Grid.Column="4" Margin="0,0,0,12">
-                                        <TextBlock Text="{x:Static lex:Translations.Settings_ColSizeCategory}" Style="{StaticResource MutedTextBlockStyle}"/>
-                                        <TextBox x:Name="ColSizeCategoryInput" Height="32"/>
-                                    </StackPanel>
-
-                                    <StackPanel Grid.Row="1" Grid.Column="0" Margin="0,0,8,0">
-                                        <TextBlock Text="{x:Static lex:Translations.Settings_ColStartQty}" Style="{StaticResource MutedTextBlockStyle}"/>
-                                        <TextBox x:Name="ColStartQtyInput" Height="32"/>
-                                    </StackPanel>
-                                    <StackPanel Grid.Row="1" Grid.Column="1" Margin="0,0,8,0">
-                                        <TextBlock Text="{x:Static lex:Translations.Settings_ColEndQty}" Style="{StaticResource MutedTextBlockStyle}"/>
-                                        <TextBox x:Name="ColEndQtyInput" Height="32"/>
-                                    </StackPanel>
-                                    <StackPanel Grid.Row="1" Grid.Column="2" Margin="0,0,8,0">
-                                        <TextBlock Text="{x:Static lex:Translations.Settings_ColUnitPrice}" Style="{StaticResource MutedTextBlockStyle}"/>
-                                        <TextBox x:Name="ColUnitPriceInput" Height="32"/>
-                                    </StackPanel>
-                                    <CheckBox x:Name="EnableRowDiscountCheckBox" Grid.Row="1" Grid.Column="3" 
-                                              Content="{x:Static lex:Translations.Settings_EnableRowDiscount}" 
-                                              VerticalAlignment="Center" Margin="0,16,8,0"
-                                              Foreground="{StaticResource TextBrush}" FontWeight="Medium"/>
-                                    <StackPanel Grid.Row="1" Grid.Column="4" Margin="0,0,0,0">
-                                        <TextBlock Text="{x:Static lex:Translations.Settings_ColRowDiscount}" Style="{StaticResource MutedTextBlockStyle}"/>
-                                        <TextBox x:Name="ColRowDiscountInput" Height="32" IsEnabled="{Binding ElementName=EnableRowDiscountCheckBox, Path=IsChecked}"/>
-                                    </StackPanel>
-                                </Grid>
-                            </StackPanel>
-                        </Border>
-
-                        <!-- 5. Texte & Vorlagen Section -->
-                        <Border Style="{StaticResource CardBorderStyle}" Margin="0,0,0,16">
-                            <StackPanel>
-                                <TextBlock Text="{x:Static lex:Translations.Settings_TextTemplatesSection}" Style="{StaticResource SectionHeaderTextBlockStyle}"/>
-                                
-                                <!-- Auftragsname-Vorlage -->
-                                <Grid Margin="0,8,0,12">
-                                    <Grid.RowDefinitions>
-                                        <RowDefinition Height="Auto"/>
-                                        <RowDefinition Height="Auto"/>
-                                        <RowDefinition Height="Auto"/>
-                                    </Grid.RowDefinitions>
-                                    <TextBlock Text="{x:Static lex:Translations.Settings_DefaultOrderNameLabel}" Grid.Row="0" Margin="0,0,0,4" FontWeight="Medium"/>
-                                    <TextBox x:Name="DefaultOrderNameInput" Height="32" Grid.Row="1" Margin="0,0,0,4"/>
-                                    <TextBlock Text="{x:Static lex:Translations.Settings_DefaultOrderNameHint}" 
-                                               Style="{StaticResource MutedTextBlockStyle}" 
-                                               Grid.Row="2" 
-                                               FontStyle="Italic"/>
-                                </Grid>
-
-                                <!-- Positionserstellung (Grouping Mode Segmented Control) -->
-                                <Grid Margin="0,0,0,14">
-                                    <Grid.RowDefinitions>
-                                        <RowDefinition Height="Auto"/>
-                                        <RowDefinition Height="Auto"/>
-                                    </Grid.RowDefinitions>
-                                    <TextBlock Text="{x:Static lex:Translations.Settings_PositionGroupingModeLabel}" Grid.Row="0" Margin="0,0,0,6" FontWeight="Medium"/>
-                                    
-                                    <Border Grid.Row="1"
-                                            HorizontalAlignment="Stretch"
-                                            BorderBrush="{StaticResource AccentBrush}"
-                                            BorderThickness="1"
-                                            CornerRadius="6"
-                                            Background="Transparent"
-                                            SnapsToDevicePixels="True">
-                                        <Grid>
-                                            <Grid.ColumnDefinitions>
-                                                <ColumnDefinition Width="*"/>
-                                                <ColumnDefinition Width="1"/>
-                                                <ColumnDefinition Width="*"/>
-                                            </Grid.ColumnDefinitions>
-                                            
-                                            <RadioButton x:Name="SinglePositionRadioButton" 
-                                                         Grid.Column="0"
-                                                         Content="{x:Static lex:Translations.Settings_PositionGroupingSingle}" 
-                                                         GroupName="PositionGroupingModeGroup"
-                                                         IsChecked="True"
-                                                         Checked="PositionGroupingRadioButton_Checked"
-                                                         Style="{StaticResource SegmentedRadioButtonLeftStyle}"/>
-                                                         
-                                            <Rectangle Grid.Column="1" Fill="{StaticResource AccentBrush}"/>
-                                            
-                                            <RadioButton x:Name="GroupedPositionRadioButton" 
-                                                         Grid.Column="2"
-                                                         Content="{x:Static lex:Translations.Settings_PositionGroupingGrouped}" 
-                                                         GroupName="PositionGroupingModeGroup"
-                                                         Checked="PositionGroupingRadioButton_Checked"
-                                                         Style="{StaticResource SegmentedRadioButtonRightStyle}"/>
-                                        </Grid>
-                                    </Border>
-                                </Grid>
-
-                                <!-- Single Position Template Section -->
-                                <StackPanel x:Name="SinglePositionTemplatePanel" Margin="0,0,0,12">
-                                    <TextBlock Text="{x:Static lex:Translations.Settings_PositionTextTemplateLabel}" Margin="0,0,0,4" FontWeight="Medium"/>
-                                    <TextBox x:Name="SinglePositionTextTemplateInput" Height="32" Margin="0,0,0,4"/>
-                                    <TextBlock Text="{x:Static lex:Translations.Settings_SinglePositionTextTemplateHint}" 
-                                               Style="{StaticResource MutedTextBlockStyle}" 
-                                               FontStyle="Italic"/>
-                                </StackPanel>
-
-                                <!-- Grouped Position Template Section -->
-                                <StackPanel x:Name="GroupedPositionTemplatePanel" Margin="0,0,0,12" Visibility="Collapsed">
-                                    <!-- Positions-Text Vorlage (Gruppiert) -->
-                                    <Grid Margin="0,0,0,12">
-                                        <Grid.RowDefinitions>
-                                            <RowDefinition Height="Auto"/>
-                                            <RowDefinition Height="Auto"/>
-                                            <RowDefinition Height="Auto"/>
-                                        </Grid.RowDefinitions>
-                                        <TextBlock Text="{x:Static lex:Translations.Settings_PositionTextTemplateLabel}" Grid.Row="0" Margin="0,0,0,4" FontWeight="Medium"/>
-                                        <TextBox x:Name="GroupedPositionTextTemplateInput" Height="32" Grid.Row="1" Margin="0,0,0,4"/>
-                                        <TextBlock Text="{x:Static lex:Translations.Settings_GroupedPositionTextTemplateHint}" 
-                                                   Style="{StaticResource MutedTextBlockStyle}" 
-                                                   Grid.Row="2" 
-                                                   FontStyle="Italic"/>
-                                    </Grid>
-
-                                    <!-- Grössen-Zeilen Vorlage -->
-                                    <Grid Margin="0,0,0,0">
-                                        <Grid.RowDefinitions>
-                                            <RowDefinition Height="Auto"/>
-                                            <RowDefinition Height="Auto"/>
-                                            <RowDefinition Height="Auto"/>
-                                        </Grid.RowDefinitions>
-                                        <TextBlock Text="{x:Static lex:Translations.Settings_SizeRowTemplateLabel}" Grid.Row="0" Margin="0,0,0,4" FontWeight="Medium"/>
-                                        <TextBox x:Name="SizeRowTemplateInput" Height="32" Grid.Row="1" Margin="0,0,0,4"/>
-                                        <TextBlock Text="{x:Static lex:Translations.Settings_SizeRowTemplateHint}" 
-                                                   Style="{StaticResource MutedTextBlockStyle}" 
-                                                   Grid.Row="2" 
-                                                   FontStyle="Italic"/>
-                                    </Grid>
-                                </StackPanel>
-
-                                <!-- Rabatt-Positions-Text Vorlage -->
-                                <Grid Margin="0,0,0,4">
-                                    <Grid.RowDefinitions>
-                                        <RowDefinition Height="Auto"/>
-                                        <RowDefinition Height="Auto"/>
-                                        <RowDefinition Height="Auto"/>
-                                    </Grid.RowDefinitions>
-                                    <TextBlock Text="{x:Static lex:Translations.Settings_DiscountPositionTextTemplateLabel}" Grid.Row="0" Margin="0,0,0,4" FontWeight="Medium"/>
-                                    <TextBox x:Name="DiscountPositionTextTemplateInput" Height="32" Grid.Row="1" Margin="0,0,0,4"/>
-                                    <TextBlock Text="{x:Static lex:Translations.Settings_DiscountPositionTextTemplateHint}" 
-                                               Style="{StaticResource MutedTextBlockStyle}" 
-                                               Grid.Row="2" 
-                                               FontStyle="Italic"/>
-                                </Grid>
-                            </StackPanel>
-                        </Border>
-
+                        <!-- Settings of the format -->
+                        <ContentControl x:Name="FormatSettingsHost" Focusable="False"/>
                     </StackPanel>
                 </ScrollViewer>
 

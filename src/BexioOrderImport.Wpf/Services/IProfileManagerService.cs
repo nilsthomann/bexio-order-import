@@ -5,7 +5,7 @@ namespace BexioOrderImport.Wpf.Services;
 
 public interface IProfileManagerService
 {
-    string? ShowProfileCreateDialogAndValidateName(ObservableCollection<MappingProfile> profiles, bool isClone);
+    ProfileCreateResult? ShowProfileCreateDialogAndValidateName(ObservableCollection<MappingProfile> profiles, string? fixedFormatId);
     MappingProfile? CreateProfile(ObservableCollection<MappingProfile> profiles);
     MappingProfile? CloneProfile(ObservableCollection<MappingProfile> profiles, MappingProfile sourceProfile);
     bool EditProfile(ObservableCollection<MappingProfile> profiles, MappingProfile profile);

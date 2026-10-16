@@ -2,9 +2,17 @@ using BexioOrderImport.Domain.Models;
 
 namespace BexioOrderImport.Wpf.Services;
 
+/// <summary>
+/// Name and format entered in the create dialog.
+/// </summary>
+public record ProfileCreateResult(string Name, string FormatId);
+
 public interface IDialogService
 {
-    string? ShowProfileCreateDialog(bool isClone);
+    /// <summary>
+    /// Asks for the name and format of a new profile. A <paramref name="fixedFormatId"/> (when cloning) is shown but can't be changed.
+    /// </summary>
+    ProfileCreateResult? ShowProfileCreateDialog(string? fixedFormatId);
     bool ShowProfileEditDialog(Models.MappingProfile profile, System.Collections.Generic.IEnumerable<Models.MappingProfile>? existingProfiles = null);
     bool ShowPendingChangesDialog();
     string? ShowOpenFileDialog(string filter, string defaultExt);

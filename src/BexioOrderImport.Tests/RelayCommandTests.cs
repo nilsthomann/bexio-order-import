@@ -1,4 +1,4 @@
-using BexioOrderImport.Wpf.ViewModels;
+using BexioOrderImport.Abstractions.Wpf;
 using FluentAssertions;
 
 namespace BexioOrderImport.Tests;

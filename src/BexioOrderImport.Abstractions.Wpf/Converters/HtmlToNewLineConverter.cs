@@ -3,7 +3,7 @@ using System.Globalization;
 using System.Text.RegularExpressions;
 using System.Windows.Data;
 
-namespace BexioOrderImport.Wpf.Converters;
+namespace BexioOrderImport.Abstractions.Wpf.Converters;
 
 public class HtmlToNewLineConverter : IValueConverter
 {

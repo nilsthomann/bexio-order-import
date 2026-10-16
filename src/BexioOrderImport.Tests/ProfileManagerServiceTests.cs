@@ -27,7 +27,7 @@ public class ProfileManagerServiceTests
             ProfileTestExtensions.PeakmileProfile("Default")
         };
 
-        _dialogMock.Setup(d => d.ShowProfileCreateDialog(false)).Returns("Custom Profile");
+        _dialogMock.Setup(d => d.ShowProfileCreateDialog(null)).Returns(new ProfileCreateResult("Custom Profile", PeakmileFormatAdapter.Id));
 
         var created = _service.CreateProfile(profiles);
 
@@ -44,7 +44,7 @@ public class ProfileManagerServiceTests
             ProfileTestExtensions.PeakmileProfile("Default")
         };
 
-        _dialogMock.Setup(d => d.ShowProfileCreateDialog(false)).Returns("Default");
+        _dialogMock.Setup(d => d.ShowProfileCreateDialog(null)).Returns(new ProfileCreateResult("Default", PeakmileFormatAdapter.Id));
 
         var created = _service.CreateProfile(profiles);
 
@@ -77,7 +77,7 @@ public class ProfileManagerServiceTests
             ProfileTestExtensions.PeakmileProfile("Default")
         };
 
-        _dialogMock.Setup(d => d.ShowProfileCreateDialog(false)).Returns((string?)null);
+        _dialogMock.Setup(d => d.ShowProfileCreateDialog(null)).Returns((ProfileCreateResult?)null);
 
         var created = _service.CreateProfile(profiles);
 
@@ -91,7 +91,7 @@ public class ProfileManagerServiceTests
         var defaultP = ProfileTestExtensions.PeakmileProfile("Default");
         var profiles = new ObservableCollection<MappingProfile> { defaultP };
 
-        _dialogMock.Setup(d => d.ShowProfileCreateDialog(true)).Returns((string?)null);
+        _dialogMock.Setup(d => d.ShowProfileCreateDialog(PeakmileFormatAdapter.Id)).Returns((ProfileCreateResult?)null);
 
         var cloned = _service.CloneProfile(profiles, defaultP);
 
@@ -109,5 +109,44 @@ public class ProfileManagerServiceTests
 
         result.Should().BeFalse();
         _dialogMock.Verify(d => d.ShowErrorDialog(It.IsAny<string>(), It.IsAny<string>()), Times.Once);
+    }
+
+    [Test]
+    public void CreateProfile_ShouldUseTheChosenFormatWithDefaultSettings()
+    {
+        var profiles = new ObservableCollection<MappingProfile>();
+        _dialogMock.Setup(d => d.ShowProfileCreateDialog(null)).Returns(new ProfileCreateResult("New", "PEAKMILE"));
+
+        var created = _service.CreateProfile(profiles);
+
+        created!.FormatId.Should().Be(PeakmileFormatAdapter.Id);
+        created.Settings.Should().BeEquivalentTo(new PeakmileSettings());
+    }
+
+    [Test]
+    public void CreateProfile_WhenFormatIsUnknown_ReturnsNull()
+    {
+        var profiles = new ObservableCollection<MappingProfile>();
+        _dialogMock.Setup(d => d.ShowProfileCreateDialog(null)).Returns(new ProfileCreateResult("New", "future-format"));
+
+        var created = _service.CreateProfile(profiles);
+
+        created.Should().BeNull();
+        profiles.Should().BeEmpty();
+    }
+
+    [Test]
+    public void CloneProfile_ShouldKeepTheFormatAndCopyTheSettings()
+    {
+        var source = ProfileTestExtensions.PeakmileProfile("Default", new PeakmileSettings { SeasonCode = "HW26" });
+        var profiles = new ObservableCollection<MappingProfile> { source };
+        _dialogMock.Setup(d => d.ShowProfileCreateDialog(PeakmileFormatAdapter.Id)).Returns(new ProfileCreateResult("Copy", PeakmileFormatAdapter.Id));
+
+        var cloned = _service.CloneProfile(profiles, source);
+
+        cloned!.Name.Should().Be("Copy");
+        cloned.FormatId.Should().Be(PeakmileFormatAdapter.Id);
+        cloned.Peakmile().SeasonCode.Should().Be("HW26");
+        cloned.Settings.Should().NotBeSameAs(source.Settings);
     }
 }

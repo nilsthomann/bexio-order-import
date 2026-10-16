@@ -1,7 +1,11 @@
 <UserControl x:Class="BexioOrderImport.Wpf.Views.Controls.SettingsControl"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:lex="clr-namespace:BexioOrderImport.Wpf.Resources">
+             xmlns:lex="clr-namespace:BexioOrderImport.Wpf.Resources"
+             xmlns:conv="clr-namespace:BexioOrderImport.Wpf.Converters">
+    <UserControl.Resources>
+        <conv:FormatNameConverter x:Key="FormatNameConverter"/>
+    </UserControl.Resources>
     <ScrollViewer VerticalScrollBarVisibility="Auto">
         <Grid Margin="24">
             <Grid.RowDefinitions>
@@ -216,6 +220,22 @@
                                     </DataGridTemplateColumn.CellTemplate>
                                 </DataGridTemplateColumn>
 
+                                <!-- Format -->
+                                <DataGridTemplateColumn Header="{x:Static lex:Translations.Settings_ProfilesTableColFormat}" Width="220" IsReadOnly="True">
+                                    <DataGridTemplateColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <TextBlock VerticalAlignment="Center" Margin="12,6" Foreground="{StaticResource TextMutedBrush}">
+                                                <TextBlock.Text>
+                                                    <MultiBinding Converter="{StaticResource FormatNameConverter}">
+                                                        <Binding Path="FormatId"/>
+                                                        <Binding Path="DataContext.Formats" RelativeSource="{RelativeSource AncestorType=DataGrid}"/>
+                                                    </MultiBinding>
+                                                </TextBlock.Text>
+                                            </TextBlock>
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellTemplate>
+                                </DataGridTemplateColumn>
+
                                 <!-- Edit Column -->
                                 <DataGridTemplateColumn Width="50" IsReadOnly="True">
                                     <DataGridTemplateColumn.CellTemplate>
@@ -278,6 +298,34 @@
                                     Style="{StaticResource SecondaryButtonStyle}" 
                                     Width="140"/>
                         </StackPanel>
+                    </StackPanel>
+                </Border>
+
+                <!-- 4. Registered Import Formats Card -->
+                <Border Style="{StaticResource CardBorderStyle}" Margin="0,0,0,16">
+                    <StackPanel>
+                        <TextBlock Text="{x:Static lex:Translations.Settings_FormatsSection}" Style="{StaticResource SectionHeaderTextBlockStyle}"/>
+                        <TextBlock Text="{x:Static lex:Translations.Settings_FormatsHint}" Style="{StaticResource MutedTextBlockStyle}" TextWrapping="Wrap" Margin="0,0,0,12"/>
+                        <ItemsControl ItemsSource="{Binding Formats}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Border BorderBrush="{StaticResource BorderBrush}" BorderThickness="0,1,0,0" Padding="0,10">
+                                        <StackPanel>
+                                            <TextBlock Text="{Binding DisplayName}" FontWeight="SemiBold"/>
+                                            <TextBlock Style="{StaticResource MutedTextBlockStyle}">
+                                                <TextBlock.Text>
+                                                    <MultiBinding StringFormat="{}{0} · v{1}">
+                                                        <Binding Path="FormatId"/>
+                                                        <Binding Path="Version"/>
+                                                    </MultiBinding>
+                                                </TextBlock.Text>
+                                            </TextBlock>
+                                            <TextBlock Text="{Binding Description}" Style="{StaticResource MutedTextBlockStyle}" TextWrapping="Wrap" Margin="0,2,0,0"/>
+                                        </StackPanel>
+                                    </Border>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
                     </StackPanel>
                 </Border>
             </StackPanel>

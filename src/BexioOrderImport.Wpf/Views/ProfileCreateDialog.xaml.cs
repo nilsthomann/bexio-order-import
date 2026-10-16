@@ -1,27 +1,25 @@
 using System.Windows;
+using BexioOrderImport.Abstractions.Formats;
 using BexioOrderImport.Wpf.Resources;
 
 namespace BexioOrderImport.Wpf.Views;
-
-public enum ProfileDialogMode
-{
-    Create,
-    Clone
-}
 
 [System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
 public partial class ProfileCreateDialog : Window
 {
     public string ProfileName { get; private set; } = string.Empty;
 
-    public ProfileCreateDialog(bool isClone) : this(isClone ? ProfileDialogMode.Clone : ProfileDialogMode.Create)
-    {
-    }
+    public string FormatId { get; private set; } = string.Empty;
 
-    public ProfileCreateDialog(ProfileDialogMode mode = ProfileDialogMode.Create)
+    /// <param name="fixedFormatId">Format of the cloned profile; shown but not selectable. Null when creating a profile.</param>
+    public ProfileCreateDialog(IReadOnlyList<IFormatAdapter> formats, string? fixedFormatId = null)
     {
         InitializeComponent();
-        if (mode == ProfileDialogMode.Clone)
+        FormatInput.ItemsSource = formats;
+        FormatInput.SelectedValue = fixedFormatId ?? formats.FirstOrDefault()?.FormatId;
+        FormatInput.IsEnabled = fixedFormatId == null;
+
+        if (fixedFormatId != null)
         {
             Title = Translations.Settings_ProfilesCloneTitle;
             TitleTextBlock.Text = Translations.Settings_ProfilesCloneTitle;
@@ -69,7 +67,13 @@ public partial class ProfileCreateDialog : Window
             return;
         }
 
+        if (FormatInput.SelectedValue is not string formatId)
+        {
+            return;
+        }
+
         ProfileName = name;
+        FormatId = formatId;
         DialogResult = true;
         Close();
     }

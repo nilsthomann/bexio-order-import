@@ -123,4 +123,223 @@
   <data name="Format_Description" xml:space="preserve">
     <value>Order form with size matrix, position grouping, discounts and customer lookup by email, customer or order number.</value>
   </data>
+  <data name="Import_OrderHeader" xml:space="preserve">
+    <value>Order Header Details</value>
+  </data>
+  <data name="Import_Customer" xml:space="preserve">
+    <value>Customer / Company</value>
+  </data>
+  <data name="Import_Address" xml:space="preserve">
+    <value>Address</value>
+  </data>
+  <data name="Import_Email" xml:space="preserve">
+    <value>E-Mail</value>
+  </data>
+  <data name="Import_Buyer" xml:space="preserve">
+    <value>Buyer</value>
+  </data>
+  <data name="Import_OrderNumber" xml:space="preserve">
+    <value>Order Number</value>
+  </data>
+  <data name="Import_Conditions" xml:space="preserve">
+    <value>Terms</value>
+  </data>
+  <data name="Import_PositionsHeader" xml:space="preserve">
+    <value>Order Positions</value>
+  </data>
+  <data name="Import_ColArtNum" xml:space="preserve">
+    <value>Art No.</value>
+  </data>
+  <data name="Import_ColName" xml:space="preserve">
+    <value>Description</value>
+  </data>
+  <data name="Import_ColColor" xml:space="preserve">
+    <value>Color</value>
+  </data>
+  <data name="Import_ColCategory" xml:space="preserve">
+    <value>Category</value>
+  </data>
+  <data name="Import_ColSize" xml:space="preserve">
+    <value>Size</value>
+  </data>
+  <data name="Import_ColQuantity" xml:space="preserve">
+    <value>Quantity</value>
+  </data>
+  <data name="Import_ColUnitPrice" xml:space="preserve">
+    <value>PP (CHF)</value>
+  </data>
+  <data name="Import_ColTotalPrice" xml:space="preserve">
+    <value>Total (CHF)</value>
+  </data>
+  <data name="Import_ColDiscount" xml:space="preserve">
+    <value>Discount %</value>
+  </data>
+  <data name="Import_ColGrossPrice" xml:space="preserve">
+    <value>Gross CHF</value>
+  </data>
+  <data name="Import_ColNetPrice" xml:space="preserve">
+    <value>Net CHF</value>
+  </data>
+  <data name="Import_CustomerNumber" xml:space="preserve">
+    <value>Customer Number</value>
+  </data>
+  <data name="Settings_EnableRowDiscount" xml:space="preserve">
+    <value>Enable Row Discount</value>
+  </data>
+  <data name="Settings_ColRowDiscount" xml:space="preserve">
+    <value>Row Discount Column</value>
+  </data>
+  <data name="Settings_HeaderSection" xml:space="preserve">
+    <value>Header Coordinates (Cells)</value>
+  </data>
+  <data name="Settings_CellCustomerName" xml:space="preserve">
+    <value>Customer/Company cell</value>
+  </data>
+  <data name="Settings_CellStreet" xml:space="preserve">
+    <value>Street cell</value>
+  </data>
+  <data name="Settings_CellEmail" xml:space="preserve">
+    <value>E-Mail cell</value>
+  </data>
+  <data name="Settings_CellBuyerName" xml:space="preserve">
+    <value>Buyer Name cell</value>
+  </data>
+  <data name="Settings_CellOrderNumber" xml:space="preserve">
+    <value>Order Number cell</value>
+  </data>
+  <data name="Settings_EnableOrderNumber" xml:space="preserve">
+    <value>Enable Order Number</value>
+  </data>
+  <data name="Settings_CellCustomerNumber" xml:space="preserve">
+    <value>Customer Number cell</value>
+  </data>
+  <data name="Settings_EnableCustomerNumber" xml:space="preserve">
+    <value>Enable Customer Number</value>
+  </data>
+  <data name="Settings_CellPaymentTerms" xml:space="preserve">
+    <value>Payment Terms cell</value>
+  </data>
+  <data name="Settings_CellDiscount" xml:space="preserve">
+    <value>Discount cell</value>
+  </data>
+  <data name="Settings_MatrixSection" xml:space="preserve">
+    <value>Size Matrix</value>
+  </data>
+  <data name="Settings_MatrixStart" xml:space="preserve">
+    <value>Matrix Start Row</value>
+  </data>
+  <data name="Settings_MatrixEnd" xml:space="preserve">
+    <value>Matrix End Row</value>
+  </data>
+  <data name="Settings_RowStart" xml:space="preserve">
+    <value>First Article Row</value>
+  </data>
+  <data name="Settings_ColsSection" xml:space="preserve">
+    <value>Article Grid Columns</value>
+  </data>
+  <data name="Settings_ColArtNum" xml:space="preserve">
+    <value>Article Number Column</value>
+  </data>
+  <data name="Settings_ColName" xml:space="preserve">
+    <value>Article Name Column</value>
+  </data>
+  <data name="Settings_ColColor" xml:space="preserve">
+    <value>Color Column</value>
+  </data>
+  <data name="Settings_ColSizeCategory" xml:space="preserve">
+    <value>Size Category Column</value>
+  </data>
+  <data name="Settings_ColStartQty" xml:space="preserve">
+    <value>First Quantity Column</value>
+  </data>
+  <data name="Settings_ColEndQty" xml:space="preserve">
+    <value>Last Quantity Column</value>
+  </data>
+  <data name="Settings_ColUnitPrice" xml:space="preserve">
+    <value>Unit Price Column</value>
+  </data>
+  <data name="Settings_MatrixCategoryCol" xml:space="preserve">
+    <value>Category Column</value>
+  </data>
+  <data name="Settings_MatrixStartSizeCol" xml:space="preserve">
+    <value>First Size Column</value>
+  </data>
+  <data name="Settings_MatrixEndSizeCol" xml:space="preserve">
+    <value>Last Size Column</value>
+  </data>
+  <data name="Settings_WorksheetSection" xml:space="preserve">
+    <value>Profile Information</value>
+  </data>
+  <data name="Settings_TextTemplatesSection" xml:space="preserve">
+    <value>Text Templates &amp; Formatting</value>
+  </data>
+  <data name="Settings_WorksheetLabel" xml:space="preserve">
+    <value>Excel Worksheet Index:</value>
+  </data>
+  <data name="Settings_DefaultOrderNameLabel" xml:space="preserve">
+    <value>Order Title Template:</value>
+  </data>
+  <data name="Settings_DefaultOrderNameHint" xml:space="preserve">
+    <value>Placeholders: {CustomerName}, {SeasonCode}. Example: Order: {CustomerName} {SeasonCode}</value>
+  </data>
+  <data name="Settings_SeasonCodeLabel" xml:space="preserve">
+    <value>Season Code:</value>
+  </data>
+  <data name="Settings_SeasonFallbackCodesLabel" xml:space="preserve">
+    <value>Season Fallback Codes:</value>
+  </data>
+  <data name="Settings_SeasonFallbackCodesHint" xml:space="preserve">
+    <value>Comma-separated. Example: NOOS, EX</value>
+  </data>
+  <data name="Settings_PositionTextTemplateLabel" xml:space="preserve">
+    <value>Position Text Template:</value>
+  </data>
+  <data name="Settings_DiscountPositionTextTemplateLabel" xml:space="preserve">
+    <value>Discount Line Text Template:</value>
+  </data>
+  <data name="Settings_DiscountPositionTextTemplateHint" xml:space="preserve">
+    <value>Available placeholders: {DiscountInPercent}</value>
+  </data>
+  <data name="Settings_CellZipCodeCity" xml:space="preserve">
+    <value>ZIP Code &amp; City cell</value>
+  </data>
+  <data name="Settings_PositionGroupingModeLabel" xml:space="preserve">
+    <value>Position Creation:</value>
+  </data>
+  <data name="Settings_PositionGroupingSingle" xml:space="preserve">
+    <value>Single Position per Size</value>
+  </data>
+  <data name="Settings_PositionGroupingGrouped" xml:space="preserve">
+    <value>Grouped Size Position</value>
+  </data>
+  <data name="Settings_SinglePositionTextTemplateHint" xml:space="preserve">
+    <value>Placeholders: {Color}, {Size}, {ArticleNumber}, {ArticleName}, {BexioArticleName}, {BexioArticleDescription}</value>
+  </data>
+  <data name="Settings_GroupedPositionTextTemplateHint" xml:space="preserve">
+    <value>Placeholders: {Color}, {SizesRows}, {ArticleNumber}, {ArticleName}, {BexioArticleName}, {BexioArticleDescription}</value>
+  </data>
+  <data name="Settings_SizeRowTemplateLabel" xml:space="preserve">
+    <value>Size Row Template:</value>
+  </data>
+  <data name="Settings_SizeRowTemplateHint" xml:space="preserve">
+    <value>Placeholders: {Amount}, {Size}. Example: {Amount}x Size {Size}</value>
+  </data>
+  <data name="Dialog_SizesRowsPlaceholderRequiredForGrouped" xml:space="preserve">
+    <value>When 'Grouped Size Position' is selected, the position text template must contain the {SizesRows} placeholder.</value>
+  </data>
+  <data name="Preview_TotalArticles" xml:space="preserve">
+    <value>Articles:</value>
+  </data>
+  <data name="Preview_TotalGross" xml:space="preserve">
+    <value>Gross:</value>
+  </data>
+  <data name="Preview_TotalDiscount" xml:space="preserve">
+    <value>Discount:</value>
+  </data>
+  <data name="Preview_TotalNet" xml:space="preserve">
+    <value>Net:</value>
+  </data>
+  <data name="Validation_PositiveNumber" xml:space="preserve">
+    <value>&quot;{0}&quot; must be a whole number greater than 0.</value>
+  </data>
 </root>

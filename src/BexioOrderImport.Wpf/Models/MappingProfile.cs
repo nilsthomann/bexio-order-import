@@ -1,6 +1,6 @@
 using System.Text.Json;
 using BexioOrderImport.Abstractions.Formats;
-using BexioOrderImport.Wpf.ViewModels;
+using BexioOrderImport.Abstractions.Wpf;
 
 namespace BexioOrderImport.Wpf.Models;
 

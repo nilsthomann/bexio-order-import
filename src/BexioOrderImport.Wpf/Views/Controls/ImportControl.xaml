@@ -2,7 +2,7 @@
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:lex="clr-namespace:BexioOrderImport.Wpf.Resources"
-             xmlns:helpers="clr-namespace:BexioOrderImport.Wpf.Helpers">
+             xmlns:controls="clr-namespace:BexioOrderImport.Wpf.Views.Controls">
     <Grid Margin="24">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
@@ -155,142 +155,29 @@
             </StackPanel>
         </Border>
         
-        <!-- Order metadata / Header preview -->
-        <Border Grid.Row="2" Style="{StaticResource CardBorderStyle}" Visibility="{Binding SelectedFilePath, Converter={StaticResource NullToVisibilityConverter}}">
-            <Grid>
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="Auto"/>
-                </Grid.RowDefinitions>
-                
-                <TextBlock Text="{x:Static lex:Translations.Import_OrderHeader}" Style="{StaticResource SectionHeaderTextBlockStyle}" Grid.Row="0"/>
-                
-                <Grid Grid.Row="1">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="*"/>
-                        <ColumnDefinition Width="*"/>
-                        <ColumnDefinition Width="*"/>
-                        <ColumnDefinition Width="*"/>
-                    </Grid.ColumnDefinitions>
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="Auto"/>
-                    </Grid.RowDefinitions>
-                    
-                    <StackPanel Grid.Column="0" Grid.Row="0" Margin="0,4">
-                        <TextBlock Text="{x:Static lex:Translations.Import_Customer}" Style="{StaticResource MutedTextBlockStyle}"/>
-                        <TextBlock Text="{Binding CompanyName}" FontWeight="SemiBold"/>
-                    </StackPanel>
-                    <StackPanel Grid.Column="1" Grid.Row="0" Margin="0,4">
-                        <TextBlock Text="{x:Static lex:Translations.Import_Address}" Style="{StaticResource MutedTextBlockStyle}"/>
-                        <TextBlock Text="{Binding Address}" FontWeight="SemiBold"/>
-                    </StackPanel>
-                    <StackPanel Grid.Column="2" Grid.Row="0" Margin="0,4">
-                        <TextBlock Text="{x:Static lex:Translations.Import_Email}" Style="{StaticResource MutedTextBlockStyle}"/>
-                        <TextBlock Text="{Binding Email}" FontWeight="SemiBold"/>
-                    </StackPanel>
-                    
-                    <StackPanel Grid.Column="0" Grid.Row="1" Margin="0,4">
-                        <TextBlock Text="{x:Static lex:Translations.Import_Buyer}" Style="{StaticResource MutedTextBlockStyle}"/>
-                        <TextBlock Text="{Binding BuyerName}" FontWeight="SemiBold"/>
-                    </StackPanel>
-                    <StackPanel Grid.Column="1" Grid.Row="1" Margin="0,4">
-                        <TextBlock Text="{x:Static lex:Translations.Import_Conditions}" Style="{StaticResource MutedTextBlockStyle}"/>
-                        <TextBlock Text="{Binding PaymentTerms}" FontWeight="SemiBold"/>
-                    </StackPanel>
-                    <StackPanel Grid.Column="2" Grid.Row="1" Margin="0,4">
-                        <TextBlock Text="{x:Static lex:Translations.Import_OrderNumber}" Style="{StaticResource MutedTextBlockStyle}"/>
-                        <TextBlock Text="{Binding OrderNumber}" FontWeight="SemiBold"/>
-                    </StackPanel>
-                    <StackPanel Grid.Column="3" Grid.Row="1" Margin="0,4">
-                        <TextBlock Text="{x:Static lex:Translations.Import_CustomerNumber}" Style="{StaticResource MutedTextBlockStyle}"/>
-                        <TextBlock Text="{Binding CustomerNumber}" FontWeight="SemiBold"/>
-                    </StackPanel>
-                </Grid>
-            </Grid>
-        </Border>
-        
-        <!-- DataGrid Preview & Console Logs -->
-        <Grid Grid.Row="3">
+        <!-- Preview of the active format, its views are placed below -->
+        <controls:FormatPreviewHost x:Name="FormatPreview"
+                                    FormatId="{Binding ActiveProfile.FormatId}"
+                                    Settings="{Binding ActiveProfile.Settings}"
+                                    Order="{Binding LoadedOrder}"/>
+
+        <!-- Order header across the full width, the file card above already has a bottom margin -->
+        <ContentControl Grid.Row="2" Focusable="False"
+                        Content="{Binding HeaderView, ElementName=FormatPreview}"
+                        Visibility="{Binding IsShown, ElementName=FormatPreview, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+
+        <!-- Positions & Console Logs -->
+        <Grid Grid.Row="3" Margin="0,16,0,0">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="3*"/>
                 <ColumnDefinition Width="2*"/>
             </Grid.ColumnDefinitions>
-            
-            <!-- Left pane: Grid -->
-            <Border Grid.Column="0" Style="{StaticResource CardBorderStyle}" Margin="0,0,12,0">
-                <Grid>
-                    <Grid.Resources>
-                        <helpers:BindingProxy x:Key="Proxy" Data="{Binding}"/>
-                    </Grid.Resources>
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="*"/>
-                    </Grid.RowDefinitions>
-                    
-                    <TextBlock Text="{x:Static lex:Translations.Import_PositionsHeader}" Style="{StaticResource SectionHeaderTextBlockStyle}" Grid.Row="0"/>
-                    
-                    <DataGrid ItemsSource="{Binding OrderPositions}" Grid.Row="1" 
-                              CanUserReorderColumns="False" CanUserResizeColumns="False"
-                              CanUserSortColumns="False"
-                              Focusable="False"
-                              CellEditEnding="DataGrid_CellEditEnding">
-                        <DataGrid.ItemContainerStyle>
-                            <Style TargetType="DataGridRow">
-                                <Setter Property="Focusable" Value="False"/>
-                                <Style.Triggers>
-                                    <Trigger Property="IsSelected" Value="True">
-                                        <Setter Property="Background" Value="Transparent"/>
-                                        <Setter Property="Foreground" Value="{StaticResource TextBrush}"/>
-                                    </Trigger>
-                                </Style.Triggers>
-                            </Style>
-                        </DataGrid.ItemContainerStyle>
-                        <DataGrid.CellStyle>
-                            <Style TargetType="DataGridCell" BasedOn="{StaticResource {x:Type DataGridCell}}">
-                                <Setter Property="Focusable" Value="False"/>
-                                <Style.Triggers>
-                                    <Trigger Property="IsSelected" Value="True">
-                                        <Setter Property="Background" Value="Transparent"/>
-                                        <Setter Property="Foreground" Value="{StaticResource TextBrush}"/>
-                                    </Trigger>
-                                </Style.Triggers>
-                            </Style>
-                        </DataGrid.CellStyle>
-                        <DataGrid.Columns>
-                             <DataGridTextColumn Header="{x:Static lex:Translations.Import_ColArtNum}" Binding="{Binding ArticleNumber, UpdateSourceTrigger=PropertyChanged}" Width="70" IsReadOnly="True" ElementStyle="{StaticResource DataGridCellTextBlockStyle}"/>
-                             <DataGridTextColumn Header="{x:Static lex:Translations.Import_ColName}" Binding="{Binding ArticleName, UpdateSourceTrigger=PropertyChanged}" Width="2*" IsReadOnly="True" ElementStyle="{StaticResource DataGridCellTextBlockStyle}"/>
-                             <DataGridTextColumn Header="{x:Static lex:Translations.Import_ColColor}" Binding="{Binding Color, UpdateSourceTrigger=PropertyChanged}" Width="110" IsReadOnly="True" ElementStyle="{StaticResource DataGridCellTextBlockStyle}"/>
-                             <DataGridTextColumn Header="{x:Static lex:Translations.Import_ColCategory}" Binding="{Binding SizeCategory, UpdateSourceTrigger=PropertyChanged}" Width="100" IsReadOnly="True" ElementStyle="{StaticResource DataGridCellTextBlockStyle}"/>
-                             <DataGridTemplateColumn Header="{x:Static lex:Translations.Import_ColSize}" Width="120">
-                                 <DataGridTemplateColumn.CellTemplate>
-                                     <DataTemplate>
-                                         <Grid Background="Transparent" 
-                                               ToolTip="{Binding Size, Converter={StaticResource HtmlToNewLineConverter}}" 
-                                               HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
-                                             <TextBlock Text="{Binding Size, Converter={StaticResource HtmlToNewLineConverter}}" 
-                                                        TextWrapping="Wrap" 
-                                                        VerticalAlignment="Center" 
-                                                        Margin="4,2"/>
-                                         </Grid>
-                                     </DataTemplate>
-                                 </DataGridTemplateColumn.CellTemplate>
-                             </DataGridTemplateColumn>
-                             <DataGridTextColumn Header="{x:Static lex:Translations.Import_ColQuantity}" Binding="{Binding Quantity, UpdateSourceTrigger=PropertyChanged}" Width="70" IsReadOnly="True" ElementStyle="{StaticResource DataGridCellTextBlockStyle}"/>
-                             <DataGridTextColumn Header="{x:Static lex:Translations.Import_ColUnitPrice}" Binding="{Binding UnitPrice, StringFormat=F2}" Width="95" IsReadOnly="True" ElementStyle="{StaticResource DataGridCellTextBlockStyle}"
-                                                 Visibility="{Binding Data.IsActiveRowDiscountEnabled, Source={StaticResource Proxy}, Converter={StaticResource InverseBooleanToVisibilityConverter}}"/>
-                             <DataGridTextColumn Header="{x:Static lex:Translations.Import_ColGrossPrice}" Binding="{Binding GrossUnitPrice, StringFormat=F2}" Width="85" IsReadOnly="True" ElementStyle="{StaticResource DataGridCellTextBlockStyle}"
-                                                 Visibility="{Binding Data.IsActiveRowDiscountEnabled, Source={StaticResource Proxy}, Converter={StaticResource BooleanToVisibilityConverter}}"/>
-                             <DataGridTextColumn Header="{x:Static lex:Translations.Import_ColDiscount}" Binding="{Binding DiscountPercent, StringFormat=G}" Width="75" IsReadOnly="True" ElementStyle="{StaticResource DataGridCellTextBlockStyle}"
-                                                 Visibility="{Binding Data.IsActiveRowDiscountEnabled, Source={StaticResource Proxy}, Converter={StaticResource BooleanToVisibilityConverter}}"/>
-                             <DataGridTextColumn Header="{x:Static lex:Translations.Import_ColNetPrice}" Binding="{Binding NetUnitPrice, StringFormat=F2}" Width="85" IsReadOnly="True" ElementStyle="{StaticResource DataGridCellTextBlockStyle}"
-                                                 Visibility="{Binding Data.IsActiveRowDiscountEnabled, Source={StaticResource Proxy}, Converter={StaticResource BooleanToVisibilityConverter}}"/>
-                             <DataGridTextColumn Header="{x:Static lex:Translations.Import_ColTotalPrice}" Binding="{Binding TotalPrice, StringFormat=F2, Mode=OneWay}" Width="95" ElementStyle="{StaticResource DataGridCellTextBlockStyle}"/>
-                        </DataGrid.Columns>
-                    </DataGrid>
-                </Grid>
-            </Border>
-            
+
+            <!-- Left pane: positions of the active format -->
+            <ContentControl Grid.Column="0" Margin="0,0,12,0" Focusable="False"
+                            Content="{Binding PositionsView, ElementName=FormatPreview}"
+                            Visibility="{Binding IsShown, ElementName=FormatPreview, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+
             <!-- Right pane: Console Logs -->
             <Border Grid.Column="1" Style="{StaticResource CardBorderStyle}" Margin="12,0,0,0">
                 <Grid>
@@ -298,17 +185,17 @@
                         <RowDefinition Height="Auto"/>
                         <RowDefinition Height="*"/>
                     </Grid.RowDefinitions>
-                    
+
                     <TextBlock Text="{x:Static lex:Translations.Import_LogHeader}" Style="{StaticResource SectionHeaderTextBlockStyle}" Grid.Row="0"/>
-                    
-                    <TextBox Text="{Binding LogText, Mode=OneWay}" Grid.Row="1" 
+
+                    <TextBox Text="{Binding LogText, Mode=OneWay}" Grid.Row="1"
                              Style="{StaticResource ConsoleTextBoxStyle}"
                              VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto"
                              x:Name="LogTextBox" TextChanged="LogTextBox_TextChanged"/>
                 </Grid>
             </Border>
         </Grid>
-        
+
         <!-- Progress & Actions -->
         <StackPanel Grid.Row="4" Margin="0,16,0,0" Orientation="Vertical">
             <Grid Visibility="{Binding IsImporting, Converter={StaticResource BooleanToVisibilityConverter}}" Margin="0,0,0,16">
@@ -319,47 +206,10 @@
                 <ProgressBar Value="{Binding ProgressPercentage}" Height="6" Grid.Row="0" Margin="0,0,0,6"/>
                 <TextBlock Text="{Binding RemainingTimeText}" Style="{StaticResource MutedTextBlockStyle}" FontSize="12" HorizontalAlignment="Right" Grid.Row="1"/>
             </Grid>
-            
-            <Grid>
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="Auto"/>
-                </Grid.ColumnDefinitions>
-                    
-                <!-- Summary Panel -->
-                <Border Style="{StaticResource CardBorderStyle}" Margin="0,0,24,0" Padding="12" Grid.Column="0" VerticalAlignment="Center" HorizontalAlignment="Left" Visibility="{Binding HasLoadedFile, Converter={StaticResource BooleanToVisibilityConverter}}">
-                    <Grid>
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="Auto"/>
-                            <ColumnDefinition Width="Auto"/>
-                            <ColumnDefinition Width="Auto"/>
-                            <ColumnDefinition Width="Auto"/>
-                            <ColumnDefinition Width="Auto"/>
-                            <ColumnDefinition Width="Auto"/>
-                            <ColumnDefinition Width="Auto"/>
-                            <ColumnDefinition Width="Auto"/>
-                        </Grid.ColumnDefinitions>
-                        
-                        <TextBlock Text="Artikel:" FontWeight="Medium" Foreground="{StaticResource TextMutedBrush}" Grid.Column="0" Margin="0,0,6,0"/>
-                        <TextBlock Text="{Binding TotalQuantity}" FontWeight="SemiBold" Grid.Column="1"/>
-                        
-                        <TextBlock Text="Brutto:" FontWeight="Medium" Foreground="{StaticResource TextMutedBrush}" Grid.Column="2" Margin="16,0,6,0"/>
-                        <TextBlock Text="{Binding TotalGrossAmount, StringFormat={}{0:F2} CHF}" FontWeight="SemiBold" Grid.Column="3"/>
-                        
-                        <TextBlock Text="Rabatt:" FontWeight="Medium" Foreground="{StaticResource TextMutedBrush}" Grid.Column="4" Margin="16,0,6,0"/>
-                        <TextBlock Text="{Binding DiscountPercentVal, StringFormat={}{0}%}" FontWeight="SemiBold" Foreground="{StaticResource ErrorBrush}" Grid.Column="5"/>
-                        
-                        <TextBlock Text="Netto:" FontWeight="Bold" Grid.Column="6" Margin="16,0,6,0"/>
-                        <TextBlock Text="{Binding TotalNetAmount, StringFormat={}{0:F2} CHF}" FontWeight="Bold" Foreground="{StaticResource AccentBrush}" Grid.Column="7"/>
-                    </Grid>
-                </Border>
-                
-                <Button Content="{x:Static lex:Translations.Import_UploadButton}" 
-                        Command="{Binding ImportCommand}"
-                        Style="{StaticResource ModernButtonStyle}" 
-                        Width="220" Grid.Column="1"
-                        VerticalAlignment="Center"/>
-            </Grid>
-        </StackPanel>
-    </Grid>
+
+            <Button Content="{x:Static lex:Translations.Import_UploadButton}"
+                    Command="{Binding ImportCommand}"
+                    Style="{StaticResource ModernButtonStyle}"
+                    Width="220" HorizontalAlignment="Right"/>
+        </StackPanel>    </Grid>
 </UserControl>

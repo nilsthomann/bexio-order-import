@@ -4,7 +4,7 @@ using System.Windows;
 using System.Windows.Data;
 using System.Windows.Media;
 
-namespace BexioOrderImport.Wpf.Converters;
+namespace BexioOrderImport.Abstractions.Wpf.Converters;
 
 [System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
 public class IndexToBooleanConverter : IValueConverter

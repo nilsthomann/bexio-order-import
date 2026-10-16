@@ -62,8 +62,9 @@ public partial class App : System.Windows.Application
              KeepAlivePingDelay = TimeSpan.FromSeconds(30)
          });
         services.AddSingleton<IBexioServiceFactory, BexioServiceFactory>();
-        services.AddSingleton<IFormatAdapter, PeakmileFormatAdapter>();
+        services.AddFormat<PeakmileFormatAdapter, PeakmileUiProvider>();
         services.AddSingleton<IFormatRegistry, FormatRegistry>();
+        services.AddSingleton<FormatUiRegistry>();
         services.AddSingleton<IEncryptionService, DpapiEncryptionService>();
         services.AddSingleton<IDispatcherService, WpfDispatcherService>();
         services.AddSingleton<IAppLifecycleService, WpfLifecycleService>();
