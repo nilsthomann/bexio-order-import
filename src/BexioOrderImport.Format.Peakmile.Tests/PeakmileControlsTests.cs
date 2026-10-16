@@ -67,4 +67,5 @@ public class PeakmileControlsTests
             localStyle.Should().NotBeSameAs(themeStyle);
             localStyle.BasedOn.Should().BeSameAs(themeStyle);
         });
-    }}
+    }
+}

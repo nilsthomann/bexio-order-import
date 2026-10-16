@@ -72,11 +72,16 @@ public class EanListUiTests
         {
             var control = new EanListUiProvider().CreateImportPreviewControl();
 
+            control.HeaderView.Should().BeOfType<EanListOrderHeaderControl>();
+            control.PositionsView.Should().BeOfType<EanListPositionsControl>();
+
             control.Show(new Order { Positions = [new OrderPosition { Ean = "1", Quantity = 1 }] }, new EanListSettings());
-            control.View.DataContext.Should().BeOfType<EanListPreviewViewModel>();
+            control.HeaderView.DataContext.Should().BeOfType<EanListPreviewViewModel>();
+            control.PositionsView.DataContext.Should().BeSameAs(control.HeaderView.DataContext);
 
             control.Clear();
-            control.View.DataContext.Should().BeNull();
+            control.HeaderView.DataContext.Should().BeNull();
+            control.PositionsView.DataContext.Should().BeNull();
         });
     }
 
@@ -100,4 +105,5 @@ public class EanListUiTests
             localStyle.Should().NotBeSameAs(themeStyle);
             localStyle.BasedOn.Should().BeSameAs(themeStyle);
         });
-    }}
+    }
+}
