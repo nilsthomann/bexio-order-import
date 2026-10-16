@@ -1,8 +1,6 @@
 using BexioOrderImport.Abstractions.Bexio;
 using BexioOrderImport.Abstractions.Import;
-using BexioOrderImport.Application.Interfaces;
-using BexioOrderImport.Application.Models;
-using BexioOrderImport.Application.Services;
+using BexioOrderImport.Format.Peakmile;
 using BexioOrderImport.Domain.Models;
 using BexioOrderImport.Domain.Models.Bexio;
 using FluentAssertions;
@@ -15,13 +13,13 @@ public class ImportOrderUseCaseTests
 {
     private readonly Mock<IExcelParser> _parserMock;
     private readonly Mock<IBexioService> _clientMock;
-    private readonly ImportOrderUseCase _useCase;
+    private readonly PeakmileImporter _useCase;
 
     public ImportOrderUseCaseTests()
     {
         _parserMock = new Mock<IExcelParser>();
         _clientMock = new Mock<IBexioService>();
-        _useCase = new ImportOrderUseCase(_parserMock.Object, _clientMock.Object);
+        _useCase = new PeakmileImporter(_parserMock.Object, _clientMock.Object);
     }
 
     [Test]
@@ -460,7 +458,7 @@ public class ImportOrderUseCaseTests
             .ReturnsAsync(new BexioArticle { Id = 789, Description = "Product Description", Name = "Product Name" });
 
         var interaction = new DelegateImportUserInteractionService();
-        var options = new ImportOrderOptions(SeasonCode: "FS27");
+        var options = new PeakmileImportOptions(SeasonCode: "FS27");
 
         // Act
         await _useCase.ExecuteAsync("dummy.xlsx", interaction, options);
@@ -485,7 +483,7 @@ public class ImportOrderUseCaseTests
             .ReturnsAsync(new BexioArticle { Id = 789, Description = "Product Description", Name = "Product Name" });
 
         var interaction = new DelegateImportUserInteractionService();
-        var options = new ImportOrderOptions(SeasonCode: "FS27", SeasonFallbackCodes: ["NOOS", " EX ", ""]);
+        var options = new PeakmileImportOptions(SeasonCode: "FS27", SeasonFallbackCodes: ["NOOS", " EX ", ""]);
 
         // Act
         await _useCase.ExecuteAsync("dummy.xlsx", interaction, options);
@@ -531,7 +529,7 @@ public class ImportOrderUseCaseTests
             .ReturnsAsync(new BexioArticle { Id = 789, Description = "Desc", Name = "Name" });
 
         var interaction = new DelegateImportUserInteractionService();
-        var options = new ImportOrderOptions(DiscountPositionTextTemplate: "Sonderrabatt ({DiscountInPercent}%)");
+        var options = new PeakmileImportOptions(DiscountPositionTextTemplate: "Sonderrabatt ({DiscountInPercent}%)");
 
         // Act
         await _useCase.ExecuteAsync("dummy.xlsx", interaction, options);
@@ -576,7 +574,7 @@ public class ImportOrderUseCaseTests
         interactionMock.Setup(i => i.ConfirmCustomerCreationAsync(It.IsAny<Customer>())).ReturnsAsync(true);
         interactionMock.Setup(i => i.ConfirmEmailMismatchAsync(It.IsAny<string>(), It.IsAny<string>())).ReturnsAsync(true);
 
-        var options = new ImportOrderOptions(SeasonCode: "SS26");
+        var options = new PeakmileImportOptions(SeasonCode: "SS26");
 
         // Act
         var result = await _useCase.ExecuteAsync("file.xlsx", interactionMock.Object, options);
@@ -591,7 +589,7 @@ public class ImportOrderUseCaseTests
     [Test]
     public async Task ExecuteAsync_WhenExcelParserIsNull_ShouldThrowInvalidOperationException()
     {
-        var useCase = new ImportOrderUseCase(_clientMock.Object);
+        var useCase = new PeakmileImporter(_clientMock.Object);
         var interaction = new DelegateImportUserInteractionService();
 
         Func<Task> act = async () => await useCase.ExecuteAsync("file.xlsx", interaction);

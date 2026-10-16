@@ -1,3 +1,5 @@
+using System.Linq;
+
 namespace BexioOrderImport.Wpf.ViewModels;
 
 public partial class MainViewModel
@@ -27,6 +29,11 @@ public partial class MainViewModel
     private void EditProfile(Models.MappingProfile profile)
     {
         if (profile == null) return;
+        if (profile.Settings == null)
+        {
+            _dialogService.ShowErrorDialog(string.Format(Resources.Translations.Error_FormatUnavailable, profile.FormatId), Resources.Translations.Dialog_ErrorTitle);
+            return;
+        }
         if (_profileManagerService.EditProfile(Profiles, profile))
         {
             NotifyActiveProfileChanged();
@@ -76,6 +83,15 @@ public partial class MainViewModel
     {
         if (_profileManagerService.ImportProfiles(Profiles, message => AppendLog(message)))
         {
+            // An imported profile with another format replaces the instance, follow it by name
+            if (ActiveProfile != null && !Profiles.Contains(ActiveProfile))
+            {
+                ActiveProfile = Profiles.FirstOrDefault(p => p.Name == ActiveProfile.Name) ?? Profiles[0];
+            }
+            if (SelectedProfile != null && !Profiles.Contains(SelectedProfile))
+            {
+                SelectedProfile = Profiles.FirstOrDefault(p => p.Name == SelectedProfile.Name) ?? Profiles[0];
+            }
             SetModified();
         }
     }

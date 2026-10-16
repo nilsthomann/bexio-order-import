@@ -1,7 +1,5 @@
-using BexioOrderImport.Application.Options;
-using BexioOrderImport.Infrastructure.Excel;
+using BexioOrderImport.Format.Peakmile;
 using FluentAssertions;
-using Microsoft.Extensions.Options;
 
 namespace BexioOrderImport.Tests;
 
@@ -10,7 +8,7 @@ public class ExcelParserEdgeCaseTests
     [Test]
     public void ParseOrderForm_WithNonExistentFile_ThrowsFileNotFoundException()
     {
-        var parser = new ClosedXmlExcelParser(Options.Create(new ExcelMappingOptions()));
+        var parser = new PeakmileExcelParser(new PeakmileSettings());
 
         Action act = () => parser.ParseOrderForm("non_existent_file.xlsx");
 
@@ -20,7 +18,7 @@ public class ExcelParserEdgeCaseTests
     [Test]
     public void ParseOrderForm_WithInvalidWorksheetIndex_ThrowsInvalidOperationException()
     {
-        var options = new ExcelMappingOptions
+        var options = new PeakmileSettings
         {
             WorksheetIndex = 99
         };
@@ -34,7 +32,7 @@ public class ExcelParserEdgeCaseTests
                 wb.SaveAs(tempPath);
             }
 
-            var parser = new ClosedXmlExcelParser(Options.Create(options));
+            var parser = new PeakmileExcelParser(options);
 
             Action act = () => parser.ParseOrderForm(tempPath);
 
@@ -49,7 +47,7 @@ public class ExcelParserEdgeCaseTests
     [Test]
     public void ParseOrderForm_WithMatrixHavingEmptyAndNonNumericCells_IgnoresInvalidQty()
     {
-        var options = new ExcelMappingOptions();
+        var options = new PeakmileSettings();
         options.Header.CompanyNameCell = "B1";
         options.Header.StreetCell = "B2";
         options.Header.ZipCityCell = "B3";
@@ -100,7 +98,7 @@ public class ExcelParserEdgeCaseTests
                 wb.SaveAs(tempPath);
             }
 
-            var parser = new ClosedXmlExcelParser(Options.Create(options));
+            var parser = new PeakmileExcelParser(options);
             var order = parser.ParseOrderForm(tempPath);
 
             order.Should().NotBeNull();
@@ -118,7 +116,7 @@ public class ExcelParserEdgeCaseTests
     [Test]
     public void ParseOrderForm_WithInvalidUnitPrice_ThrowsFormatException()
     {
-        var options = new ExcelMappingOptions();
+        var options = new PeakmileSettings();
         options.Header.CompanyNameCell = "B1";
         options.Header.BuyerEmailCell = "B4";
 
@@ -159,7 +157,7 @@ public class ExcelParserEdgeCaseTests
                 wb.SaveAs(tempPath);
             }
 
-            var parser = new ClosedXmlExcelParser(Options.Create(options));
+            var parser = new PeakmileExcelParser(options);
             Action act = () => parser.ParseOrderForm(tempPath);
 
             act.Should().Throw<FormatException>().WithMessage("*Ungültiges Preisformat*");
@@ -173,7 +171,7 @@ public class ExcelParserEdgeCaseTests
     [Test]
     public void ParseOrderForm_WithFractionalRowDiscount_ShouldScaleToPercentage()
     {
-        var options = new ExcelMappingOptions();
+        var options = new PeakmileSettings();
         options.Header.CompanyNameCell = "B1";
         options.Header.BuyerEmailCell = "B4";
 
@@ -217,7 +215,7 @@ public class ExcelParserEdgeCaseTests
                 wb.SaveAs(tempPath);
             }
 
-            var parser = new ClosedXmlExcelParser(Options.Create(options));
+            var parser = new PeakmileExcelParser(options);
             var order = parser.ParseOrderForm(tempPath);
 
             order.Should().NotBeNull();
@@ -233,7 +231,7 @@ public class ExcelParserEdgeCaseTests
     [Test]
     public void ExtractZipAndCity_WithWhitespaceOnly_ShouldReturnEmptyTuple()
     {
-        var result = ClosedXmlExcelParser.ExtractZipAndCity("   ");
+        var result = PeakmileExcelParser.ExtractZipAndCity("   ");
         result.Zip.Should().BeEmpty();
         result.City.Should().BeEmpty();
     }
@@ -241,9 +239,9 @@ public class ExcelParserEdgeCaseTests
     [Test]
     public void ParseOrderForm_WhenGroupedSizePositionModeAndSizeHeaderMissing_ShouldThrowInvalidOperationException()
     {
-        var options = new ExcelMappingOptions
+        var options = new PeakmileSettings
         {
-            PositionGroupingMode = BexioOrderImport.Domain.Models.PositionGroupingMode.GroupedSizePosition
+            PositionGroupingMode = PositionGroupingMode.GroupedSizePosition
         };
         options.Header.CompanyNameCell = "B1";
         options.Header.BuyerEmailCell = "B4";
@@ -285,7 +283,7 @@ public class ExcelParserEdgeCaseTests
                 wb.SaveAs(tempPath);
             }
 
-            var parser = new ClosedXmlExcelParser(Options.Create(options));
+            var parser = new PeakmileExcelParser(options);
             Action act = () => parser.ParseOrderForm(tempPath);
 
             act.Should().Throw<InvalidOperationException>().WithMessage("*Size header for column 5*was not defined*");

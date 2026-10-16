@@ -3,8 +3,8 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using BexioOrderImport.Abstractions.Bexio;
+using BexioOrderImport.Abstractions.Formats;
 using BexioOrderImport.Abstractions.Import;
-using BexioOrderImport.Application.Services;
 using BexioOrderImport.Domain.Models;
 using BexioOrderImport.Domain.Models.Bexio;
 
@@ -19,6 +19,16 @@ public partial class MainViewModel
     private const string ConnectionColorConnected    = "#10B981"; // Green
     private const string ConnectionColorDisconnected = "#EF4444"; // Red
     private const string ConnectionColorChecking     = "#F59E0B"; // Amber
+
+    private (IFormatAdapter Format, IFormatSettings Settings) GetActiveFormat()
+    {
+        var format = _formatRegistry.Find(ActiveProfile?.FormatId);
+        if (format == null || ActiveProfile?.Settings == null)
+        {
+            throw new InvalidOperationException(string.Format(Resources.Translations.Error_FormatUnavailable, ActiveProfile?.FormatId));
+        }
+        return (format, ActiveProfile.Settings);
+    }
 
     public async Task LoadExcelFileAsync(string? filePath = null)
     {
@@ -35,11 +45,10 @@ public partial class MainViewModel
 
         try
         {
-            var options = BuildMappingOptions();
-            var parser = _excelParserFactory.Create(options);
+            var (format, settings) = GetActiveFormat();
 
             // Parse on background thread to keep UI responsive and allow spinner animation
-            _loadedOrder = await Task.Run(() => parser.ParseOrderForm(filePath));
+            _loadedOrder = await Task.Run(() => format.Parse(filePath, settings));
 
             // Populate file info
             var fileInfo = new FileInfo(filePath);
@@ -180,25 +189,14 @@ public partial class MainViewModel
             // Sync values from DataGrid back to Order Positions
             _loadedOrder.Positions = OrderPositions.ToList();
 
+            var (format, settings) = GetActiveFormat();
             var bexioClient = _bexioClientFactory.Create(BexioToken, AccountId, TaxId, SelectedLanguage);
-            var useCase = new ImportOrderUseCase(bexioClient);
-
-            var mappingOpts = BuildMappingOptions();
             var interaction = new WpfImportUserInteractionService(
                 this,
                 (uploaded, total, sw) => UpdateRemainingTime(uploaded, total, sw),
                 importStopwatch);
 
-            var options = new Application.Models.ImportOrderOptions(
-                DefaultOrderName: mappingOpts.DefaultOrderName,
-                SeasonCode: mappingOpts.SeasonCode,
-                PositionTextTemplate: mappingOpts.PositionTextTemplate,
-                DiscountPositionTextTemplate: mappingOpts.DiscountPositionTextTemplate,
-                SizeRowTemplate: mappingOpts.SizeRowTemplate,
-                SeasonFallbackCodes: mappingOpts.SeasonFallbackCodes
-            );
-
-            var result = await useCase.ExecuteAsync(_loadedOrder, interaction, options);
+            var result = await format.ImportAsync(_loadedOrder, settings, bexioClient, interaction);
 
             if (result.Success)
             {

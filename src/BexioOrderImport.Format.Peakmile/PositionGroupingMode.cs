@@ -1,4 +1,4 @@
-namespace BexioOrderImport.Domain.Models;
+namespace BexioOrderImport.Format.Peakmile;
 
 public enum PositionGroupingMode
 {

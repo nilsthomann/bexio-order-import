@@ -539,6 +539,9 @@ Please close the file in Excel and try again.</value>
   <data name="Error_SelectAccountAndTax" xml:space="preserve">
     <value>Please select a default account and a default tax rate in the settings.</value>
   </data>
+  <data name="Error_FormatUnavailable" xml:space="preserve">
+    <value>The format '{0}' of the active profile is not available in this version.</value>
+  </data>
   <data name="Import_EmailMismatchTitle" xml:space="preserve">
     <value>Email Mismatch</value>
   </data>

@@ -3,7 +3,8 @@ using System.Net.Http;
 using System.Text.Json;
 using System.Windows;
 using BexioOrderImport.Abstractions.Bexio;
-using BexioOrderImport.Application.Interfaces;
+using BexioOrderImport.Abstractions.Formats;
+using BexioOrderImport.Format.Peakmile;
 using BexioOrderImport.Infrastructure.Bexio;
 using BexioOrderImport.Wpf.Helpers;
 using BexioOrderImport.Wpf.Services;
@@ -61,7 +62,8 @@ public partial class App : System.Windows.Application
              KeepAlivePingDelay = TimeSpan.FromSeconds(30)
          });
         services.AddSingleton<IBexioServiceFactory, BexioServiceFactory>();
-        services.AddSingleton<IExcelParserFactory, BexioOrderImport.Infrastructure.Excel.ClosedXmlExcelParserFactory>();
+        services.AddSingleton<IFormatAdapter, PeakmileFormatAdapter>();
+        services.AddSingleton<IFormatRegistry, FormatRegistry>();
         services.AddSingleton<IEncryptionService, DpapiEncryptionService>();
         services.AddSingleton<IDispatcherService, WpfDispatcherService>();
         services.AddSingleton<IAppLifecycleService, WpfLifecycleService>();

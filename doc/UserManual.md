@@ -172,7 +172,10 @@ The application supports multiple **Excel Mapping Profiles**. Each profile store
 ### Profile Export / Import
 
 - **Export**: Click **Export** to save all profiles to a portable JSON file. This is useful for backups or sharing configurations between machines.
-- **Import**: Click **Import** and select a previously exported JSON file to load profiles into the application.
+- **Import**: Click **Import** and select a previously exported JSON file to load profiles into the application. Exports from older versions can still be imported.
+
+> [!IMPORTANT]
+> Each profile stores its import format. Versions 1.6.0 and older can't read settings or exports saved by a newer version. When the settings are saved for the first time after the update, the previous settings are copied once to `%LocalAppData%\BexioOrderImport\appsettings.v1.bak.json`.
 
 > [!NOTE]
 > The **Default** profile cannot be deleted. You can edit or clone it, but it will always remain available as a fallback.

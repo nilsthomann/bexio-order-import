@@ -1,6 +1,6 @@
 using System.Collections.Generic;
+using System.Text.Json;
 using System.Text.Json.Serialization;
-using BexioOrderImport.Application.Options;
 
 namespace BexioOrderImport.Wpf.Models;
 
@@ -36,6 +36,18 @@ public class MappingProfileDto
     [JsonPropertyName("Name")]
     public string Name { get; set; } = "Default";
 
+    [JsonPropertyName("Format")]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public string? Format { get; set; }
+
+    [JsonPropertyName("Settings")]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public JsonElement? Settings { get; set; }
+
+    /// <summary>
+    /// Settings of profiles saved before formats existed (always Peakmile). Only read, new saves use <see cref="Settings"/>.
+    /// </summary>
     [JsonPropertyName("ExcelMapping")]
-    public ExcelMappingOptions ExcelMapping { get; set; } = new();
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public JsonElement? ExcelMapping { get; set; }
 }

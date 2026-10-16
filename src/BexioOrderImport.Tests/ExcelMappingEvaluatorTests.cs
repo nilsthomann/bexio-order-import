@@ -1,5 +1,4 @@
-using BexioOrderImport.Application.Options;
-using BexioOrderImport.Application.Services;
+using BexioOrderImport.Format.Peakmile;
 using BexioOrderImport.Domain.Models;
 using FluentAssertions;
 
@@ -35,7 +34,7 @@ public class ExcelMappingEvaluatorTests
     public void CopyOptions_ShouldCopyAllValues()
     {
         // Arrange
-        var source = new ExcelMappingOptions
+        var source = new PeakmileSettings
         {
             WorksheetIndex = 2,
             DefaultOrderName = "Test Order",
@@ -82,7 +81,7 @@ public class ExcelMappingEvaluatorTests
             }
         };
 
-        var target = new ExcelMappingOptions();
+        var target = new PeakmileSettings();
 
         // Act
         ExcelMappingEvaluator.CopyOptions(source, target);
@@ -108,8 +107,8 @@ public class ExcelMappingEvaluatorTests
     public void CopyOptions_WhenSourceOrTargetNull_ShouldThrowArgumentNullException()
     {
         // Act
-        var actNullSource = () => ExcelMappingEvaluator.CopyOptions(null!, new ExcelMappingOptions());
-        var actNullTarget = () => ExcelMappingEvaluator.CopyOptions(new ExcelMappingOptions(), null!);
+        var actNullSource = () => ExcelMappingEvaluator.CopyOptions(null!, new PeakmileSettings());
+        var actNullTarget = () => ExcelMappingEvaluator.CopyOptions(new PeakmileSettings(), null!);
 
         // Assert
         actNullSource.Should().Throw<ArgumentNullException>();
@@ -121,7 +120,7 @@ public class ExcelMappingEvaluatorTests
     public void CloneOptions_ShouldCreateDeepCopy()
     {
         // Arrange
-        var source = new ExcelMappingOptions
+        var source = new PeakmileSettings
         {
             DefaultOrderName = "Clone Test",
             SeasonCode = "FW25"
@@ -149,7 +148,7 @@ public class ExcelMappingEvaluatorTests
     [Property("Category", "Unit")]
     public void PositionTextTemplate_WhenGroupedMode_ShouldGetAndSetGroupedPositionTextTemplate()
     {
-        var options = new ExcelMappingOptions
+        var options = new PeakmileSettings
         {
             PositionGroupingMode = PositionGroupingMode.GroupedSizePosition
         };

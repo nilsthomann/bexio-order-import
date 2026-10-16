@@ -142,6 +142,7 @@ public static class Translations
     public static string Settings_SeasonFallbackCodesHint => ResourceManager.GetString(nameof(Settings_SeasonFallbackCodesHint)) ?? string.Empty;
     public static string Settings_PositionTextTemplateLabel => ResourceManager.GetString(nameof(Settings_PositionTextTemplateLabel)) ?? string.Empty;
     public static string Error_SelectAccountAndTax => ResourceManager.GetString(nameof(Error_SelectAccountAndTax)) ?? string.Empty;
+    public static string Error_FormatUnavailable => ResourceManager.GetString(nameof(Error_FormatUnavailable)) ?? string.Empty;
     public static string Import_EmailMismatchTitle => ResourceManager.GetString(nameof(Import_EmailMismatchTitle)) ?? string.Empty;
     public static string Import_EmailMismatchMessage => ResourceManager.GetString(nameof(Import_EmailMismatchMessage)) ?? string.Empty;
     public static string Import_ProgressTime => ResourceManager.GetString(nameof(Import_ProgressTime)) ?? string.Empty;

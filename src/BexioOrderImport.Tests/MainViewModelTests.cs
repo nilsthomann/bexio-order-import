@@ -2,8 +2,9 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using BexioOrderImport.Abstractions.Bexio;
+using BexioOrderImport.Abstractions.Formats;
 using BexioOrderImport.Abstractions.Import;
-using BexioOrderImport.Application.Interfaces;
+using BexioOrderImport.Format.Peakmile;
 using BexioOrderImport.Domain.Models;
 using BexioOrderImport.Domain.Models.Bexio;
 using BexioOrderImport.Wpf.Services;
@@ -44,13 +45,10 @@ public class MainViewModelTests : IDisposable
         _encryptionServiceMock = new Mock<IEncryptionService>();
         _encryptionServiceMock.Setup(e => e.Encrypt(It.IsAny<string>())).Returns<string>(s => s);
         _encryptionServiceMock.Setup(e => e.Decrypt(It.IsAny<string>())).Returns<string>(s => s);
-        var realParserFactory = new BexioOrderImport.Infrastructure.Excel.ClosedXmlExcelParserFactory();
-        _excelParserFactoryMock = new Mock<IExcelParserFactory>();
-        _excelParserFactoryMock.Setup(f => f.Create(It.IsAny<BexioOrderImport.Application.Options.ExcelMappingOptions>()))
-            .Returns((BexioOrderImport.Application.Options.ExcelMappingOptions opts) => realParserFactory.Create(opts));
+        _formats = new FormatRegistry([new PeakmileFormatAdapter()]);
     }
 
-    private readonly Mock<IExcelParserFactory> _excelParserFactoryMock;
+    private readonly FormatRegistry _formats;
 
     public void Dispose()
     {
@@ -72,7 +70,7 @@ public class MainViewModelTests : IDisposable
             _dialogServiceMock.Object,
             _dispatcherServiceMock.Object,
             _encryptionServiceMock.Object,
-            _excelParserFactoryMock.Object,
+            _formats,
             _tempFilePath);
     }
 
@@ -249,7 +247,7 @@ public class MainViewModelTests : IDisposable
     {
         // Arrange
         var vm = CreateVm();
-        var secondProfile = new BexioOrderImport.Wpf.Models.MappingProfile { Name = "Profile2" };
+        var secondProfile = ProfileTestExtensions.PeakmileProfile("Profile2");
         vm.Profiles.Add(secondProfile);
         _dialogServiceMock.Setup(d => d.ShowConfirmDialog(It.IsAny<string>(), It.IsAny<string>())).Returns(true);
 
@@ -333,7 +331,7 @@ public class MainViewModelTests : IDisposable
     {
         // Arrange
         var vm = CreateVm();
-        var newProfile = new BexioOrderImport.Wpf.Models.MappingProfile { Name = "Profile2" };
+        var newProfile = ProfileTestExtensions.PeakmileProfile("Profile2");
         vm.Profiles.Add(newProfile);
         vm.IsModified = false;
 
@@ -353,9 +351,10 @@ public class MainViewModelTests : IDisposable
         var profileWithDiscount = new BexioOrderImport.Wpf.Models.MappingProfile
         {
             Name = "DiscountProfile",
-            Mapping = new BexioOrderImport.Application.Options.ExcelMappingOptions
+            FormatId = PeakmileFormatAdapter.Id,
+            Settings = new BexioOrderImport.Format.Peakmile.PeakmileSettings
             {
-                Data = new BexioOrderImport.Application.Options.DataMapping { EnableRowDiscount = true }
+                Data = new BexioOrderImport.Format.Peakmile.DataMapping { EnableRowDiscount = true }
             }
         };
 
@@ -372,8 +371,7 @@ public class MainViewModelTests : IDisposable
         // Arrange
         var mockParser = new Mock<IExcelParser>();
         mockParser.Setup(p => p.ParseOrderForm(It.IsAny<string>())).Throws(new Exception("Parsing failed custom error"));
-        var mockFactory = new Mock<IExcelParserFactory>();
-        mockFactory.Setup(f => f.Create(It.IsAny<BexioOrderImport.Application.Options.ExcelMappingOptions>())).Returns(mockParser.Object);
+        var formats = new FormatRegistry([new PeakmileFormatAdapter(_ => mockParser.Object)]);
 
         var vm = new MainViewModel(
             _updateServiceMock.Object,
@@ -381,7 +379,7 @@ public class MainViewModelTests : IDisposable
             _dialogServiceMock.Object,
             _dispatcherServiceMock.Object,
             _encryptionServiceMock.Object,
-            mockFactory.Object,
+            formats,
             _tempFilePath
         );
 
@@ -399,8 +397,7 @@ public class MainViewModelTests : IDisposable
         // Arrange
         var mockParser = new Mock<IExcelParser>();
         mockParser.Setup(p => p.ParseOrderForm(It.IsAny<string>())).Throws(new System.IO.IOException("The process cannot access the file because it is being used by another process."));
-        var mockFactory = new Mock<IExcelParserFactory>();
-        mockFactory.Setup(f => f.Create(It.IsAny<BexioOrderImport.Application.Options.ExcelMappingOptions>())).Returns(mockParser.Object);
+        var formats = new FormatRegistry([new PeakmileFormatAdapter(_ => mockParser.Object)]);
 
         var vm = new MainViewModel(
             _updateServiceMock.Object,
@@ -408,7 +405,7 @@ public class MainViewModelTests : IDisposable
             _dialogServiceMock.Object,
             _dispatcherServiceMock.Object,
             _encryptionServiceMock.Object,
-            mockFactory.Object,
+            formats,
             _tempFilePath
         );
 
@@ -535,8 +532,7 @@ public class MainViewModelTests : IDisposable
     {
         var mockParser = new Mock<IExcelParser>();
         mockParser.Setup(p => p.ParseOrderForm(It.IsAny<string>())).Returns(new BexioOrderImport.Domain.Models.Order());
-        var mockFactory = new Mock<IExcelParserFactory>();
-        mockFactory.Setup(f => f.Create(It.IsAny<BexioOrderImport.Application.Options.ExcelMappingOptions>())).Returns(mockParser.Object);
+        var formats = new FormatRegistry([new PeakmileFormatAdapter(_ => mockParser.Object)]);
 
         var vm = new MainViewModel(
             _updateServiceMock.Object,
@@ -544,7 +540,7 @@ public class MainViewModelTests : IDisposable
             _dialogServiceMock.Object,
             _dispatcherServiceMock.Object,
             _encryptionServiceMock.Object,
-            mockFactory.Object,
+            formats,
             _tempFilePath
         );
 
@@ -554,7 +550,7 @@ public class MainViewModelTests : IDisposable
         try
         {
             vm.SelectedFilePath = tempExcel;
-            var profile2 = new BexioOrderImport.Wpf.Models.MappingProfile { Name = "Profile Reload" };
+            var profile2 = ProfileTestExtensions.PeakmileProfile("Profile Reload");
             vm.Profiles.Add(profile2);
 
             vm.SetActiveProfileCommand.Execute(profile2);
@@ -586,7 +582,7 @@ public class MainViewModelTests : IDisposable
                 _dialogServiceMock.Object,
                 _dispatcherServiceMock.Object,
                 _encryptionServiceMock.Object,
-                _excelParserFactoryMock.Object,
+                _formats,
                 customConfig
             );
 
@@ -603,8 +599,7 @@ public class MainViewModelTests : IDisposable
     {
         var mockParser = new Mock<IExcelParser>();
         mockParser.Setup(p => p.ParseOrderForm(It.IsAny<string>())).Returns(new BexioOrderImport.Domain.Models.Order());
-        var mockFactory = new Mock<IExcelParserFactory>();
-        mockFactory.Setup(f => f.Create(It.IsAny<BexioOrderImport.Application.Options.ExcelMappingOptions>())).Returns(mockParser.Object);
+        var formats = new FormatRegistry([new PeakmileFormatAdapter(_ => mockParser.Object)]);
 
         var vm = new MainViewModel(
             _updateServiceMock.Object,
@@ -612,7 +607,7 @@ public class MainViewModelTests : IDisposable
             _dialogServiceMock.Object,
             _dispatcherServiceMock.Object,
             _encryptionServiceMock.Object,
-            mockFactory.Object,
+            formats,
             _tempFilePath
         );
 
@@ -644,7 +639,7 @@ public class MainViewModelTests : IDisposable
             _dialogServiceMock.Object,
             _dispatcherServiceMock.Object,
             _encryptionServiceMock.Object,
-            _excelParserFactoryMock.Object,
+            _formats,
             tempConfig
         );
 

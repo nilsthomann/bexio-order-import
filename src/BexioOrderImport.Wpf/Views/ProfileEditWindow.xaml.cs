@@ -1,5 +1,6 @@
 using System;
 using System.Windows;
+using BexioOrderImport.Format.Peakmile;
 using BexioOrderImport.Wpf.Models;
 using BexioOrderImport.Wpf.Resources;
 
@@ -9,12 +10,15 @@ namespace BexioOrderImport.Wpf.Views;
 public partial class ProfileEditWindow : Window
 {
     private readonly MappingProfile _profile;
+    private readonly PeakmileSettings _settings;
     private readonly System.Collections.Generic.IEnumerable<MappingProfile>? _existingProfiles;
 
     public ProfileEditWindow(MappingProfile profile, System.Collections.Generic.IEnumerable<MappingProfile>? existingProfiles = null)
     {
         InitializeComponent();
         _profile = profile ?? throw new ArgumentNullException(nameof(profile));
+        _settings = profile.Settings as PeakmileSettings
+            ?? throw new ArgumentException($"Profile '{profile.Name}' has no Peakmile settings.", nameof(profile));
         _existingProfiles = existingProfiles;
 
         Title = $"{Translations.Settings_ProfilesEditTitle}: {profile.Name}";
@@ -56,45 +60,45 @@ public partial class ProfileEditWindow : Window
     private void LoadProfileData()
     {
         ProfileNameInput.Text = _profile.Name;
-        WorksheetIndexInput.Text = _profile.Mapping.WorksheetIndex.ToString();
+        WorksheetIndexInput.Text = _settings.WorksheetIndex.ToString();
 
-        CompanyNameCellInput.Text = _profile.Mapping.Header.CompanyNameCell;
-        StreetCellInput.Text = _profile.Mapping.Header.StreetCell;
-        ZipCityCellInput.Text = _profile.Mapping.Header.ZipCityCell;
-        BuyerEmailCellInput.Text = _profile.Mapping.Header.BuyerEmailCell;
-        BuyerNameCellInput.Text = _profile.Mapping.Header.BuyerNameCell;
-        EnableOrderNumberCheckBox.IsChecked = _profile.Mapping.Header.EnableOrderNumber;
-        OrderNumberCellInput.Text = _profile.Mapping.Header.OrderNumberCell;
-        EnableCustomerNumberCheckBox.IsChecked = _profile.Mapping.Header.EnableCustomerNumber;
-        CustomerNumberCellInput.Text = _profile.Mapping.Header.CustomerNumberCell;
-        PaymentTermsCellInput.Text = _profile.Mapping.Header.PaymentTermsCell;
-        DiscountCellInput.Text = _profile.Mapping.Header.DiscountCell;
+        CompanyNameCellInput.Text = _settings.Header.CompanyNameCell;
+        StreetCellInput.Text = _settings.Header.StreetCell;
+        ZipCityCellInput.Text = _settings.Header.ZipCityCell;
+        BuyerEmailCellInput.Text = _settings.Header.BuyerEmailCell;
+        BuyerNameCellInput.Text = _settings.Header.BuyerNameCell;
+        EnableOrderNumberCheckBox.IsChecked = _settings.Header.EnableOrderNumber;
+        OrderNumberCellInput.Text = _settings.Header.OrderNumberCell;
+        EnableCustomerNumberCheckBox.IsChecked = _settings.Header.EnableCustomerNumber;
+        CustomerNumberCellInput.Text = _settings.Header.CustomerNumberCell;
+        PaymentTermsCellInput.Text = _settings.Header.PaymentTermsCell;
+        DiscountCellInput.Text = _settings.Header.DiscountCell;
 
-        MatrixStartRowInput.Text = _profile.Mapping.SizeMatrix.StartRow.ToString();
-        MatrixEndRowInput.Text = _profile.Mapping.SizeMatrix.EndRow.ToString();
-        MatrixCategoryColInput.Text = _profile.Mapping.SizeMatrix.CategoryColumn;
-        MatrixStartSizeColInput.Text = _profile.Mapping.SizeMatrix.StartSizeColumn;
-        MatrixEndSizeColInput.Text = _profile.Mapping.SizeMatrix.EndSizeColumn;
+        MatrixStartRowInput.Text = _settings.SizeMatrix.StartRow.ToString();
+        MatrixEndRowInput.Text = _settings.SizeMatrix.EndRow.ToString();
+        MatrixCategoryColInput.Text = _settings.SizeMatrix.CategoryColumn;
+        MatrixStartSizeColInput.Text = _settings.SizeMatrix.StartSizeColumn;
+        MatrixEndSizeColInput.Text = _settings.SizeMatrix.EndSizeColumn;
 
-        DataStartRowInput.Text = _profile.Mapping.Data.StartRow.ToString();
-        ColArtNumInput.Text = _profile.Mapping.Data.ArticleNumberColumn;
-        ColArtNameInput.Text = _profile.Mapping.Data.ArticleNameColumn;
-        ColColorInput.Text = _profile.Mapping.Data.ColorColumn;
-        ColSizeCategoryInput.Text = _profile.Mapping.Data.CategoryColumn;
-        ColStartQtyInput.Text = _profile.Mapping.Data.StartQtyColumn;
-        ColEndQtyInput.Text = _profile.Mapping.Data.EndQtyColumn;
-        ColUnitPriceInput.Text = _profile.Mapping.Data.UnitPriceColumn;
-        EnableRowDiscountCheckBox.IsChecked = _profile.Mapping.Data.EnableRowDiscount;
-        ColRowDiscountInput.Text = _profile.Mapping.Data.RowDiscountColumn;
-        DefaultOrderNameInput.Text = _profile.Mapping.DefaultOrderName;
-        SeasonCodeInput.Text = _profile.Mapping.SeasonCode;
-        SeasonFallbackCodesInput.Text = string.Join(", ", _profile.Mapping.SeasonFallbackCodes);
-        SinglePositionTextTemplateInput.Text = _profile.Mapping.SinglePositionTextTemplate;
-        GroupedPositionTextTemplateInput.Text = _profile.Mapping.GroupedPositionTextTemplate;
-        DiscountPositionTextTemplateInput.Text = _profile.Mapping.DiscountPositionTextTemplate;
-        SizeRowTemplateInput.Text = string.IsNullOrWhiteSpace(_profile.Mapping.SizeRowTemplate) ? "{Amount}x Size {Size}" : _profile.Mapping.SizeRowTemplate;
+        DataStartRowInput.Text = _settings.Data.StartRow.ToString();
+        ColArtNumInput.Text = _settings.Data.ArticleNumberColumn;
+        ColArtNameInput.Text = _settings.Data.ArticleNameColumn;
+        ColColorInput.Text = _settings.Data.ColorColumn;
+        ColSizeCategoryInput.Text = _settings.Data.CategoryColumn;
+        ColStartQtyInput.Text = _settings.Data.StartQtyColumn;
+        ColEndQtyInput.Text = _settings.Data.EndQtyColumn;
+        ColUnitPriceInput.Text = _settings.Data.UnitPriceColumn;
+        EnableRowDiscountCheckBox.IsChecked = _settings.Data.EnableRowDiscount;
+        ColRowDiscountInput.Text = _settings.Data.RowDiscountColumn;
+        DefaultOrderNameInput.Text = _settings.DefaultOrderName;
+        SeasonCodeInput.Text = _settings.SeasonCode;
+        SeasonFallbackCodesInput.Text = string.Join(", ", _settings.SeasonFallbackCodes);
+        SinglePositionTextTemplateInput.Text = _settings.SinglePositionTextTemplate;
+        GroupedPositionTextTemplateInput.Text = _settings.GroupedPositionTextTemplate;
+        DiscountPositionTextTemplateInput.Text = _settings.DiscountPositionTextTemplate;
+        SizeRowTemplateInput.Text = string.IsNullOrWhiteSpace(_settings.SizeRowTemplate) ? "{Amount}x Size {Size}" : _settings.SizeRowTemplate;
 
-        if (_profile.Mapping.PositionGroupingMode == Domain.Models.PositionGroupingMode.GroupedSizePosition)
+        if (_settings.PositionGroupingMode == PositionGroupingMode.GroupedSizePosition)
         {
             GroupedPositionRadioButton.IsChecked = true;
         }
@@ -140,13 +144,13 @@ public partial class ProfileEditWindow : Window
             }
 
             var selectedGroupingMode = GroupedPositionRadioButton.IsChecked == true
-                ? Domain.Models.PositionGroupingMode.GroupedSizePosition
-                : Domain.Models.PositionGroupingMode.SinglePositionPerSize;
+                ? PositionGroupingMode.GroupedSizePosition
+                : PositionGroupingMode.SinglePositionPerSize;
 
             string singleTemplate = SinglePositionTextTemplateInput.Text.Trim();
             string groupedTemplate = GroupedPositionTextTemplateInput.Text.Trim();
 
-            if (selectedGroupingMode == Domain.Models.PositionGroupingMode.GroupedSizePosition && !groupedTemplate.Contains("{SizesRows}"))
+            if (selectedGroupingMode == PositionGroupingMode.GroupedSizePosition && !groupedTemplate.Contains("{SizesRows}"))
             {
                 Views.CustomDialog.ShowWarning(Translations.Dialog_SizesRowsPlaceholderRequiredForGrouped);
                 return;
@@ -155,44 +159,44 @@ public partial class ProfileEditWindow : Window
             _profile.Name = newName;
 
             // Parse and Validate inputs
-            _profile.Mapping.WorksheetIndex = int.Parse(WorksheetIndexInput.Text.Trim());
+            _settings.WorksheetIndex = int.Parse(WorksheetIndexInput.Text.Trim());
 
-            _profile.Mapping.Header.CompanyNameCell = CompanyNameCellInput.Text.Trim();
-            _profile.Mapping.Header.StreetCell = StreetCellInput.Text.Trim();
-            _profile.Mapping.Header.ZipCityCell = ZipCityCellInput.Text.Trim();
-            _profile.Mapping.Header.BuyerEmailCell = BuyerEmailCellInput.Text.Trim();
-            _profile.Mapping.Header.BuyerNameCell = BuyerNameCellInput.Text.Trim();
-            _profile.Mapping.Header.EnableOrderNumber = EnableOrderNumberCheckBox.IsChecked == true;
-            _profile.Mapping.Header.OrderNumberCell = OrderNumberCellInput.Text.Trim();
-            _profile.Mapping.Header.EnableCustomerNumber = EnableCustomerNumberCheckBox.IsChecked == true;
-            _profile.Mapping.Header.CustomerNumberCell = CustomerNumberCellInput.Text.Trim();
-            _profile.Mapping.Header.PaymentTermsCell = PaymentTermsCellInput.Text.Trim();
-            _profile.Mapping.Header.DiscountCell = DiscountCellInput.Text.Trim();
+            _settings.Header.CompanyNameCell = CompanyNameCellInput.Text.Trim();
+            _settings.Header.StreetCell = StreetCellInput.Text.Trim();
+            _settings.Header.ZipCityCell = ZipCityCellInput.Text.Trim();
+            _settings.Header.BuyerEmailCell = BuyerEmailCellInput.Text.Trim();
+            _settings.Header.BuyerNameCell = BuyerNameCellInput.Text.Trim();
+            _settings.Header.EnableOrderNumber = EnableOrderNumberCheckBox.IsChecked == true;
+            _settings.Header.OrderNumberCell = OrderNumberCellInput.Text.Trim();
+            _settings.Header.EnableCustomerNumber = EnableCustomerNumberCheckBox.IsChecked == true;
+            _settings.Header.CustomerNumberCell = CustomerNumberCellInput.Text.Trim();
+            _settings.Header.PaymentTermsCell = PaymentTermsCellInput.Text.Trim();
+            _settings.Header.DiscountCell = DiscountCellInput.Text.Trim();
 
-            _profile.Mapping.SizeMatrix.StartRow = int.Parse(MatrixStartRowInput.Text.Trim());
-            _profile.Mapping.SizeMatrix.EndRow = int.Parse(MatrixEndRowInput.Text.Trim());
-            _profile.Mapping.SizeMatrix.CategoryColumn = Abstractions.Excel.ExcelColumnHelper.NormalizeColumnLetter(MatrixCategoryColInput.Text, "D");
-            _profile.Mapping.SizeMatrix.StartSizeColumn = Abstractions.Excel.ExcelColumnHelper.NormalizeColumnLetter(MatrixStartSizeColInput.Text, "E");
-            _profile.Mapping.SizeMatrix.EndSizeColumn = Abstractions.Excel.ExcelColumnHelper.NormalizeColumnLetter(MatrixEndSizeColInput.Text, "R");
+            _settings.SizeMatrix.StartRow = int.Parse(MatrixStartRowInput.Text.Trim());
+            _settings.SizeMatrix.EndRow = int.Parse(MatrixEndRowInput.Text.Trim());
+            _settings.SizeMatrix.CategoryColumn = Abstractions.Excel.ExcelColumnHelper.NormalizeColumnLetter(MatrixCategoryColInput.Text, "D");
+            _settings.SizeMatrix.StartSizeColumn = Abstractions.Excel.ExcelColumnHelper.NormalizeColumnLetter(MatrixStartSizeColInput.Text, "E");
+            _settings.SizeMatrix.EndSizeColumn = Abstractions.Excel.ExcelColumnHelper.NormalizeColumnLetter(MatrixEndSizeColInput.Text, "R");
 
-            _profile.Mapping.Data.StartRow = int.Parse(DataStartRowInput.Text.Trim());
-            _profile.Mapping.Data.ArticleNumberColumn = Abstractions.Excel.ExcelColumnHelper.NormalizeColumnLetter(ColArtNumInput.Text, "A");
-            _profile.Mapping.Data.ArticleNameColumn = Abstractions.Excel.ExcelColumnHelper.NormalizeColumnLetter(ColArtNameInput.Text, "B");
-            _profile.Mapping.Data.ColorColumn = Abstractions.Excel.ExcelColumnHelper.NormalizeColumnLetter(ColColorInput.Text, "C");
-            _profile.Mapping.Data.CategoryColumn = Abstractions.Excel.ExcelColumnHelper.NormalizeColumnLetter(ColSizeCategoryInput.Text, "D");
-            _profile.Mapping.Data.StartQtyColumn = Abstractions.Excel.ExcelColumnHelper.NormalizeColumnLetter(ColStartQtyInput.Text, "E");
-            _profile.Mapping.Data.EndQtyColumn = Abstractions.Excel.ExcelColumnHelper.NormalizeColumnLetter(ColEndQtyInput.Text, "R");
-            _profile.Mapping.Data.UnitPriceColumn = Abstractions.Excel.ExcelColumnHelper.NormalizeColumnLetter(ColUnitPriceInput.Text, "T");
-            _profile.Mapping.Data.EnableRowDiscount = EnableRowDiscountCheckBox.IsChecked == true;
-            _profile.Mapping.Data.RowDiscountColumn = Abstractions.Excel.ExcelColumnHelper.NormalizeColumnLetter(ColRowDiscountInput.Text, "U");
-            _profile.Mapping.DefaultOrderName = DefaultOrderNameInput.Text.Trim();
-            _profile.Mapping.SeasonCode = SeasonCodeInput.Text.Trim();
-            _profile.Mapping.SeasonFallbackCodes = [.. SeasonFallbackCodesInput.Text.Split([',', ';'], StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)];
-            _profile.Mapping.PositionGroupingMode = selectedGroupingMode;
-            _profile.Mapping.SinglePositionTextTemplate = singleTemplate;
-            _profile.Mapping.GroupedPositionTextTemplate = groupedTemplate;
-            _profile.Mapping.SizeRowTemplate = SizeRowTemplateInput.Text.Trim();
-            _profile.Mapping.DiscountPositionTextTemplate = DiscountPositionTextTemplateInput.Text.Trim();
+            _settings.Data.StartRow = int.Parse(DataStartRowInput.Text.Trim());
+            _settings.Data.ArticleNumberColumn = Abstractions.Excel.ExcelColumnHelper.NormalizeColumnLetter(ColArtNumInput.Text, "A");
+            _settings.Data.ArticleNameColumn = Abstractions.Excel.ExcelColumnHelper.NormalizeColumnLetter(ColArtNameInput.Text, "B");
+            _settings.Data.ColorColumn = Abstractions.Excel.ExcelColumnHelper.NormalizeColumnLetter(ColColorInput.Text, "C");
+            _settings.Data.CategoryColumn = Abstractions.Excel.ExcelColumnHelper.NormalizeColumnLetter(ColSizeCategoryInput.Text, "D");
+            _settings.Data.StartQtyColumn = Abstractions.Excel.ExcelColumnHelper.NormalizeColumnLetter(ColStartQtyInput.Text, "E");
+            _settings.Data.EndQtyColumn = Abstractions.Excel.ExcelColumnHelper.NormalizeColumnLetter(ColEndQtyInput.Text, "R");
+            _settings.Data.UnitPriceColumn = Abstractions.Excel.ExcelColumnHelper.NormalizeColumnLetter(ColUnitPriceInput.Text, "T");
+            _settings.Data.EnableRowDiscount = EnableRowDiscountCheckBox.IsChecked == true;
+            _settings.Data.RowDiscountColumn = Abstractions.Excel.ExcelColumnHelper.NormalizeColumnLetter(ColRowDiscountInput.Text, "U");
+            _settings.DefaultOrderName = DefaultOrderNameInput.Text.Trim();
+            _settings.SeasonCode = SeasonCodeInput.Text.Trim();
+            _settings.SeasonFallbackCodes = [.. SeasonFallbackCodesInput.Text.Split([',', ';'], StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)];
+            _settings.PositionGroupingMode = selectedGroupingMode;
+            _settings.SinglePositionTextTemplate = singleTemplate;
+            _settings.GroupedPositionTextTemplate = groupedTemplate;
+            _settings.SizeRowTemplate = SizeRowTemplateInput.Text.Trim();
+            _settings.DiscountPositionTextTemplate = DiscountPositionTextTemplateInput.Text.Trim();
 
             DialogResult = true;
             Close();

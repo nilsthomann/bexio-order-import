@@ -6,14 +6,14 @@ using System.Text.Json;
 using System.Threading.Tasks;
 using FluentAssertions;
 using BexioOrderImport.Abstractions.Bexio;
+using BexioOrderImport.Abstractions.Formats;
 using BexioOrderImport.Abstractions.Import;
-using BexioOrderImport.Application.Interfaces;
+using BexioOrderImport.Format.Peakmile;
 using BexioOrderImport.Domain.Models;
 using BexioOrderImport.Domain.Models.Bexio;
 using BexioOrderImport.Wpf.Services;
 using BexioOrderImport.Wpf.ViewModels;
 using BexioOrderImport.Wpf.Models;
-using BexioOrderImport.Application.Options;
 using Moq;
 using BexioOrderImport.Tests.Utils;
 
@@ -31,11 +31,24 @@ public class SettingsPersistenceTests : StaTestBase, IDisposable
 
     public void Dispose()
     {
-        if (File.Exists(_tempFilePath))
+        foreach (string path in new[] { _tempFilePath, BackupPath })
         {
-            try { File.Delete(_tempFilePath); } catch { }
+            if (File.Exists(path))
+            {
+                try { File.Delete(path); } catch { }
+            }
         }
     }
+
+    private string BackupPath => Path.ChangeExtension(_tempFilePath, ".v1.bak.json");
+
+    private const string LegacySettingsJson = """
+        {
+          "Bexio": { "ApiToken": "token", "AccountId": 1, "TaxId": 1, "Language": "de" },
+          "ActiveProfileName": "Default",
+          "Profiles": [ { "Name": "Default", "ExcelMapping": { "WorksheetIndex": 2 } } ]
+        }
+        """;
 
     private Mock<IDialogService> _dialogServiceMock = null!;
 
@@ -96,10 +109,7 @@ public class SettingsPersistenceTests : StaTestBase, IDisposable
         encryptionMock.Setup(e => e.Encrypt(It.IsAny<string>())).Returns((string clearText) => clearText);
         encryptionMock.Setup(e => e.Decrypt(It.IsAny<string>())).Returns((string encryptedText) => encryptedText);
 
-        var realParserFactory = new BexioOrderImport.Infrastructure.Excel.ClosedXmlExcelParserFactory();
-        var excelParserFactoryMock = new Mock<IExcelParserFactory>();
-        excelParserFactoryMock.Setup(f => f.Create(It.IsAny<BexioOrderImport.Application.Options.ExcelMappingOptions>()))
-            .Returns((BexioOrderImport.Application.Options.ExcelMappingOptions opts) => realParserFactory.Create(opts));
+        var formats = new FormatRegistry([new PeakmileFormatAdapter()]);
 
         var vm = new MainViewModel(
             updateService,
@@ -107,7 +117,7 @@ public class SettingsPersistenceTests : StaTestBase, IDisposable
             _dialogServiceMock.Object,
             dispatcherMock.Object,
             encryptionMock.Object,
-            excelParserFactoryMock.Object,
+            formats,
             configFilePath ?? _tempFilePath); // never fall back to the real %LocalAppData% settings
         if (vm.AccountId == null) vm.AccountId = 1;
         if (vm.TaxId == null) vm.TaxId = 1;
@@ -150,11 +160,11 @@ public class SettingsPersistenceTests : StaTestBase, IDisposable
                 [
                     new() {
                         Name = "CustomProfile",
-                        ExcelMapping = new ExcelMappingOptions
+                        ExcelMapping = JsonSerializer.SerializeToElement(new PeakmileSettings
                         {
                             WorksheetIndex = 2,
                             Header = new HeaderMapping { CompanyNameCell = "C10" }
-                        }
+                        })
                     }
                 ]
             };
@@ -170,7 +180,7 @@ public class SettingsPersistenceTests : StaTestBase, IDisposable
             vm.SelectedLanguage.Should().Be("en");
             vm.ActiveProfile.Should().NotBeNull();
             vm.ActiveProfile!.Name.Should().Be("CustomProfile");
-            vm.ActiveProfile.Mapping.Header.CompanyNameCell.Should().Be("C10");
+            vm.ActiveProfile.Peakmile().Header.CompanyNameCell.Should().Be("C10");
         });
     }
 
@@ -207,7 +217,7 @@ public class SettingsPersistenceTests : StaTestBase, IDisposable
         {
             // Arrange
             var vm = CreateVm();
-            var newProfile = new MappingProfile { Name = "ToDelete", Mapping = new ExcelMappingOptions() };
+            var newProfile = ProfileTestExtensions.PeakmileProfile("ToDelete");
             vm.Profiles.Add(newProfile);
             vm.Profiles.Count.Should().Be(2);
 
@@ -236,7 +246,7 @@ public class SettingsPersistenceTests : StaTestBase, IDisposable
                 mockFactory.Setup(f => f.Create(It.IsAny<string>(), It.IsAny<int?>(), It.IsAny<int?>(), It.IsAny<string>())).Returns(mockClient.Object);
 
                 var vm = CreateVm(mockUpdate.Object, mockFactory.Object, tempFile);
-                var newProfile = new MappingProfile { Name = "ActiveTest", Mapping = new ExcelMappingOptions() };
+                var newProfile = ProfileTestExtensions.PeakmileProfile("ActiveTest");
                 vm.Profiles.Add(newProfile);
                 vm.SaveSettingsCommand.Execute(null);
                 vm.IsModified.Should().BeFalse();
@@ -387,7 +397,7 @@ public class SettingsPersistenceTests : StaTestBase, IDisposable
         {
             var vm = CreateVm();
             var sourceProfile = vm.Profiles[0];
-            sourceProfile.Mapping.Header.CompanyNameCell = "Z99";
+            sourceProfile.Peakmile().Header.CompanyNameCell = "Z99";
 
             _profileCreateDialogFunc = isClone => "ClonedDefault";
 
@@ -395,7 +405,7 @@ public class SettingsPersistenceTests : StaTestBase, IDisposable
 
             vm.Profiles.Count.Should().Be(2);
             var cloned = vm.Profiles.First(p => p.Name == "ClonedDefault");
-            cloned.Mapping.Header.CompanyNameCell.Should().Be("Z99");
+            cloned.Peakmile().Header.CompanyNameCell.Should().Be("Z99");
         });
     }
 
@@ -409,13 +419,13 @@ public class SettingsPersistenceTests : StaTestBase, IDisposable
 
             _profileEditDialogFunc = p =>
             {
-                p.Mapping.Header.CompanyNameCell = "X12";
+                p.Peakmile().Header.CompanyNameCell = "X12";
                 return true; // Click OK
             };
 
             vm.EditProfileCommand.Execute(profile);
 
-            profile.Mapping.Header.CompanyNameCell.Should().Be("X12");
+            profile.Peakmile().Header.CompanyNameCell.Should().Be("X12");
         });
     }
 
@@ -430,8 +440,8 @@ public class SettingsPersistenceTests : StaTestBase, IDisposable
             try
             {
                 // Add a custom profile
-                var custom = new MappingProfile { Name = "ExportTest", Mapping = new ExcelMappingOptions() };
-                custom.Mapping.Header.CompanyNameCell = "T1";
+                var custom = ProfileTestExtensions.PeakmileProfile("ExportTest");
+                custom.Peakmile().Header.CompanyNameCell = "T1";
                 vm.Profiles.Add(custom);
 
                 // Export
@@ -450,7 +460,7 @@ public class SettingsPersistenceTests : StaTestBase, IDisposable
 
                 vm2.Profiles.Count.Should().Be(2);
                 vm2.Profiles.Any(p => p.Name == "ExportTest").Should().BeTrue();
-                vm2.Profiles.First(p => p.Name == "ExportTest").Mapping.Header.CompanyNameCell.Should().Be("T1");
+                vm2.Profiles.First(p => p.Name == "ExportTest").Peakmile().Header.CompanyNameCell.Should().Be("T1");
             }
             finally
             {
@@ -630,7 +640,7 @@ public class SettingsPersistenceTests : StaTestBase, IDisposable
                 vm.SelectedFilePath = tempFile;
 
                 // Create a second profile to switch to
-                var profile2 = new BexioOrderImport.Wpf.Models.MappingProfile { Name = "Profile2", Mapping = new ExcelMappingOptions() };
+                var profile2 = ProfileTestExtensions.PeakmileProfile("Profile2");
                 vm.Profiles.Add(profile2);
 
                 // Act
@@ -809,7 +819,7 @@ public class SettingsPersistenceTests : StaTestBase, IDisposable
                 vm.BexioToken.Should().Be("legacy_token");
                 vm.Profiles.Count.Should().Be(1);
                 vm.Profiles[0].Name.Should().Be("Default");
-                vm.Profiles[0].Mapping.Header.CompanyNameCell.Should().Be("B4");
+                vm.Profiles[0].Peakmile().Header.CompanyNameCell.Should().Be("B4");
             }
             finally
             {
@@ -913,7 +923,7 @@ public class SettingsPersistenceTests : StaTestBase, IDisposable
         RunInSta(() =>
         {
             var vm = CreateVm();
-            var customProfile = new BexioOrderImport.Wpf.Models.MappingProfile { Name = "Custom", Mapping = new ExcelMappingOptions() };
+            var customProfile = ProfileTestExtensions.PeakmileProfile("Custom");
             vm.Profiles.Add(customProfile);
             vm.SelectedProfile = customProfile;
             vm.ActiveProfile = customProfile;
@@ -1026,7 +1036,7 @@ public class SettingsPersistenceTests : StaTestBase, IDisposable
 
                 vm.ImportProfilesCommand.Execute(null);
 
-                vm.ActiveProfile!.Mapping.WorksheetIndex.Should().Be(2);
+                vm.ActiveProfile!.Peakmile().WorksheetIndex.Should().Be(2);
             }
             finally
             {
@@ -1195,6 +1205,106 @@ public class SettingsPersistenceTests : StaTestBase, IDisposable
                 {
                     try { File.Delete(templatePath); } catch { }
                 }
+            }
+        });
+    }
+
+    [Test]
+    public void SaveSettings_WhenSettingsAreFromVersion16_ShouldBackupOnceAndWriteFormats()
+    {
+        RunInSta(() =>
+        {
+            File.WriteAllText(_tempFilePath, LegacySettingsJson);
+            var vm = CreateVm();
+            vm.ActiveProfile!.Peakmile().WorksheetIndex.Should().Be(2);
+
+            vm.IsModified = true;
+            vm.SaveSettingsCommand.Execute(null);
+
+            File.ReadAllText(BackupPath).Should().Be(LegacySettingsJson);
+            string saved = File.ReadAllText(_tempFilePath);
+            saved.Should().Contain("\"Format\": \"peakmile\"").And.NotContain("ExcelMapping");
+
+            // The backup is only written once
+            File.WriteAllText(BackupPath, "first backup");
+            vm.IsModified = true;
+            vm.SaveSettingsCommand.Execute(null);
+            File.ReadAllText(BackupPath).Should().Be("first backup");
+        });
+    }
+
+    [Test]
+    public void BackupLegacySettings_WhenSettingsUseFormats_ShouldNotBackup()
+    {
+        RunInSta(() =>
+        {
+            var vm = CreateVm();
+
+            vm.BackupLegacySettings();
+
+            File.Exists(BackupPath).Should().BeFalse();
+        });
+    }
+
+    [Test]
+    public void EditProfile_WhenFormatIsNotRegistered_ShouldShowError()
+    {
+        RunInSta(() =>
+        {
+            var vm = CreateVm();
+            var profile = new MappingProfile { Name = "Future", FormatId = "future-format" };
+            vm.Profiles.Add(profile);
+            string? error = null;
+            _errorDialogAction = (message, title) => error = message;
+
+            vm.EditProfileCommand.Execute(profile);
+
+            error.Should().Contain("future-format");
+            _dialogServiceMock.Verify(d => d.ShowProfileEditDialog(It.IsAny<MappingProfile>(), It.IsAny<IEnumerable<MappingProfile>>()), Times.Never);
+        });
+    }
+
+    [Test]
+    public void LoadExcelFileAsync_WhenActiveFormatIsNotRegistered_ShouldShowError()
+    {
+        RunInSta(async () =>
+        {
+            var vm = CreateVm();
+            vm.ActiveProfile = new MappingProfile { Name = "Future", FormatId = "future-format" };
+            string? error = null;
+            _errorDialogAction = (message, title) => error = message;
+
+            await vm.LoadExcelFileAsync("order.xlsx");
+
+            vm.HasLoadedFile.Should().BeFalse();
+            error.Should().Contain("future-format");
+        });
+    }
+
+    [Test]
+    public void ImportProfiles_WhenProfileHasAnotherFormat_ShouldReplaceItAndKeepItActive()
+    {
+        RunInSta(() =>
+        {
+            var vm = CreateVm();
+            string path = Path.Combine(Path.GetTempPath(), $"{Guid.NewGuid()}.json");
+            File.WriteAllText(path, """[ { "Name": "Default", "Format": "future-format", "Settings": { "EanColumn": "A" } } ]""");
+
+            try
+            {
+                _openFileDialogFunc = (filter, ext) => path;
+
+                vm.ImportProfilesCommand.Execute(null);
+
+                vm.Profiles.Should().ContainSingle();
+                vm.Profiles[0].FormatId.Should().Be("future-format");
+                vm.ActiveProfile.Should().BeSameAs(vm.Profiles[0]);
+                vm.SelectedProfile.Should().BeSameAs(vm.Profiles[0]);
+            }
+            finally
+            {
+                try { File.Delete(path); }
+                catch { }
             }
         });
     }

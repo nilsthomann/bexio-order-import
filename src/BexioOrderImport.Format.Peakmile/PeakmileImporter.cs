@@ -1,23 +1,21 @@
 using BexioOrderImport.Abstractions.Bexio;
 using BexioOrderImport.Abstractions.Import;
-using BexioOrderImport.Application.Interfaces;
-using BexioOrderImport.Application.Models;
 using BexioOrderImport.Domain.Models;
 using BexioOrderImport.Domain.Models.Bexio;
 
-namespace BexioOrderImport.Application.Services;
+namespace BexioOrderImport.Format.Peakmile;
 
-public class ImportOrderUseCase
+public class PeakmileImporter
 {
     private readonly IExcelParser? _excelParser;
     private readonly IBexioService _bexioClient;
 
-    public ImportOrderUseCase(IBexioService bexioClient)
+    public PeakmileImporter(IBexioService bexioClient)
         : this(excelParser: null, bexioClient: bexioClient)
     {
     }
 
-    public ImportOrderUseCase(IExcelParser? excelParser, IBexioService bexioClient)
+    public PeakmileImporter(IExcelParser? excelParser, IBexioService bexioClient)
     {
         _excelParser = excelParser;
         _bexioClient = bexioClient ?? throw new ArgumentNullException(nameof(bexioClient));
@@ -26,7 +24,7 @@ public class ImportOrderUseCase
     public async Task<ImportResult> ExecuteAsync(
         string filePath,
         IImportUserInteractionService interaction,
-        ImportOrderOptions? options = null)
+        PeakmileImportOptions? options = null)
     {
         ArgumentNullException.ThrowIfNull(interaction);
 
@@ -45,12 +43,12 @@ public class ImportOrderUseCase
     public async Task<ImportResult> ExecuteAsync(
         Order order,
         IImportUserInteractionService interaction,
-        ImportOrderOptions? options = null)
+        PeakmileImportOptions? options = null)
     {
         ArgumentNullException.ThrowIfNull(order);
         ArgumentNullException.ThrowIfNull(interaction);
 
-        options ??= new ImportOrderOptions();
+        options ??= new PeakmileImportOptions();
 
         if (order.Positions.Count == 0)
         {

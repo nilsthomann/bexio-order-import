@@ -65,9 +65,9 @@ The solution is built following Clean Architecture practices and separated into:
 ```
 src/
 ├── BexioOrderImport.Domain/          # Domain models (Order, Customer, OrderPosition, Bexio models)
-├── BexioOrderImport.Abstractions/    # Shared contracts (Bexio service, import interaction, Excel column helper)
-├── BexioOrderImport.Application/     # Core business logic & interfaces (UseCases, Interfaces)
-├── BexioOrderImport.Infrastructure/  # External integrations (Bexio REST Client, ClosedXML Parser)
+├── BexioOrderImport.Abstractions/    # Shared contracts (Bexio service, import formats, import interaction)
+├── BexioOrderImport.Format.Peakmile/ # Peakmile import format (settings, ClosedXML parser, import)
+├── BexioOrderImport.Infrastructure/  # External integrations (Bexio REST Client)
 ├── BexioOrderImport.Wpf/             # WPF Desktop App (MVVM views, custom dialogs, styles)
 └── BexioOrderImport.Tests/           # Unit and VM tests (TUnit & Microsoft Testing Platform)
 ```

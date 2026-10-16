@@ -1,4 +1,4 @@
-using BexioOrderImport.Application.Interfaces;
+using BexioOrderImport.Format.Peakmile;
 using BexioOrderImport.Domain.Models;
 
 namespace BexioOrderImport.Tests.Utils;

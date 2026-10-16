@@ -31,8 +31,8 @@
   </Folder>
   <Folder Name="/src/">
     <Project Path="src/BexioOrderImport.Abstractions/BexioOrderImport.Abstractions.csproj" />
-    <Project Path="src/BexioOrderImport.Application/BexioOrderImport.Application.csproj" />
     <Project Path="src/BexioOrderImport.Domain/BexioOrderImport.Domain.csproj" />
+    <Project Path="src/BexioOrderImport.Format.Peakmile/BexioOrderImport.Format.Peakmile.csproj" />
     <Project Path="src/BexioOrderImport.Infrastructure/BexioOrderImport.Infrastructure.csproj" />
     <Project Path="src/BexioOrderImport.Tests/BexioOrderImport.Tests.csproj" />
     <Project Path="src/BexioOrderImport.Wpf/BexioOrderImport.Wpf.csproj" />
