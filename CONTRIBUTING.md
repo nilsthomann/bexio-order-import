@@ -86,7 +86,7 @@ When adding a new field from an Excel template, follow these steps in order to k
 2. **PeakmileSettings**: Add the corresponding cell/column config property in `src/BexioOrderImport.Format.Peakmile/PeakmileSettings.cs`
 3. **Parser**: Read the new cell in `src/BexioOrderImport.Format.Peakmile/PeakmileExcelParser.cs`
 4. **Profile editor**: Add the input to `PeakmileProfileConfigControl.xaml` and load/save it in `PeakmileProfileConfigViewModel.cs`
-5. **Preview**: If the value should be shown before the import, add it to `PeakmilePreviewViewModel.cs` and `PeakmilePreviewControl.xaml`
+5. **Preview**: If the value should be shown before the import, add it to `PeakmilePreviewViewModel.cs` and to `PeakmileOrderHeaderControl.xaml` (order header, full width) or `PeakmilePositionsControl.xaml` (positions table)
 6. **Translations**: Add the label key in the format's `PeakmileTranslations.resx`, `PeakmileTranslations.en.resx` and `PeakmileTranslations.cs`
 7. **Tests**: Add test cases in `ExcelParserTests.cs` and `PeakmileProfileConfigViewModelTests.cs` covering the new field
 

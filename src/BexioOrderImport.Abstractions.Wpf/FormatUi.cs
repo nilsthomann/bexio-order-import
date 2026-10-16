@@ -47,7 +47,15 @@ public interface IProfileConfigControl
 /// </summary>
 public interface IImportPreviewControl
 {
-    FrameworkElement View { get; }
+    /// <summary>
+    /// Order header, shown across the full width above the positions and the import log.
+    /// </summary>
+    FrameworkElement HeaderView { get; }
+
+    /// <summary>
+    /// Positions and totals, shown next to the import log. It gets the remaining height of the page.
+    /// </summary>
+    FrameworkElement PositionsView { get; }
 
     void Show(Order order, IFormatSettings settings);
 

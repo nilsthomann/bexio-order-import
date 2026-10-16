@@ -56,11 +56,16 @@ public class FormatControlsLoadTests
             var control = new PeakmileUiProvider().CreateImportPreviewControl();
             var order = new Order { Positions = [new OrderPosition { ArticleNumber = "A1", Quantity = 2, GrossUnitPrice = 5m }] };
 
+            control.HeaderView.Should().BeOfType<PeakmileOrderHeaderControl>();
+            control.PositionsView.Should().BeOfType<PeakmilePositionsControl>();
+
             control.Show(order, new PeakmileSettings());
-            control.View.DataContext.Should().BeOfType<PeakmilePreviewViewModel>();
+            control.HeaderView.DataContext.Should().BeOfType<PeakmilePreviewViewModel>();
+            control.PositionsView.DataContext.Should().BeSameAs(control.HeaderView.DataContext);
 
             control.Clear();
-            control.View.DataContext.Should().BeNull();
+            control.HeaderView.DataContext.Should().BeNull();
+            control.PositionsView.DataContext.Should().BeNull();
         });
     }
 

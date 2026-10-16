@@ -1,5 +1,4 @@
 using System.Windows;
-using System.Windows.Controls;
 using BexioOrderImport.Abstractions.Formats;
 using BexioOrderImport.Abstractions.Wpf;
 using BexioOrderImport.Domain.Models;
@@ -9,10 +8,11 @@ using Microsoft.Extensions.DependencyInjection;
 namespace BexioOrderImport.Wpf.Views.Controls;
 
 /// <summary>
-/// Shows the loaded order with the preview control of the active profile's format.
+/// Creates the preview of the active profile's format and shows the loaded order in it.
+/// The host itself is invisible; the page places its <see cref="HeaderView"/> and <see cref="PositionsView"/>.
 /// </summary>
 [System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
-public class FormatPreviewHost : ContentControl
+public class FormatPreviewHost : FrameworkElement
 {
     public static readonly DependencyProperty FormatIdProperty = DependencyProperty.Register(
         nameof(FormatId), typeof(string), typeof(FormatPreviewHost), new PropertyMetadata(null, OnChanged));
@@ -22,6 +22,21 @@ public class FormatPreviewHost : ContentControl
 
     public static readonly DependencyProperty OrderProperty = DependencyProperty.Register(
         nameof(Order), typeof(Order), typeof(FormatPreviewHost), new PropertyMetadata(null, OnChanged));
+
+    private static readonly DependencyPropertyKey HeaderViewPropertyKey = DependencyProperty.RegisterReadOnly(
+        nameof(HeaderView), typeof(FrameworkElement), typeof(FormatPreviewHost), new PropertyMetadata(null));
+
+    private static readonly DependencyPropertyKey PositionsViewPropertyKey = DependencyProperty.RegisterReadOnly(
+        nameof(PositionsView), typeof(FrameworkElement), typeof(FormatPreviewHost), new PropertyMetadata(null));
+
+    private static readonly DependencyPropertyKey IsShownPropertyKey = DependencyProperty.RegisterReadOnly(
+        nameof(IsShown), typeof(bool), typeof(FormatPreviewHost), new PropertyMetadata(false));
+
+    public static readonly DependencyProperty HeaderViewProperty = HeaderViewPropertyKey.DependencyProperty;
+
+    public static readonly DependencyProperty PositionsViewProperty = PositionsViewPropertyKey.DependencyProperty;
+
+    public static readonly DependencyProperty IsShownProperty = IsShownPropertyKey.DependencyProperty;
 
     private string? _shownFormatId;
     private IImportPreviewControl? _preview;
@@ -50,6 +65,21 @@ public class FormatPreviewHost : ContentControl
         set => SetValue(OrderProperty, value);
     }
 
+    /// <summary>
+    /// Order header of the format's preview, null without a known format.
+    /// </summary>
+    public FrameworkElement? HeaderView => (FrameworkElement?)GetValue(HeaderViewProperty);
+
+    /// <summary>
+    /// Positions of the format's preview, null without a known format.
+    /// </summary>
+    public FrameworkElement? PositionsView => (FrameworkElement?)GetValue(PositionsViewProperty);
+
+    /// <summary>
+    /// True while an order is shown.
+    /// </summary>
+    public bool IsShown => (bool)GetValue(IsShownProperty);
+
     private static void OnChanged(DependencyObject d, DependencyPropertyChangedEventArgs e) => ((FormatPreviewHost)d).Refresh();
 
     private void Refresh()
@@ -59,18 +89,19 @@ public class FormatPreviewHost : ContentControl
             _shownFormatId = FormatId;
             var formatUis = App.Services?.GetService<FormatUiRegistry>();
             _preview = formatUis?.Find(FormatId)?.CreateImportPreviewControl();
-            Content = _preview?.View;
+            SetValue(HeaderViewPropertyKey, _preview?.HeaderView);
+            SetValue(PositionsViewPropertyKey, _preview?.PositionsView);
         }
 
         if (_preview != null && Order != null && Settings != null)
         {
             _preview.Show(Order, Settings);
-            Visibility = Visibility.Visible;
+            SetValue(IsShownPropertyKey, true);
         }
         else
         {
             _preview?.Clear();
-            Visibility = Visibility.Collapsed;
+            SetValue(IsShownPropertyKey, false);
         }
     }
 }

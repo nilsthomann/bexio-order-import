@@ -155,18 +155,28 @@
             </StackPanel>
         </Border>
         
-        <!-- Format preview & Console Logs -->
-        <Grid Grid.Row="2" Grid.RowSpan="2" Margin="0,16,0,0">
+        <!-- Preview of the active format, its views are placed below -->
+        <controls:FormatPreviewHost x:Name="FormatPreview"
+                                    FormatId="{Binding ActiveProfile.FormatId}"
+                                    Settings="{Binding ActiveProfile.Settings}"
+                                    Order="{Binding LoadedOrder}"/>
+
+        <!-- Order header across the full width, the file card above already has a bottom margin -->
+        <ContentControl Grid.Row="2" Focusable="False"
+                        Content="{Binding HeaderView, ElementName=FormatPreview}"
+                        Visibility="{Binding IsShown, ElementName=FormatPreview, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+
+        <!-- Positions & Console Logs -->
+        <Grid Grid.Row="3" Margin="0,16,0,0">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="3*"/>
                 <ColumnDefinition Width="2*"/>
             </Grid.ColumnDefinitions>
 
-            <!-- Left pane: preview of the active format -->
-            <controls:FormatPreviewHost Grid.Column="0" Margin="0,0,12,0"
-                                        FormatId="{Binding ActiveProfile.FormatId}"
-                                        Settings="{Binding ActiveProfile.Settings}"
-                                        Order="{Binding LoadedOrder}"/>
+            <!-- Left pane: positions of the active format -->
+            <ContentControl Grid.Column="0" Margin="0,0,12,0" Focusable="False"
+                            Content="{Binding PositionsView, ElementName=FormatPreview}"
+                            Visibility="{Binding IsShown, ElementName=FormatPreview, Converter={StaticResource BooleanToVisibilityConverter}}"/>
 
             <!-- Right pane: Console Logs -->
             <Border Grid.Column="1" Style="{StaticResource CardBorderStyle}" Margin="12,0,0,0">
