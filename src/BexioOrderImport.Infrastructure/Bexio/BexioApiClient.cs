@@ -17,7 +17,7 @@ public class BexioApiClient : IBexioService
     private readonly int? _taxId;
     private readonly string _language;
 
-    private readonly object _cacheLock = new();
+    private readonly Lock _cacheLock = new();
     private List<BexioAccount>? _cachedAccounts;
     private List<BexioTax>? _cachedTaxes;
     private List<BexioArticle> _cachedArticles = [];
@@ -165,20 +165,6 @@ public class BexioApiClient : IBexioService
         return createdOrder ?? throw new InvalidOperationException("Bexio returned an empty response when creating an order.");
     }
 
-    public async Task<BexioContact?> GetOrderContactDetailsAsync(int orderId)
-    {
-        var response = await SendWithRateLimitCheckAsync(CreateRequest(HttpMethod.Get, $"2.0/kb_order/{orderId}"));
-        if (!response.IsSuccessStatusCode)
-        {
-            return null;
-        }
-
-        var order = await response.Content.ReadFromJsonAsync<BexioOrder>();
-        if (order == null) return null;
-
-        return await GetContactDetailsAsync(order.ContactId);
-    }
-
     public async Task<BexioContact?> GetContactDetailsAsync(int contactId)
     {
         var response = await SendWithRateLimitCheckAsync(CreateRequest(HttpMethod.Get, $"2.0/contact/{contactId}"));
@@ -225,9 +211,7 @@ public class BexioApiClient : IBexioService
     {
         var text = !string.IsNullOrEmpty(positionText)
             ? positionText
-            : !string.IsNullOrEmpty(position.PositionText)
-                ? position.PositionText
-                : $"Color: {position.Color}, Size: {position.Size}";
+            : $"Color: {position.Color}, Size: {position.Size}";
 
         var positionPayload = new BexioCreateArticlePositionRequest
         {

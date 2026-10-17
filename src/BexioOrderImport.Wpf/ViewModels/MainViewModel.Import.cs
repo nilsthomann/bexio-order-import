@@ -1,20 +1,14 @@
-using System;
 using System.IO;
-using System.Linq;
-using System.Threading.Tasks;
 using BexioOrderImport.Abstractions.Bexio;
 using BexioOrderImport.Abstractions.Formats;
 using BexioOrderImport.Abstractions.Import;
 using BexioOrderImport.Domain.Models;
-using BexioOrderImport.Domain.Models.Bexio;
 
 namespace BexioOrderImport.Wpf.ViewModels;
 
 public partial class MainViewModel
 {
-    private readonly System.Collections.Generic.List<(DateTime Timestamp, double UploadedCount)> _progressSamples = new();
-    private double _smoothedSecondsPerItem;
-    private string _lastFormattedRemaining = "-";
+    private readonly ImportTimeEstimator _timeEstimator = new();
 
     private const string ConnectionColorConnected    = "#10B981"; // Green
     private const string ConnectionColorDisconnected = "#EF4444"; // Red
@@ -32,12 +26,17 @@ public partial class MainViewModel
 
     public async Task LoadExcelFileAsync(string? filePath = null)
     {
-        if (filePath == null)
-        {
-            filePath = _dialogService.ShowOpenFileDialog("Excel Files|*.xlsx;*.xls", ".xlsx");
-        }
+        filePath ??= _dialogService.ShowOpenFileDialog("Excel Files|*.xlsx;*.xlsm", ".xlsx");
 
         if (string.IsNullOrEmpty(filePath)) return;
+
+        // Dropped files are not filtered; the Excel library reads only the xlsx format
+        if (string.Equals(Path.GetExtension(filePath), ".xls", StringComparison.OrdinalIgnoreCase))
+        {
+            AppendLog($"⛔ Unsupported file format: {Path.GetFileName(filePath)}");
+            _dialogService.ShowErrorDialog(string.Format(Resources.Translations.Import_XlsNotSupported, Path.GetFileName(filePath)), Resources.Translations.Dialog_ErrorTitle);
+            return;
+        }
 
         SelectedFilePath = filePath;
         AppendLog(string.Format("Reading Excel file: {0}", Path.GetFileName(filePath)));
@@ -128,9 +127,7 @@ public partial class MainViewModel
         RemainingTimeText = string.Empty;
         AppendLog("Starting import process...");
 
-        _progressSamples.Clear();
-        _smoothedSecondsPerItem = 0;
-        _lastFormattedRemaining = "-";
+        _timeEstimator.Reset();
         var importStopwatch = System.Diagnostics.Stopwatch.StartNew();
         double currentUploaded = 0;
         double currentTotal = 0;
@@ -219,7 +216,7 @@ public partial class MainViewModel
             if (current is System.IO.IOException ioEx)
             {
                 int hr = System.Runtime.InteropServices.Marshal.GetHRForException(ioEx) & 0xFFFF;
-                if (hr == 32 || hr == 33) return true; // ERROR_SHARING_VIOLATION or ERROR_LOCK_VIOLATION
+                if (hr is 32 or 33) return true; // ERROR_SHARING_VIOLATION or ERROR_LOCK_VIOLATION
 
                 string msg = ioEx.Message;
                 if (msg.Contains("being used by another process", StringComparison.OrdinalIgnoreCase) ||
@@ -237,67 +234,7 @@ public partial class MainViewModel
 
     private void UpdateRemainingTime(double uploaded, double total, System.Diagnostics.Stopwatch stopwatch)
     {
-        TimeSpan elapsedTs = stopwatch.Elapsed;
-        string elapsedStr = string.Format("{0:D2}:{1:D2}", (int)elapsedTs.TotalMinutes, elapsedTs.Seconds);
-
-        if (total > 0 && uploaded >= total)
-        {
-            RemainingTimeText = string.Format(Resources.Translations.Import_ProgressTimeElapsedOnly, elapsedStr);
-            return;
-        }
-
-        if (uploaded >= 3 && _progressSamples.Count >= 2)
-        {
-            DateTime now = DateTime.UtcNow;
-
-            // Calculate overall average seconds per item
-            double overallSecondsPerItem = elapsedTs.TotalSeconds / Math.Max(1, uploaded);
-
-            // Find a reference sample from 4+ seconds ago for rolling velocity
-            var validSamples = _progressSamples
-                .Where(s => (now - s.Timestamp).TotalSeconds >= 4 && s.UploadedCount < uploaded)
-                .ToList();
-
-            double currentInstantSecondsPerItem = overallSecondsPerItem;
-            if (validSamples.Count > 0)
-            {
-                var refSample = validSamples.Last();
-                double dItems = uploaded - refSample.UploadedCount;
-                double dSec = (now - refSample.Timestamp).TotalSeconds;
-                if (dItems > 0 && dSec > 0)
-                {
-                    currentInstantSecondsPerItem = dSec / dItems;
-                }
-            }
-
-            // Blend overall average (40%) and recent velocity (60%) for stability
-            double targetSecondsPerItem = (overallSecondsPerItem * 0.4) + (currentInstantSecondsPerItem * 0.6);
-
-            // Apply Exponential Moving Average (EMA) smoothing to prevent UI flickering
-            if (_smoothedSecondsPerItem <= 0)
-            {
-                _smoothedSecondsPerItem = targetSecondsPerItem;
-            }
-            else
-            {
-                _smoothedSecondsPerItem = (_smoothedSecondsPerItem * 0.85) + (targetSecondsPerItem * 0.15);
-            }
-
-            double remainingItems = total - uploaded;
-            double remainingSeconds = Math.Max(0, remainingItems * _smoothedSecondsPerItem);
-
-            TimeSpan remainingTs = TimeSpan.FromSeconds(remainingSeconds);
-            if (remainingTs.TotalMinutes < 1)
-            {
-                _lastFormattedRemaining = $"~{Math.Max(1, (int)Math.Ceiling(remainingSeconds))}s";
-            }
-            else
-            {
-                _lastFormattedRemaining = $"~{(int)remainingTs.TotalMinutes}m {remainingTs.Seconds}s";
-            }
-        }
-
-        RemainingTimeText = string.Format(Resources.Translations.Import_ProgressTime, elapsedStr, _lastFormattedRemaining);
+        RemainingTimeText = _timeEstimator.GetTimeText(uploaded, total, stopwatch.Elapsed, DateTime.UtcNow);
     }
 
     private async Task<bool> ConfirmUploadAsync()
@@ -376,82 +313,27 @@ public partial class MainViewModel
 
     private async Task LoadBexioOptionsAsync(IBexioService client)
     {
-        try
-        {
-            var tempAccountId = AccountId;
-            var accounts = await client.GetAccountsAsync();
-            AccountsList.Clear();
-            foreach (var acc in accounts)
-                AccountsList.Add(acc);
-
-            if (AccountsList.Count == 0 && !AccountId.HasValue)
-            {
-                AccountsList.Add(new BexioAccount { AccountNo = string.Empty, Name = string.Empty });
-            }
-            else
-            {
-                AccountId = tempAccountId;
-            }
-        }
-        catch (Exception ex)
-        {
-            AppendLog($"⚠️ Could not load accounts: {ex.Message}");
-            if (AccountsList.Count == 0 && !AccountId.HasValue)
-            {
-                AccountsList.Add(new BexioAccount { AccountNo = string.Empty, Name = string.Empty });
-            }
-            else if (AccountsList.Count == 0)
-            {
-                AccountsList.Add(new BexioAccount { Id = AccountId!.Value, AccountNo = AccountId.Value.ToString(), Name = string.Empty });
-            }
-        }
-
-        try
-        {
-            var tempTaxId = TaxId;
-            var taxes = await client.GetTaxesAsync();
-            TaxesList.Clear();
-            foreach (var tax in taxes)
-                TaxesList.Add(tax);
-
-            if (TaxesList.Count == 0 && !TaxId.HasValue)
-            {
-                TaxesList.Add(new BexioTax { DisplayName = string.Empty });
-            }
-            else
-            {
-                TaxId = tempTaxId;
-            }
-        }
-        catch (Exception ex)
-        {
-            AppendLog($"⚠️ Could not load tax rates: {ex.Message}");
-            if (TaxesList.Count == 0 && !TaxId.HasValue)
-            {
-                TaxesList.Add(new BexioTax { DisplayName = string.Empty });
-            }
-            else if (TaxesList.Count == 0)
-            {
-                TaxesList.Add(new BexioTax { Id = TaxId!.Value, DisplayName = TaxId.Value.ToString() });
-            }
-        }
+        int? accountId = AccountId;
+        int? taxId = TaxId;
+        await _bexioOptions.LoadAsync(client, accountId, taxId, AppendLog);
+        RestoreBexioSelection(accountId, taxId);
     }
 
     private void ClearBexioOptionsKeepSelected()
     {
-        var selectedAccount = AccountsList.FirstOrDefault(x => x.Id == AccountId);
-        AccountsList.Clear();
-        if (AccountId.HasValue)
-        {
-            AccountsList.Add(selectedAccount ?? new BexioAccount { Id = AccountId.Value, AccountNo = AccountId.Value.ToString(), Name = string.Empty });
-        }
+        int? accountId = AccountId;
+        int? taxId = TaxId;
+        _bexioOptions.KeepSelected(accountId, taxId);
+        RestoreBexioSelection(accountId, taxId);
+    }
 
-        var selectedTax = TaxesList.FirstOrDefault(x => x.Id == TaxId);
-        TaxesList.Clear();
-        if (TaxId.HasValue)
-        {
-            TaxesList.Add(selectedTax ?? new BexioTax { Id = TaxId.Value, DisplayName = TaxId.Value.ToString() });
-        }
+    /// <summary>
+    /// Replacing the items of the combo boxes clears their selection, which the binding writes back.
+    /// </summary>
+    private void RestoreBexioSelection(int? accountId, int? taxId)
+    {
+        AccountId = accountId;
+        TaxId = taxId;
     }
 
     private class WpfImportUserInteractionService : IImportUserInteractionService
@@ -485,9 +367,7 @@ public partial class MainViewModel
             _vm.InvokeOnUi(() =>
             {
                 _vm.ProgressPercentage = ((double)current / total) * 100;
-                _vm._progressSamples.Add((DateTime.UtcNow, current));
-                var cutoff = DateTime.UtcNow.AddMinutes(-3);
-                _vm._progressSamples.RemoveAll(s => s.Timestamp < cutoff);
+                _vm._timeEstimator.AddSample(current, DateTime.UtcNow);
                 _updateProgressAction(current, total, _stopwatch);
             });
         }

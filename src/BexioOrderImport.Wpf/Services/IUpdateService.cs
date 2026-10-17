@@ -1,6 +1,3 @@
-using System;
-using System.Threading.Tasks;
-
 namespace BexioOrderImport.Wpf.Services;
 
 /// <summary>
@@ -11,7 +8,8 @@ public interface IUpdateService
 {
     /// <summary>
     /// Checks GitHub Releases for a newer version than the currently installed one.
-    /// Returns <c>null</c> if no update is available or the check cannot be performed.
+    /// Returns <c>null</c> if no update is available or GitHub answers with an error status.
+    /// Throws if the check fails, eg. without network or with an invalid response.
     /// Results are cached for 4 hours to avoid GitHub API rate limits.
     /// </summary>
     Task<UpdateInfo?> CheckForUpdatesAsync();

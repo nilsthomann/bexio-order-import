@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.IO;
 using BexioOrderImport.Abstractions.Excel;
 using BexioOrderImport.Domain.Models;
@@ -35,11 +36,9 @@ public class PeakmileExcelParser : IExcelParser
         order.PaymentTerms = paymentTermsVal;
 
         // Parse discount
-        string discountVal = sheet.Cell(_options.Header.DiscountCell).Value.ToString().Trim();
-        discountVal = discountVal.Replace("%", "").Trim();
-        if (decimal.TryParse(discountVal, out decimal parsedDiscount))
+        if (TryReadDecimal(sheet.Cell(_options.Header.DiscountCell), NumberStyles.Number, out decimal parsedDiscount, CultureInfo.CurrentCulture))
         {
-            if (parsedDiscount > 0 && parsedDiscount < 1)
+            if (parsedDiscount is > 0 and < 1)
             {
                 parsedDiscount *= 100;
             }
@@ -70,10 +69,10 @@ public class PeakmileExcelParser : IExcelParser
                 continue;
 
             // Read unit price from column
-            string priceStr = row.Cell(_options.Data.UnitPriceColumn).Value.ToString().Trim();
-            if (!decimal.TryParse(priceStr, System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out decimal unitPrice) &&
-                !decimal.TryParse(priceStr, out unitPrice))
+            var priceCell = row.Cell(_options.Data.UnitPriceColumn);
+            if (!TryReadDecimal(priceCell, NumberStyles.Any, out decimal unitPrice, CultureInfo.InvariantCulture, CultureInfo.CurrentCulture))
             {
+                string priceStr = priceCell.Value.ToString(CultureInfo.CurrentCulture).Trim();
                 if (!string.IsNullOrWhiteSpace(priceStr))
                 {
                     throw new FormatException($"Ungültiges Preisformat '{priceStr}' in Zeile {r}, Spalte {_options.Data.UnitPriceColumn}.");
@@ -85,10 +84,9 @@ public class PeakmileExcelParser : IExcelParser
             decimal? rowDiscount = null;
             if (_options.Data.EnableRowDiscount)
             {
-                string discountStr = row.Cell(_options.Data.RowDiscountColumn).Value.ToString().Replace("%", "").Trim();
-                if (decimal.TryParse(discountStr, out decimal parsedRowDiscount))
+                if (TryReadDecimal(row.Cell(_options.Data.RowDiscountColumn), NumberStyles.Number, out decimal parsedRowDiscount, CultureInfo.CurrentCulture))
                 {
-                    if (parsedRowDiscount > 0 && parsedRowDiscount < 1)
+                    if (parsedRowDiscount is > 0 and < 1)
                     {
                         parsedRowDiscount *= 100;
                     }
@@ -108,8 +106,7 @@ public class PeakmileExcelParser : IExcelParser
                 var groupedSizes = new List<(string SizeName, int Quantity)>();
                 for (int col = startQtyCol; col <= endQtyCol; col++)
                 {
-                    string qtyStr = row.Cell(col).Value.ToString();
-                    if (int.TryParse(qtyStr, out int qty) && qty > 0)
+                    if (TryReadQuantity(row.Cell(col), out int qty))
                     {
                         if (!sizes.TryGetValue(col, out string? sizeName) || string.IsNullOrWhiteSpace(sizeName))
                         {
@@ -125,7 +122,7 @@ public class PeakmileExcelParser : IExcelParser
                     string rowTemplate = string.IsNullOrWhiteSpace(_options.SizeRowTemplate) ? "{Amount}x Size {Size}" : _options.SizeRowTemplate;
                     string formattedSizes = string.Join("<br />", groupedSizes.Select(x =>
                         rowTemplate
-                            .Replace("{Amount}", x.Quantity.ToString())
+                            .Replace("{Amount}", x.Quantity.ToString(CultureInfo.InvariantCulture))
                             .Replace("{Size}", x.SizeName)));
 
                     var pos = new OrderPosition
@@ -146,8 +143,7 @@ public class PeakmileExcelParser : IExcelParser
             {
                 for (int col = startQtyCol; col <= endQtyCol; col++)
                 {
-                    string qtyStr = row.Cell(col).Value.ToString();
-                    if (int.TryParse(qtyStr, out int qty) && qty > 0)
+                    if (TryReadQuantity(row.Cell(col), out int qty))
                     {
                         if (!sizes.TryGetValue(col, out string? sizeName) || string.IsNullOrWhiteSpace(sizeName))
                         {
@@ -251,6 +247,51 @@ public class PeakmileExcelParser : IExcelParser
             }
         }
         return matrices;
+    }
+
+    /// <summary>
+    /// Number cells are read directly, so the value does not depend on the number format of Windows.
+    /// Text (eg. "10%") is parsed with the given cultures in order.
+    /// </summary>
+    private static bool TryReadDecimal(IXLCell cell, NumberStyles styles, out decimal value, params CultureInfo[] textCultures)
+    {
+        if (cell.DataType == XLDataType.Number)
+        {
+            value = (decimal)cell.GetDouble();
+            return true;
+        }
+
+        string text = cell.Value.ToString(CultureInfo.CurrentCulture).Replace("%", "").Trim();
+        foreach (var culture in textCultures)
+        {
+            if (decimal.TryParse(text, styles, culture, out value))
+            {
+                return true;
+            }
+        }
+        value = 0m;
+        return false;
+    }
+
+    /// <summary>
+    /// A positive whole number; empty cells, decimals and other text are no order quantity.
+    /// </summary>
+    private static bool TryReadQuantity(IXLCell cell, out int quantity)
+    {
+        quantity = 0;
+        if (cell.DataType == XLDataType.Number)
+        {
+            double number = cell.GetDouble();
+            if (number == Math.Floor(number) && number is > 0 and <= int.MaxValue)
+            {
+                quantity = (int)number;
+            }
+        }
+        else if (int.TryParse(cell.Value.ToString(CultureInfo.CurrentCulture), NumberStyles.Integer, CultureInfo.InvariantCulture, out int parsed) && parsed > 0)
+        {
+            quantity = parsed;
+        }
+        return quantity > 0;
     }
 
     internal static (string Zip, string City) ExtractZipAndCity(string rawZipCity)

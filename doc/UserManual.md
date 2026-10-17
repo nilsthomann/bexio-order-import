@@ -134,7 +134,7 @@ The preview before the import shows the customer and order number, every positio
 ### Step 1: Loading the Order Sheet
 
 1. Navigate to the **Import** tab in the sidebar.
-2. Select your Excel file (`.xlsx`) using one of two methods:
+2. Select your Excel file (`.xlsx` or `.xlsm`; the old `.xls` format is not supported, save such files as `.xlsx` in Excel first) using one of two methods:
    - **Drag and Drop**: Drag the Excel sheet directly onto the dashed upload card.
    - **File Browser**: Click the upload card to open the Windows file explorer and select the file.
 3. The application will display a rotating spinner while parsing.

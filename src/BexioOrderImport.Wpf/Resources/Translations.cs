@@ -6,7 +6,7 @@ namespace BexioOrderImport.Wpf.Resources;
 public static class Translations
 {
     private static readonly ResourceManager ResourceManager =
-        new ResourceManager("BexioOrderImport.Wpf.Resources.Translations", typeof(Translations).Assembly);
+        new("BexioOrderImport.Wpf.Resources.Translations", typeof(Translations).Assembly);
 
     public static string MainWindow_Title => ResourceManager.GetString(nameof(MainWindow_Title)) ?? string.Empty;
     public static string Nav_Import => ResourceManager.GetString(nameof(Nav_Import)) ?? string.Empty;
@@ -103,6 +103,7 @@ public static class Translations
     public static string Import_DoneButton => ResourceManager.GetString(nameof(Import_DoneButton)) ?? string.Empty;
     public static string Import_FileLockedTitle => ResourceManager.GetString(nameof(Import_FileLockedTitle)) ?? string.Empty;
     public static string Import_FileLockedMessage => ResourceManager.GetString(nameof(Import_FileLockedMessage)) ?? string.Empty;
+    public static string Import_XlsNotSupported => ResourceManager.GetString(nameof(Import_XlsNotSupported)) ?? string.Empty;
     public static string Dialog_DiscardChanges => ResourceManager.GetString(nameof(Dialog_DiscardChanges)) ?? string.Empty;
     public static string Dialog_PendingChangesTitle => ResourceManager.GetString(nameof(Dialog_PendingChangesTitle)) ?? string.Empty;
     public static string Dialog_PendingChangesMessage => ResourceManager.GetString(nameof(Dialog_PendingChangesMessage)) ?? string.Empty;

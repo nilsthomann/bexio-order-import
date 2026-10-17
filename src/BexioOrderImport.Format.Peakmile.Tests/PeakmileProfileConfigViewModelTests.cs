@@ -1,4 +1,3 @@
-using BexioOrderImport.Format.Peakmile;
 using BexioOrderImport.Format.Peakmile.Resources;
 using FluentAssertions;
 

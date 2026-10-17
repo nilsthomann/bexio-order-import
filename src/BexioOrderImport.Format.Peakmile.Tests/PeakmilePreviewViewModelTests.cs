@@ -1,5 +1,4 @@
 using BexioOrderImport.Domain.Models;
-using BexioOrderImport.Format.Peakmile;
 using FluentAssertions;
 
 namespace BexioOrderImport.Format.Peakmile.Tests;

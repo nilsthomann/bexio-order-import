@@ -16,7 +16,7 @@ public partial class ProfileCreateDialog : Window
     {
         InitializeComponent();
         FormatInput.ItemsSource = formats;
-        FormatInput.SelectedValue = fixedFormatId ?? formats.FirstOrDefault()?.FormatId;
+        FormatInput.SelectedValue = fixedFormatId ?? (formats.Count > 0 ? formats[0].FormatId : null);
         FormatInput.IsEnabled = fixedFormatId == null;
 
         if (fixedFormatId != null)

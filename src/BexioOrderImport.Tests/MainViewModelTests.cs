@@ -1,6 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 using BexioOrderImport.Abstractions.Bexio;
 using BexioOrderImport.Abstractions.Formats;
 using BexioOrderImport.Abstractions.Import;
@@ -39,9 +36,7 @@ public class MainViewModelTests : IDisposable
         _dialogServiceMock = new Mock<IDialogService>();
         _dispatcherServiceMock = new Mock<IDispatcherService>();
         // Mock dispatcher service to execute actions immediately
-        _dispatcherServiceMock.Setup(d => d.Invoke(It.IsAny<Action>())).Callback<Action>(a => a());
-        _dispatcherServiceMock.Setup(d => d.BeginInvoke(It.IsAny<Action>())).Callback<Action>(a => a());
-        _encryptionServiceMock = new Mock<IEncryptionService>();
+        _dispatcherServiceMock.Setup(d => d.Invoke(It.IsAny<Action>())).Callback<Action>(a => a());        _encryptionServiceMock = new Mock<IEncryptionService>();
         _encryptionServiceMock.Setup(e => e.Encrypt(It.IsAny<string>())).Returns<string>(s => s);
         _encryptionServiceMock.Setup(e => e.Decrypt(It.IsAny<string>())).Returns<string>(s => s);
         _formats = new FormatRegistry([new FakeFormatAdapter()]);
@@ -62,6 +57,7 @@ public class MainViewModelTests : IDisposable
             }
         }
         catch { }
+        GC.SuppressFinalize(this);
     }
 
     private MainViewModel CreateVm()
@@ -74,6 +70,17 @@ public class MainViewModelTests : IDisposable
             _encryptionServiceMock.Object,
             _formats,
             _tempFilePath);
+    }
+
+    [Test]
+    public void Constructor_WhenUpdateCheckFails_ShouldLogItWithoutUpdate()
+    {
+        _updateServiceMock.Setup(u => u.CheckForUpdatesAsync()).ThrowsAsync(new HttpRequestException("offline"));
+
+        var vm = CreateVm();
+
+        vm.LogText.Should().Contain("Update check failed: offline");
+        vm.IsUpdateAvailable.Should().BeFalse();
     }
 
     [Test]
@@ -221,11 +228,11 @@ public class MainViewModelTests : IDisposable
         
         var accounts = new List<BexioAccount>
         {
-            new BexioAccount { Id = 100, AccountNo = "1000", Name = "Cash Account", IsActive = true }
+            new() { Id = 100, AccountNo = "1000", Name = "Cash Account", IsActive = true }
         };
         var taxes = new List<BexioTax>
         {
-            new BexioTax { Id = 5, DisplayName = "MwSt 8.1%", Percentage = 8.1m, IsActive = true }
+            new() { Id = 5, DisplayName = "MwSt 8.1%", IsActive = true }
         };
         
         _clientMock.Setup(c => c.CheckConnectionAsync()).ReturnsAsync(true);
@@ -349,7 +356,7 @@ public class MainViewModelTests : IDisposable
     public async Task LoadExcelFileAsync_WhenFileParsingFails_ShouldShowErrorDialog()
     {
         // Arrange
-        var formats = new FormatRegistry([new FakeFormatAdapter { ParseFunc = _ => throw new Exception("Parsing failed custom error") }]);
+        var formats = new FormatRegistry([new FakeFormatAdapter { ParseFunc = _ => throw new InvalidOperationException("Parsing failed custom error") }]);
 
         var vm = new MainViewModel(
             _updateServiceMock.Object,
@@ -367,6 +374,28 @@ public class MainViewModelTests : IDisposable
         // Assert
         vm.HasLoadedFile.Should().BeFalse();
         _dialogServiceMock.Verify(d => d.ShowErrorDialog("Parsing failed custom error", It.IsAny<string>()), Times.Once);
+    }
+
+    [Test]
+    public async Task LoadExcelFileAsync_WithXlsFile_ShouldShowUnsupportedFormatWithoutParsing()
+    {
+        bool parsed = false;
+        var formats = new FormatRegistry([new FakeFormatAdapter { ParseFunc = _ => { parsed = true; return new Order(); } }]);
+        var vm = new MainViewModel(
+            _updateServiceMock.Object,
+            _clientFactoryMock.Object,
+            _dialogServiceMock.Object,
+            _dispatcherServiceMock.Object,
+            _encryptionServiceMock.Object,
+            formats,
+            _tempFilePath
+        );
+
+        await vm.LoadExcelFileAsync(@"C:\Orders\old.XLS");
+
+        parsed.Should().BeFalse();
+        vm.SelectedFilePath.Should().BeNull();
+        _dialogServiceMock.Verify(d => d.ShowErrorDialog(It.Is<string>(m => m.Contains("old.XLS")), It.IsAny<string>()), Times.Once);
     }
 
     [Test]
@@ -403,7 +432,7 @@ public class MainViewModelTests : IDisposable
 
         // Act - Call private ConfirmEmailMismatchAsync via reflection
         var method = typeof(MainViewModel).GetMethod("ConfirmEmailMismatchAsync", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-        var task = (Task<bool>)method!.Invoke(vm, new object[] { "existing@test.com", "excel@test.com" })!;
+        var task = (Task<bool>)method!.Invoke(vm, ["existing@test.com", "excel@test.com"])!;
         bool result = await task;
 
         // Assert
@@ -425,11 +454,11 @@ public class MainViewModelTests : IDisposable
         var stopwatch = new System.Diagnostics.Stopwatch();
         stopwatch.Start();
 
-        var service = (IImportUserInteractionService)Activator.CreateInstance(type!, new object[] {
+        var service = (IImportUserInteractionService)Activator.CreateInstance(type!, [
             vm,
             (Action<double, double, System.Diagnostics.Stopwatch>)((c, t, sw) => { }),
             stopwatch
-        })!;
+        ])!;
 
         // Act & Assert - ShowPreview (void, no-op)
         service.ShowPreview(new BexioOrderImport.Domain.Models.Order());
@@ -464,10 +493,6 @@ public class MainViewModelTests : IDisposable
 
         vm.ImportDurationText = "00:01:30";
         vm.ImportDurationText.Should().Be("00:01:30");
-
-        bool invoked = false;
-        vm.InvokeOnUiAsync(() => invoked = true);
-        invoked.Should().BeTrue();
     }
 
     [Test]
@@ -698,7 +723,7 @@ public class MainViewModelTests : IDisposable
     {
         var clientMock = new Mock<IBexioService>();
         clientMock.Setup(c => c.CheckConnectionAsync()).ReturnsAsync(true);
-        clientMock.Setup(c => c.GetAccountsAsync()).ThrowsAsync(new Exception("Bexio API Accounts error"));
+        clientMock.Setup(c => c.GetAccountsAsync()).ThrowsAsync(new HttpRequestException("Bexio API Accounts error"));
         _clientFactoryMock.Setup(f => f.Create(It.IsAny<string>(), It.IsAny<int?>(), It.IsAny<int?>(), It.IsAny<string>())).Returns(clientMock.Object);
 
         var vm = CreateVm();
@@ -707,20 +732,5 @@ public class MainViewModelTests : IDisposable
         await vm.CheckBexioConnectionAsync();
 
         vm.LogText.Should().Contain("Could not load accounts: Bexio API Accounts error");
-    }
-
-    [Test]
-    public void UpdateRemainingTime_WithMultipleProgressTicks_ShouldCalculateSmoothedRemainingTime()
-    {
-        var vm = CreateVm();
-
-        var method = typeof(MainViewModel).GetMethod("UpdateRemainingTime", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-        var stopwatch = new System.Diagnostics.Stopwatch();
-        stopwatch.Start();
-
-        method!.Invoke(vm, new object[] { 2, 10, stopwatch });
-        method.Invoke(vm, new object[] { 5, 10, stopwatch });
-
-        vm.RemainingTimeText.Should().NotBeNullOrEmpty();
     }
 }

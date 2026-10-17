@@ -1,13 +1,9 @@
 #pragma warning disable TUnit0018
 
-using System;
-using System.IO;
 using System.Text.Json;
-using System.Threading.Tasks;
 using FluentAssertions;
 using BexioOrderImport.Abstractions.Bexio;
 using BexioOrderImport.Abstractions.Formats;
-using BexioOrderImport.Abstractions.Import;
 using BexioOrderImport.Format.Peakmile;
 using BexioOrderImport.Domain.Models;
 using BexioOrderImport.Domain.Models.Bexio;
@@ -40,6 +36,7 @@ public class SettingsPersistenceTests : StaTestBase, IDisposable
                 try { File.Delete(path); } catch { }
             }
         }
+        GC.SuppressFinalize(this);
     }
 
     private string BackupPath => Path.ChangeExtension(_tempFilePath, ".v1.bak.json");
@@ -105,8 +102,6 @@ public class SettingsPersistenceTests : StaTestBase, IDisposable
 
         var dispatcherMock = new Mock<IDispatcherService>();
         dispatcherMock.Setup(d => d.Invoke(It.IsAny<Action>())).Callback((Action a) => a());
-        dispatcherMock.Setup(d => d.BeginInvoke(It.IsAny<Action>())).Callback((Action a) => a());
-
         var encryptionMock = new Mock<IEncryptionService>();
         encryptionMock.Setup(e => e.Encrypt(It.IsAny<string>())).Returns((string clearText) => clearText);
         encryptionMock.Setup(e => e.Decrypt(It.IsAny<string>())).Returns((string encryptedText) => encryptedText);
@@ -121,8 +116,8 @@ public class SettingsPersistenceTests : StaTestBase, IDisposable
             encryptionMock.Object,
             formats,
             configFilePath ?? _tempFilePath); // never fall back to the real %LocalAppData% settings
-        if (vm.AccountId == null) vm.AccountId = 1;
-        if (vm.TaxId == null) vm.TaxId = 1;
+        vm.AccountId ??= 1;
+        vm.TaxId ??= 1;
         return vm;
     }
 

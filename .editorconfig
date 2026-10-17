@@ -1,0 +1,26 @@
+root = true
+
+# The build runs the Recommended .NET analyzers and these code style rules (see Directory.Build.props).
+[*.cs]
+
+# Unused code fails the review, so the build warns about it
+dotnet_diagnostic.IDE0005.severity = warning
+dotnet_diagnostic.IDE0051.severity = warning
+dotnet_diagnostic.IDE0052.severity = warning
+dotnet_diagnostic.IDE0059.severity = warning
+dotnet_diagnostic.IDE0060.severity = warning
+
+# Classes keep explicit constructors with readonly fields and null checks
+csharp_style_prefer_primary_constructors = false
+
+# UI texts and messages are formatted with the culture of the user on purpose;
+# data is parsed with an explicit culture where it matters (Excel cells, ids, cache files)
+dotnet_diagnostic.CA1304.severity = suggestion
+dotnet_diagnostic.CA1305.severity = suggestion
+dotnet_diagnostic.CA1863.severity = suggestion
+
+# Members bound in XAML or called on instances (eg. RaiseCanExecuteChanged) stay instance members
+dotnet_diagnostic.CA1822.severity = suggestion
+
+# Translation keys (Import_Title) and test names (Method_WhenX_ShouldY) use underscores
+dotnet_diagnostic.CA1707.severity = none

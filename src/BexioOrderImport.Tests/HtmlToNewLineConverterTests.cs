@@ -1,4 +1,3 @@
-using System;
 using System.Globalization;
 using BexioOrderImport.Abstractions.Wpf.Converters;
 using FluentAssertions;

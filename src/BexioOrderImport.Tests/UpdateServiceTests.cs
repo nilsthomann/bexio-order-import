@@ -17,7 +17,7 @@ public class UpdateServiceTests
         _updateService = new UpdateService(_lifecycleService);
     }
 
-    private class FakeAppLifecycleService : IAppLifecycleService
+    private sealed class FakeAppLifecycleService : IAppLifecycleService
     {
         public string? InstallerPathPassed { get; set; }
         public void StartInstallerAndExit(string installerPath)
@@ -182,7 +182,7 @@ public class UpdateServiceTests
     }
 
     [Test]
-    public async Task CheckForUpdatesAsync_WhenJsonInvalid_ShouldReturnNull()
+    public async Task CheckForUpdatesAsync_WhenJsonInvalid_ShouldThrow()
     {
         // Arrange
         string appDataFolder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "BexioOrderImport");
@@ -204,10 +204,10 @@ public class UpdateServiceTests
         var updateService = new UpdateService(httpClient, _lifecycleService);
 
         // Act
-        var result = await updateService.CheckForUpdatesAsync();
+        Func<Task> act = updateService.CheckForUpdatesAsync;
 
         // Assert
-        result.Should().BeNull();
+        await act.Should().ThrowAsync<System.Text.Json.JsonException>();
     }
 
     [Test]

@@ -2,7 +2,6 @@ using BexioOrderImport.Abstractions.Import;
 using BexioOrderImport.Domain.Models.Bexio;
 using BexioOrderImport.Tests.Utils;
 using BexioOrderImport.Abstractions.Wpf;
-using BexioOrderImport.Wpf.Helpers;
 using FluentAssertions;
 
 namespace BexioOrderImport.Tests;
@@ -15,8 +14,10 @@ public class ModelCoverageTests : StaTestBase
     {
         RunInSta(() =>
         {
-            var proxy = new BindingProxy();
-            proxy.Data = "sample payload";
+            var proxy = new BindingProxy
+            {
+                Data = "sample payload"
+            };
             proxy.Data.Should().Be("sample payload");
 
             var cloned = (BindingProxy)proxy.Clone();

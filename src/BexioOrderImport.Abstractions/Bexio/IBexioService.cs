@@ -34,11 +34,6 @@ public interface IBexioService
     Task<BexioOrder> CreateOrderAsync(int contactId, Order order);
 
     /// <summary>
-    /// Fetches contact details associated with an existing Bexio order ID.
-    /// </summary>
-    Task<BexioContact?> GetOrderContactDetailsAsync(int orderId);
-
-    /// <summary>
     /// Fetches contact details associated with an existing Bexio contact ID.
     /// </summary>
     Task<BexioContact?> GetContactDetailsAsync(int contactId);

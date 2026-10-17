@@ -1,6 +1,4 @@
-using System;
 using System.IO;
-using System.Linq;
 using System.Text.Json;
 using BexioOrderImport.Format.Peakmile;
 
@@ -8,6 +6,8 @@ namespace BexioOrderImport.Wpf.ViewModels;
 
 public partial class MainViewModel
 {
+    private static readonly JsonSerializerOptions IndentedJson = new() { WriteIndented = true };
+
     private void EnsureAppSettingsFile()
     {
         string? dir = Path.GetDirectoryName(_configFilePath);
@@ -37,12 +37,12 @@ public partial class MainViewModel
             {
                 Bexio = new Models.BexioSettingsDto(),
                 ActiveProfileName = "Default",
-                Profiles = new System.Collections.Generic.List<Models.MappingProfileDto>
-                {
-                    new Models.MappingProfileDto { Name = "Default", Format = PeakmileFormatAdapter.Id }
-                }
+                Profiles =
+                [
+                    new() { Name = "Default", Format = PeakmileFormatAdapter.Id }
+                ]
             };
-            File.WriteAllText(_configFilePath, JsonSerializer.Serialize(defaultSettings, new JsonSerializerOptions { WriteIndented = true }));
+            File.WriteAllText(_configFilePath, JsonSerializer.Serialize(defaultSettings, IndentedJson));
         }
     }
 
@@ -107,11 +107,11 @@ public partial class MainViewModel
                     Language = SelectedLanguage
                 },
                 ActiveProfileName = ActiveProfile?.Name ?? "Default",
-                Profiles = Profiles.Select(_profileSerializer.ToDto).ToList()
+                Profiles = [.. Profiles.Select(_profileSerializer.ToDto)]
             };
 
             BackupLegacySettings();
-            File.WriteAllText(_configFilePath, JsonSerializer.Serialize(settingsObj, new JsonSerializerOptions { WriteIndented = true }));
+            File.WriteAllText(_configFilePath, JsonSerializer.Serialize(settingsObj, IndentedJson));
 
             _ = CheckBexioConnectionAsync();
 
@@ -145,7 +145,7 @@ public partial class MainViewModel
                 string text = File.ReadAllText(_configFilePath);
                 var dto = JsonSerializer.Deserialize<Models.AppSettingsDto>(text) ?? new Models.AppSettingsDto();
                 dto.ActiveProfileName = ActiveProfile?.Name ?? "Default";
-                File.WriteAllText(_configFilePath, JsonSerializer.Serialize(dto, new JsonSerializerOptions { WriteIndented = true }));
+                File.WriteAllText(_configFilePath, JsonSerializer.Serialize(dto, IndentedJson));
             }
         }
         catch (Exception ex)
@@ -188,7 +188,7 @@ public partial class MainViewModel
         }
     }
 
-    private void ApplyLanguage(string lang)
+    private static void ApplyLanguage(string lang)
     {
         Helpers.LanguageHelper.Apply(lang);
     }

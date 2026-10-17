@@ -31,7 +31,6 @@ public class OrderPosition
         set => GrossUnitPrice = value;
     }
 
-    public string PositionText { get; set; } = string.Empty;
     public decimal TotalPrice => Quantity * NetUnitPrice;
 
 

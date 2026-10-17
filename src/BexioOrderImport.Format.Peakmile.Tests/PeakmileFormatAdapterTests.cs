@@ -3,7 +3,6 @@ using BexioOrderImport.Abstractions.Bexio;
 using BexioOrderImport.Abstractions.Formats;
 using BexioOrderImport.Abstractions.Import;
 using BexioOrderImport.Domain.Models;
-using BexioOrderImport.Format.Peakmile;
 using FluentAssertions;
 using Moq;
 

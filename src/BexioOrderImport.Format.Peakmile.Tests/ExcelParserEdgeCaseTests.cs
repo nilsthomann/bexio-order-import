@@ -1,4 +1,3 @@
-using BexioOrderImport.Format.Peakmile;
 using FluentAssertions;
 
 namespace BexioOrderImport.Format.Peakmile.Tests;
@@ -224,6 +223,67 @@ public class ExcelParserEdgeCaseTests
         }
         finally
         {
+            if (File.Exists(tempPath)) File.Delete(tempPath);
+        }
+    }
+
+    [Test]
+    [Arguments("de-DE")]
+    [Arguments("en-US")]
+    public void ParseOrderForm_WithNumberCells_ShouldNotDependOnTheCulture(string cultureName)
+    {
+        var options = new PeakmileSettings();
+        options.Header.DiscountCell = "B8";
+        options.SizeMatrix.StartRow = 10;
+        options.SizeMatrix.EndRow = 10;
+        options.SizeMatrix.CategoryColumn = "D";
+        options.SizeMatrix.StartSizeColumn = "E";
+        options.SizeMatrix.EndSizeColumn = "F";
+        options.Data.StartRow = 11;
+        options.Data.ArticleNumberColumn = "A";
+        options.Data.ArticleNameColumn = "B";
+        options.Data.ColorColumn = "C";
+        options.Data.CategoryColumn = "D";
+        options.Data.StartQtyColumn = "E";
+        options.Data.EndQtyColumn = "F";
+        options.Data.UnitPriceColumn = "G";
+        options.Data.EnableRowDiscount = true;
+        options.Data.RowDiscountColumn = "H";
+
+        string tempPath = Path.Combine(Path.GetTempPath(), $"test_{Guid.NewGuid():N}.xlsx");
+        var previousCulture = System.Globalization.CultureInfo.CurrentCulture;
+        try
+        {
+            using (var wb = new ClosedXML.Excel.XLWorkbook())
+            {
+                var ws = wb.AddWorksheet("Sheet1");
+                ws.Cell("B8").Value = 0.1;
+                ws.Cell(10, 4).Value = "CAT1";
+                ws.Cell(10, 5).Value = "S";
+                ws.Cell(10, 6).Value = "M";
+                ws.Cell(11, 1).Value = "ART001";
+                ws.Cell(11, 2).Value = "Shirt";
+                ws.Cell(11, 3).Value = "Blue";
+                ws.Cell(11, 4).Value = "CAT1";
+                ws.Cell(11, 5).Value = 2;
+                ws.Cell(11, 6).Value = 2.5; // not a whole quantity
+                ws.Cell(11, 7).Value = 12.5;
+                ws.Cell(11, 8).Value = 7.5;
+                wb.SaveAs(tempPath);
+            }
+            System.Globalization.CultureInfo.CurrentCulture = new System.Globalization.CultureInfo(cultureName);
+
+            var order = new PeakmileExcelParser(options).ParseOrderForm(tempPath);
+
+            order.DiscountPercent.Should().Be(10m);
+            order.Positions.Should().ContainSingle();
+            order.Positions[0].Quantity.Should().Be(2);
+            order.Positions[0].GrossUnitPrice.Should().Be(12.5m);
+            order.Positions[0].DiscountPercent.Should().Be(7.5m);
+        }
+        finally
+        {
+            System.Globalization.CultureInfo.CurrentCulture = previousCulture;
             if (File.Exists(tempPath)) File.Delete(tempPath);
         }
     }

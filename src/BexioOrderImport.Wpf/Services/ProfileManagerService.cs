@@ -1,7 +1,5 @@
-using System;
 using System.Collections.ObjectModel;
 using System.IO;
-using System.Linq;
 using System.Text.Json;
 using BexioOrderImport.Abstractions.Formats;
 using BexioOrderImport.Wpf.Models;
@@ -10,6 +8,8 @@ namespace BexioOrderImport.Wpf.Services;
 
 public class ProfileManagerService : IProfileManagerService
 {
+    private static readonly JsonSerializerOptions IndentedJson = new() { WriteIndented = true };
+
     private readonly IDialogService _dialogService;
     private readonly IFormatRegistry _registry;
     private readonly ProfileSerializer _serializer;
@@ -101,7 +101,7 @@ public class ProfileManagerService : IProfileManagerService
             {
                 var exportList = profiles.Select(_serializer.ToDto).ToList();
 
-                string json = JsonSerializer.Serialize(exportList, new JsonSerializerOptions { WriteIndented = true });
+                string json = JsonSerializer.Serialize(exportList, IndentedJson);
                 File.WriteAllText(fileName, json);
                 logInfo($"Profiles exported successfully to: {fileName}");
                 _dialogService.ShowInfoDialog(Resources.Translations.Dialog_ExportSuccess);

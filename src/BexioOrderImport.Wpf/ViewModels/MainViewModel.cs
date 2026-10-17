@@ -1,9 +1,6 @@
-using System;
 using System.IO;
 using System.Text;
 using System.Collections.ObjectModel;
-using System.Linq;
-using System.Threading.Tasks;
 using BexioOrderImport.Abstractions.Bexio;
 using BexioOrderImport.Abstractions.Formats;
 using BexioOrderImport.Abstractions.Wpf;
@@ -86,17 +83,12 @@ public partial class MainViewModel : ViewModelBase
 
     // Settings fields (bound to Bexio API connection)
     private string _bexioToken = string.Empty;
-    private int? _accountId = null;
-    private int? _taxId = null;
+    private int? _accountId;
+    private int? _taxId;
 
     internal void InvokeOnUi(Action action)
     {
         _dispatcherService.Invoke(action);
-    }
-
-    internal void InvokeOnUiAsync(Action action)
-    {
-        _dispatcherService.BeginInvoke(action);
     }
 
     public MainViewModel(
@@ -227,8 +219,10 @@ public partial class MainViewModel : ViewModelBase
         set => SetProperty(ref _isConnectionSuccessful, value);
     }
 
-    public ObservableCollection<BexioAccount> AccountsList { get; } = new();
-    public ObservableCollection<BexioTax> TaxesList { get; } = new();
+    private readonly BexioOptionLists _bexioOptions = new();
+
+    public ObservableCollection<BexioAccount> AccountsList => _bexioOptions.Accounts;
+    public ObservableCollection<BexioTax> TaxesList => _bexioOptions.Taxes;
 
     public double ProgressPercentage
     {
@@ -310,7 +304,7 @@ public partial class MainViewModel : ViewModelBase
         set => SetProperty(ref _selectedFilePath, value);
     }
 
-    public ObservableCollection<Models.MappingProfile> Profiles { get; } = new();
+    public ObservableCollection<Models.MappingProfile> Profiles { get; } = [];
 
     public Models.MappingProfile? SelectedProfile
     {

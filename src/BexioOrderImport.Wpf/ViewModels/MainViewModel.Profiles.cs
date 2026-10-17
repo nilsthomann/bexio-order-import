@@ -1,5 +1,3 @@
-using System.Linq;
-
 namespace BexioOrderImport.Wpf.ViewModels;
 
 public partial class MainViewModel

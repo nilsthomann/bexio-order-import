@@ -13,8 +13,6 @@ WPF desktop app (.NET 10, Windows only) that parses Excel order forms and import
 - `src/BexioOrderImport.Format.Peakmile.Tests`: Peakmile parser, import, settings, controls and translations, with the read-only fixture `Fixtures/PeakmileOrder.xlsx`
 - `src/BexioOrderImport.Format.EanList.Tests`: EAN list parser, import, view models, controls and translations, with the read-only fixture `Fixtures/EanListOrder.xlsx`
 
-`src/BexioOrderImport.Cli` holds only build output and is not part of the solution.
-
 Human docs: `README.md`, `CONTRIBUTING.md`, `doc/UserManual.md`. Describe user-visible changes in the user manual.
 
 ## Build and run
@@ -50,6 +48,8 @@ dotnet run --project src\BexioOrderImport.Format.Peakmile.Tests -- --treenode-fi
 - Commit messages follow Conventional Commits (`feat:`, `fix:`, `test:`, `ci:`). A Husky.NET `commit-msg` hook enforces this locally.
 - The version lives in `Directory.Build.props`. Pushing a `v*` tag runs `.github/workflows/release.yml`, which builds the installer and publishes the GitHub release. Do not bump the version or tag unless asked.
 - Keep the implementation simple: standard library over custom utilities, no new dependencies without need.
+- Builds run the Recommended .NET analyzers and the code style rules of `.editorconfig` (`Directory.Build.props`), and unused usings, members, parameters and values are warnings. Keep the build free of warnings; suppress a false positive with a justified `SuppressMessage` (eg. `PeakmileSettings.LegacyPositionTextTemplate`, which only System.Text.Json sets).
+- Parse data from Excel cells, ids and files with an explicit culture; UI texts are formatted with the culture of the user.
 - User-facing strings are never hardcoded in XAML. Each string needs three entries: `Translations.resx` (German, default), `Translations.en.resx` (English) and a property in `Translations.cs`. Strings of a format go into the format's own triple (eg. `PeakmileTranslations.*`), not into the host. German uses Swiss spelling ("ss", never "ß"); `TranslationIntegrityTests` checks both.
 - Format controls use the keys of the shared theme (`Abstractions.Wpf/Styles/AppStyles.xaml`), which the host merges in `App.xaml`. `FormatControlsLoadTests` loads every format and host view with that theme.
 
@@ -58,10 +58,9 @@ dotnet run --project src\BexioOrderImport.Format.Peakmile.Tests -- --treenode-fi
 Profiles store a format id (`Format`) and the format's settings (`Settings`) in `%LocalAppData%\BexioOrderImport\appsettings.json` and in profile exports. Profiles from v1.6.0 and older have no format and keep their Peakmile settings in `ExcelMapping`; `ProfileSerializer` still reads them. For a Peakmile setting:
 
 1. Add the property with a default to `PeakmileSettings`. It is serialized as is, so existing profiles must load without it.
-2. Add it to `ExcelMappingEvaluator.CopyOptions`, which copies property by property, and extend `CopyOptions_ShouldCopyAllValues`.
-3. Add the input to `PeakmileProfileConfigControl.xaml` and load, validate and save it in `PeakmileProfileConfigViewModel`. `ProfileEditWindow` only hosts the format's control and owns the profile name.
-4. Add the label and hint to the three `PeakmileTranslations` files.
-5. If the import needs it, add it to `PeakmileImportOptions` and map it in `PeakmileFormatAdapter.CreateImportOptions`.
+2. Add the input to `PeakmileProfileConfigControl.xaml` and load, validate and save it in `PeakmileProfileConfigViewModel`. `ProfileEditWindow` only hosts the format's control and owns the profile name.
+3. Add the label and hint to the three `PeakmileTranslations` files.
+4. If the import needs it, add it to `PeakmileImportOptions` and map it in `PeakmileFormatAdapter.CreateImportOptions`.
 
 ## Bexio article lookup
 
