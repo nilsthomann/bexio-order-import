@@ -15,7 +15,7 @@ public sealed class EanListImporter
     public EanListImporter(IBexioService bexio, IArticleMatcher<EanArticleCriteria>? articleMatcher = null)
     {
         _bexio = bexio ?? throw new ArgumentNullException(nameof(bexio));
-        _articleMatcher = articleMatcher ?? new EanArticleMatcher(bexio);
+        _articleMatcher = articleMatcher ?? EanArticleMatcher.WithFallbacks(bexio);
     }
 
     public async Task<ImportResult> ExecuteAsync(Order order, EanListSettings settings, IImportUserInteractionService interaction)

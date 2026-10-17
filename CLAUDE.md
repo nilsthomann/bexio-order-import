@@ -64,11 +64,11 @@ Profiles store a format id (`Format`) and the format's settings (`Settings`) in 
 
 ## Bexio article lookup
 
-Each format finds its articles with an `IArticleMatcher<TCriteria>` (`Abstractions/Bexio`): the criteria is a record of the format, the result an `ArticleMatch` with the article or the reason it was not matched (eg. `not found`), which the importer logs before it aborts. The importers take an optional matcher, so a new criterion is a new property of the criteria record, and a fallback is another matcher of the same criteria that runs when the first one finds nothing.
+Each format finds its articles with an `IArticleMatcher<TCriteria>` (`Abstractions/Bexio`): the criteria is a record of the format, the result an `ArticleMatch` with the article or the reason it was not matched (eg. `not found`), which the importer logs before it aborts. The importers take an optional matcher, so a new criterion is a new property of the criteria record, and a fallback is another matcher of the same criteria, chained with `FallbackArticleMatcher<TCriteria>`: the next matcher runs only if the previous one found no article (`ArticleMatch.IsMissing`); a final failure such as "not unique" stops the lookup.
 
 `PeakmileArticleMatcher` (`PeakmileArticleCriteria`) matches the Bexio `intern_code` exactly as `{SeasonCode}{ArticleNumber}{Color}`, first with the season code of the profile, then with each season fallback code (multi-season articles, eg. `NOOS`, `EX`). Only if all miss, it searches by article number and filters by color and season code in the article name. An article that is not found aborts the import. It uses only the generic `IBexioService.FindArticlesByInternCodeAsync` and `SearchArticlesAsync`, and caches the articles of one import; `PeakmileArticleMatcherTests` run it against the real `BexioApiClient` with a mocked HTTP handler.
 
-`EanArticleMatcher` (`EanArticleCriteria`) of the EAN list format uses `FindArticlesByInternCodeAsync(ean)`: the EAN is the `intern_code` and exactly one article must match (`ArticleMatch.FromCandidates`). The position price is the article's `sale_price`.
+`EanArticleMatcher` (`EanArticleCriteria`) of the EAN list format uses `FindArticlesByInternCodeAsync(ean)`: the EAN is the `intern_code` and exactly one article must match (`ArticleMatch.FromCandidates`). The importer uses `EanArticleMatcher.WithFallbacks`, which then tries `LeadingZeroEanArticleMatcher`: a `like` search for the EAN without leading zeros, keeping only codes that are equal apart from leading zeros (Excel drops the zero of `0826710896036` in number cells). The position price is the article's `sale_price`.
 
 ## Order and customer number
 
