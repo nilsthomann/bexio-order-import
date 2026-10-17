@@ -8,7 +8,7 @@ public class RelayCommandTests
     [Test]
     public void RelayCommand_Constructor_NullAction_ThrowsException()
     {
-        Action act = () => new RelayCommand(null!);
+        Action act = () => _ = new RelayCommand(null!);
         act.Should().Throw<ArgumentNullException>();
     }
 
@@ -62,7 +62,7 @@ public class RelayCommandTests
     [Test]
     public void RelayCommandGeneric_Constructor_NullAction_ThrowsException()
     {
-        Action act = () => new RelayCommand<string>(null!);
+        Action act = () => _ = new RelayCommand<string>(null!);
         act.Should().Throw<ArgumentNullException>();
     }
 

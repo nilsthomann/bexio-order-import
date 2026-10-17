@@ -55,6 +55,7 @@ public class PeakmileSettings : IFormatSettings, IJsonOnDeserialized
     [JsonInclude]
     [JsonPropertyName("PositionTextTemplate")]
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("CodeQuality", "IDE0051", Justification = "Set by System.Text.Json when reading old profiles")]
     private string? LegacyPositionTextTemplate
     {
         get => null;
@@ -78,9 +79,9 @@ public class HeaderMapping
     public string ZipCityCell { get; set; } = "B6";
     public string BuyerEmailCell { get; set; } = "E5";
     public string BuyerNameCell { get; set; } = "E4";
-    public bool EnableOrderNumber { get; set; } = false;
+    public bool EnableOrderNumber { get; set; }
     public string OrderNumberCell { get; set; } = "E6";
-    public bool EnableCustomerNumber { get; set; } = false;
+    public bool EnableCustomerNumber { get; set; }
     public string CustomerNumberCell { get; set; } = "E3";
 
     // TODO: [Backward Compatibility] Remove in future version
@@ -159,7 +160,7 @@ public class DataMapping
     [JsonConverter(typeof(ExcelColumnJsonConverter))]
     public string UnitPriceColumn { get; set; } = "T";
 
-    public bool EnableRowDiscount { get; set; } = false;
+    public bool EnableRowDiscount { get; set; }
 
     [JsonConverter(typeof(ExcelColumnJsonConverter))]
     public string RowDiscountColumn { get; set; } = "U";

@@ -1,5 +1,3 @@
-using System;
-using System.Windows;
 using BexioOrderImport.Abstractions.Formats;
 using BexioOrderImport.Domain.Models;
 
@@ -17,7 +15,7 @@ public class WpfDialogService : IDialogService
         _formatUis = formatUis ?? throw new ArgumentNullException(nameof(formatUis));
     }
 
-    private T InvokeOnDispatcher<T>(Func<T> func)
+    private static T InvokeOnDispatcher<T>(Func<T> func)
     {
         if (System.Windows.Application.Current != null && !System.Windows.Application.Current.Dispatcher.CheckAccess())
         {
@@ -26,7 +24,7 @@ public class WpfDialogService : IDialogService
         return func();
     }
 
-    private void InvokeOnDispatcher(Action action)
+    private static void InvokeOnDispatcher(Action action)
     {
         if (System.Windows.Application.Current != null && !System.Windows.Application.Current.Dispatcher.CheckAccess())
         {
@@ -40,8 +38,10 @@ public class WpfDialogService : IDialogService
     {
         return InvokeOnDispatcher(() =>
         {
-            var dialog = new Views.ProfileCreateDialog(_formats.Formats, fixedFormatId);
-            dialog.Owner = System.Windows.Application.Current?.MainWindow;
+            var dialog = new Views.ProfileCreateDialog(_formats.Formats, fixedFormatId)
+            {
+                Owner = System.Windows.Application.Current?.MainWindow
+            };
             return dialog.ShowDialog() == true ? new ProfileCreateResult(dialog.ProfileName, dialog.FormatId) : null;
         });
     }
@@ -53,8 +53,10 @@ public class WpfDialogService : IDialogService
 
         return InvokeOnDispatcher(() =>
         {
-            var editWindow = new Views.ProfileEditWindow(profile, format, formatUi, existingProfiles);
-            editWindow.Owner = System.Windows.Application.Current?.MainWindow;
+            var editWindow = new Views.ProfileEditWindow(profile, format, formatUi, existingProfiles)
+            {
+                Owner = System.Windows.Application.Current?.MainWindow
+            };
             return editWindow.ShowDialog() == true;
         });
     }
@@ -100,8 +102,10 @@ public class WpfDialogService : IDialogService
     {
         return InvokeOnDispatcher(() =>
         {
-            var dialog = new Views.CustomerConfirmWindow(customer);
-            dialog.Owner = System.Windows.Application.Current?.MainWindow;
+            var dialog = new Views.CustomerConfirmWindow(customer)
+            {
+                Owner = System.Windows.Application.Current?.MainWindow
+            };
             return dialog.ShowDialog() == true;
         });
     }

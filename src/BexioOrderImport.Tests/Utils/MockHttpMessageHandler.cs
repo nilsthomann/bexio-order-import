@@ -1,6 +1,6 @@
 ﻿namespace BexioOrderImport.Tests.Utils
 {
-    internal class MockHttpMessageHandler : HttpMessageHandler
+    internal sealed class MockHttpMessageHandler : HttpMessageHandler
     {
         public Func<HttpRequestMessage, CancellationToken, Task<HttpResponseMessage>> SendAsyncFunc { get; set; } = null!;
 

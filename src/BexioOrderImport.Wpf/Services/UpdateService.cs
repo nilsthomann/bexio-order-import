@@ -1,11 +1,10 @@
-using System;
 using System.Diagnostics;
+using System.Globalization;
 using System.IO;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Reflection;
 using System.Text.Json;
-using System.Threading.Tasks;
 
 namespace BexioOrderImport.Wpf.Services;
 
@@ -13,6 +12,8 @@ public class UpdateService : IUpdateService
 {
     private readonly HttpClient _httpClient;
     private readonly IAppLifecycleService _appLifecycleService;
+    private readonly string _cacheFolder;
+    private readonly string _downloadFolder;
     private const string RepoOwner = "nilsthomann";
     private const string RepoName = "bexio-order-import";
 
@@ -22,33 +23,41 @@ public class UpdateService : IUpdateService
     internal UpdateService(IAppLifecycleService appLifecycleService)
         : this(new HttpClient(), appLifecycleService) { }
 
-    internal UpdateService(HttpClient? httpClient, IAppLifecycleService appLifecycleService)
+    /// <param name="cacheFolder">Folder of the last check time; tests pass a temp folder instead of %LocalAppData%\BexioOrderImport.</param>
+    /// <param name="downloadFolder">Folder of the downloaded installer; tests pass a temp folder instead of %TEMP%\BexioOrderImportUpdate.</param>
+    internal UpdateService(HttpClient? httpClient, IAppLifecycleService appLifecycleService, string? cacheFolder = null, string? downloadFolder = null)
     {
         _httpClient = httpClient ?? new HttpClient();
         _appLifecycleService = appLifecycleService ?? throw new ArgumentNullException(nameof(appLifecycleService));
-        if (!_httpClient.DefaultRequestHeaders.UserAgent.Any())
+        _cacheFolder = cacheFolder ?? Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "BexioOrderImport");
+        _downloadFolder = downloadFolder ?? Path.Combine(Path.GetTempPath(), "BexioOrderImportUpdate");
+        if (_httpClient.DefaultRequestHeaders.UserAgent.Count == 0)
         {
             _httpClient.DefaultRequestHeaders.UserAgent.Add(new ProductInfoHeaderValue("BexioOrderImporter", "1.0"));
         }
     }
 
-    private bool IsUpdateCheckCached(string cacheFilePath)
+    private static bool IsUpdateCheckCached(string cacheFilePath)
     {
         if (!File.Exists(cacheFilePath)) return false;
         try
         {
             string text = File.ReadAllText(cacheFilePath).Trim();
-            if (long.TryParse(text, out long lastCheckTicks))
+            if (long.TryParse(text, NumberStyles.Integer, CultureInfo.InvariantCulture, out long lastCheckTicks))
             {
                 var lastCheck = new DateTime(lastCheckTicks, DateTimeKind.Utc);
                 return DateTime.UtcNow - lastCheck < TimeSpan.FromHours(4);
             }
         }
-        catch { }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or ArgumentOutOfRangeException)
+        {
+            // The cache only saves API calls; without it the check runs again
+            Trace.TraceWarning($"Could not read the update check cache: {ex.Message}");
+        }
         return false;
     }
 
-    private void UpdateLastCheckCache(string appDataFolder, string cacheFilePath)
+    private static void UpdateLastCheckCache(string appDataFolder, string cacheFilePath)
     {
         try
         {
@@ -56,12 +65,15 @@ public class UpdateService : IUpdateService
             {
                 Directory.CreateDirectory(appDataFolder);
             }
-            File.WriteAllText(cacheFilePath, DateTime.UtcNow.Ticks.ToString());
+            File.WriteAllText(cacheFilePath, DateTime.UtcNow.Ticks.ToString(CultureInfo.InvariantCulture));
         }
-        catch { }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+        {
+            Trace.TraceWarning($"Could not write the update check cache: {ex.Message}");
+        }
     }
 
-    private string? FindInstallerDownloadUrl(JsonElement root)
+    private static string? FindInstallerDownloadUrl(JsonElement root)
     {
         if (root.TryGetProperty("assets", out var assetsProp) && assetsProp.ValueKind == JsonValueKind.Array)
         {
@@ -82,66 +94,46 @@ public class UpdateService : IUpdateService
 
     public async Task<UpdateInfo?> CheckForUpdatesAsync()
     {
-        string appDataFolder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "BexioOrderImport");
-        string cacheFilePath = Path.Combine(appDataFolder, "last_update_check.txt");
-        
+        string cacheFilePath = Path.Combine(_cacheFolder, "last_update_check.txt");
+
         if (IsUpdateCheckCached(cacheFilePath))
         {
             return null;
         }
 
-        try
+        UpdateLastCheckCache(_cacheFolder, cacheFilePath);
+
+        string url = $"https://api.github.com/repos/{RepoOwner}/{RepoName}/releases/latest";
+        var response = await _httpClient.GetAsync(url);
+        if (!response.IsSuccessStatusCode) return null;
+
+        string json = await response.Content.ReadAsStringAsync();
+        using var doc = JsonDocument.Parse(json);
+        var root = doc.RootElement;
+
+        if (!root.TryGetProperty("tag_name", out var tagProp)) return null;
+        string rawTag = tagProp.GetString() ?? string.Empty;
+
+        var currentVersion = Assembly.GetExecutingAssembly().GetName().Version;
+        if (!IsNewerVersion(rawTag, currentVersion)) return null;
+
+        string? downloadUrl = FindInstallerDownloadUrl(root);
+        if (string.IsNullOrEmpty(downloadUrl)) return null;
+
+        string body = root.TryGetProperty("body", out var bodyProp) ? bodyProp.GetString() ?? string.Empty : "";
+
+        return new UpdateInfo
         {
-            UpdateLastCheckCache(appDataFolder, cacheFilePath);
-
-            string url = $"https://api.github.com/repos/{RepoOwner}/{RepoName}/releases/latest";
-            var response = await _httpClient.GetAsync(url);
-            if (!response.IsSuccessStatusCode) return null;
-
-            string json = await response.Content.ReadAsStringAsync();
-            using var doc = JsonDocument.Parse(json);
-            var root = doc.RootElement;
-
-            if (!root.TryGetProperty("tag_name", out var tagProp)) return null;
-            string rawTag = tagProp.GetString() ?? string.Empty;
-
-            var currentVersion = Assembly.GetExecutingAssembly().GetName().Version;
-            if (!IsNewerVersion(rawTag, currentVersion)) return null;
-
-            string? downloadUrl = FindInstallerDownloadUrl(root);
-            if (string.IsNullOrEmpty(downloadUrl)) return null;
-
-            string body = root.TryGetProperty("body", out var bodyProp) ? bodyProp.GetString() ?? string.Empty : "";
-
-            return new UpdateInfo
-            {
-                LatestVersion = rawTag,
-                DownloadUrl = downloadUrl,
-                ReleaseNotes = body
-            };
-        }
-        catch
-        {
-            // Fail silently, auto-updates shouldn't crash the app startup
-            return null;
-        }
+            LatestVersion = rawTag,
+            DownloadUrl = downloadUrl,
+            ReleaseNotes = body
+        };
     }
 
     public async Task DownloadAndInstallUpdateAsync(string downloadUrl, Action<double> progressCallback)
     {
-        string tempDir = Path.Combine(Path.GetTempPath(), "BexioOrderImportUpdate");
-        if (!Directory.Exists(tempDir))
-        {
-            Directory.CreateDirectory(tempDir);
-        }
-
-        string tempFilePath = Path.Combine(tempDir, "BexioOrderImportSetup.exe");
-
-        // Delete old installer if exists
-        if (File.Exists(tempFilePath))
-        {
-            try { File.Delete(tempFilePath); } catch { }
-        }
+        Directory.CreateDirectory(_downloadFolder);
+        string tempFilePath = Path.Combine(_downloadFolder, "BexioOrderImportSetup.exe");
 
         // Download file with progress reporting
         using (var response = await _httpClient.GetAsync(downloadUrl, HttpCompletionOption.ResponseHeadersRead))
@@ -157,9 +149,9 @@ public class UpdateService : IUpdateService
                 long totalRead = 0;
                 int bytesRead;
 
-                while ((bytesRead = await contentStream.ReadAsync(buffer, 0, buffer.Length)) != 0)
+                while ((bytesRead = await contentStream.ReadAsync(buffer)) != 0)
                 {
-                    await fileStream.WriteAsync(buffer, 0, bytesRead);
+                    await fileStream.WriteAsync(buffer.AsMemory(0, bytesRead));
                     totalRead += bytesRead;
 
                     if (totalBytes.HasValue)

@@ -8,8 +8,6 @@ public enum CustomDialogType { Info, Warning, Error, Confirm, PendingChanges }
 [System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
 public partial class CustomDialog : Window
 {
-    private bool _isConfirm;
-
     public CustomDialog()
     {
         InitializeComponent();
@@ -49,7 +47,6 @@ public partial class CustomDialog : Window
     {
         TitleText.Text = title;
         MessageText.Text = message;
-        _isConfirm = type == CustomDialogType.Confirm || type == CustomDialogType.PendingChanges;
 
         switch (type)
         {

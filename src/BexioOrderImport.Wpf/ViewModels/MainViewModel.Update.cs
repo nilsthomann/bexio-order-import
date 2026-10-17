@@ -1,5 +1,4 @@
-using System;
-using System.Threading.Tasks;
+using BexioOrderImport.Wpf.Services;
 
 namespace BexioOrderImport.Wpf.ViewModels;
 
@@ -7,7 +6,18 @@ public partial class MainViewModel
 {
     private async Task CheckForUpdatesAsync()
     {
-        var info = await _updateService.CheckForUpdatesAsync();
+        UpdateInfo? info;
+        try
+        {
+            info = await _updateService.CheckForUpdatesAsync();
+        }
+        catch (Exception ex)
+        {
+            // A failed update check must not disturb the app; it only leaves a note in the log
+            InvokeOnUi(() => AppendLog($"⚠️ Update check failed: {ex.Message}"));
+            return;
+        }
+
         if (info != null)
         {
             InvokeOnUi(() =>

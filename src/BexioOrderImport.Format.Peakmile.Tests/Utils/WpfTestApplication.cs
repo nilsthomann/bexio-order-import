@@ -1,4 +1,3 @@
-using System.Threading;
 using System.Windows;
 using System.Windows.Threading;
 using WpfApp = System.Windows.Application;
@@ -10,7 +9,7 @@ namespace BexioOrderImport.Format.Peakmile.Tests.Utils;
 /// </summary>
 public static class WpfTestApplication
 {
-    private static readonly object _lock = new();
+    private static readonly Lock _lock = new();
 
     public static void RunOnUiThread(Action action)
     {

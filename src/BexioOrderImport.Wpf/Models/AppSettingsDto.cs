@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
@@ -13,7 +12,7 @@ public class AppSettingsDto
     public string ActiveProfileName { get; set; } = "Default";
 
     [JsonPropertyName("Profiles")]
-    public List<MappingProfileDto> Profiles { get; set; } = new();
+    public List<MappingProfileDto> Profiles { get; set; } = [];
 }
 
 public class BexioSettingsDto

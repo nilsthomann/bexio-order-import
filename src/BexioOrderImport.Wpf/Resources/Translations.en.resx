@@ -159,6 +159,11 @@
   <data name="Import_FileLockedTitle" xml:space="preserve">
     <value>File In Use</value>
   </data>
+  <data name="Import_XlsNotSupported" xml:space="preserve">
+    <value>The file "{0}" uses the old Excel format (.xls), which is not supported.
+
+Please save the file as .xlsx in Excel and load it again.</value>
+  </data>
   <data name="Import_FileLockedMessage" xml:space="preserve">
     <value>The file "{0}" cannot be opened because it is currently being used by another process (e.g. Microsoft Excel).
 

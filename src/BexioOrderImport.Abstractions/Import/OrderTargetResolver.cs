@@ -1,3 +1,4 @@
+using System.Globalization;
 using BexioOrderImport.Abstractions.Bexio;
 using BexioOrderImport.Domain.Models;
 using BexioOrderImport.Domain.Models.Bexio;
@@ -54,8 +55,8 @@ public static class OrderTargetResolver
 
             if (!string.IsNullOrWhiteSpace(order.CustomerNumber))
             {
-                string contactNr = contactInfo?.Nr ?? contactInfo?.Id.ToString() ?? string.Empty;
-                if (int.Parse(contactNr) != int.Parse(order.CustomerNumber))
+                string contactNr = contactInfo?.Nr ?? contactInfo?.Id.ToString(CultureInfo.InvariantCulture) ?? string.Empty;
+                if (!IsSameCustomerNumber(contactNr, order.CustomerNumber))
                 {
                     interaction.LogInfo($"⛔ Customer number mismatch: Existing order #{order.OrderNumber} belongs to customer #{contactNr}, but customer #{order.CustomerNumber} was specified.");
                     return OrderTarget.Failed(new ImportResult(Success: false, ErrorMessage: $"Customer number mismatch: order belongs to contact {contactNr}, specified customer number is {order.CustomerNumber}."));
@@ -110,5 +111,18 @@ public static class OrderTargetResolver
             .Replace("{SeasonCode}", seasonCode ?? string.Empty);
 
         return bexio.CreateOrderAsync(contactId, order);
+    }
+
+    /// <summary>
+    /// Numeric customer numbers match by value (eg. 01001 and 1001), others by text ignoring case.
+    /// </summary>
+    private static bool IsSameCustomerNumber(string contactNr, string customerNumber)
+    {
+        if (int.TryParse(contactNr, NumberStyles.Integer, CultureInfo.InvariantCulture, out int contactValue) &&
+            int.TryParse(customerNumber, NumberStyles.Integer, CultureInfo.InvariantCulture, out int customerValue))
+        {
+            return contactValue == customerValue;
+        }
+        return string.Equals(contactNr.Trim(), customerNumber.Trim(), StringComparison.OrdinalIgnoreCase);
     }
 }

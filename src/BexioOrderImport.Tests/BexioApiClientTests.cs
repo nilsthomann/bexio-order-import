@@ -1,5 +1,4 @@
 using BexioOrderImport.Domain.Models;
-using BexioOrderImport.Domain.Models.Bexio;
 using BexioOrderImport.Infrastructure.Bexio;
 using BexioOrderImport.Tests.Utils;
 using FluentAssertions;
@@ -382,7 +381,6 @@ public class BexioApiClientTests
         result.Should().NotBeNull();
         result.Count.Should().Be(3);
         result[0].Id.Should().Be(10);
-        result[0].Percentage.Should().Be(7.7m);
         result[0].IsActive.Should().BeTrue();
         result[0].Code.Should().Be("MWST_77");
         result[0].DisplayName.Should().Be("MwSt 7.7");
@@ -403,7 +401,7 @@ public class BexioApiClientTests
                 requestUri = req.RequestUri?.ToString();
                 if (req.Content != null)
                 {
-                    requestBody = await req.Content.ReadAsStringAsync();
+                    requestBody = await req.Content.ReadAsStringAsync(token);
                 }
                 return new HttpResponseMessage(HttpStatusCode.Created)
                 {
@@ -668,20 +666,13 @@ public class BexioApiClientTests
     }
 
     [Test]
-    public async Task GetOrderContactDetailsAsync_WhenOrderExists_ShouldReturnContactDetails()
+    public async Task GetContactDetailsAsync_WhenContactExists_ShouldReturnContactDetails()
     {
         var handler = new MockHttpMessageHandler
         {
             SendAsyncFunc = (req, token) =>
             {
                 string uri = req.RequestUri!.ToString();
-                if (uri.Contains("kb_order/456"))
-                {
-                    return Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK)
-                    {
-                        Content = new StringContent("{\"id\": 456, \"contact_id\": 123}", Encoding.UTF8, "application/json")
-                    });
-                }
                 if (uri.Contains("contact/123"))
                 {
                     return Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK)
@@ -696,26 +687,11 @@ public class BexioApiClientTests
         var httpClient = new HttpClient(handler);
         var client = new BexioApiClient(httpClient, "dummy-token", 1, 1);
 
-        var contact = await client.GetOrderContactDetailsAsync(456);
+        var contact = await client.GetContactDetailsAsync(123);
         contact.Should().NotBeNull();
         contact!.Id.Should().Be(123);
         contact.Name.Should().Be("Acme Ltd");
         contact.EMail.Should().Be("acme@ltd.com");
-    }
-
-    [Test]
-    public async Task GetOrderContactDetailsAsync_WhenOrderHttpError_ShouldReturnNull()
-    {
-        var handler = new MockHttpMessageHandler
-        {
-            SendAsyncFunc = (req, token) => Task.FromResult(new HttpResponseMessage(HttpStatusCode.NotFound))
-        };
-
-        var httpClient = new HttpClient(handler);
-        var client = new BexioApiClient(httpClient, "dummy-token", 1, 1);
-
-        var contact = await client.GetOrderContactDetailsAsync(999);
-        contact.Should().BeNull();
     }
 
     [Test]

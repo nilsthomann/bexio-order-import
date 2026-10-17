@@ -1,4 +1,3 @@
-using System.Threading;
 using System.Windows.Threading;
 using WpfApp = System.Windows.Application;
 
@@ -6,7 +5,7 @@ namespace BexioOrderImport.Tests.Utils;
 
 public static class WpfTestApplication
 {
-    private static readonly object _lock = new();
+    private static readonly Lock _lock = new();
 
     public static void EnsureInitialized()
     {

@@ -32,7 +32,6 @@
     <!-- Status Colors -->
     <SolidColorBrush x:Key="SuccessBrush" Color="#10B981"/>
     <SolidColorBrush x:Key="ErrorBrush" Color="#EF4444"/>
-    <SolidColorBrush x:Key="WarningBrush" Color="#F59E0B"/>
 
     <!-- Semantic UI Colors -->
     <SolidColorBrush x:Key="ActiveRowBrush" Color="#F0F9FF"/>
@@ -40,12 +39,7 @@
     <SolidColorBrush x:Key="ActiveBadgeForegroundBrush" Color="#16A34A"/>
     <SolidColorBrush x:Key="SelectionBrush" Color="#EEF2FF"/>
     <SolidColorBrush x:Key="SelectionForegroundBrush" Color="#1F2937"/>
-    <SolidColorBrush x:Key="ErrorSoftBrush" Color="#FCA5A5"/>
     <SolidColorBrush x:Key="ConsoleForegroundBrush" Color="#374151"/>
-    <SolidColorBrush x:Key="DialogInfoBrush" Color="#D1FAE5"/>
-    <SolidColorBrush x:Key="DialogWarningBrush" Color="#FEF3C7"/>
-    <SolidColorBrush x:Key="DialogErrorBrush" Color="#FEE2E2"/>
-    <SolidColorBrush x:Key="DialogConfirmBrush" Color="#EEF2FF"/>
 
     <!-- Common Fonts -->
     <FontFamily x:Key="MainFontFamily">Segoe UI, Inter, Arial</FontFamily>

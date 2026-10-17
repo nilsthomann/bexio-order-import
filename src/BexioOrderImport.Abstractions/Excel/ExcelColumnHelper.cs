@@ -1,4 +1,4 @@
-using System;
+using System.Globalization;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Text.RegularExpressions;
@@ -29,7 +29,7 @@ public static class ExcelColumnHelper
         int sum = 0;
         foreach (char c in columnLetter)
         {
-            if (c < 'A' || c > 'Z') return 0;
+            if (c is < 'A' or > 'Z') return 0;
             sum *= 26;
             sum += (c - 'A' + 1);
         }
@@ -46,9 +46,8 @@ public static class ExcelColumnHelper
     {
         if (string.IsNullOrWhiteSpace(input)) return false;
         string trimmed = input.Trim();
-        if (IsNumeric(trimmed))
+        if (int.TryParse(trimmed, NumberStyles.Integer, CultureInfo.InvariantCulture, out int num))
         {
-            int num = int.Parse(trimmed);
             return num > 0;
         }
         return ColumnLetterRegex.IsMatch(trimmed);

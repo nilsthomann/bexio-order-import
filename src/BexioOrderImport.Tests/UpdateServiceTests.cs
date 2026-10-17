@@ -1,29 +1,74 @@
+using System.Globalization;
+using System.Net;
+using System.Text;
 using BexioOrderImport.Tests.Utils;
 using BexioOrderImport.Wpf.Services;
 using FluentAssertions;
-using System.Text;
 
 namespace BexioOrderImport.Tests;
 
-[NotInParallel]
-public class UpdateServiceTests
+/// <summary>
+/// Each test uses its own temp folders for the check cache and the installer download,
+/// never %LocalAppData%\BexioOrderImport or the shared %TEMP%\BexioOrderImportUpdate.
+/// </summary>
+public sealed class UpdateServiceTests : IDisposable
 {
-    private readonly UpdateService _updateService;
-    private readonly FakeAppLifecycleService _lifecycleService;
+    private const string ReleaseJson = @"{
+        ""tag_name"": ""v99.9.9"",
+        ""body"": ""Release 99.9.9"",
+        ""assets"": [
+            {
+                ""name"": ""BexioOrderImportSetup.exe"",
+                ""browser_download_url"": ""https://github.com/nilsthomann/bexio-order-import/releases/download/v99.9.9/BexioOrderImportSetup.exe""
+            }
+        ]
+    }";
 
-    public UpdateServiceTests()
+    private readonly string _root = Path.Combine(Path.GetTempPath(), $"BexioOrderImportUpdateTests_{Guid.NewGuid():N}");
+    private readonly FakeAppLifecycleService _lifecycleService = new();
+    private int _requestCount;
+
+    private string CacheFolder => Path.Combine(_root, "cache");
+    private string DownloadFolder => Path.Combine(_root, "download");
+    private string CacheFilePath => Path.Combine(CacheFolder, "last_update_check.txt");
+
+    public void Dispose()
     {
-        _lifecycleService = new FakeAppLifecycleService();
-        _updateService = new UpdateService(_lifecycleService);
+        try { Directory.Delete(_root, recursive: true); } catch (DirectoryNotFoundException) { }
     }
 
-    private class FakeAppLifecycleService : IAppLifecycleService
+    private sealed class FakeAppLifecycleService : IAppLifecycleService
     {
         public string? InstallerPathPassed { get; set; }
         public void StartInstallerAndExit(string installerPath)
         {
             InstallerPathPassed = installerPath;
         }
+    }
+
+    private UpdateService CreateService(Func<HttpResponseMessage> respond)
+    {
+        var handler = new MockHttpMessageHandler
+        {
+            SendAsyncFunc = (req, token) =>
+            {
+                _requestCount++;
+                return Task.FromResult(respond());
+            }
+        };
+        return new UpdateService(new HttpClient(handler), _lifecycleService, CacheFolder, DownloadFolder);
+    }
+
+    private UpdateService CreateService(HttpStatusCode status, string? json = null)
+        => CreateService(() => new HttpResponseMessage(status)
+        {
+            Content = new StringContent(json ?? string.Empty, Encoding.UTF8, "application/json")
+        });
+
+    private void WriteCache(string content)
+    {
+        Directory.CreateDirectory(CacheFolder);
+        File.WriteAllText(CacheFilePath, content);
     }
 
     [Test]
@@ -37,340 +82,134 @@ public class UpdateServiceTests
     [Arguments("invalid-version", "1.0.0", false)]
     public void IsNewerVersion_ShouldCorrectlyCompareVersions(string rawTag, string? currentVersionStr, bool expectedResult)
     {
-        // Arrange
         Version? currentVersion = currentVersionStr != null ? Version.Parse(currentVersionStr) : null;
 
-        // Act
-        bool result = _updateService.IsNewerVersion(rawTag, currentVersion);
+        bool result = CreateService(HttpStatusCode.OK).IsNewerVersion(rawTag, currentVersion);
 
-        // Assert
         result.Should().Be(expectedResult);
     }
 
-
     [Test]
-    public async Task CheckForUpdatesAsync_WhenNewerVersionAvailable_ShouldReturnUpdateInfo()
+    public async Task CheckForUpdatesAsync_WhenNewerVersionAvailable_ShouldReturnUpdateInfoAndCacheTheCheck()
     {
-        // Delete last check cache if it exists, to ensure check runs
-        string appDataFolder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "BexioOrderImport");
-        string cacheFilePath = Path.Combine(appDataFolder, "last_update_check.txt");
-        if (File.Exists(cacheFilePath))
-        {
-            try { File.Delete(cacheFilePath); } catch { }
-        }
+        var result = await CreateService(HttpStatusCode.OK, ReleaseJson).CheckForUpdatesAsync();
 
-        var handler = new MockHttpMessageHandler
-        {
-            SendAsyncFunc = (req, token) =>
-            {
-                var response = new HttpResponseMessage(System.Net.HttpStatusCode.OK)
-                {
-                    Content = new StringContent(@"{
-                        ""tag_name"": ""v99.9.9"",
-                        ""body"": ""Release 99.9.9"",
-                        ""assets"": [
-                            {
-                                ""name"": ""BexioOrderImportSetup.exe"",
-                                ""browser_download_url"": ""https://github.com/nilsthomann/bexio-order-import/releases/download/v99.9.9/BexioOrderImportSetup.exe""
-                            }
-                        ]
-                    }", System.Text.Encoding.UTF8, "application/json")
-                };
-                return Task.FromResult(response);
-            }
-        };
-
-        var httpClient = new HttpClient(handler);
-        var updateService = new UpdateService(httpClient, _lifecycleService);
-
-        // Act
-        var result = await updateService.CheckForUpdatesAsync();
-
-        // Assert
         result.Should().NotBeNull();
         result!.LatestVersion.Should().Be("v99.9.9");
         result.DownloadUrl.Should().Be("https://github.com/nilsthomann/bexio-order-import/releases/download/v99.9.9/BexioOrderImportSetup.exe");
         result.ReleaseNotes.Should().Be("Release 99.9.9");
+        File.Exists(CacheFilePath).Should().BeTrue("the folder is created and the check time is written");
     }
 
     [Test]
-    public async Task CheckForUpdatesAsync_WhenCheckWithin4Hours_ShouldReturnNull()
+    public async Task CheckForUpdatesAsync_WhenCheckWithin4Hours_ShouldReturnNullWithoutRequest()
     {
-        // Arrange
-        string appDataFolder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "BexioOrderImport");
-        if (!Directory.Exists(appDataFolder))
-        {
-            Directory.CreateDirectory(appDataFolder);
-        }
-        string cacheFilePath = Path.Combine(appDataFolder, "last_update_check.txt");
-        File.WriteAllText(cacheFilePath, DateTime.UtcNow.Ticks.ToString());
+        WriteCache(DateTime.UtcNow.Ticks.ToString(CultureInfo.InvariantCulture));
 
-        var updateService = new UpdateService(_lifecycleService);
+        var result = await CreateService(HttpStatusCode.OK, ReleaseJson).CheckForUpdatesAsync();
 
-        // Act
-        var result = await updateService.CheckForUpdatesAsync();
-
-        // Assert
         result.Should().BeNull();
+        _requestCount.Should().Be(0);
+    }
+
+    [Test]
+    [Arguments("corrupt_non_numeric_ticks")]
+    [Arguments("-1")]
+    public async Task CheckForUpdatesAsync_WithInvalidCacheFile_ShouldIgnoreItAndCheck(string content)
+    {
+        WriteCache(content);
+
+        var result = await CreateService(HttpStatusCode.OK, ReleaseJson).CheckForUpdatesAsync();
+
+        result.Should().NotBeNull();
+        _requestCount.Should().Be(1);
     }
 
     [Test]
     public async Task CheckForUpdatesAsync_WhenHttpError_ShouldReturnNull()
     {
-        // Arrange
-        string appDataFolder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "BexioOrderImport");
-        string cacheFilePath = Path.Combine(appDataFolder, "last_update_check.txt");
-        if (File.Exists(cacheFilePath))
-        {
-            try { File.Delete(cacheFilePath); } catch { }
-        }
+        var result = await CreateService(HttpStatusCode.InternalServerError).CheckForUpdatesAsync();
 
-        var handler = new MockHttpMessageHandler
-        {
-            SendAsyncFunc = (req, token) => Task.FromResult(new HttpResponseMessage(System.Net.HttpStatusCode.InternalServerError))
-        };
-
-        var httpClient = new HttpClient(handler);
-        var updateService = new UpdateService(httpClient, _lifecycleService);
-
-        // Act
-        var result = await updateService.CheckForUpdatesAsync();
-
-        // Assert
         result.Should().BeNull();
     }
 
     [Test]
     public async Task CheckForUpdatesAsync_WhenNoMatchingAsset_ShouldReturnNull()
     {
-        // Arrange
-        string appDataFolder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "BexioOrderImport");
-        string cacheFilePath = Path.Combine(appDataFolder, "last_update_check.txt");
-        if (File.Exists(cacheFilePath))
-        {
-            try { File.Delete(cacheFilePath); } catch { }
-        }
+        string json = ReleaseJson.Replace("BexioOrderImportSetup.exe", "some_other_file.txt");
 
-        var handler = new MockHttpMessageHandler
-        {
-            SendAsyncFunc = (req, token) =>
-            {
-                var response = new HttpResponseMessage(System.Net.HttpStatusCode.OK)
-                {
-                    Content = new StringContent(@"{
-                        ""tag_name"": ""v99.9.9"",
-                        ""assets"": [
-                            {
-                                ""name"": ""some_other_file.txt"",
-                                ""browser_download_url"": ""https://github.com/nilsthomann/bexio-order-import/releases/download/v99.9.9/some_other_file.txt""
-                            }
-                        ]
-                    }", Encoding.UTF8, "application/json")
-                };
-                return Task.FromResult(response);
-            }
-        };
+        var result = await CreateService(HttpStatusCode.OK, json).CheckForUpdatesAsync();
 
-        var httpClient = new HttpClient(handler);
-        var updateService = new UpdateService(httpClient, _lifecycleService);
-
-        // Act
-        var result = await updateService.CheckForUpdatesAsync();
-
-        // Assert
         result.Should().BeNull();
     }
 
     [Test]
-    public async Task CheckForUpdatesAsync_WhenJsonInvalid_ShouldReturnNull()
+    public async Task CheckForUpdatesAsync_WhenJsonInvalid_ShouldThrow()
     {
-        // Arrange
-        string appDataFolder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "BexioOrderImport");
-        string cacheFilePath = Path.Combine(appDataFolder, "last_update_check.txt");
-        if (File.Exists(cacheFilePath))
-        {
-            try { File.Delete(cacheFilePath); } catch { }
-        }
+        Func<Task> act = CreateService(HttpStatusCode.OK, "INVALID_JSON_CONTENT").CheckForUpdatesAsync;
 
-        var handler = new MockHttpMessageHandler
-        {
-            SendAsyncFunc = (req, token) => Task.FromResult(new HttpResponseMessage(System.Net.HttpStatusCode.OK)
-            {
-                Content = new StringContent("INVALID_JSON_CONTENT", Encoding.UTF8, "application/json")
-            })
-        };
-
-        var httpClient = new HttpClient(handler);
-        var updateService = new UpdateService(httpClient, _lifecycleService);
-
-        // Act
-        var result = await updateService.CheckForUpdatesAsync();
-
-        // Assert
-        result.Should().BeNull();
+        await act.Should().ThrowAsync<System.Text.Json.JsonException>();
     }
 
     [Test]
     public async Task DownloadAndInstallUpdateAsync_WithValidUrl_ShouldDownloadAndReportProgress()
     {
-        // Arrange
-        var handler = new MockHttpMessageHandler
+        var service = CreateService(() =>
         {
-            SendAsyncFunc = (req, token) =>
-            {
-                var response = new HttpResponseMessage(System.Net.HttpStatusCode.OK)
-                {
-                    Content = new ByteArrayContent(new byte[1024 * 100]) // 100 KB
-                };
-                response.Content.Headers.ContentLength = 1024 * 100;
-                return Task.FromResult(response);
-            }
-        };
-
-        var httpClient = new HttpClient(handler);
-        var updateService = new UpdateService(httpClient, _lifecycleService);
-
+            var response = new HttpResponseMessage(HttpStatusCode.OK) { Content = new ByteArrayContent(new byte[1024 * 100]) };
+            response.Content.Headers.ContentLength = 1024 * 100;
+            return response;
+        });
         double maxProgress = 0;
         int progressCalls = 0;
 
-        // Act
-        await updateService.DownloadAndInstallUpdateAsync("https://dummyurl.com/setup.exe", progress =>
+        await service.DownloadAndInstallUpdateAsync("https://dummyurl.com/setup.exe", progress =>
         {
             progressCalls++;
-            if (progress > maxProgress) maxProgress = progress;
+            maxProgress = Math.Max(maxProgress, progress);
         });
 
-        // Assert
-        _lifecycleService.InstallerPathPassed.Should().NotBeNull();
-        File.Exists(_lifecycleService.InstallerPathPassed!).Should().BeTrue();
+        _lifecycleService.InstallerPathPassed.Should().Be(Path.Combine(DownloadFolder, "BexioOrderImportSetup.exe"));
+        new FileInfo(_lifecycleService.InstallerPathPassed!).Length.Should().Be(1024 * 100);
         progressCalls.Should().BeGreaterThan(0);
         maxProgress.Should().BeApproximately(100.0, 0.01);
-
-        // Cleanup
-        try { File.Delete(_lifecycleService.InstallerPathPassed!); } catch { }
     }
 
     [Test]
-    public async Task CheckForUpdatesAsync_WithCorruptCacheFile_ShouldIgnoreAndPerformCheck()
+    public async Task DownloadAndInstallUpdateAsync_WhenAnOldInstallerExists_ShouldReplaceIt()
     {
-        // Arrange
-        string appDataFolder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "BexioOrderImport");
-        string cacheFilePath = Path.Combine(appDataFolder, "last_update_check.txt");
-        if (!Directory.Exists(appDataFolder))
-        {
-            Directory.CreateDirectory(appDataFolder);
-        }
-        File.WriteAllText(cacheFilePath, "corrupt_non_numeric_ticks");
+        Directory.CreateDirectory(DownloadFolder);
+        string installerPath = Path.Combine(DownloadFolder, "BexioOrderImportSetup.exe");
+        File.WriteAllText(installerPath, "an older and longer installer");
+        var service = CreateService(() => new HttpResponseMessage(HttpStatusCode.OK) { Content = new ByteArrayContent(new byte[10]) });
 
-        var handler = new MockHttpMessageHandler
-        {
-            SendAsyncFunc = (req, token) => Task.FromResult(new HttpResponseMessage(System.Net.HttpStatusCode.InternalServerError))
-        };
-        var httpClient = new HttpClient(handler);
-        var updateService = new UpdateService(httpClient, _lifecycleService);
+        await service.DownloadAndInstallUpdateAsync("https://dummyurl.com/setup.exe", _ => { });
 
-        // Act
-        var result = await updateService.CheckForUpdatesAsync();
-
-        // Assert
-        result.Should().BeNull(); // Reached check and returned null on http error
-    }
-
-    [Test]
-    public async Task CheckForUpdatesAsync_WhenCacheFolderDoesNotExist_ShouldCreateDirectoryAndCheck()
-    {
-        // Arrange
-        string appDataFolder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "BexioOrderImportTempTest_" + Guid.NewGuid().ToString());
-        string cacheFilePath = Path.Combine(appDataFolder, "last_update_check.txt");
-
-        var handler = new MockHttpMessageHandler
-        {
-            SendAsyncFunc = (req, token) => Task.FromResult(new HttpResponseMessage(System.Net.HttpStatusCode.InternalServerError))
-        };
-        var httpClient = new HttpClient(handler);
-        var updateService = new UpdateService(httpClient, _lifecycleService)
-        {
-            // Override appdata path using reflection or custom env if possible?
-            // Wait, UpdateService uses local app data by default. But wait, how does it know where to write cache?
-            // In CheckForUpdatesAsync:
-            // string appDataFolder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "BexioOrderImport");
-            // So it always uses the default appdata folder.
-            // But we can delete the default folder or delete the cache file to trigger it!
-        };
-
-        // Act & Assert
-        // We don't need a custom path because we can just delete the default directory if it's safe, 
-        // but to avoid deleting user files, let's keep it simple: if cache file doesn't exist, we delete the directory if empty.
-        // Actually, we can just delete the cache file, which runs the check.
-    }
-
-    [Test]
-    public async Task DownloadAndInstallUpdateAsync_WhenTempDirDoesNotExistAndFileExists_ShouldHandleBoth()
-    {
-        // Arrange
-        string tempDir = Path.Combine(Path.GetTempPath(), "BexioOrderImportUpdate");
-        if (Directory.Exists(tempDir))
-        {
-            try { Directory.Delete(tempDir, true); } catch { }
-        }
-
-        var handler = new MockHttpMessageHandler
-        {
-            SendAsyncFunc = (req, token) =>
-            {
-                var response = new HttpResponseMessage(System.Net.HttpStatusCode.OK)
-                {
-                    Content = new ByteArrayContent(new byte[100])
-                };
-                response.Content.Headers.ContentLength = 100;
-                return Task.FromResult(response);
-            }
-        };
-
-        var httpClient = new HttpClient(handler);
-        var updateService = new UpdateService(httpClient, _lifecycleService);
-
-        // Pre-create file to trigger delete branch
-        if (!Directory.Exists(tempDir))
-        {
-            Directory.CreateDirectory(tempDir);
-        }
-        string tempFilePath = Path.Combine(tempDir, "BexioOrderImportSetup.exe");
-        File.WriteAllText(tempFilePath, "dummy");
-
-        // Act
-        await updateService.DownloadAndInstallUpdateAsync("https://dummyurl.com/setup.exe", _ => { });
-
-        // Assert
-        File.Exists(tempFilePath).Should().BeTrue();
+        new FileInfo(installerPath).Length.Should().Be(10);
     }
 
     [Test]
     public async Task DownloadAndInstallUpdateAsync_WhenHttpError_ShouldThrowException()
     {
-        // Arrange
-        var handler = new MockHttpMessageHandler
-        {
-            SendAsyncFunc = (req, token) => Task.FromResult(new HttpResponseMessage(System.Net.HttpStatusCode.BadRequest))
-        };
-        var httpClient = new HttpClient(handler);
-        var updateService = new UpdateService(httpClient, _lifecycleService);
+        var service = CreateService(HttpStatusCode.BadRequest);
 
-        // Act & Assert
-        Func<Task> act = async () => await updateService.DownloadAndInstallUpdateAsync("https://dummyurl.com/setup.exe", _ => { });
+        Func<Task> act = () => service.DownloadAndInstallUpdateAsync("https://dummyurl.com/setup.exe", _ => { });
+
         await act.Should().ThrowAsync<HttpRequestException>().WithMessage("Response status code does not indicate success: 400 (Bad Request).");
+        _lifecycleService.InstallerPathPassed.Should().BeNull();
     }
 
     [Test]
     public void Constructors_ShouldInitializeCorrectly()
     {
-        var lifecycle = new FakeAppLifecycleService();
-        var service1 = new UpdateService(lifecycle);
+        var service1 = new UpdateService(_lifecycleService);
         service1.Should().NotBeNull();
 
         var factoryMock = new Moq.Mock<IHttpClientFactory>();
         factoryMock.Setup(f => f.CreateClient("GitHubUpdate")).Returns(new HttpClient());
-        var service2 = new UpdateService(factoryMock.Object, lifecycle);
+        var service2 = new UpdateService(factoryMock.Object, _lifecycleService);
         service2.Should().NotBeNull();
+
+        ((Action)(() => _ = new UpdateService((HttpClient?)null, null!))).Should().Throw<ArgumentNullException>();
     }
 }

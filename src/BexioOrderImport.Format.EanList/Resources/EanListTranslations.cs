@@ -6,7 +6,7 @@ namespace BexioOrderImport.Format.EanList.Resources;
 public static class EanListTranslations
 {
     private static readonly ResourceManager ResourceManager =
-        new ResourceManager("BexioOrderImport.Format.EanList.Resources.EanListTranslations", typeof(EanListTranslations).Assembly);
+        new("BexioOrderImport.Format.EanList.Resources.EanListTranslations", typeof(EanListTranslations).Assembly);
 
     public static string Format_DisplayName => ResourceManager.GetString(nameof(Format_DisplayName)) ?? string.Empty;
     public static string Format_Description => ResourceManager.GetString(nameof(Format_Description)) ?? string.Empty;

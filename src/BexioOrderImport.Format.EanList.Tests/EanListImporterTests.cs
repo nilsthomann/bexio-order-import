@@ -13,7 +13,7 @@ public class EanListImporterTests
     private readonly List<string> _logs = [];
     private readonly EanListSettings _settings = new() { DefaultOrderName = "Order: {CustomerName}" };
 
-    private IImportUserInteractionService Interaction(bool confirmUpload = true) => new DelegateImportUserInteractionService(
+    private DelegateImportUserInteractionService Interaction(bool confirmUpload = true) => new DelegateImportUserInteractionService(
         confirmUpload: () => Task.FromResult(confirmUpload),
         logInfo: _logs.Add);
 

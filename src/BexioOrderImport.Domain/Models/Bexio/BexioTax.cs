@@ -7,9 +7,6 @@ public class BexioTax
     [JsonPropertyName("id")]
     public int Id { get; set; }
 
-    [JsonPropertyName("percentage")]
-    public decimal Percentage { get; set; }
-
     [JsonPropertyName("is_active")]
     public bool IsActive { get; set; }
 

@@ -1,5 +1,4 @@
 using System.Text.Json;
-using BexioOrderImport.Format.Peakmile;
 using FluentAssertions;
 
 namespace BexioOrderImport.Format.Peakmile.Tests;
@@ -63,14 +62,28 @@ public class PeakmileSettingsTests
     [Test]
     public void PositionTextTemplate_ShouldReadAndWriteTheTemplateOfTheGroupingMode()
     {
-        var settings = new PeakmileSettings();
-
-        settings.PositionTextTemplate = "single";
-        settings.PositionGroupingMode = PositionGroupingMode.GroupedSizePosition;
+        var settings = new PeakmileSettings
+        {
+            PositionTextTemplate = "single",
+            PositionGroupingMode = PositionGroupingMode.GroupedSizePosition
+        };
         settings.PositionTextTemplate = "grouped";
 
         settings.SinglePositionTextTemplate.Should().Be("single");
         settings.GroupedPositionTextTemplate.Should().Be("grouped");
         settings.PositionTextTemplate.Should().Be("grouped");
+    }
+
+    [Test]
+    public void PositionTextTemplate_WhenGroupedMode_ShouldGetAndSetGroupedPositionTextTemplate()
+    {
+        var options = new PeakmileSettings
+        {
+            PositionGroupingMode = PositionGroupingMode.GroupedSizePosition
+        };
+        options.PositionTextTemplate.Should().Be(options.GroupedPositionTextTemplate);
+
+        options.PositionTextTemplate = "Custom Grouped {SizesRows}";
+        options.GroupedPositionTextTemplate.Should().Be("Custom Grouped {SizesRows}");
     }
 }

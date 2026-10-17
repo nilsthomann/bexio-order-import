@@ -1,7 +1,4 @@
-using System;
-using System.Collections.Generic;
 using System.Reflection;
-using System.Threading.Tasks;
 using BexioOrderImport.Tests.Utils;
 using BexioOrderImport.Wpf.Services;
 using FluentAssertions;
@@ -52,27 +49,6 @@ public class WpfDispatcherServiceTests
     }
 
     [Test]
-    public void BeginInvoke_WhenApplicationIsNull_ExecutesActionSynchronouslyOnCallingThread()
-    {
-        RunWithNullApplication(() =>
-        {
-            var service = new WpfDispatcherService();
-            bool executed = false;
-            int callingThreadId = Environment.CurrentManagedThreadId;
-            int executedThreadId = 0;
-
-            service.BeginInvoke(() =>
-            {
-                executed = true;
-                executedThreadId = Environment.CurrentManagedThreadId;
-            });
-
-            executed.Should().BeTrue();
-            executedThreadId.Should().Be(callingThreadId);
-        });
-    }
-
-    [Test]
     public void Invoke_WhenApplicationIsNull_PropagatesExceptionsImmediately()
     {
         RunWithNullApplication(() =>
@@ -86,20 +62,7 @@ public class WpfDispatcherServiceTests
     }
 
     [Test]
-    public void BeginInvoke_WhenApplicationIsNull_PropagatesExceptionsImmediately()
-    {
-        RunWithNullApplication(() =>
-        {
-            var service = new WpfDispatcherService();
-
-            Action act = () => service.BeginInvoke(() => throw new InvalidOperationException("Test error"));
-
-            act.Should().Throw<InvalidOperationException>().WithMessage("Test error");
-        });
-    }
-
-    [Test]
-    public void InvokeAndBeginInvoke_WhenApplicationIsNull_ExecutesInSequence()
+    public void Invoke_WhenApplicationIsNull_ExecutesInSequence()
     {
         RunWithNullApplication(() =>
         {
@@ -107,23 +70,11 @@ public class WpfDispatcherServiceTests
             var results = new List<int>();
 
             service.Invoke(() => results.Add(1));
-            service.BeginInvoke(() => results.Add(2));
+            service.Invoke(() => results.Add(2));
             service.Invoke(() => results.Add(3));
 
             results.Should().Equal(1, 2, 3);
         });
-    }
-
-    [Test]
-    public async Task BeginInvoke_ExecutesAction()
-    {
-        var service = new WpfDispatcherService();
-        var tcs = new TaskCompletionSource<bool>();
-
-        service.BeginInvoke(() => tcs.SetResult(true));
-
-        bool executed = await tcs.Task.WaitAsync(TimeSpan.FromSeconds(2));
-        executed.Should().BeTrue();
     }
 
     [Test]
@@ -143,21 +94,4 @@ public class WpfDispatcherServiceTests
         executed.Should().BeTrue();
         executedThreadId.Should().Be(WpfApp.Current!.Dispatcher.Thread.ManagedThreadId);
     }
-
-    [Test]
-    public async Task BeginInvoke_WithActiveApplication_ExecutesActionOnUIThread()
-    {
-        WpfTestApplication.EnsureInitialized();
-        var service = new WpfDispatcherService();
-        var tcs = new TaskCompletionSource<int>();
-
-        service.BeginInvoke(() =>
-        {
-            tcs.SetResult(Environment.CurrentManagedThreadId);
-        });
-
-        int executedThreadId = await tcs.Task.WaitAsync(TimeSpan.FromSeconds(2));
-        executedThreadId.Should().Be(WpfApp.Current!.Dispatcher.Thread.ManagedThreadId);
-    }
 }
-

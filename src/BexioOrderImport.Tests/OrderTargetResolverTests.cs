@@ -67,6 +67,21 @@ public class OrderTargetResolverTests
     }
 
     [Test]
+    [Arguments("1001", "01001", true)]
+    [Arguments("K-1001", "k-1001 ", true)]
+    [Arguments("K-1001", "1001", false)]
+    [Arguments("1001", "K-1001", false)]
+    public async Task ResolveAsync_WithOrderAndCustomerNumber_ShouldCompareNumbersByValueAndOthersByText(string contactNr, string customerNumber, bool matches)
+    {
+        _bexio.Setup(b => b.FindOrderByDocumentNrAsync("AU-1")).ReturnsAsync(new BexioOrder { Id = 40, DocumentNr = "AU-1", ContactId = 5 });
+        _bexio.Setup(b => b.GetContactDetailsAsync(5)).ReturnsAsync(new BexioContact { Id = 5, Nr = contactNr });
+
+        var target = await OrderTargetResolver.ResolveAsync(new Order { OrderNumber = "AU-1", CustomerNumber = customerNumber }, "", "", _bexio.Object, _interaction);
+
+        target!.Failure.Should().Match<ImportResult?>(f => matches ? f == null : f!.ErrorMessage!.StartsWith("Customer number mismatch"));
+    }
+
+    [Test]
     public async Task ResolveAsync_WithOrderNumberAndNoCheck_ShouldUseTheExistingOrder()
     {
         _bexio.Setup(b => b.FindOrderByDocumentNrAsync("AU-1")).ReturnsAsync(new BexioOrder { Id = 40, DocumentNr = "AU-1", ContactId = 5 });
