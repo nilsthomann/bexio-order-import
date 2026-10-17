@@ -130,9 +130,10 @@ public class PeakmileImporter
         {
             OrderPosition pos = order.Positions[i];
 
-            var article = await _articleMatcher.FindArticleAsync(pos.ArticleNumber, pos.Color, seasonCode, fallbackSeasonCodes);
-            if (article != null)
+            var match = await _articleMatcher.FindArticleAsync(new PeakmileArticleCriteria(pos.ArticleNumber, pos.Color, seasonCode, fallbackSeasonCodes));
+            if (match.IsFound)
             {
+                var article = match.Article;
                 string positionText = (options.PositionTextTemplate ?? string.Empty)
                     .Replace("{Color}", pos.Color ?? string.Empty)
                     .Replace("{SizesRows}", pos.Size ?? string.Empty)

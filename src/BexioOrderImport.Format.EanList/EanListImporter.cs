@@ -10,10 +10,12 @@ namespace BexioOrderImport.Format.EanList;
 public sealed class EanListImporter
 {
     private readonly IBexioService _bexio;
+    private readonly IArticleMatcher<EanArticleCriteria> _articleMatcher;
 
-    public EanListImporter(IBexioService bexio)
+    public EanListImporter(IBexioService bexio, IArticleMatcher<EanArticleCriteria>? articleMatcher = null)
     {
         _bexio = bexio ?? throw new ArgumentNullException(nameof(bexio));
+        _articleMatcher = articleMatcher ?? new EanArticleMatcher(bexio);
     }
 
     public async Task<ImportResult> ExecuteAsync(Order order, EanListSettings settings, IImportUserInteractionService interaction)
@@ -54,15 +56,14 @@ public sealed class EanListImporter
         foreach (var position in order.Positions)
         {
             string ean = position.Ean ?? string.Empty;
-            var articles = await _bexio.FindArticlesByInternCodeAsync(ean);
-            if (articles.Count != 1)
+            var match = await _articleMatcher.FindArticleAsync(new EanArticleCriteria(ean));
+            if (!match.IsFound)
             {
-                string reason = articles.Count == 0 ? "not found" : $"not unique ({articles.Count} articles)";
-                interaction.LogInfo($"⛔ EAN '{ean}' (row {position.SourceRow}) {reason} in Bexio.");
-                throw new InvalidOperationException($"EAN '{ean}' (row {position.SourceRow}) {reason} in Bexio.");
+                interaction.LogInfo($"⛔ EAN '{ean}' (row {position.SourceRow}) {match.FailureReason} in Bexio.");
+                throw new InvalidOperationException($"EAN '{ean}' (row {position.SourceRow}) {match.FailureReason} in Bexio.");
             }
 
-            var article = articles[0];
+            var article = match.Article;
             if (article.SalePrice == null)
             {
                 interaction.LogInfo($"⚠️ Article '{article.Code}' has no sale price in Bexio.");

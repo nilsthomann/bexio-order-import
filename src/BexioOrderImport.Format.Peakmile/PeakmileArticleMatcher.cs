@@ -5,16 +5,16 @@ using BexioOrderImport.Domain.Models.Bexio;
 namespace BexioOrderImport.Format.Peakmile;
 
 /// <summary>
+/// Criteria to find the Bexio article of a Peakmile position. The fallback season codes are tried in order
+/// (exact intern code match only) when the season code yields no match.
+/// </summary>
+public sealed record PeakmileArticleCriteria(string ArticleNumber, string Color, string SeasonCode, IReadOnlyList<string>? FallbackSeasonCodes = null);
+
+/// <summary>
 /// Finds the Bexio article of a Peakmile position.
 /// </summary>
-public interface IPeakmileArticleMatcher
+public interface IPeakmileArticleMatcher : IArticleMatcher<PeakmileArticleCriteria>
 {
-    /// <summary>
-    /// Finds a Bexio article matching the article number, color, and season code.
-    /// Fallback season codes are tried in order (exact intern code match only) when the season code yields no match.
-    /// </summary>
-    Task<BexioArticle?> FindArticleAsync(string articleNumber, string color, string seasonCode, IReadOnlyList<string>? fallbackSeasonCodes = null);
-
     /// <summary>
     /// Pre-fetches the articles of the season code and keeps those of the given article numbers, to speed up the lookups of an import.
     /// </summary>
@@ -36,25 +36,28 @@ public sealed class PeakmileArticleMatcher : IPeakmileArticleMatcher
         _bexio = bexio ?? throw new ArgumentNullException(nameof(bexio));
     }
 
-    public async Task<BexioArticle?> FindArticleAsync(string articleNumber, string color, string seasonCode, IReadOnlyList<string>? fallbackSeasonCodes = null)
+    public async Task<ArticleMatch> FindArticleAsync(PeakmileArticleCriteria criteria)
     {
+        ArgumentNullException.ThrowIfNull(criteria);
+
         // Color can be "Black" or eg. "140 Black", we need only the Color Name
-        string cleanColor = Regex.Replace(color, @"^\d+", "").Trim();
+        string cleanColor = Regex.Replace(criteria.Color, @"^\d+", "").Trim();
 
         // Season code first, then the fallback codes of multi-season articles (eg. "NOOS", "EX")
         // ponytail: a fallback article costs one missed season code lookup per position; cache missed intern codes if that gets slow
-        foreach (var code in (string[])[seasonCode, .. fallbackSeasonCodes ?? []])
+        foreach (var code in (string[])[criteria.SeasonCode, .. criteria.FallbackSeasonCodes ?? []])
         {
-            var articles = await FindArticlesByInternCodeAsync(articleNumber, cleanColor, code);
+            var articles = await FindArticlesByInternCodeAsync(criteria.ArticleNumber, cleanColor, code);
 
             if (articles.Count == 1)
             {
-                return articles[0];
+                return ArticleMatch.Found(articles[0]);
             }
         }
 
         // Fallback
-        return await FindArticleByArticleNumberAndFilterAsync(articleNumber, cleanColor, seasonCode);
+        var article = await FindArticleByArticleNumberAndFilterAsync(criteria.ArticleNumber, cleanColor, criteria.SeasonCode);
+        return article != null ? ArticleMatch.Found(article) : ArticleMatch.NotFound();
     }
 
     public async Task PreFetchArticlesAsync(string seasonCode, IEnumerable<string> articleNumbers)

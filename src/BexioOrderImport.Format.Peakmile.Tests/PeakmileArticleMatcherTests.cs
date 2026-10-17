@@ -1,5 +1,6 @@
 using System.Net;
 using System.Text;
+using BexioOrderImport.Abstractions.Bexio;
 using BexioOrderImport.Format.Peakmile.Tests.Utils;
 using BexioOrderImport.Infrastructure.Bexio;
 using FluentAssertions;
@@ -32,7 +33,7 @@ public class PeakmileArticleMatcherTests
         var matcher = new PeakmileArticleMatcher(client);
 
         // Act
-        var result = await matcher.FindArticleAsync("ART-001", "Black", "FS27"); ;
+        var result = (await matcher.FindArticleAsync(new("ART-001", "Black", "FS27"))).Article;
 
         // Assert
         result.Should().NotBeNull();
@@ -65,7 +66,7 @@ public class PeakmileArticleMatcherTests
         var matcher = new PeakmileArticleMatcher(client);
 
         // Act
-        var result = await matcher.FindArticleAsync("ART-001", "Black", "FS27"); ;
+        var result = (await matcher.FindArticleAsync(new("ART-001", "Black", "FS27"))).Article;
 
         // Assert
         result.Should().NotBeNull();
@@ -75,7 +76,7 @@ public class PeakmileArticleMatcherTests
     }
 
     [Test]
-    public async Task FindArticleAsync_WithUnknownArticle_ReturnsNull()
+    public async Task FindArticleAsync_WithUnknownArticle_ShouldNotMatch()
     {
         // Arrange
         var handler = new MockHttpMessageHandler
@@ -95,10 +96,10 @@ public class PeakmileArticleMatcherTests
         var matcher = new PeakmileArticleMatcher(client);
 
         // Act
-        var result = await matcher.FindArticleAsync("ART-01","Black", "FS27");
+        var result = await matcher.FindArticleAsync(new("ART-01", "Black", "FS27"));
 
         // Assert
-        result.Should().BeNull();
+        result.Should().Be(new ArticleMatch(null, "not found"));
     }
 
     [Test]
@@ -127,7 +128,7 @@ public class PeakmileArticleMatcherTests
         var matcher = new PeakmileArticleMatcher(client);
 
         // Act
-        var result = await matcher.FindArticleAsync("ART-001", "Black", "FS27", ["NOOS", "EX"]);
+        var result = (await matcher.FindArticleAsync(new("ART-001", "Black", "FS27", ["NOOS", "EX"]))).Article;
 
         // Assert
         result.Should().NotBeNull();
@@ -164,7 +165,7 @@ public class PeakmileArticleMatcherTests
         var matcher = new PeakmileArticleMatcher(client);
 
         // Act
-        var result = await matcher.FindArticleAsync("ART-001", "Black", "FS27", ["EX"]);
+        var result = (await matcher.FindArticleAsync(new("ART-001", "Black", "FS27", ["EX"]))).Article;
 
         // Assert
         result.Should().NotBeNull();
@@ -199,7 +200,7 @@ public class PeakmileArticleMatcherTests
         var matcher = new PeakmileArticleMatcher(client);
 
         // Act
-        var result = await matcher.FindArticleAsync("ART-001", "Black", "FS27", ["EX"]);
+        var result = (await matcher.FindArticleAsync(new("ART-001", "Black", "FS27", ["EX"]))).Article;
 
         // Assert
         result.Should().NotBeNull();
@@ -233,7 +234,7 @@ public class PeakmileArticleMatcherTests
         int initialCallCount = apiCallCount;
 
         // Act - Find Article (should hit cache)
-        var article = await matcher.FindArticleAsync("ART-100", "140 Black", "FS27");
+        var article = (await matcher.FindArticleAsync(new("ART-100", "140 Black", "FS27"))).Article;
 
         // Assert
         article.Should().NotBeNull();
@@ -269,7 +270,7 @@ public class PeakmileArticleMatcherTests
 
         await matcher.PreFetchArticlesAsync("SS26", ["ART-999"]);
 
-        var article = await matcher.FindArticleAsync("ART-999", "Red", "SS26");
+        var article = (await matcher.FindArticleAsync(new("ART-999", "Red", "SS26"))).Article;
         article.Should().NotBeNull();
         article!.Id.Should().Be(101);
     }
@@ -289,8 +290,16 @@ public class PeakmileArticleMatcherTests
         var client = new BexioApiClient(httpClient, "dummy-token", 1, 1);
         var matcher = new PeakmileArticleMatcher(client);
 
-        var article = await matcher.FindArticleAsync("ART123", "Red", "FW26");
+        var article = (await matcher.FindArticleAsync(new("ART123", "Red", "FW26"))).Article;
         article.Should().NotBeNull();
         article!.Id.Should().Be(20);
+    }
+
+    [Test]
+    public async Task FindArticleAsync_WhenCriteriaIsNull_ShouldThrow()
+    {
+        var matcher = new PeakmileArticleMatcher(new BexioApiClient(new HttpClient(), "dummy-token", 1, 1));
+
+        await ((Func<Task>)(() => matcher.FindArticleAsync(null!))).Should().ThrowAsync<ArgumentNullException>();
     }
 }

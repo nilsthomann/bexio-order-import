@@ -42,7 +42,7 @@ dotnet run --project src\BexioOrderImport.Format.Peakmile.Tests -- --treenode-fi
 - A new test project must be added to `$testProjects` in `build\run-coverage.ps1`.
 - Fixtures are never written by tests; tests that need a changed workbook save a temp copy.
 - Tests never use the real `%LocalAppData%\BexioOrderImport\appsettings.json`; view model tests pass a temp config path.
-- Moq `Setup`/`Verify` calls must pass optional parameters explicitly, eg. `It.IsAny<IReadOnlyList<string>>()` for the fallback codes of `IPeakmileArticleMatcher.FindArticleAsync`.
+- Moq `Setup`/`Verify` calls must pass optional parameters explicitly, eg. `It.IsAny<string?>()` for the position text of `IBexioService.AddArticlePositionAsync`.
 
 ## Conventions
 
@@ -65,9 +65,11 @@ Profiles store a format id (`Format`) and the format's settings (`Settings`) in 
 
 ## Bexio article lookup
 
-`PeakmileArticleMatcher.FindArticleAsync` (in the Peakmile format) matches the Bexio `intern_code` exactly as `{SeasonCode}{ArticleNumber}{Color}`, first with the season code of the profile, then with each season fallback code (multi-season articles, eg. `NOOS`, `EX`). Only if all miss, it searches by article number and filters by color and season code in the article name. An article that is not found aborts the import. It uses only the generic `IBexioService.FindArticlesByInternCodeAsync` and `SearchArticlesAsync`, and caches the articles of one import; `PeakmileArticleMatcherTests` run it against the real `BexioApiClient` with a mocked HTTP handler.
+Each format finds its articles with an `IArticleMatcher<TCriteria>` (`Abstractions/Bexio`): the criteria is a record of the format, the result an `ArticleMatch` with the article or the reason it was not matched (eg. `not found`), which the importer logs before it aborts. The importers take an optional matcher, so a new criterion is a new property of the criteria record, and a fallback is another matcher of the same criteria that runs when the first one finds nothing.
 
-The EAN list format uses `FindArticlesByInternCodeAsync(ean)`: the EAN is the `intern_code`, exactly one article must match, and the position price is the article's `sale_price`.
+`PeakmileArticleMatcher` (`PeakmileArticleCriteria`) matches the Bexio `intern_code` exactly as `{SeasonCode}{ArticleNumber}{Color}`, first with the season code of the profile, then with each season fallback code (multi-season articles, eg. `NOOS`, `EX`). Only if all miss, it searches by article number and filters by color and season code in the article name. An article that is not found aborts the import. It uses only the generic `IBexioService.FindArticlesByInternCodeAsync` and `SearchArticlesAsync`, and caches the articles of one import; `PeakmileArticleMatcherTests` run it against the real `BexioApiClient` with a mocked HTTP handler.
+
+`EanArticleMatcher` (`EanArticleCriteria`) of the EAN list format uses `FindArticlesByInternCodeAsync(ean)`: the EAN is the `intern_code` and exactly one article must match (`ArticleMatch.FromCandidates`). The position price is the article's `sale_price`.
 
 ## Order and customer number
 
