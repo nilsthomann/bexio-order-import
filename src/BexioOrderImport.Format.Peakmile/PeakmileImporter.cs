@@ -10,16 +10,18 @@ public class PeakmileImporter
 {
     private readonly IExcelParser? _excelParser;
     private readonly IBexioService _bexioClient;
+    private readonly IPeakmileArticleMatcher _articleMatcher;
 
-    public PeakmileImporter(IBexioService bexioClient)
-        : this(excelParser: null, bexioClient: bexioClient)
+    public PeakmileImporter(IBexioService bexioClient, IPeakmileArticleMatcher? articleMatcher = null)
+        : this(excelParser: null, bexioClient: bexioClient, articleMatcher: articleMatcher)
     {
     }
 
-    public PeakmileImporter(IExcelParser? excelParser, IBexioService bexioClient)
+    public PeakmileImporter(IExcelParser? excelParser, IBexioService bexioClient, IPeakmileArticleMatcher? articleMatcher = null)
     {
         _excelParser = excelParser;
         _bexioClient = bexioClient ?? throw new ArgumentNullException(nameof(bexioClient));
+        _articleMatcher = articleMatcher ?? new PeakmileArticleMatcher(bexioClient);
     }
 
     public async Task<ImportResult> ExecuteAsync(
@@ -118,7 +120,7 @@ public class PeakmileImporter
         string[] allSeasonCodes = [seasonCode, .. fallbackSeasonCodes];
         foreach (var code in allSeasonCodes)
         {
-            await _bexioClient.PreFetchArticlesAsync(code, uniqueArticleNumbers);
+            await _articleMatcher.PreFetchArticlesAsync(code, uniqueArticleNumbers);
         }
 
         interaction.LogInfo($"Uploading {order.Positions.Count} positions to Bexio...");
@@ -128,9 +130,10 @@ public class PeakmileImporter
         {
             OrderPosition pos = order.Positions[i];
 
-            var article = await _bexioClient.FindArticleAsync(pos.ArticleNumber, pos.Color, seasonCode, fallbackSeasonCodes);
-            if (article != null)
+            var match = await _articleMatcher.FindArticleAsync(new PeakmileArticleCriteria(pos.ArticleNumber, pos.Color, seasonCode, fallbackSeasonCodes));
+            if (match.IsFound)
             {
+                var article = match.Article;
                 string positionText = (options.PositionTextTemplate ?? string.Empty)
                     .Replace("{Color}", pos.Color ?? string.Empty)
                     .Replace("{SizesRows}", pos.Size ?? string.Empty)

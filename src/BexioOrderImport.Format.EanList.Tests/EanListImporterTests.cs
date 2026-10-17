@@ -165,6 +165,21 @@ public class EanListImporterTests
     }
 
     [Test]
+    public async Task ExecuteAsync_WithArticleMatcher_ShouldUseItAndAbortWithItsReason()
+    {
+        SetupNewOrder();
+        var matcher = new Mock<IArticleMatcher<EanArticleCriteria>>();
+        matcher.Setup(m => m.FindArticleAsync(new EanArticleCriteria("7612345678904"))).ReturnsAsync(ArticleMatch.Found(Article(2)));
+        matcher.Setup(m => m.FindArticleAsync(new EanArticleCriteria("4006381333931"))).ReturnsAsync(ArticleMatch.NotFound("blocked"));
+
+        Func<Task> act = () => new EanListImporter(_bexio.Object, matcher.Object).ExecuteAsync(Order(eans: ["7612345678904", "4006381333931"]), _settings, Interaction());
+
+        await act.Should().ThrowAsync<InvalidOperationException>().WithMessage("EAN '4006381333931' (row 3) blocked in Bexio.");
+        _bexio.Verify(b => b.AddArticlePositionAsync(77, 2, It.IsAny<OrderPosition>(), It.IsAny<string?>()), Times.Once);
+        _bexio.Verify(b => b.FindArticlesByInternCodeAsync(It.IsAny<string>()), Times.Never);
+    }
+
+    [Test]
     public async Task ExecuteAsync_WhenArticleHasNoSalePrice_ShouldWarnAndUseZero()
     {
         SetupNewOrder();
