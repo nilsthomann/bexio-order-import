@@ -146,10 +146,26 @@ public class EanListImporterTests
     {
         SetupNewOrder();
         SetupArticle("4006381333931");
+        _bexio.Setup(b => b.SearchArticlesAsync(It.IsAny<IReadOnlyList<BexioSearchCriteria>>())).ReturnsAsync([]);
 
         Func<Task> act = () => new EanListImporter(_bexio.Object).ExecuteAsync(Order(), _settings, Interaction());
 
         await act.Should().ThrowAsync<InvalidOperationException>().WithMessage("*4006381333931*row 2*not found*");
+    }
+
+    [Test]
+    public async Task ExecuteAsync_WhenTheExcelCellLostTheLeadingZero_ShouldFindTheArticle()
+    {
+        SetupNewOrder();
+        SetupArticle("826710896036");
+        var article = Article(3);
+        article.Code = "0826710896036";
+        _bexio.Setup(b => b.SearchArticlesAsync(It.IsAny<IReadOnlyList<BexioSearchCriteria>>())).ReturnsAsync([article]);
+
+        var result = await new EanListImporter(_bexio.Object).ExecuteAsync(Order(eans: ["826710896036"]), _settings, Interaction());
+
+        result.Success.Should().BeTrue();
+        _bexio.Verify(b => b.AddArticlePositionAsync(77, 3, It.IsAny<OrderPosition>(), It.IsAny<string?>()), Times.Once);
     }
 
     [Test]
