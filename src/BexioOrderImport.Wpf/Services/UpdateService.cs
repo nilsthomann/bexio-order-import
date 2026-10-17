@@ -12,6 +12,8 @@ public class UpdateService : IUpdateService
 {
     private readonly HttpClient _httpClient;
     private readonly IAppLifecycleService _appLifecycleService;
+    private readonly string _cacheFolder;
+    private readonly string _downloadFolder;
     private const string RepoOwner = "nilsthomann";
     private const string RepoName = "bexio-order-import";
 
@@ -21,10 +23,14 @@ public class UpdateService : IUpdateService
     internal UpdateService(IAppLifecycleService appLifecycleService)
         : this(new HttpClient(), appLifecycleService) { }
 
-    internal UpdateService(HttpClient? httpClient, IAppLifecycleService appLifecycleService)
+    /// <param name="cacheFolder">Folder of the last check time; tests pass a temp folder instead of %LocalAppData%\BexioOrderImport.</param>
+    /// <param name="downloadFolder">Folder of the downloaded installer; tests pass a temp folder instead of %TEMP%\BexioOrderImportUpdate.</param>
+    internal UpdateService(HttpClient? httpClient, IAppLifecycleService appLifecycleService, string? cacheFolder = null, string? downloadFolder = null)
     {
         _httpClient = httpClient ?? new HttpClient();
         _appLifecycleService = appLifecycleService ?? throw new ArgumentNullException(nameof(appLifecycleService));
+        _cacheFolder = cacheFolder ?? Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "BexioOrderImport");
+        _downloadFolder = downloadFolder ?? Path.Combine(Path.GetTempPath(), "BexioOrderImportUpdate");
         if (_httpClient.DefaultRequestHeaders.UserAgent.Count == 0)
         {
             _httpClient.DefaultRequestHeaders.UserAgent.Add(new ProductInfoHeaderValue("BexioOrderImporter", "1.0"));
@@ -88,15 +94,14 @@ public class UpdateService : IUpdateService
 
     public async Task<UpdateInfo?> CheckForUpdatesAsync()
     {
-        string appDataFolder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "BexioOrderImport");
-        string cacheFilePath = Path.Combine(appDataFolder, "last_update_check.txt");
-        
+        string cacheFilePath = Path.Combine(_cacheFolder, "last_update_check.txt");
+
         if (IsUpdateCheckCached(cacheFilePath))
         {
             return null;
         }
 
-        UpdateLastCheckCache(appDataFolder, cacheFilePath);
+        UpdateLastCheckCache(_cacheFolder, cacheFilePath);
 
         string url = $"https://api.github.com/repos/{RepoOwner}/{RepoName}/releases/latest";
         var response = await _httpClient.GetAsync(url);
@@ -127,13 +132,8 @@ public class UpdateService : IUpdateService
 
     public async Task DownloadAndInstallUpdateAsync(string downloadUrl, Action<double> progressCallback)
     {
-        string tempDir = Path.Combine(Path.GetTempPath(), "BexioOrderImportUpdate");
-        if (!Directory.Exists(tempDir))
-        {
-            Directory.CreateDirectory(tempDir);
-        }
-
-        string tempFilePath = Path.Combine(tempDir, "BexioOrderImportSetup.exe");
+        Directory.CreateDirectory(_downloadFolder);
+        string tempFilePath = Path.Combine(_downloadFolder, "BexioOrderImportSetup.exe");
 
         // Download file with progress reporting
         using (var response = await _httpClient.GetAsync(downloadUrl, HttpCompletionOption.ResponseHeadersRead))

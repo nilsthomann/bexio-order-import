@@ -39,7 +39,7 @@ dotnet run --project src\BexioOrderImport.Format.Peakmile.Tests -- --treenode-fi
 - Pull requests fail below 90% code coverage, so new logic needs tests.
 - A new test project must be added to `$testProjects` in `build\run-coverage.ps1`.
 - Fixtures are never written by tests; tests that need a changed workbook save a temp copy.
-- Tests never use the real `%LocalAppData%\BexioOrderImport\appsettings.json`; view model tests pass a temp config path.
+- Tests never use the real `%LocalAppData%\BexioOrderImport` files; view model tests pass a temp config path, `UpdateServiceTests` pass temp folders for the check cache and the installer download.
 - Moq `Setup`/`Verify` calls must pass optional parameters explicitly, eg. `It.IsAny<string?>()` for the position text of `IBexioService.AddArticlePositionAsync`.
 
 ## Conventions
