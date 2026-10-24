@@ -9,8 +9,8 @@ public class EanListViewModelTests
     [Test]
     public void ProfileConfig_LoadAndSave_WithoutChanges_ShouldKeepAllValues()
     {
-        var settings = new EanListSettings { WorksheetIndex = 2, StartRow = 4, EanColumn = "C", QuantityColumn = "D", CustomerNumber = "1001", DefaultOrderName = "Order {CustomerName}", PositionTextTemplate = "{Ean}" };
-        var expected = new EanListSettings { WorksheetIndex = 2, StartRow = 4, EanColumn = "C", QuantityColumn = "D", CustomerNumber = "1001", DefaultOrderName = "Order {CustomerName}", PositionTextTemplate = "{Ean}" };
+        var settings = new EanListSettings { WorksheetIndex = 2, StartRow = 4, EanColumn = "C", QuantityColumn = "D", CustomerNumber = "1001", DefaultOrderName = "Order {CustomerName}", PositionTextTemplate = "{EAN}" };
+        var expected = new EanListSettings { WorksheetIndex = 2, StartRow = 4, EanColumn = "C", QuantityColumn = "D", CustomerNumber = "1001", DefaultOrderName = "Order {CustomerName}", PositionTextTemplate = "{EAN}" };
         var viewModel = new EanListProfileConfigViewModel();
 
         viewModel.Load(settings);

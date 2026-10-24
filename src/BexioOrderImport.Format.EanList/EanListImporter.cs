@@ -71,7 +71,9 @@ public sealed class EanListImporter
             position.GrossUnitPrice = article.SalePrice ?? 0m;
             position.ArticleName = article.Name;
 
+            // {Ean} is the older spelling, profiles may still use it
             string positionText = (settings.PositionTextTemplate ?? string.Empty)
+                .Replace("{EAN}", ean)
                 .Replace("{Ean}", ean)
                 .Replace("{BexioArticleName}", article.Name ?? string.Empty)
                 .Replace("{BexioArticleDescription}", article.Description ?? string.Empty);

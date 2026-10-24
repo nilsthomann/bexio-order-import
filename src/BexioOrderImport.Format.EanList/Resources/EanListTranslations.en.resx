@@ -163,7 +163,7 @@
     <value>Position Text Template:</value>
   </data>
   <data name="Settings_PositionTextTemplateHint" xml:space="preserve">
-    <value>Placeholders: {Ean}, {BexioArticleName}, {BexioArticleDescription}</value>
+    <value>Placeholders: {EAN}, {BexioArticleName}, {BexioArticleDescription}</value>
   </data>
   <data name="Validation_PositiveNumber" xml:space="preserve">
     <value>&quot;{0}&quot; must be a whole number greater than 0.</value>

@@ -92,7 +92,7 @@ public class EanListImporterTests
         SetupArticle("4006381333931", Article(1));
         SetupArticle("7612345678900", Article(2, 30m));
         var order = Order(eans: ["4006381333931", "7612345678900", "4006381333931"]);
-        var settings = new EanListSettings { PositionTextTemplate = "{Ean}: {BexioArticleName} - {BexioArticleDescription}" };
+        var settings = new EanListSettings { PositionTextTemplate = "{EAN}: {BexioArticleName} - {BexioArticleDescription}" };
 
         var result = await new EanListImporter(_bexio.Object).ExecuteAsync(order, settings, Interaction());
 
@@ -103,6 +103,20 @@ public class EanListImporterTests
         _bexio.Verify(b => b.AddArticlePositionAsync(77, 2, It.Is<OrderPosition>(p => p.Quantity == 2), "7612345678900: Article 2 - Description 2"), Times.Once);
         _bexio.Verify(b => b.AddDiscountPositionAsync(It.IsAny<int>(), It.IsAny<decimal>(), It.IsAny<string>()), Times.Never);
         _bexio.Verify(b => b.FindOrderByDocumentNrAsync(It.IsAny<string>()), Times.Never);
+    }
+
+    [Test]
+    [Arguments(null, "<strong>Article 1</strong><br />Description 1<br />4006381333931")]
+    [Arguments("{Ean} / {EAN}", "4006381333931 / 4006381333931")]
+    public async Task ExecuteAsync_ShouldWriteThePositionTextWithTheEan(string? template, string expected)
+    {
+        SetupNewOrder();
+        SetupArticle("4006381333931", Article(1));
+        var settings = template == null ? new EanListSettings() : new EanListSettings { PositionTextTemplate = template };
+
+        await new EanListImporter(_bexio.Object).ExecuteAsync(Order(), settings, Interaction());
+
+        _bexio.Verify(b => b.AddArticlePositionAsync(77, 1, It.IsAny<OrderPosition>(), expected), Times.Once);
     }
 
     [Test]
