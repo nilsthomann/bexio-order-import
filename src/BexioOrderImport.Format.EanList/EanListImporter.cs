@@ -27,7 +27,7 @@ public sealed class EanListImporter
         // Without a customer number there is no email or customer creation fallback
         if (string.IsNullOrWhiteSpace(order.CustomerNumber))
         {
-            interaction.LogInfo($"⛔ No customer number in row {settings.StartRow}.");
+            interaction.LogInfo("⛔ No customer number in the profile.");
             return new ImportResult(Success: false, ErrorMessage: "Customer number missing.");
         }
 

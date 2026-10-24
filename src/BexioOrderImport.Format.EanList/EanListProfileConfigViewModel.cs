@@ -14,7 +14,7 @@ public sealed class EanListProfileConfigViewModel
     public string StartRow { get; set; } = string.Empty;
     public string EanColumn { get; set; } = string.Empty;
     public string QuantityColumn { get; set; } = string.Empty;
-    public string CustomerNumberColumn { get; set; } = string.Empty;
+    public string CustomerNumber { get; set; } = string.Empty;
     public string DefaultOrderName { get; set; } = string.Empty;
     public string PositionTextTemplate { get; set; } = string.Empty;
 
@@ -25,7 +25,7 @@ public sealed class EanListProfileConfigViewModel
         StartRow = settings.StartRow.ToString();
         EanColumn = settings.EanColumn;
         QuantityColumn = settings.QuantityColumn;
-        CustomerNumberColumn = settings.CustomerNumberColumn;
+        CustomerNumber = settings.CustomerNumber;
         DefaultOrderName = settings.DefaultOrderName;
         PositionTextTemplate = settings.PositionTextTemplate;
     }
@@ -37,7 +37,10 @@ public sealed class EanListProfileConfigViewModel
         AddIfNotPositive(errors, StartRow, EanListTranslations.Settings_StartRowLabel);
         AddIfNoColumn(errors, EanColumn, EanListTranslations.Settings_EanColumn);
         AddIfNoColumn(errors, QuantityColumn, EanListTranslations.Settings_QuantityColumn);
-        AddIfNoColumn(errors, CustomerNumberColumn, EanListTranslations.Settings_CustomerNumberColumn);
+        if (string.IsNullOrWhiteSpace(CustomerNumber))
+        {
+            errors.Add(string.Format(EanListTranslations.Validation_Required, EanListTranslations.Settings_CustomerNumberLabel.TrimEnd(':', ' ')));
+        }
         return errors;
     }
 
@@ -47,7 +50,7 @@ public sealed class EanListProfileConfigViewModel
         _settings.StartRow = int.Parse(StartRow.Trim());
         _settings.EanColumn = ExcelColumnHelper.NormalizeColumnLetter(EanColumn, "A");
         _settings.QuantityColumn = ExcelColumnHelper.NormalizeColumnLetter(QuantityColumn, "B");
-        _settings.CustomerNumberColumn = ExcelColumnHelper.NormalizeColumnLetter(CustomerNumberColumn, "C");
+        _settings.CustomerNumber = CustomerNumber.Trim();
         _settings.DefaultOrderName = DefaultOrderName.Trim();
         _settings.PositionTextTemplate = PositionTextTemplate.Trim();
         return _settings;

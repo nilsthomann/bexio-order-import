@@ -9,8 +9,8 @@ public class EanListViewModelTests
     [Test]
     public void ProfileConfig_LoadAndSave_WithoutChanges_ShouldKeepAllValues()
     {
-        var settings = new EanListSettings { WorksheetIndex = 2, StartRow = 4, EanColumn = "C", QuantityColumn = "D", CustomerNumberColumn = "E", DefaultOrderName = "Order {CustomerName}", PositionTextTemplate = "{Ean}" };
-        var expected = new EanListSettings { WorksheetIndex = 2, StartRow = 4, EanColumn = "C", QuantityColumn = "D", CustomerNumberColumn = "E", DefaultOrderName = "Order {CustomerName}", PositionTextTemplate = "{Ean}" };
+        var settings = new EanListSettings { WorksheetIndex = 2, StartRow = 4, EanColumn = "C", QuantityColumn = "D", CustomerNumber = "1001", DefaultOrderName = "Order {CustomerName}", PositionTextTemplate = "{Ean}" };
+        var expected = new EanListSettings { WorksheetIndex = 2, StartRow = 4, EanColumn = "C", QuantityColumn = "D", CustomerNumber = "1001", DefaultOrderName = "Order {CustomerName}", PositionTextTemplate = "{Ean}" };
         var viewModel = new EanListProfileConfigViewModel();
 
         viewModel.Load(settings);
@@ -24,6 +24,7 @@ public class EanListViewModelTests
     {
         var viewModel = new EanListProfileConfigViewModel();
         viewModel.Load(new EanListSettings());
+        viewModel.CustomerNumber = " 1001 ";
         viewModel.WorksheetIndex = " 3 ";
         viewModel.EanColumn = "b";
         viewModel.QuantityColumn = "3";
@@ -32,6 +33,7 @@ public class EanListViewModelTests
         viewModel.Validate().Should().BeEmpty();
         var saved = viewModel.Save();
 
+        saved.CustomerNumber.Should().Be("1001");
         saved.WorksheetIndex.Should().Be(3);
         saved.EanColumn.Should().Be("B");
         saved.QuantityColumn.Should().Be("C");
@@ -47,13 +49,14 @@ public class EanListViewModelTests
         viewModel.StartRow = "x";
         viewModel.EanColumn = "1A";
         viewModel.QuantityColumn = "";
-        viewModel.CustomerNumberColumn = "-1";
+        viewModel.CustomerNumber = " ";
 
         var errors = viewModel.Validate();
 
         errors.Should().HaveCount(5);
         errors[0].Should().Contain(EanListTranslations.Settings_WorksheetLabel.TrimEnd(':'));
         errors[2].Should().Contain(EanListTranslations.Settings_EanColumn);
+        errors[4].Should().Be(string.Format(EanListTranslations.Validation_Required, EanListTranslations.Settings_CustomerNumberLabel.TrimEnd(':')));
     }
 
     [Test]
@@ -86,11 +89,10 @@ public class EanListViewModelTests
     [Test]
     public void Preview_WhenCustomerNumberIsMissing_ShouldWarn()
     {
-        var preview = new EanListPreviewViewModel(new Order(), new EanListSettings { StartRow = 3 });
+        var preview = new EanListPreviewViewModel(new Order(), new EanListSettings());
 
         preview.CustomerNumber.Should().Be("-");
         preview.IsCustomerNumberMissing.Should().BeTrue();
-        preview.CustomerNumberMissingMessage.Should().Be(string.Format(EanListTranslations.Preview_CustomerNumberMissing, 3));
     }
 
     [Test]

@@ -1,5 +1,4 @@
 using BexioOrderImport.Domain.Models;
-using BexioOrderImport.Format.EanList.Resources;
 
 namespace BexioOrderImport.Format.EanList;
 
@@ -15,7 +14,6 @@ public sealed class EanListPreviewViewModel
 
         IsCustomerNumberMissing = string.IsNullOrWhiteSpace(order.CustomerNumber);
         CustomerNumber = IsCustomerNumberMissing ? "-" : order.CustomerNumber!;
-        CustomerNumberMissingMessage = string.Format(EanListTranslations.Preview_CustomerNumberMissing, settings.StartRow);
 
         Positions = order.Positions;
         TotalQuantity = order.Positions.Sum(p => p.Quantity);
@@ -28,8 +26,6 @@ public sealed class EanListPreviewViewModel
     /// The import is cancelled without a customer number, so the preview warns about it.
     /// </summary>
     public bool IsCustomerNumberMissing { get; }
-
-    public string CustomerNumberMissingMessage { get; }
 
     public IReadOnlyList<OrderPosition> Positions { get; }
 

@@ -16,7 +16,8 @@ public static class EanListTranslations
     public static string Settings_StartRowHint => ResourceManager.GetString(nameof(Settings_StartRowHint)) ?? string.Empty;
     public static string Settings_EanColumn => ResourceManager.GetString(nameof(Settings_EanColumn)) ?? string.Empty;
     public static string Settings_QuantityColumn => ResourceManager.GetString(nameof(Settings_QuantityColumn)) ?? string.Empty;
-    public static string Settings_CustomerNumberColumn => ResourceManager.GetString(nameof(Settings_CustomerNumberColumn)) ?? string.Empty;
+    public static string Settings_CustomerNumberLabel => ResourceManager.GetString(nameof(Settings_CustomerNumberLabel)) ?? string.Empty;
+    public static string Settings_CustomerNumberHint => ResourceManager.GetString(nameof(Settings_CustomerNumberHint)) ?? string.Empty;
     public static string Settings_NumbersHint => ResourceManager.GetString(nameof(Settings_NumbersHint)) ?? string.Empty;
     public static string Settings_TextTemplatesSection => ResourceManager.GetString(nameof(Settings_TextTemplatesSection)) ?? string.Empty;
     public static string Settings_DefaultOrderNameLabel => ResourceManager.GetString(nameof(Settings_DefaultOrderNameLabel)) ?? string.Empty;
@@ -25,6 +26,7 @@ public static class EanListTranslations
     public static string Settings_PositionTextTemplateHint => ResourceManager.GetString(nameof(Settings_PositionTextTemplateHint)) ?? string.Empty;
     public static string Validation_PositiveNumber => ResourceManager.GetString(nameof(Validation_PositiveNumber)) ?? string.Empty;
     public static string Validation_InvalidColumn => ResourceManager.GetString(nameof(Validation_InvalidColumn)) ?? string.Empty;
+    public static string Validation_Required => ResourceManager.GetString(nameof(Validation_Required)) ?? string.Empty;
     public static string Error_InvalidEan => ResourceManager.GetString(nameof(Error_InvalidEan)) ?? string.Empty;
     public static string Error_MissingEan => ResourceManager.GetString(nameof(Error_MissingEan)) ?? string.Empty;
     public static string Error_InvalidQuantity => ResourceManager.GetString(nameof(Error_InvalidQuantity)) ?? string.Empty;

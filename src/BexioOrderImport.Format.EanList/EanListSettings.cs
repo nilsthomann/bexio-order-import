@@ -8,9 +8,6 @@ public class EanListSettings : IFormatSettings
 {
     public int WorksheetIndex { get; set; } = 1;
 
-    /// <summary>
-    /// First data row. The customer number is read from this row only.
-    /// </summary>
     public int StartRow { get; set; } = 2;
 
     [JsonConverter(typeof(ExcelColumnJsonConverter))]
@@ -19,8 +16,10 @@ public class EanListSettings : IFormatSettings
     [JsonConverter(typeof(ExcelColumnJsonConverter))]
     public string QuantityColumn { get; set; } = "B";
 
-    [JsonConverter(typeof(ExcelColumnJsonConverter))]
-    public string CustomerNumberColumn { get; set; } = "C";
+    /// <summary>
+    /// Bexio contact number (nr) of the customer. Each customer has its own profile.
+    /// </summary>
+    public string CustomerNumber { get; set; } = string.Empty;
 
     public string DefaultOrderName { get; set; } = "Order: {CustomerName}";
 

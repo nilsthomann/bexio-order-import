@@ -22,7 +22,7 @@ public class EanListFormatAdapterTests
     [Test]
     public void Parse_ShouldReadTheEanList()
     {
-        var order = new EanListFormatAdapter().Parse(Path.Combine(AppContext.BaseDirectory, "Fixtures", "EanListOrder.xlsx"), new EanListSettings());
+        var order = new EanListFormatAdapter().Parse(Path.Combine(AppContext.BaseDirectory, "Fixtures", "EanListOrder.xlsx"), new EanListSettings { CustomerNumber = "1001" });
 
         order.CustomerNumber.Should().Be("1001");
         order.Positions.Should().HaveCount(4);
@@ -40,7 +40,7 @@ public class EanListFormatAdapterTests
     public void SettingsJson_ShouldRoundTripAndNormalizeColumns()
     {
         var adapter = new EanListFormatAdapter();
-        var settings = new EanListSettings { WorksheetIndex = 2, StartRow = 4, EanColumn = "C", QuantityColumn = "D", CustomerNumberColumn = "E", DefaultOrderName = "X", PositionTextTemplate = "{Ean}" };
+        var settings = new EanListSettings { WorksheetIndex = 2, StartRow = 4, EanColumn = "C", QuantityColumn = "D", CustomerNumber = "1001", DefaultOrderName = "X", PositionTextTemplate = "{Ean}" };
 
         var restored = adapter.DeserializeSettings(adapter.SerializeSettings(settings));
 

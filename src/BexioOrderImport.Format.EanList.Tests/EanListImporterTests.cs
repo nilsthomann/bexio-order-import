@@ -50,7 +50,7 @@ public class EanListImporterTests
         result.Success.Should().BeFalse();
         result.ErrorMessage.Should().Be("Customer number missing.");
         asked.Should().BeFalse();
-        _logs.Should().Contain(l => l.Contains("row 2"));
+        _logs.Should().Contain(l => l.Contains("No customer number in the profile"));
         _bexio.VerifyNoOtherCalls();
     }
 

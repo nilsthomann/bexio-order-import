@@ -121,7 +121,7 @@
     <value>EAN-Liste</value>
   </data>
   <data name="Format_Description" xml:space="preserve">
-    <value>Einfache Liste mit EAN, Menge und Kundennummer. Artikel und Preise kommen aus Bexio.</value>
+    <value>Einfache Liste mit EAN und Menge, die Kundennummer steht im Profil. Artikel und Preise kommen aus Bexio.</value>
   </data>
   <data name="Settings_SourceSection" xml:space="preserve">
     <value>Excel-Quelle</value>
@@ -133,7 +133,7 @@
     <value>Erste Datenzeile:</value>
   </data>
   <data name="Settings_StartRowHint" xml:space="preserve">
-    <value>Die Kundennummer wird nur aus dieser Zeile gelesen.</value>
+    <value>Zeilen darüber (z. B. Überschriften) werden ignoriert.</value>
   </data>
   <data name="Settings_EanColumn" xml:space="preserve">
     <value>Spalte EAN</value>
@@ -141,11 +141,14 @@
   <data name="Settings_QuantityColumn" xml:space="preserve">
     <value>Spalte Menge</value>
   </data>
-  <data name="Settings_CustomerNumberColumn" xml:space="preserve">
-    <value>Spalte Kundennummer</value>
+  <data name="Settings_CustomerNumberLabel" xml:space="preserve">
+    <value>Kundennummer:</value>
+  </data>
+  <data name="Settings_CustomerNumberHint" xml:space="preserve">
+    <value>Bexio-Kontaktnummer des Kunden. Pro Kunde gibt es ein eigenes Profil.</value>
   </data>
   <data name="Settings_NumbersHint" xml:space="preserve">
-    <value>Jeder Import erstellt einen neuen Auftrag. Ohne Kundennummer wird der Import abgebrochen. Zeilen mit leerer Menge oder Menge 0 werden ignoriert.</value>
+    <value>Jeder Import erstellt einen neuen Auftrag für die Kundennummer des Profils. Zeilen mit leerer Menge oder Menge 0 werden ignoriert.</value>
   </data>
   <data name="Settings_TextTemplatesSection" xml:space="preserve">
     <value>Texte &amp; Vorlagen</value>
@@ -168,6 +171,9 @@
   <data name="Validation_InvalidColumn" xml:space="preserve">
     <value>&quot;{0}&quot; braucht eine gültige Spalte (z. B. A, B oder AA).</value>
   </data>
+  <data name="Validation_Required" xml:space="preserve">
+    <value>&quot;{0}&quot; darf nicht leer sein.</value>
+  </data>
   <data name="Error_InvalidEan" xml:space="preserve">
     <value>Ungültige EAN &quot;{0}&quot; in Zeile {1}. Erwartet wird eine EAN-13 mit 13 Ziffern und gültiger Prüfziffer.</value>
   </data>
@@ -184,7 +190,7 @@
     <value>Kundennummer</value>
   </data>
   <data name="Preview_CustomerNumberMissing" xml:space="preserve">
-    <value>Keine Kundennummer in Zeile {0}. Der Import wird abgebrochen.</value>
+    <value>Keine Kundennummer im Profil. Der Import wird abgebrochen.</value>
   </data>
   <data name="Preview_PositionsHeader" xml:space="preserve">
     <value>Positionen</value>
