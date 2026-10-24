@@ -134,6 +134,57 @@ public class EanListExcelParserTests
     }
 
     [Test]
+    public void ParseOrderForm_WithoutSalesUnitColumn_ShouldUseSalesUnit1()
+    {
+        using var file = new TempWorkbook(sheet =>
+        {
+            sheet.Cell("A2").Value = "4006381333931"; sheet.Cell("B2").Value = 2; sheet.Cell("C2").Value = 6;
+        });
+
+        var order = DefaultParser.ParseOrderForm(file.Path);
+
+        order.Positions.Should().ContainSingle().Which.SalesUnit.Should().Be(1, "the VE column is off by default");
+    }
+
+    [Test]
+    public void ParseOrderForm_WithSalesUnitColumn_ShouldReadTheSalesUnitAndUse1ForEmptyCells()
+    {
+        using var file = new TempWorkbook(sheet =>
+        {
+            sheet.Cell("A2").Value = "4006381333931"; sheet.Cell("B2").Value = 2; sheet.Cell("E2").Value = 6;
+            sheet.Cell("A3").Value = "4006381333931"; sheet.Cell("B3").Value = 1; sheet.Cell("E3").Value = " 12 ";
+            sheet.Cell("A4").Value = "4006381333931"; sheet.Cell("B4").Value = 3;
+            sheet.Cell("A5").Value = "4006381333931"; sheet.Cell("B5").Value = 0; sheet.Cell("E5").Value = "x";
+        });
+        var parser = new EanListExcelParser(new EanListSettings { UseSalesUnitColumn = true, SalesUnitColumn = "E" });
+
+        var order = parser.ParseOrderForm(file.Path);
+
+        order.Positions.Select(p => p.SalesUnit).Should().Equal(6, 12, 1);
+        order.SkippedRows.Should().Be(1, "the VE of skipped rows is not read");
+    }
+
+    [Test]
+    [Arguments("1.5")]
+    [Arguments("abc")]
+    [Arguments("0")]
+    [Arguments("-2")]
+    public void ParseOrderForm_WhenSalesUnitIsNoWholeNumberAboveZero_ShouldThrowWithRow(string salesUnit)
+    {
+        using var file = new TempWorkbook(sheet =>
+        {
+            sheet.Cell("A2").Value = "4006381333931"; sheet.Cell("B2").Value = 1;
+            sheet.Cell("A3").Value = "4006381333931"; sheet.Cell("B3").Value = 1;
+            if (salesUnit == "1.5") sheet.Cell("C3").Value = 1.5; else sheet.Cell("C3").Value = salesUnit;
+        });
+        var parser = new EanListExcelParser(new EanListSettings { UseSalesUnitColumn = true });
+
+        Action act = () => parser.ParseOrderForm(file.Path);
+
+        act.Should().Throw<FormatException>().WithMessage("*VE*3*");
+    }
+
+    [Test]
     public void ParseOrderForm_WhenEanIsMissing_ShouldThrowWithRow()
     {
         using var file = new TempWorkbook(sheet =>

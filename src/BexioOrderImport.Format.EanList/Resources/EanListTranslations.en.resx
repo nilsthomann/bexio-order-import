@@ -141,6 +141,12 @@
   <data name="Settings_QuantityColumn" xml:space="preserve">
     <value>Quantity Column</value>
   </data>
+  <data name="Settings_UseSalesUnitColumn" xml:space="preserve">
+    <value>Read VE</value>
+  </data>
+  <data name="Settings_SalesUnitColumn" xml:space="preserve">
+    <value>Sales Unit (VE) Column</value>
+  </data>
   <data name="Settings_CustomerNumberLabel" xml:space="preserve">
     <value>Customer Number:</value>
   </data>
@@ -148,7 +154,7 @@
     <value>Bexio contact number of the customer. Each customer has its own profile.</value>
   </data>
   <data name="Settings_NumbersHint" xml:space="preserve">
-    <value>Every import creates a new order for the customer number of the profile. Rows with an empty quantity or quantity 0 are ignored.</value>
+    <value>Every import creates a new order for the customer number of the profile. Rows with an empty quantity or quantity 0 are ignored. With VE, the quantity times the VE is imported; without a VE column or with an empty cell the VE is 1.</value>
   </data>
   <data name="Settings_TextTemplatesSection" xml:space="preserve">
     <value>Texts &amp; Templates</value>
@@ -183,6 +189,9 @@
   <data name="Error_InvalidQuantity" xml:space="preserve">
     <value>Invalid quantity &quot;{0}&quot; in row {1}. A whole number is expected.</value>
   </data>
+  <data name="Error_InvalidSalesUnit" xml:space="preserve">
+    <value>Invalid sales unit (VE) &quot;{0}&quot; in row {1}. A whole number greater than 0 is expected.</value>
+  </data>
   <data name="Preview_Header" xml:space="preserve">
     <value>Order</value>
   </data>
@@ -204,11 +213,14 @@
   <data name="Preview_ColQuantity" xml:space="preserve">
     <value>Quantity</value>
   </data>
+  <data name="Preview_ColSalesUnit" xml:space="preserve">
+    <value>VE</value>
+  </data>
   <data name="Preview_Positions" xml:space="preserve">
     <value>Positions:</value>
   </data>
   <data name="Preview_TotalQuantity" xml:space="preserve">
-    <value>Quantity:</value>
+    <value>Pieces (quantity × VE):</value>
   </data>
   <data name="Preview_SkippedRows" xml:space="preserve">
     <value>Ignored (quantity empty or 0):</value>

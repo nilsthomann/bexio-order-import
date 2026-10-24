@@ -120,6 +120,21 @@ public class EanListImporterTests
     }
 
     [Test]
+    public async Task ExecuteAsync_ShouldImportTheQuantityTimesTheSalesUnit()
+    {
+        SetupNewOrder();
+        SetupArticle("4006381333931", Article(1));
+        var order = Order();
+        order.Positions[0].Quantity = 3;
+        order.Positions[0].SalesUnit = 6;
+
+        await new EanListImporter(_bexio.Object).ExecuteAsync(order, _settings, Interaction());
+
+        _bexio.Verify(b => b.AddArticlePositionAsync(77, 1, It.Is<OrderPosition>(p => p.Quantity == 18 && p.GrossUnitPrice == 12.5m), It.IsAny<string?>()), Times.Once);
+        order.Positions[0].Quantity.Should().Be(3, "the preview keeps the quantity in sales units");
+    }
+
+    [Test]
     public async Task ExecuteAsync_WhenEanIsNotFound_ShouldAbortWithEanAndRow()
     {
         SetupNewOrder();

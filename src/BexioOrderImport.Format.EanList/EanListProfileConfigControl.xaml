@@ -59,15 +59,26 @@
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*"/>
                         <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
                     </Grid.ColumnDefinitions>
 
                     <StackPanel Grid.Column="0" Margin="0,0,8,0">
                         <TextBlock Text="{x:Static res:EanListTranslations.Settings_EanColumn}" Style="{StaticResource MutedTextBlockStyle}"/>
                         <TextBox Text="{Binding EanColumn, UpdateSourceTrigger=PropertyChanged}"/>
                     </StackPanel>
-                    <StackPanel Grid.Column="1">
+                    <StackPanel Grid.Column="1" Margin="0,0,8,0">
                         <TextBlock Text="{x:Static res:EanListTranslations.Settings_QuantityColumn}" Style="{StaticResource MutedTextBlockStyle}"/>
                         <TextBox Text="{Binding QuantityColumn, UpdateSourceTrigger=PropertyChanged}"/>
+                    </StackPanel>
+                    <CheckBox x:Name="UseSalesUnitColumnCheckBox" Grid.Column="2"
+                              Content="{x:Static res:EanListTranslations.Settings_UseSalesUnitColumn}"
+                              IsChecked="{Binding UseSalesUnitColumn}"
+                              VerticalAlignment="Center" Margin="0,16,8,0"
+                              Foreground="{StaticResource TextBrush}" FontWeight="Medium"/>
+                    <StackPanel Grid.Column="3">
+                        <TextBlock Text="{x:Static res:EanListTranslations.Settings_SalesUnitColumn}" Style="{StaticResource MutedTextBlockStyle}"/>
+                        <TextBox Text="{Binding SalesUnitColumn, UpdateSourceTrigger=PropertyChanged}" IsEnabled="{Binding ElementName=UseSalesUnitColumnCheckBox, Path=IsChecked}"/>
                     </StackPanel>
                 </Grid>
 

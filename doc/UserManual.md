@@ -114,6 +114,7 @@ An EAN list has one article per row. Each customer has its own profile: the **cu
 |---|---|---|
 | A | EAN | An EAN-13: 13 digits with a valid check digit. Excel drops the leading zeros of EANs stored as numbers, so shorter codes get them back: `826710896036` is read as `0826710896036`. An invalid EAN stops reading the file. |
 | B | Quantity | Whole number. Rows with an empty quantity or a quantity of 0 or less are ignored. |
+| C | Sales unit (VE) | Optional, only read if **Read VE** is checked in the profile. Pieces per sales unit as a whole number greater than 0; an empty cell counts as 1. Without the VE column every VE is 1. |
 
 Row 1 is the header; data starts in row 2.
 
@@ -122,10 +123,10 @@ During the import:
 1. The customer is searched by the customer number of the profile. There is no search by email and no new customer is created.
 2. Every import creates a new order for that customer. Positions are never added to an existing order.
 3. Each EAN must match the **internal code** (`intern_code`) of exactly one Bexio article. An EAN that matches no article or several articles stops the import.
-4. Every row becomes its own position, also when an EAN appears several times. The price is the **sale price of the Bexio article**; prices in the Excel file are not read.
+4. Every row becomes its own position, also when an EAN appears several times. The imported quantity is **quantity × VE** (eg. 3 × VE 6 = 18 pieces). The price is the **sale price of the Bexio article**; prices in the Excel file are not read.
 5. The position text comes from the **position text template** of the profile, by default `<strong>{BexioArticleName}</strong><br />{BexioArticleDescription}<br />{EAN}`. Placeholders are `{EAN}`, `{BexioArticleName}` and `{BexioArticleDescription}`. Existing profiles keep their saved template.
 
-The preview before the import shows the customer number, every position with its Excel row, the total quantity and the number of ignored rows. It warns if the customer number is missing. Article names and prices are only taken from Bexio during the import.
+The preview before the import shows the customer number, every position with its Excel row, quantity and VE, the total pieces (quantity × VE) and the number of ignored rows. It warns if the customer number is missing. Article names and prices are only taken from Bexio during the import.
 
 ---
 
@@ -250,4 +251,4 @@ The application checks for updates automatically from its GitHub repository on e
 
 - **"No customer number in the profile"**: The profile has no customer number. Open the profile and enter the Bexio contact number of the customer (profiles from earlier versions read it from the file and need it once).
 - **"EAN … not found" / "not unique"**: The EAN must equal the internal code (`intern_code`) of exactly one article in Bexio, as a 13-digit EAN including leading zeros. Check the article in Bexio.
-- **"Invalid quantity" / "Invalid EAN"**: The message names the Excel row. Quantities must be whole numbers, EANs valid EAN-13 codes (13 digits, or fewer if only leading zeros are missing, with a correct check digit).
+- **"Invalid quantity" / "Invalid sales unit (VE)" / "Invalid EAN"**: The message names the Excel row. Quantities must be whole numbers, VEs whole numbers greater than 0, EANs valid EAN-13 codes (13 digits, or fewer if only leading zeros are missing, with a correct check digit).

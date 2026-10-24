@@ -16,7 +16,7 @@ public sealed class EanListPreviewViewModel
         CustomerNumber = IsCustomerNumberMissing ? "-" : order.CustomerNumber!;
 
         Positions = order.Positions;
-        TotalQuantity = order.Positions.Sum(p => p.Quantity);
+        TotalQuantity = order.Positions.Sum(p => p.Quantity * p.SalesUnit);
         SkippedRows = order.SkippedRows;
     }
 
@@ -29,6 +29,9 @@ public sealed class EanListPreviewViewModel
 
     public IReadOnlyList<OrderPosition> Positions { get; }
 
+    /// <summary>
+    /// Pieces that are imported: quantity × sales unit (VE).
+    /// </summary>
     public int TotalQuantity { get; }
 
     public int SkippedRows { get; }

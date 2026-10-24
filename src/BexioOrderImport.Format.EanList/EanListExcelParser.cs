@@ -40,7 +40,7 @@ public sealed class EanListExcelParser
                 continue;
             }
 
-            int? quantity = ReadQuantity(quantityCell, row);
+            int? quantity = ReadWholeNumber(quantityCell, row, EanListTranslations.Error_InvalidQuantity);
             if (quantity is null or <= 0)
             {
                 order.SkippedRows++;
@@ -51,6 +51,7 @@ public sealed class EanListExcelParser
             {
                 Ean = ReadEan(eanCell, row),
                 Quantity = quantity.Value,
+                SalesUnit = _settings.UseSalesUnitColumn ? ReadSalesUnit(sheet.Cell(row, _settings.SalesUnitColumn), row) : 1,
                 SourceRow = row
             });
         }
@@ -59,9 +60,21 @@ public sealed class EanListExcelParser
     }
 
     /// <summary>
+    /// An empty cell is the sales unit 1. Other values must be whole numbers greater than 0.
+    /// </summary>
+    private static int ReadSalesUnit(IXLCell cell, int row)
+    {
+        int salesUnit = ReadWholeNumber(cell, row, EanListTranslations.Error_InvalidSalesUnit) ?? 1;
+        return salesUnit > 0
+            ? salesUnit
+            : throw new FormatException(string.Format(EanListTranslations.Error_InvalidSalesUnit, cell.Value.ToString().Trim(), row));
+    }
+
+    /// <summary>
     /// Null for an empty cell. Decimals and text that isn't a whole number are invalid.
     /// </summary>
-    private static int? ReadQuantity(IXLCell cell, int row)
+    /// <param name="errorFormat">Message with the cell value ({0}) and the row ({1}).</param>
+    private static int? ReadWholeNumber(IXLCell cell, int row, string errorFormat)
     {
         if (cell.IsEmpty()) return null;
 
@@ -83,7 +96,7 @@ public sealed class EanListExcelParser
             }
         }
 
-        throw new FormatException(string.Format(EanListTranslations.Error_InvalidQuantity, cell.Value.ToString().Trim(), row));
+        throw new FormatException(string.Format(errorFormat, cell.Value.ToString().Trim(), row));
     }
 
     /// <summary>

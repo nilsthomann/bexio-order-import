@@ -17,6 +17,14 @@ public class EanListSettings : IFormatSettings
     public string QuantityColumn { get; set; } = "B";
 
     /// <summary>
+    /// Reads the sales unit (VE) from SalesUnitColumn; without it every sales unit is 1.
+    /// </summary>
+    public bool UseSalesUnitColumn { get; set; }
+
+    [JsonConverter(typeof(ExcelColumnJsonConverter))]
+    public string SalesUnitColumn { get; set; } = "C";
+
+    /// <summary>
     /// Bexio contact number (nr) of the customer. Each customer has its own profile.
     /// </summary>
     public string CustomerNumber { get; set; } = string.Empty;

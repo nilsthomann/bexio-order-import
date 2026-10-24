@@ -77,7 +77,16 @@ public sealed class EanListImporter
                 .Replace("{Ean}", ean)
                 .Replace("{BexioArticleName}", article.Name ?? string.Empty)
                 .Replace("{BexioArticleDescription}", article.Description ?? string.Empty);
-            await _bexio.AddArticlePositionAsync(target.OrderId, article.Id, position, positionText);
+            // Bexio gets pieces; the parsed position keeps the quantity in sales units for the preview
+            var piecesPosition = new OrderPosition
+            {
+                Ean = ean,
+                SourceRow = position.SourceRow,
+                ArticleName = position.ArticleName,
+                Quantity = position.Quantity * position.SalesUnit,
+                GrossUnitPrice = position.GrossUnitPrice
+            };
+            await _bexio.AddArticlePositionAsync(target.OrderId, article.Id, piecesPosition, positionText);
 
             count++;
             interaction.ReportProgress(count, order.Positions.Count);

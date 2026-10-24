@@ -141,6 +141,12 @@
   <data name="Settings_QuantityColumn" xml:space="preserve">
     <value>Spalte Menge</value>
   </data>
+  <data name="Settings_UseSalesUnitColumn" xml:space="preserve">
+    <value>VE lesen</value>
+  </data>
+  <data name="Settings_SalesUnitColumn" xml:space="preserve">
+    <value>Spalte VE (Verkaufseinheit)</value>
+  </data>
   <data name="Settings_CustomerNumberLabel" xml:space="preserve">
     <value>Kundennummer:</value>
   </data>
@@ -148,7 +154,7 @@
     <value>Bexio-Kontaktnummer des Kunden. Pro Kunde gibt es ein eigenes Profil.</value>
   </data>
   <data name="Settings_NumbersHint" xml:space="preserve">
-    <value>Jeder Import erstellt einen neuen Auftrag für die Kundennummer des Profils. Zeilen mit leerer Menge oder Menge 0 werden ignoriert.</value>
+    <value>Jeder Import erstellt einen neuen Auftrag für die Kundennummer des Profils. Zeilen mit leerer Menge oder Menge 0 werden ignoriert. Mit VE wird die Menge mal VE importiert; ohne VE-Spalte oder bei leerer Zelle ist die VE 1.</value>
   </data>
   <data name="Settings_TextTemplatesSection" xml:space="preserve">
     <value>Texte &amp; Vorlagen</value>
@@ -183,6 +189,9 @@
   <data name="Error_InvalidQuantity" xml:space="preserve">
     <value>Ungültige Menge &quot;{0}&quot; in Zeile {1}. Erwartet wird eine ganze Zahl.</value>
   </data>
+  <data name="Error_InvalidSalesUnit" xml:space="preserve">
+    <value>Ungültige VE &quot;{0}&quot; in Zeile {1}. Erwartet wird eine ganze Zahl grösser als 0.</value>
+  </data>
   <data name="Preview_Header" xml:space="preserve">
     <value>Bestellung</value>
   </data>
@@ -204,11 +213,14 @@
   <data name="Preview_ColQuantity" xml:space="preserve">
     <value>Menge</value>
   </data>
+  <data name="Preview_ColSalesUnit" xml:space="preserve">
+    <value>VE</value>
+  </data>
   <data name="Preview_Positions" xml:space="preserve">
     <value>Positionen:</value>
   </data>
   <data name="Preview_TotalQuantity" xml:space="preserve">
-    <value>Menge:</value>
+    <value>Stück (Menge × VE):</value>
   </data>
   <data name="Preview_SkippedRows" xml:space="preserve">
     <value>Ignoriert (Menge leer oder 0):</value>
