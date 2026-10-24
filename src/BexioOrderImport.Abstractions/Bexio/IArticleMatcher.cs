@@ -17,19 +17,12 @@ public interface IArticleMatcher<in TCriteria>
 /// </summary>
 public sealed record ArticleMatch(BexioArticle? Article, string? FailureReason = null)
 {
-    public const string NotFoundReason = "not found";
-
     [MemberNotNullWhen(true, nameof(Article))]
     public bool IsFound => Article != null;
 
-    /// <summary>
-    /// No article was found at all, so a fallback matcher may try other criteria. Other failures (eg. "not unique") are final.
-    /// </summary>
-    public bool IsMissing => !IsFound && FailureReason == NotFoundReason;
-
     public static ArticleMatch Found(BexioArticle article) => new(article);
 
-    public static ArticleMatch NotFound(string reason = NotFoundReason) => new(null, reason);
+    public static ArticleMatch NotFound(string reason = "not found") => new(null, reason);
 
     /// <summary>
     /// Matches if exactly one candidate is given, otherwise the reason is "not found" or "not unique (n articles)".

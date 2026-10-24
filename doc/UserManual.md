@@ -111,7 +111,7 @@ An EAN list has one article per row. The columns and the first data row are set 
 
 | Column | Content | Notes |
 |---|---|---|
-| A | EAN | Digits only. EANs stored as numbers are read in full; store 14-digit codes as text, as Excel loses precision above 15 digits. |
+| A | EAN | An EAN-13: 13 digits with a valid check digit. Excel drops the leading zeros of EANs stored as numbers, so shorter codes get them back: `826710896036` is read as `0826710896036`. An invalid EAN stops reading the file. |
 | B | Quantity | Whole number. Rows with an empty quantity or a quantity of 0 or less are ignored. |
 | C | Customer number | Bexio contact number (`nr`). **Only the first data row is read.** If it is empty, the import is cancelled. |
 | D | Order number | Bexio document number (`document_nr`). **Only the first data row is read.** If it is empty, a new order is created. |
@@ -122,7 +122,7 @@ During the import:
 
 1. The customer is searched by its customer number. There is no search by email and no new customer is created.
 2. With an order number, the positions are added to that existing order. Its contact must have the customer number of the list; otherwise the import stops.
-3. Each EAN must match the **internal code** (`intern_code`) of exactly one Bexio article. If no article has the EAN as written, leading zeros are ignored: `826710896036` from a number cell, whose leading zero Excel drops, finds the internal code `0826710896036`, and vice versa. An EAN that matches no article or several articles stops the import.
+3. Each EAN must match the **internal code** (`intern_code`) of exactly one Bexio article. An EAN that matches no article or several articles stops the import.
 4. Every row becomes its own position, also when an EAN appears several times. The price is the **sale price of the Bexio article**; prices in the Excel file are not read.
 
 The preview before the import shows the customer and order number, every position with its Excel row, the total quantity and the number of ignored rows. It warns if the customer number is missing. Article names and prices are only taken from Bexio during the import.
@@ -249,5 +249,5 @@ The application checks for updates automatically from its GitHub repository on e
 #### 4. EAN list import is cancelled or fails
 
 - **"No customer number in row …"**: The customer number column of the first data row is empty. Only that row is read, so put the customer number into the first data row.
-- **"EAN … not found" / "not unique"**: The EAN must equal the internal code (`intern_code`) of exactly one article in Bexio. Leading zeros do not matter. Check the article in Bexio; "not unique" also appears if several internal codes differ only in leading zeros (eg. `0826710896036` and `826710896036`).
-- **"Invalid quantity" / "Invalid EAN"**: The message names the Excel row. Quantities must be whole numbers, EANs digits only.
+- **"EAN … not found" / "not unique"**: The EAN must equal the internal code (`intern_code`) of exactly one article in Bexio, as a 13-digit EAN including leading zeros. Check the article in Bexio.
+- **"Invalid quantity" / "Invalid EAN"**: The message names the Excel row. Quantities must be whole numbers, EANs valid EAN-13 codes (13 digits, or fewer if only leading zeros are missing, with a correct check digit).
