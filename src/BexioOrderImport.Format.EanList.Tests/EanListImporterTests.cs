@@ -91,8 +91,8 @@ public class EanListImporterTests
     {
         SetupNewOrder();
         SetupArticle("4006381333931", Article(1));
-        SetupArticle("7612345678904", Article(2, 30m));
-        var order = Order(eans: ["4006381333931", "7612345678904", "4006381333931"]);
+        SetupArticle("7612345678900", Article(2, 30m));
+        var order = Order(eans: ["4006381333931", "7612345678900", "4006381333931"]);
         var settings = new EanListSettings { PositionTextTemplate = "{Ean}: {BexioArticleName} - {BexioArticleDescription}" };
 
         var result = await new EanListImporter(_bexio.Object).ExecuteAsync(order, settings, Interaction());
@@ -101,7 +101,7 @@ public class EanListImporterTests
         order.Title.Should().Be("Order: Muster AG", "the customer name comes from the Bexio contact");
         order.Positions.Select(p => p.GrossUnitPrice).Should().Equal(12.5m, 30m, 12.5m);
         _bexio.Verify(b => b.AddArticlePositionAsync(77, 1, It.IsAny<OrderPosition>(), "4006381333931: Article 1 - Description 1"), Times.Exactly(2));
-        _bexio.Verify(b => b.AddArticlePositionAsync(77, 2, It.Is<OrderPosition>(p => p.Quantity == 2), "7612345678904: Article 2 - Description 2"), Times.Once);
+        _bexio.Verify(b => b.AddArticlePositionAsync(77, 2, It.Is<OrderPosition>(p => p.Quantity == 2), "7612345678900: Article 2 - Description 2"), Times.Once);
         _bexio.Verify(b => b.AddDiscountPositionAsync(It.IsAny<int>(), It.IsAny<decimal>(), It.IsAny<string>()), Times.Never);
     }
 
@@ -169,10 +169,10 @@ public class EanListImporterTests
     {
         SetupNewOrder();
         var matcher = new Mock<IArticleMatcher<EanArticleCriteria>>();
-        matcher.Setup(m => m.FindArticleAsync(new EanArticleCriteria("7612345678904"))).ReturnsAsync(ArticleMatch.Found(Article(2)));
+        matcher.Setup(m => m.FindArticleAsync(new EanArticleCriteria("7612345678900"))).ReturnsAsync(ArticleMatch.Found(Article(2)));
         matcher.Setup(m => m.FindArticleAsync(new EanArticleCriteria("4006381333931"))).ReturnsAsync(ArticleMatch.NotFound("blocked"));
 
-        Func<Task> act = () => new EanListImporter(_bexio.Object, matcher.Object).ExecuteAsync(Order(eans: ["7612345678904", "4006381333931"]), _settings, Interaction());
+        Func<Task> act = () => new EanListImporter(_bexio.Object, matcher.Object).ExecuteAsync(Order(eans: ["7612345678900", "4006381333931"]), _settings, Interaction());
 
         await act.Should().ThrowAsync<InvalidOperationException>().WithMessage("EAN '4006381333931' (row 3) blocked in Bexio.");
         _bexio.Verify(b => b.AddArticlePositionAsync(77, 2, It.IsAny<OrderPosition>(), It.IsAny<string?>()), Times.Once);
