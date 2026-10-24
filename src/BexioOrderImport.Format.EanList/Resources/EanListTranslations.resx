@@ -133,7 +133,7 @@
     <value>Erste Datenzeile:</value>
   </data>
   <data name="Settings_StartRowHint" xml:space="preserve">
-    <value>Kunden- und Auftragsnummer werden nur aus dieser Zeile gelesen.</value>
+    <value>Die Kundennummer wird nur aus dieser Zeile gelesen.</value>
   </data>
   <data name="Settings_EanColumn" xml:space="preserve">
     <value>Spalte EAN</value>
@@ -144,11 +144,8 @@
   <data name="Settings_CustomerNumberColumn" xml:space="preserve">
     <value>Spalte Kundennummer</value>
   </data>
-  <data name="Settings_OrderNumberColumn" xml:space="preserve">
-    <value>Spalte Auftragsnummer</value>
-  </data>
   <data name="Settings_NumbersHint" xml:space="preserve">
-    <value>Ist die Auftragsnummer leer, wird ein neuer Auftrag erstellt. Ohne Kundennummer wird der Import abgebrochen. Zeilen mit leerer Menge oder Menge 0 werden ignoriert.</value>
+    <value>Jeder Import erstellt einen neuen Auftrag. Ohne Kundennummer wird der Import abgebrochen. Zeilen mit leerer Menge oder Menge 0 werden ignoriert.</value>
   </data>
   <data name="Settings_TextTemplatesSection" xml:space="preserve">
     <value>Texte &amp; Vorlagen</value>
@@ -185,12 +182,6 @@
   </data>
   <data name="Preview_CustomerNumber" xml:space="preserve">
     <value>Kundennummer</value>
-  </data>
-  <data name="Preview_OrderNumber" xml:space="preserve">
-    <value>Auftragsnummer</value>
-  </data>
-  <data name="Preview_NewOrder" xml:space="preserve">
-    <value>Neuer Auftrag</value>
   </data>
   <data name="Preview_CustomerNumberMissing" xml:space="preserve">
     <value>Keine Kundennummer in Zeile {0}. Der Import wird abgebrochen.</value>

@@ -133,7 +133,7 @@
     <value>First Data Row:</value>
   </data>
   <data name="Settings_StartRowHint" xml:space="preserve">
-    <value>The customer and order number are read from this row only.</value>
+    <value>The customer number is read from this row only.</value>
   </data>
   <data name="Settings_EanColumn" xml:space="preserve">
     <value>EAN Column</value>
@@ -144,11 +144,8 @@
   <data name="Settings_CustomerNumberColumn" xml:space="preserve">
     <value>Customer Number Column</value>
   </data>
-  <data name="Settings_OrderNumberColumn" xml:space="preserve">
-    <value>Order Number Column</value>
-  </data>
   <data name="Settings_NumbersHint" xml:space="preserve">
-    <value>If the order number is empty, a new order is created. Without a customer number the import is cancelled. Rows with an empty quantity or quantity 0 are ignored.</value>
+    <value>Every import creates a new order. Without a customer number the import is cancelled. Rows with an empty quantity or quantity 0 are ignored.</value>
   </data>
   <data name="Settings_TextTemplatesSection" xml:space="preserve">
     <value>Texts &amp; Templates</value>
@@ -185,12 +182,6 @@
   </data>
   <data name="Preview_CustomerNumber" xml:space="preserve">
     <value>Customer Number</value>
-  </data>
-  <data name="Preview_OrderNumber" xml:space="preserve">
-    <value>Order Number</value>
-  </data>
-  <data name="Preview_NewOrder" xml:space="preserve">
-    <value>New order</value>
   </data>
   <data name="Preview_CustomerNumberMissing" xml:space="preserve">
     <value>No customer number in row {0}. The import will be cancelled.</value>

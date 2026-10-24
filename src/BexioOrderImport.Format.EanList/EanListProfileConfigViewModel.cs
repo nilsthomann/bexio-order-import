@@ -15,7 +15,6 @@ public sealed class EanListProfileConfigViewModel
     public string EanColumn { get; set; } = string.Empty;
     public string QuantityColumn { get; set; } = string.Empty;
     public string CustomerNumberColumn { get; set; } = string.Empty;
-    public string OrderNumberColumn { get; set; } = string.Empty;
     public string DefaultOrderName { get; set; } = string.Empty;
     public string PositionTextTemplate { get; set; } = string.Empty;
 
@@ -27,7 +26,6 @@ public sealed class EanListProfileConfigViewModel
         EanColumn = settings.EanColumn;
         QuantityColumn = settings.QuantityColumn;
         CustomerNumberColumn = settings.CustomerNumberColumn;
-        OrderNumberColumn = settings.OrderNumberColumn;
         DefaultOrderName = settings.DefaultOrderName;
         PositionTextTemplate = settings.PositionTextTemplate;
     }
@@ -40,7 +38,6 @@ public sealed class EanListProfileConfigViewModel
         AddIfNoColumn(errors, EanColumn, EanListTranslations.Settings_EanColumn);
         AddIfNoColumn(errors, QuantityColumn, EanListTranslations.Settings_QuantityColumn);
         AddIfNoColumn(errors, CustomerNumberColumn, EanListTranslations.Settings_CustomerNumberColumn);
-        AddIfNoColumn(errors, OrderNumberColumn, EanListTranslations.Settings_OrderNumberColumn);
         return errors;
     }
 
@@ -51,7 +48,6 @@ public sealed class EanListProfileConfigViewModel
         _settings.EanColumn = ExcelColumnHelper.NormalizeColumnLetter(EanColumn, "A");
         _settings.QuantityColumn = ExcelColumnHelper.NormalizeColumnLetter(QuantityColumn, "B");
         _settings.CustomerNumberColumn = ExcelColumnHelper.NormalizeColumnLetter(CustomerNumberColumn, "C");
-        _settings.OrderNumberColumn = ExcelColumnHelper.NormalizeColumnLetter(OrderNumberColumn, "D");
         _settings.DefaultOrderName = DefaultOrderName.Trim();
         _settings.PositionTextTemplate = PositionTextTemplate.Trim();
         return _settings;

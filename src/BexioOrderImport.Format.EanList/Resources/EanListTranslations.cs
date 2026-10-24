@@ -17,7 +17,6 @@ public static class EanListTranslations
     public static string Settings_EanColumn => ResourceManager.GetString(nameof(Settings_EanColumn)) ?? string.Empty;
     public static string Settings_QuantityColumn => ResourceManager.GetString(nameof(Settings_QuantityColumn)) ?? string.Empty;
     public static string Settings_CustomerNumberColumn => ResourceManager.GetString(nameof(Settings_CustomerNumberColumn)) ?? string.Empty;
-    public static string Settings_OrderNumberColumn => ResourceManager.GetString(nameof(Settings_OrderNumberColumn)) ?? string.Empty;
     public static string Settings_NumbersHint => ResourceManager.GetString(nameof(Settings_NumbersHint)) ?? string.Empty;
     public static string Settings_TextTemplatesSection => ResourceManager.GetString(nameof(Settings_TextTemplatesSection)) ?? string.Empty;
     public static string Settings_DefaultOrderNameLabel => ResourceManager.GetString(nameof(Settings_DefaultOrderNameLabel)) ?? string.Empty;
@@ -31,8 +30,6 @@ public static class EanListTranslations
     public static string Error_InvalidQuantity => ResourceManager.GetString(nameof(Error_InvalidQuantity)) ?? string.Empty;
     public static string Preview_Header => ResourceManager.GetString(nameof(Preview_Header)) ?? string.Empty;
     public static string Preview_CustomerNumber => ResourceManager.GetString(nameof(Preview_CustomerNumber)) ?? string.Empty;
-    public static string Preview_OrderNumber => ResourceManager.GetString(nameof(Preview_OrderNumber)) ?? string.Empty;
-    public static string Preview_NewOrder => ResourceManager.GetString(nameof(Preview_NewOrder)) ?? string.Empty;
     public static string Preview_CustomerNumberMissing => ResourceManager.GetString(nameof(Preview_CustomerNumberMissing)) ?? string.Empty;
     public static string Preview_PositionsHeader => ResourceManager.GetString(nameof(Preview_PositionsHeader)) ?? string.Empty;
     public static string Preview_ColRow => ResourceManager.GetString(nameof(Preview_ColRow)) ?? string.Empty;

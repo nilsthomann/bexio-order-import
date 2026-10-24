@@ -15,7 +15,6 @@ public class EanListExcelParserTests
         var order = DefaultParser.ParseOrderForm(FixturePath);
 
         order.CustomerNumber.Should().Be("1001", "only the first data row counts, row 9 has another customer");
-        order.OrderNumber.Should().BeNull("the order number of row 2 is empty, row 9 is ignored");
         order.Positions.Select(p => p.Ean).Should().Equal("7612345678900", "0012345678905", "4006381333931", "0826710896036");
         order.Positions.Select(p => p.Quantity).Should().Equal(3, 2, 1, 5);
         order.Positions.Select(p => p.SourceRow).Should().Equal(2, 3, 8, 9);
@@ -33,16 +32,16 @@ public class EanListExcelParserTests
     }
 
     [Test]
-    public void ParseOrderForm_ShouldReadTheOrderNumberOfTheFirstRow()
+    public void ParseOrderForm_ShouldNotReadAnOrderNumber()
     {
         using var file = new TempWorkbook(sheet =>
         {
-            sheet.Cell("A2").Value = "4006381333931"; sheet.Cell("B2").Value = 1; sheet.Cell("C2").Value = "1001"; sheet.Cell("D2").Value = " AU-1 ";
+            sheet.Cell("A2").Value = "4006381333931"; sheet.Cell("B2").Value = 1; sheet.Cell("C2").Value = "1001"; sheet.Cell("D2").Value = "AU-1";
         });
 
         var order = DefaultParser.ParseOrderForm(file.Path);
 
-        order.OrderNumber.Should().Be("AU-1");
+        order.OrderNumber.Should().BeNull("every EAN list import creates a new order");
     }
 
     [Test]
@@ -173,12 +172,12 @@ public class EanListExcelParserTests
         {
             workbook.AddWorksheet("Info");
             var sheet = workbook.AddWorksheet("Daten");
-            sheet.Cell("B5").Value = 7; sheet.Cell("D5").Value = "4006381333931"; sheet.Cell("E5").Value = "1001"; sheet.Cell("F5").Value = "AU-2";
+            sheet.Cell("B5").Value = 7; sheet.Cell("D5").Value = "4006381333931"; sheet.Cell("E5").Value = "1001";
             workbook.SaveAs(path);
         }
         var parser = new EanListExcelParser(new EanListSettings
         {
-            WorksheetIndex = 2, StartRow = 5, EanColumn = "D", QuantityColumn = "B", CustomerNumberColumn = "E", OrderNumberColumn = "F"
+            WorksheetIndex = 2, StartRow = 5, EanColumn = "D", QuantityColumn = "B", CustomerNumberColumn = "E"
         });
 
         try
@@ -186,7 +185,6 @@ public class EanListExcelParserTests
             var order = parser.ParseOrderForm(path);
 
             order.CustomerNumber.Should().Be("1001");
-            order.OrderNumber.Should().Be("AU-2");
             order.Positions.Should().ContainSingle().Which.Quantity.Should().Be(7);
         }
         finally

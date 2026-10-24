@@ -7,7 +7,7 @@ using Nager.ArticleNumber;
 namespace BexioOrderImport.Format.EanList;
 
 /// <summary>
-/// Reads an EAN list: one position per row with EAN and quantity, the customer and order number from the first data row.
+/// Reads an EAN list: one position per row with EAN and quantity, the customer number from the first data row.
 /// </summary>
 public sealed class EanListExcelParser
 {
@@ -27,11 +27,10 @@ public sealed class EanListExcelParser
         using var workbook = new XLWorkbook(stream);
         var sheet = workbook.Worksheet(_settings.WorksheetIndex);
 
-        // Only the first data row counts, later values are ignored
+        // Only the first data row counts, later values are ignored. Without an order number a new order is created.
         var order = new Order
         {
-            CustomerNumber = ReadText(sheet.Cell(_settings.StartRow, _settings.CustomerNumberColumn)),
-            OrderNumber = ReadText(sheet.Cell(_settings.StartRow, _settings.OrderNumberColumn))
+            CustomerNumber = ReadText(sheet.Cell(_settings.StartRow, _settings.CustomerNumberColumn))
         };
 
         int lastRow = sheet.LastRowUsed()?.RowNumber() ?? _settings.StartRow;

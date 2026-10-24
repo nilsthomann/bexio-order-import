@@ -40,7 +40,7 @@ public class EanListFormatAdapterTests
     public void SettingsJson_ShouldRoundTripAndNormalizeColumns()
     {
         var adapter = new EanListFormatAdapter();
-        var settings = new EanListSettings { WorksheetIndex = 2, StartRow = 4, EanColumn = "C", QuantityColumn = "D", CustomerNumberColumn = "E", OrderNumberColumn = "F", DefaultOrderName = "X", PositionTextTemplate = "{Ean}" };
+        var settings = new EanListSettings { WorksheetIndex = 2, StartRow = 4, EanColumn = "C", QuantityColumn = "D", CustomerNumberColumn = "E", DefaultOrderName = "X", PositionTextTemplate = "{Ean}" };
 
         var restored = adapter.DeserializeSettings(adapter.SerializeSettings(settings));
 

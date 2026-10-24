@@ -45,7 +45,6 @@
                         <ColumnDefinition Width="*"/>
                         <ColumnDefinition Width="*"/>
                         <ColumnDefinition Width="*"/>
-                        <ColumnDefinition Width="*"/>
                     </Grid.ColumnDefinitions>
 
                     <StackPanel Grid.Column="0" Margin="0,0,8,0">
@@ -56,13 +55,9 @@
                         <TextBlock Text="{x:Static res:EanListTranslations.Settings_QuantityColumn}" Style="{StaticResource MutedTextBlockStyle}"/>
                         <TextBox Text="{Binding QuantityColumn, UpdateSourceTrigger=PropertyChanged}"/>
                     </StackPanel>
-                    <StackPanel Grid.Column="2" Margin="0,0,8,0">
+                    <StackPanel Grid.Column="2">
                         <TextBlock Text="{x:Static res:EanListTranslations.Settings_CustomerNumberColumn}" Style="{StaticResource MutedTextBlockStyle}"/>
                         <TextBox Text="{Binding CustomerNumberColumn, UpdateSourceTrigger=PropertyChanged}"/>
-                    </StackPanel>
-                    <StackPanel Grid.Column="3">
-                        <TextBlock Text="{x:Static res:EanListTranslations.Settings_OrderNumberColumn}" Style="{StaticResource MutedTextBlockStyle}"/>
-                        <TextBox Text="{Binding OrderNumberColumn, UpdateSourceTrigger=PropertyChanged}"/>
                     </StackPanel>
                 </Grid>
 

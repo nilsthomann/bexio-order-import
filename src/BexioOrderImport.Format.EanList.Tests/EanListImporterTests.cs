@@ -17,10 +17,9 @@ public class EanListImporterTests
         confirmUpload: () => Task.FromResult(confirmUpload),
         logInfo: _logs.Add);
 
-    private static Order Order(string? customerNumber = "1001", string? orderNumber = null, params string[] eans) => new()
+    private static Order Order(string? customerNumber = "1001", params string[] eans) => new()
     {
         CustomerNumber = customerNumber,
-        OrderNumber = orderNumber,
         Positions = [.. (eans.Length == 0 ? ["4006381333931"] : eans).Select((ean, i) => new OrderPosition { Ean = ean, Quantity = i + 1, SourceRow = i + 2 })]
     };
 
@@ -39,14 +38,14 @@ public class EanListImporterTests
         => _bexio.Setup(b => b.FindArticlesByInternCodeAsync(ean)).ReturnsAsync(articles);
 
     [Test]
-    [Arguments(null, null)]
-    [Arguments(" ", "AU-1")]
-    public async Task ExecuteAsync_WhenCustomerNumberIsMissing_ShouldCancelWithoutBexioCalls(string? customerNumber, string? orderNumber)
+    [Arguments(null)]
+    [Arguments(" ")]
+    public async Task ExecuteAsync_WhenCustomerNumberIsMissing_ShouldCancelWithoutBexioCalls(string? customerNumber)
     {
         bool asked = false;
         var interaction = new DelegateImportUserInteractionService(confirmUpload: () => { asked = true; return Task.FromResult(true); }, logInfo: _logs.Add);
 
-        var result = await new EanListImporter(_bexio.Object).ExecuteAsync(Order(customerNumber, orderNumber), _settings, interaction);
+        var result = await new EanListImporter(_bexio.Object).ExecuteAsync(Order(customerNumber), _settings, interaction);
 
         result.Success.Should().BeFalse();
         result.ErrorMessage.Should().Be("Customer number missing.");
@@ -103,42 +102,7 @@ public class EanListImporterTests
         _bexio.Verify(b => b.AddArticlePositionAsync(77, 1, It.IsAny<OrderPosition>(), "4006381333931: Article 1 - Description 1"), Times.Exactly(2));
         _bexio.Verify(b => b.AddArticlePositionAsync(77, 2, It.Is<OrderPosition>(p => p.Quantity == 2), "7612345678900: Article 2 - Description 2"), Times.Once);
         _bexio.Verify(b => b.AddDiscountPositionAsync(It.IsAny<int>(), It.IsAny<decimal>(), It.IsAny<string>()), Times.Never);
-    }
-
-    [Test]
-    public async Task ExecuteAsync_WithOrderNumber_ShouldAddThePositionsToTheExistingOrder()
-    {
-        _bexio.Setup(b => b.FindOrderByDocumentNrAsync("AU-1")).ReturnsAsync(new BexioOrder { Id = 40, DocumentNr = "AU-1", ContactId = 5 });
-        _bexio.Setup(b => b.GetContactDetailsAsync(5)).ReturnsAsync(new BexioContact { Id = 5, Nr = "1001" });
-        SetupArticle("4006381333931", Article(1));
-
-        var result = await new EanListImporter(_bexio.Object).ExecuteAsync(Order(orderNumber: "AU-1"), _settings, Interaction());
-
-        result.Success.Should().BeTrue();
-        result.OrderNumber.Should().Be("AU-1");
-        _bexio.Verify(b => b.AddArticlePositionAsync(40, 1, It.IsAny<OrderPosition>(), It.IsAny<string?>()), Times.Once);
-        _bexio.Verify(b => b.CreateOrderAsync(It.IsAny<int>(), It.IsAny<Order>()), Times.Never);
-    }
-
-    [Test]
-    public async Task ExecuteAsync_WhenExistingOrderBelongsToAnotherCustomer_ShouldFail()
-    {
-        _bexio.Setup(b => b.FindOrderByDocumentNrAsync("AU-1")).ReturnsAsync(new BexioOrder { Id = 40, DocumentNr = "AU-1", ContactId = 6 });
-        _bexio.Setup(b => b.GetContactDetailsAsync(6)).ReturnsAsync(new BexioContact { Id = 6, Nr = "2002" });
-
-        var result = await new EanListImporter(_bexio.Object).ExecuteAsync(Order(orderNumber: "AU-1"), _settings, Interaction());
-
-        result.Success.Should().BeFalse();
-        result.ErrorMessage.Should().Contain("mismatch");
-        _bexio.Verify(b => b.AddArticlePositionAsync(It.IsAny<int>(), It.IsAny<int>(), It.IsAny<OrderPosition>(), It.IsAny<string?>()), Times.Never);
-    }
-
-    [Test]
-    public async Task ExecuteAsync_WhenExistingOrderIsNotFound_ShouldFail()
-    {
-        var result = await new EanListImporter(_bexio.Object).ExecuteAsync(Order(orderNumber: "AU-1"), _settings, Interaction());
-
-        result.ErrorMessage.Should().Be("Order AU-1 not found.");
+        _bexio.Verify(b => b.FindOrderByDocumentNrAsync(It.IsAny<string>()), Times.Never);
     }
 
     [Test]

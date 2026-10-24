@@ -9,7 +9,7 @@ public class EanListSettings : IFormatSettings
     public int WorksheetIndex { get; set; } = 1;
 
     /// <summary>
-    /// First data row. The customer and order number are read from this row only.
+    /// First data row. The customer number is read from this row only.
     /// </summary>
     public int StartRow { get; set; } = 2;
 
@@ -21,9 +21,6 @@ public class EanListSettings : IFormatSettings
 
     [JsonConverter(typeof(ExcelColumnJsonConverter))]
     public string CustomerNumberColumn { get; set; } = "C";
-
-    [JsonConverter(typeof(ExcelColumnJsonConverter))]
-    public string OrderNumberColumn { get; set; } = "D";
 
     public string DefaultOrderName { get; set; } = "Order: {CustomerName}";
 
