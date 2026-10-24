@@ -32,7 +32,7 @@ public class MainViewModelTests : IDisposable
         _updateServiceMock = new Mock<IUpdateService>();
         _clientMock = new Mock<IBexioService>();
         _clientFactoryMock = new Mock<IBexioServiceFactory>();
-        _clientFactoryMock.Setup(f => f.Create(It.IsAny<string>(), It.IsAny<int?>(), It.IsAny<int?>(), It.IsAny<string>())).Returns(_clientMock.Object);
+        _clientFactoryMock.Setup(f => f.Create(It.IsAny<string>(), It.IsAny<int?>(), It.IsAny<int?>(), It.IsAny<int?>(), It.IsAny<string>())).Returns(_clientMock.Object);
         _dialogServiceMock = new Mock<IDialogService>();
         _dispatcherServiceMock = new Mock<IDispatcherService>();
         // Mock dispatcher service to execute actions immediately
@@ -196,12 +196,16 @@ public class MainViewModelTests : IDisposable
     }
 
     [Test]
-    public void ImportCommand_WhenAccountOrTaxIdNull_ShouldShowErrorDialogAndAbort()
+    [Arguments(null, 1, 1)]
+    [Arguments(1, null, 1)]
+    [Arguments(1, 1, null)]
+    public void ImportCommand_WhenAccountTaxOrPaymentTypeIsNull_ShouldShowErrorDialogAndAbort(int? accountId, int? taxId, int? paymentTypeId)
     {
         // Arrange
         var vm = CreateVm();
-        vm.AccountId = null; // null triggers error
-        vm.TaxId = 1;
+        vm.AccountId = accountId;
+        vm.TaxId = taxId;
+        vm.PaymentTypeId = paymentTypeId;
         
         // Simulating a loaded order so the command can execute
         vm._loadedOrder = new Order { Customer = new Customer { CompanyName = "Test customer" } };
@@ -238,6 +242,7 @@ public class MainViewModelTests : IDisposable
         _clientMock.Setup(c => c.CheckConnectionAsync()).ReturnsAsync(true);
         _clientMock.Setup(c => c.GetAccountsAsync()).ReturnsAsync(accounts);
         _clientMock.Setup(c => c.GetTaxesAsync()).ReturnsAsync(taxes);
+        _clientMock.Setup(c => c.GetPaymentTypesAsync()).ReturnsAsync([new BexioPaymentType { Id = 3, Name = "Rechnung" }]);
 
         // Act
         await vm.CheckBexioConnectionAsync();
@@ -249,6 +254,7 @@ public class MainViewModelTests : IDisposable
         vm.AccountsList[0].Id.Should().Be(100);
         vm.TaxesList.Count.Should().Be(1);
         vm.TaxesList[0].Id.Should().Be(5);
+        vm.PaymentTypesList.Should().ContainSingle(p => p.Id == 3);
     }
 
     [Test]
@@ -724,7 +730,7 @@ public class MainViewModelTests : IDisposable
         var clientMock = new Mock<IBexioService>();
         clientMock.Setup(c => c.CheckConnectionAsync()).ReturnsAsync(true);
         clientMock.Setup(c => c.GetAccountsAsync()).ThrowsAsync(new HttpRequestException("Bexio API Accounts error"));
-        _clientFactoryMock.Setup(f => f.Create(It.IsAny<string>(), It.IsAny<int?>(), It.IsAny<int?>(), It.IsAny<string>())).Returns(clientMock.Object);
+        _clientFactoryMock.Setup(f => f.Create(It.IsAny<string>(), It.IsAny<int?>(), It.IsAny<int?>(), It.IsAny<int?>(), It.IsAny<string>())).Returns(clientMock.Object);
 
         var vm = CreateVm();
         vm.BexioToken = "test_token";

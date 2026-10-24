@@ -10,5 +10,5 @@ public interface IBexioServiceFactory
     /// <summary>
     /// Creates a new <see cref="IBexioService"/> authenticated with the given token.
     /// </summary>
-    IBexioService Create(string apiToken, int? accountId, int? taxId, string language= "de");
+    IBexioService Create(string apiToken, int? accountId, int? taxId, int? paymentTypeId, string language = "de");
 }

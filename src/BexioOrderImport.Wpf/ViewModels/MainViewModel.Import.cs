@@ -112,7 +112,7 @@ public partial class MainViewModel
     {
         if (_loadedOrder == null) return;
 
-        if (!AccountId.HasValue || !TaxId.HasValue)
+        if (!AccountId.HasValue || !TaxId.HasValue || !PaymentTypeId.HasValue)
         {
             _dialogService.ShowErrorDialog(
                 Resources.Translations.Error_SelectAccountAndTax,
@@ -146,7 +146,7 @@ public partial class MainViewModel
         try
         {
             var (format, settings) = GetActiveFormat();
-            var bexioClient = _bexioClientFactory.Create(BexioToken, AccountId, TaxId, SelectedLanguage);
+            var bexioClient = _bexioClientFactory.Create(BexioToken, AccountId, TaxId, PaymentTypeId, SelectedLanguage);
             var interaction = new WpfImportUserInteractionService(
                 this,
                 (uploaded, total, sw) => UpdateRemainingTime(uploaded, total, sw),
@@ -284,7 +284,7 @@ public partial class MainViewModel
 
         try
         {
-            var client = _bexioClientFactory.Create(BexioToken, AccountId, TaxId, SelectedLanguage);
+            var client = _bexioClientFactory.Create(BexioToken, AccountId, TaxId, PaymentTypeId, SelectedLanguage);
             bool isConnected = await client.CheckConnectionAsync();
 
             IsConnectionSuccessful = isConnected;
@@ -315,25 +315,28 @@ public partial class MainViewModel
     {
         int? accountId = AccountId;
         int? taxId = TaxId;
-        await _bexioOptions.LoadAsync(client, accountId, taxId, AppendLog);
-        RestoreBexioSelection(accountId, taxId);
+        int? paymentTypeId = PaymentTypeId;
+        await _bexioOptions.LoadAsync(client, accountId, taxId, paymentTypeId, AppendLog);
+        RestoreBexioSelection(accountId, taxId, paymentTypeId);
     }
 
     private void ClearBexioOptionsKeepSelected()
     {
         int? accountId = AccountId;
         int? taxId = TaxId;
-        _bexioOptions.KeepSelected(accountId, taxId);
-        RestoreBexioSelection(accountId, taxId);
+        int? paymentTypeId = PaymentTypeId;
+        _bexioOptions.KeepSelected(accountId, taxId, paymentTypeId);
+        RestoreBexioSelection(accountId, taxId, paymentTypeId);
     }
 
     /// <summary>
     /// Replacing the items of the combo boxes clears their selection, which the binding writes back.
     /// </summary>
-    private void RestoreBexioSelection(int? accountId, int? taxId)
+    private void RestoreBexioSelection(int? accountId, int? taxId, int? paymentTypeId)
     {
         AccountId = accountId;
         TaxId = taxId;
+        PaymentTypeId = paymentTypeId;
     }
 
     private class WpfImportUserInteractionService : IImportUserInteractionService

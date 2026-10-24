@@ -5,19 +5,20 @@ using BexioOrderImport.Domain.Models.Bexio;
 namespace BexioOrderImport.Wpf.ViewModels;
 
 /// <summary>
-/// The Bexio accounts and tax rates offered in the settings. If they cannot be loaded, the lists keep
+/// The Bexio accounts, tax rates and payment types offered in the settings. If they cannot be loaded, the lists keep
 /// an entry for the selected id, so the saved selection stays visible.
 /// </summary>
 public sealed class BexioOptionLists
 {
     public ObservableCollection<BexioAccount> Accounts { get; } = [];
     public ObservableCollection<BexioTax> Taxes { get; } = [];
+    public ObservableCollection<BexioPaymentType> PaymentTypes { get; } = [];
 
     /// <summary>
-    /// Replaces the lists with the accounts and tax rates of Bexio. The caller restores the selection afterwards,
+    /// Replaces the lists with the accounts, tax rates and payment types of Bexio. The caller restores the selection afterwards,
     /// because replacing the items clears it in the bound combo boxes.
     /// </summary>
-    public async Task LoadAsync(IBexioService client, int? accountId, int? taxId, Action<string> log)
+    public async Task LoadAsync(IBexioService client, int? accountId, int? taxId, int? paymentTypeId, Action<string> log)
     {
         try
         {
@@ -52,12 +53,29 @@ public sealed class BexioOptionLists
                 Taxes.Add(taxId.HasValue ? TaxPlaceholder(taxId.Value) : EmptyTax());
             }
         }
+
+        try
+        {
+            Replace(PaymentTypes, await client.GetPaymentTypesAsync());
+            if (PaymentTypes.Count == 0 && !paymentTypeId.HasValue)
+            {
+                PaymentTypes.Add(EmptyPaymentType());
+            }
+        }
+        catch (Exception ex)
+        {
+            log($"⚠️ Could not load payment types: {ex.Message}");
+            if (PaymentTypes.Count == 0)
+            {
+                PaymentTypes.Add(paymentTypeId.HasValue ? PaymentTypePlaceholder(paymentTypeId.Value) : EmptyPaymentType());
+            }
+        }
     }
 
     /// <summary>
-    /// Without a connection only the selected account and tax rate remain.
+    /// Without a connection only the selected account, tax rate and payment type remain.
     /// </summary>
-    public void KeepSelected(int? accountId, int? taxId)
+    public void KeepSelected(int? accountId, int? taxId, int? paymentTypeId)
     {
         var selectedAccount = Accounts.FirstOrDefault(x => x.Id == accountId);
         Accounts.Clear();
@@ -71,6 +89,13 @@ public sealed class BexioOptionLists
         if (taxId.HasValue)
         {
             Taxes.Add(selectedTax ?? TaxPlaceholder(taxId.Value));
+        }
+
+        var selectedPaymentType = PaymentTypes.FirstOrDefault(x => x.Id == paymentTypeId);
+        PaymentTypes.Clear();
+        if (paymentTypeId.HasValue)
+        {
+            PaymentTypes.Add(selectedPaymentType ?? PaymentTypePlaceholder(paymentTypeId.Value));
         }
     }
 
@@ -90,4 +115,8 @@ public sealed class BexioOptionLists
     private static BexioTax EmptyTax() => new() { DisplayName = string.Empty };
 
     private static BexioTax TaxPlaceholder(int id) => new() { Id = id, DisplayName = id.ToString() };
+
+    private static BexioPaymentType EmptyPaymentType() => new();
+
+    private static BexioPaymentType PaymentTypePlaceholder(int id) => new() { Id = id, Name = id.ToString() };
 }

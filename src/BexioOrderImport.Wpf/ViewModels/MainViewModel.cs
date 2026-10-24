@@ -85,6 +85,7 @@ public partial class MainViewModel : ViewModelBase
     private string _bexioToken = string.Empty;
     private int? _accountId;
     private int? _taxId;
+    private int? _paymentTypeId;
 
     internal void InvokeOnUi(Action action)
     {
@@ -223,6 +224,7 @@ public partial class MainViewModel : ViewModelBase
 
     public ObservableCollection<BexioAccount> AccountsList => _bexioOptions.Accounts;
     public ObservableCollection<BexioTax> TaxesList => _bexioOptions.Taxes;
+    public ObservableCollection<BexioPaymentType> PaymentTypesList => _bexioOptions.PaymentTypes;
 
     public double ProgressPercentage
     {
@@ -468,6 +470,18 @@ public partial class MainViewModel : ViewModelBase
         set
         {
             if (SetProperty(ref _taxId, value))
+            {
+                SetModified();
+            }
+        }
+    }
+
+    public int? PaymentTypeId
+    {
+        get => _paymentTypeId;
+        set
+        {
+            if (SetProperty(ref _paymentTypeId, value))
             {
                 SetModified();
             }

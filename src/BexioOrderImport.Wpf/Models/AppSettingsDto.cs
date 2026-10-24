@@ -26,6 +26,13 @@ public class BexioSettingsDto
     [JsonPropertyName("TaxId")]
     public int? TaxId { get; set; } = null;
 
+    /// <summary>
+    /// Settings saved before payment types existed lack the field and keep the former fixed payment type 1.
+    /// New settings always write the field, also as null until a payment type is selected.
+    /// </summary>
+    [JsonPropertyName("PaymentTypeId")]
+    public int? PaymentTypeId { get; set; } = 1;
+
     [JsonPropertyName("Language")]
     public string Language { get; set; } = "de";
 }

@@ -251,7 +251,7 @@ public class BexioApiClientTests
         var factory = new BexioServiceFactory(mockFactory.Object);
 
         // Act
-        var client = factory.Create("my-token", 1, 1);
+        var client = factory.Create("my-token", 1, 1, 1);
 
         // Assert
         client.Should().NotBeNull();
@@ -595,6 +595,59 @@ public class BexioApiClientTests
         callCount.Should().Be(1);
         firstCall.Should().BeSameAs(secondCall);
         firstCall.Should().HaveCount(1);
+    }
+
+    [Test]
+    public async Task GetPaymentTypesAsync_ShouldReturnThePaymentTypesAndCacheThem()
+    {
+        int callCount = 0;
+        var handler = new MockHttpMessageHandler
+        {
+            SendAsyncFunc = (req, token) =>
+            {
+                callCount++;
+                req.RequestUri!.ToString().Should().EndWith("2.0/payment_type");
+                var response = new HttpResponseMessage(HttpStatusCode.OK)
+                {
+                    Content = new StringContent("[{\"id\": 1, \"name\": \"Bar\"}, {\"id\": 3, \"name\": \"Rechnung\"}]", Encoding.UTF8, "application/json")
+                };
+                return Task.FromResult(response);
+            }
+        };
+
+        var client = new BexioApiClient(new HttpClient(handler), "dummy-token", 1, 1);
+
+        var firstCall = await client.GetPaymentTypesAsync();
+        var secondCall = await client.GetPaymentTypesAsync();
+
+        callCount.Should().Be(1);
+        firstCall.Should().BeSameAs(secondCall);
+        firstCall.Select(p => (p.Id, p.Name)).Should().Equal((1, "Bar"), (3, "Rechnung"));
+    }
+
+    [Test]
+    [Arguments(3, 3)]
+    [Arguments(null, 1)]
+    public async Task CreateOrderAsync_ShouldSendThePaymentType(int? paymentTypeId, int expected)
+    {
+        string? body = null;
+        var handler = new MockHttpMessageHandler
+        {
+            SendAsyncFunc = async (req, token) =>
+            {
+                body = await req.Content!.ReadAsStringAsync(token);
+                return new HttpResponseMessage(HttpStatusCode.Created)
+                {
+                    Content = new StringContent("{\"id\": 1}", Encoding.UTF8, "application/json")
+                };
+            }
+        };
+
+        var client = new BexioApiClient(new HttpClient(handler), "dummy-token", 1, 1, "de", paymentTypeId);
+
+        await client.CreateOrderAsync(12345, new Order { Customer = new Customer { CompanyName = "Test AG" } });
+
+        body.Should().Contain($"\"payment_type_id\":{expected}");
     }
 
     [Test]

@@ -190,6 +190,9 @@ Bitte schliessen Sie die Datei in Excel und versuchen Sie es erneut.</value>
   <data name="Settings_TaxLabel" xml:space="preserve">
     <value>Steuersatz</value>
   </data>
+  <data name="Settings_PaymentTypeLabel" xml:space="preserve">
+    <value>Zahlungsart</value>
+  </data>
   <data name="Settings_SaveButton" xml:space="preserve">
     <value>Einstellungen speichern</value>
   </data>
@@ -371,7 +374,7 @@ Bitte schliessen Sie die Datei in Excel und versuchen Sie es erneut.</value>
     <value>Fehler beim Aktualisieren: {0}</value>
   </data>
   <data name="Error_SelectAccountAndTax" xml:space="preserve">
-    <value>Bitte wählen Sie ein Standard-Konto und einen Standard-Steuersatz in den Einstellungen.</value>
+    <value>Bitte wählen Sie ein Standard-Konto, einen Standard-Steuersatz und eine Zahlungsart in den Einstellungen.</value>
   </data>
   <data name="Error_FormatUnavailable" xml:space="preserve">
     <value>Das Format '{0}' des aktiven Profils ist in dieser Version nicht verfügbar.</value>
