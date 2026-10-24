@@ -172,7 +172,7 @@
     <value>&quot;{0}&quot; braucht eine gültige Spalte (z. B. A, B oder AA).</value>
   </data>
   <data name="Error_InvalidEan" xml:space="preserve">
-    <value>Ungültige EAN &quot;{0}&quot; in Zeile {1}. Eine EAN besteht nur aus Ziffern.</value>
+    <value>Ungültige EAN &quot;{0}&quot; in Zeile {1}. Erwartet wird eine EAN-13 mit 13 Ziffern und gültiger Prüfziffer.</value>
   </data>
   <data name="Error_MissingEan" xml:space="preserve">
     <value>In Zeile {0} fehlt die EAN.</value>

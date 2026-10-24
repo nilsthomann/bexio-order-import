@@ -16,7 +16,7 @@ public class EanListExcelParserTests
 
         order.CustomerNumber.Should().Be("1001", "only the first data row counts, row 9 has another customer");
         order.OrderNumber.Should().BeNull("the order number of row 2 is empty, row 9 is ignored");
-        order.Positions.Select(p => p.Ean).Should().Equal("7612345678904", "0012345678905", "4006381333931", "7612345678904");
+        order.Positions.Select(p => p.Ean).Should().Equal("7612345678900", "0012345678905", "4006381333931", "0826710896036");
         order.Positions.Select(p => p.Quantity).Should().Equal(3, 2, 1, 5);
         order.Positions.Select(p => p.SourceRow).Should().Equal(2, 3, 8, 9);
         order.SkippedRows.Should().Be(3, "rows with quantity 0, -1 and empty are ignored");
@@ -76,18 +76,51 @@ public class EanListExcelParserTests
     }
 
     [Test]
-    public void ParseOrderForm_ShouldNormalizeEans()
+    public void ParseOrderForm_ShouldNormalizeEansToEan13()
     {
         using var file = new TempWorkbook(sheet =>
         {
-            sheet.Cell("A2").Value = 12345678901231d; sheet.Cell("B2").Value = 1;
+            sheet.Cell("A2").Value = 4006381333931d; sheet.Cell("B2").Value = 1;
             sheet.Cell("A3").Value = "40 0638 1333 931"; sheet.Cell("B3").Value = 1;
-            sheet.Cell("A4").Value = "00012345"; sheet.Cell("B4").Value = 1;
+            sheet.Cell("A4").Value = 826710896036d; sheet.Cell("B4").Value = 1;
+            sheet.Cell("A5").Value = 12345678905d; sheet.Cell("B5").Value = 1;
+            sheet.Cell("A6").Value = "826710896036"; sheet.Cell("B6").Value = 1;
         });
 
         var order = DefaultParser.ParseOrderForm(file.Path);
 
-        order.Positions.Select(p => p.Ean).Should().Equal("12345678901231", "4006381333931", "00012345");
+        order.Positions.Select(p => p.Ean).Should().Equal("4006381333931", "4006381333931", "0826710896036", "0012345678905", "0826710896036");
+    }
+
+    [Test]
+    [Arguments("4006381333932")]
+    [Arguments("826710896037")]
+    [Arguments("40063813339310")]
+    [Arguments("40063A")]
+    public void ParseOrderForm_WhenEanIsNoValidEan13_ShouldThrowWithEanAndRow(string ean)
+    {
+        using var file = new TempWorkbook(sheet =>
+        {
+            sheet.Cell("A2").Value = "4006381333931"; sheet.Cell("B2").Value = 1;
+            sheet.Cell("A3").Value = ean; sheet.Cell("B3").Value = 1;
+        });
+
+        Action act = () => DefaultParser.ParseOrderForm(file.Path);
+
+        act.Should().Throw<FormatException>().WithMessage($"*\"{ean}\"*3*EAN-13*");
+    }
+
+    [Test]
+    public void ParseOrderForm_WhenNumberCellHasAWrongCheckDigit_ShouldThrow()
+    {
+        using var file = new TempWorkbook(sheet =>
+        {
+            sheet.Cell("A2").Value = 826710896037d; sheet.Cell("B2").Value = 1;
+        });
+
+        Action act = () => DefaultParser.ParseOrderForm(file.Path);
+
+        act.Should().Throw<FormatException>().WithMessage("*826710896037*2*");
     }
 
     [Test]
@@ -117,20 +150,6 @@ public class EanListExcelParserTests
         Action act = () => DefaultParser.ParseOrderForm(file.Path);
 
         act.Should().Throw<FormatException>().WithMessage("*2*");
-    }
-
-    [Test]
-    public void ParseOrderForm_WhenEanHasLetters_ShouldThrowWithRow()
-    {
-        using var file = new TempWorkbook(sheet =>
-        {
-            sheet.Cell("A2").Value = "4006381333931"; sheet.Cell("B2").Value = 1;
-            sheet.Cell("A3").Value = "40063A"; sheet.Cell("B3").Value = 1;
-        });
-
-        Action act = () => DefaultParser.ParseOrderForm(file.Path);
-
-        act.Should().Throw<FormatException>().WithMessage("*40063A*3*");
     }
 
     [Test]

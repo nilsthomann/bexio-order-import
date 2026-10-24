@@ -68,7 +68,7 @@ Each format finds its articles with an `IArticleMatcher<TCriteria>` (`Abstractio
 
 `PeakmileArticleMatcher` (`PeakmileArticleCriteria`) matches the Bexio `intern_code` exactly as `{SeasonCode}{ArticleNumber}{Color}`, first with the season code of the profile, then with each season fallback code (multi-season articles, eg. `NOOS`, `EX`). Only if all miss, it searches by article number and filters by color and season code in the article name. An article that is not found aborts the import. It uses only the generic `IBexioService.FindArticlesByInternCodeAsync` and `SearchArticlesAsync`, and caches the articles of one import; `PeakmileArticleMatcherTests` run it against the real `BexioApiClient` with a mocked HTTP handler.
 
-`EanArticleMatcher` (`EanArticleCriteria`) of the EAN list format uses `FindArticlesByInternCodeAsync(ean)`: the EAN is the `intern_code` and exactly one article must match (`ArticleMatch.FromCandidates`). The position price is the article's `sale_price`.
+`EanArticleMatcher` (`EanArticleCriteria`) of the EAN list format uses `FindArticlesByInternCodeAsync(ean)`: the EAN is the `intern_code` and exactly one article must match (`ArticleMatch.FromCandidates`). `EanListExcelParser` only accepts valid EAN-13 codes (checked with `Nager.ArticleNumber`) and pads shorter codes with leading zeros first, as Excel drops them from number cells; the matcher therefore compares exactly. The position price is the article's `sale_price`.
 
 ## Order and customer number
 

@@ -2,6 +2,7 @@ using System.Globalization;
 using BexioOrderImport.Domain.Models;
 using BexioOrderImport.Format.EanList.Resources;
 using ClosedXML.Excel;
+using Nager.ArticleNumber;
 
 namespace BexioOrderImport.Format.EanList;
 
@@ -96,7 +97,8 @@ public sealed class EanListExcelParser
     }
 
     /// <summary>
-    /// EANs stored as numbers are written out in full (Excel shows long numbers as eg. 7.61234E+12); text keeps its leading zeros.
+    /// Reads a valid EAN-13. EANs stored as numbers are written out in full (Excel shows long numbers as eg. 7.61234E+12).
+    /// Shorter codes get the leading zeros back that Excel drops from number cells (826710896036 is the EAN 0826710896036).
     /// </summary>
     private static string ReadEan(IXLCell cell, int row)
     {
@@ -108,10 +110,12 @@ public sealed class EanListExcelParser
         {
             throw new FormatException(string.Format(EanListTranslations.Error_MissingEan, row));
         }
-        if (!ean.All(char.IsAsciiDigit))
+
+        string ean13 = ean.PadLeft(13, '0');
+        if (!ean13.All(char.IsAsciiDigit) || ArticleNumberHelper.GetArticleNumberType(ean13) != ArticleNumberType.EAN13)
         {
             throw new FormatException(string.Format(EanListTranslations.Error_InvalidEan, ean, row));
         }
-        return ean;
+        return ean13;
     }
 }
