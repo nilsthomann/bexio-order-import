@@ -28,6 +28,7 @@ public static class Translations
     public static string Settings_TokenHintSuffix => ResourceManager.GetString(nameof(Settings_TokenHintSuffix)) ?? string.Empty;
     public static string Settings_AccountLabel => ResourceManager.GetString(nameof(Settings_AccountLabel)) ?? string.Empty;
     public static string Settings_TaxLabel => ResourceManager.GetString(nameof(Settings_TaxLabel)) ?? string.Empty;
+    public static string Settings_PaymentTypeLabel => ResourceManager.GetString(nameof(Settings_PaymentTypeLabel)) ?? string.Empty;
     public static string Settings_SaveButton => ResourceManager.GetString(nameof(Settings_SaveButton)) ?? string.Empty;
     public static string CustomerConfirm_Title => ResourceManager.GetString(nameof(CustomerConfirm_Title)) ?? string.Empty;
     public static string CustomerConfirm_Warning => ResourceManager.GetString(nameof(CustomerConfirm_Warning)) ?? string.Empty;

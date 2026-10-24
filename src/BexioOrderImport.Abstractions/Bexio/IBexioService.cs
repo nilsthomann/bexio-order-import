@@ -74,4 +74,9 @@ public interface IBexioService
     /// Retrieves active sales tax rates.
     /// </summary>
     Task<List<BexioTax>> GetTaxesAsync();
+
+    /// <summary>
+    /// Retrieves the payment types.
+    /// </summary>
+    Task<List<BexioPaymentType>> GetPaymentTypesAsync();
 }

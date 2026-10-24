@@ -50,8 +50,9 @@
                                 <RowDefinition Height="Auto"/>
                                 <RowDefinition Height="Auto"/>
                                 <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
                             </Grid.RowDefinitions>
-                            
+
                             <TextBlock Text="{x:Static lex:Translations.Settings_TokenLabel}" VerticalAlignment="Top" Grid.Row="0" Grid.Column="0" Margin="0,15,16,6"/>
                             <StackPanel Grid.Row="0" Grid.Column="1" VerticalAlignment="Center" Margin="0,6,0,6">
                                 <TextBox Text="{Binding BexioTokenDisplay, UpdateSourceTrigger=PropertyChanged}" GotFocus="TokenTextBox_GotFocus" LostFocus="TokenTextBox_LostFocus" Margin="0,0,0,4"/>
@@ -80,6 +81,9 @@
                             
                             <TextBlock Text="{x:Static lex:Translations.Settings_TaxLabel}" VerticalAlignment="Center" Grid.Row="2" Grid.Column="0" Margin="0,6,16,6"/>
                             <ComboBox ItemsSource="{Binding TaxesList}" SelectedValue="{Binding TaxId}" SelectedValuePath="Id" DisplayMemberPath="DisplayName" IsEnabled="{Binding IsConnectionSuccessful}" Grid.Row="2" Grid.Column="1" VerticalAlignment="Center" Width="300" HorizontalAlignment="Left" Margin="0,6,0,6" Height="32"/>
+
+                            <TextBlock Text="{x:Static lex:Translations.Settings_PaymentTypeLabel}" VerticalAlignment="Center" Grid.Row="3" Grid.Column="0" Margin="0,6,16,6"/>
+                            <ComboBox ItemsSource="{Binding PaymentTypesList}" SelectedValue="{Binding PaymentTypeId}" SelectedValuePath="Id" DisplayMemberPath="Name" IsEnabled="{Binding IsConnectionSuccessful}" Grid.Row="3" Grid.Column="1" VerticalAlignment="Center" Width="300" HorizontalAlignment="Left" Margin="0,6,0,6" Height="32"/>
                         </Grid>
                     </StackPanel>
                 </Border>

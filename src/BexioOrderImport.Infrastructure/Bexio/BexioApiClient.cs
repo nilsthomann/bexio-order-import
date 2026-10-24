@@ -15,19 +15,22 @@ public class BexioApiClient : IBexioService
     private readonly string _apiToken;
     private readonly int? _accountId;
     private readonly int? _taxId;
+    private readonly int? _paymentTypeId;
     private readonly string _language;
 
     private readonly Lock _cacheLock = new();
     private List<BexioAccount>? _cachedAccounts;
     private List<BexioTax>? _cachedTaxes;
+    private List<BexioPaymentType>? _cachedPaymentTypes;
     private List<BexioArticle> _cachedArticles = [];
 
-    public BexioApiClient(HttpClient httpClient, string apiToken, int? accountId, int? taxId, string language = "de")
+    public BexioApiClient(HttpClient httpClient, string apiToken, int? accountId, int? taxId, string language = "de", int? paymentTypeId = null)
     {
         _httpClient = httpClient;
         _apiToken = apiToken;
         _accountId = accountId;
         _taxId = taxId;
+        _paymentTypeId = paymentTypeId;
         _language = language;
 
         if (_httpClient.BaseAddress == null)
@@ -151,7 +154,7 @@ public class BexioApiClient : IBexioService
             Title = string.IsNullOrEmpty(order.Title) ? $"Order: {order.Customer.CompanyName}" : order.Title,
             MwstType = 0, // 0 = excl. VAT, 1 = incl. VAT
             CurrencyId = 1, // 1 = CHF
-            PaymentTypeId = 1, // Default
+            PaymentTypeId = _paymentTypeId ?? 1, // the import always passes the selected payment type
             LanguageId = 1, // German
             ApiReference = "Excel-Import",
             Positions = [] // Positions added subsequently
@@ -301,6 +304,24 @@ public class BexioApiClient : IBexioService
         {
             _cachedTaxes = taxes?.Where(t => t.IsActive && (t.Type == "sales_tax" || t.Type == "not_taxable_turnover")).ToList() ?? [];
             return _cachedTaxes;
+        }
+    }
+
+    public async Task<List<BexioPaymentType>> GetPaymentTypesAsync()
+    {
+        lock (_cacheLock)
+        {
+            if (_cachedPaymentTypes != null) return _cachedPaymentTypes;
+        }
+
+        var response = await SendWithRateLimitCheckAsync(CreateRequest(HttpMethod.Get, "2.0/payment_type"));
+        response.EnsureSuccessStatusCode();
+        var paymentTypes = await response.Content.ReadFromJsonAsync<List<BexioPaymentType>>();
+
+        lock (_cacheLock)
+        {
+            _cachedPaymentTypes = paymentTypes ?? [];
+            return _cachedPaymentTypes;
         }
     }
 

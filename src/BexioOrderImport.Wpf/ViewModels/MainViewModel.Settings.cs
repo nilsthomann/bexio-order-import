@@ -35,7 +35,8 @@ public partial class MainViewModel
 
             var defaultSettings = new Models.AppSettingsDto
             {
-                Bexio = new Models.BexioSettingsDto(),
+                // Without the explicit null the default of 1 for older settings would preselect a payment type.
+                Bexio = new Models.BexioSettingsDto { PaymentTypeId = null },
                 ActiveProfileName = "Default",
                 Profiles =
                 [
@@ -61,6 +62,7 @@ public partial class MainViewModel
 
             AccountId = dto.Bexio.AccountId;
             TaxId = dto.Bexio.TaxId;
+            PaymentTypeId = dto.Bexio.PaymentTypeId;
             SelectedLanguage = dto.Bexio.Language;
             _initialLanguage = SelectedLanguage;
             ApplyLanguage(SelectedLanguage);
@@ -104,6 +106,7 @@ public partial class MainViewModel
                     ApiToken = encryptedToken,
                     AccountId = AccountId,
                     TaxId = TaxId,
+                    PaymentTypeId = PaymentTypeId,
                     Language = SelectedLanguage
                 },
                 ActiveProfileName = ActiveProfile?.Name ?? "Default",

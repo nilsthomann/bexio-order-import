@@ -190,6 +190,9 @@ Please close the file in Excel and try again.</value>
   <data name="Settings_TaxLabel" xml:space="preserve">
     <value>Tax rate</value>
   </data>
+  <data name="Settings_PaymentTypeLabel" xml:space="preserve">
+    <value>Payment type</value>
+  </data>
   <data name="Settings_SaveButton" xml:space="preserve">
     <value>Save Settings</value>
   </data>
@@ -371,7 +374,7 @@ Please close the file in Excel and try again.</value>
     <value>Update error: {0}</value>
   </data>
   <data name="Error_SelectAccountAndTax" xml:space="preserve">
-    <value>Please select a default account and a default tax rate in the settings.</value>
+    <value>Please select a default account, a default tax rate and a payment type in the settings.</value>
   </data>
   <data name="Error_FormatUnavailable" xml:space="preserve">
     <value>The format '{0}' of the active profile is not available in this version.</value>
