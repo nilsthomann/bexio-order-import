@@ -31,5 +31,5 @@ public class EanListSettings : IFormatSettings
 
     public string DefaultOrderName { get; set; } = "Order: {CustomerName}";
 
-    public string PositionTextTemplate { get; set; } = "<strong>{BexioArticleName}</strong><br />{BexioArticleDescription}<br />{EAN}";
+    public string PositionTextTemplate { get; set; } = "<strong>{BexioArticleName}</strong><br />{BexioArticleDescription}<br />Produktcode: {EAN}";
 }
