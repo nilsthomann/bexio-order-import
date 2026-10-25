@@ -115,6 +115,11 @@ public class WpfDialogService : IDialogService
         InvokeOnDispatcher(() => Views.CustomDialog.ShowError(message, title));
     }
 
+    public void ShowImportErrorDialog(string message, string title, string note, string orderNumber, Uri orderUri)
+    {
+        InvokeOnDispatcher(() => Views.CustomDialog.ShowError(message, title, note, orderNumber, orderUri));
+    }
+
     public void ShowInfoDialog(string message)
     {
         InvokeOnDispatcher(() => Views.CustomDialog.ShowInfo(message));

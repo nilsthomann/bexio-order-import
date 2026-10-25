@@ -32,6 +32,16 @@ public sealed class FakeFormatAdapter : FormatAdapter<FakeSettings>
 
     public Func<string, Order>? ParseFunc { get; set; }
 
+    /// <summary>
+    /// Thrown after the order is reported, like a failed position upload.
+    /// </summary>
+    public Exception? UploadError { get; set; }
+
+    /// <summary>
+    /// Reports the order as an existing one instead of a new one.
+    /// </summary>
+    public bool UsesExistingOrder { get; set; }
+
     protected override Order Parse(string filePath, FakeSettings settings) => ParseFunc?.Invoke(filePath) ?? ParsedOrder;
 
     /// <summary>
@@ -45,6 +55,11 @@ public sealed class FakeFormatAdapter : FormatAdapter<FakeSettings>
         }
 
         var created = await bexio.CreateOrderAsync(1, order);
+        interaction.OrderResolved(created.Id, created.DocumentNr, isNew: !UsesExistingOrder);
+        if (UploadError != null)
+        {
+            throw UploadError;
+        }
         interaction.ReportProgress(1, 1);
         return new ImportResult(Success: true, OrderNumber: created.DocumentNr, UploadedPositionsCount: order.Positions.Count);
     }

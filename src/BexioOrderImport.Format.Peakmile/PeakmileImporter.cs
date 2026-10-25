@@ -112,6 +112,7 @@ public class PeakmileImporter
             orderId = createdOrder.Id;
             orderNumberDisplay = createdOrder.DocumentNr;
             interaction.LogInfo($"Order created successfully (Order #{orderNumberDisplay}). Uploading positions...");
+            interaction.OrderResolved(orderId, orderNumberDisplay, isNew: true);
         }
         interaction.LogInfo("Pre-fetching article data from Bexio...");
         var uniqueArticleNumbers = order.Positions.Select(p => p.ArticleNumber).Distinct();

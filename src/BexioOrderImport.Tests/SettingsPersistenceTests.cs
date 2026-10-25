@@ -386,7 +386,8 @@ public class SettingsPersistenceTests : StaTestBase, IDisposable
             // Assert
             vm.IsImporting.Should().BeFalse();
             vm.IsImportSuccess.Should().BeTrue();
-            vm.ImportSuccessMessage.Should().Contain("12345");
+            vm.ImportedOrderNumber.Should().Be("AU-12345");
+            vm.ImportedOrderUri.Should().Be(new Uri("https://office.bexio.com/index.php/kb_order/show/id/12345"), "Bexio links the id, not the number");
 
             // Close success modal dialog
             vm.CloseImportSuccessCommand.Execute(null);

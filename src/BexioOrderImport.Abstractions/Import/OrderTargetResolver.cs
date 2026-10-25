@@ -73,6 +73,7 @@ public static class OrderTargetResolver
             }
 
             interaction.LogInfo($"Existing order matched (Order #{existingOrder.DocumentNr}). Uploading positions...");
+            interaction.OrderResolved(existingOrder.Id, existingOrder.DocumentNr, isNew: false);
             return new OrderTarget(existingOrder.Id, existingOrder.DocumentNr);
         }
 
@@ -95,6 +96,7 @@ public static class OrderTargetResolver
 
             var createdOrder = await CreateOrderAsync(order, contactInfo.Id, titleTemplate, seasonCode, bexio);
             interaction.LogInfo($"Order created successfully (Order #{createdOrder.DocumentNr}). Uploading positions...");
+            interaction.OrderResolved(createdOrder.Id, createdOrder.DocumentNr, isNew: true);
             return new OrderTarget(createdOrder.Id, createdOrder.DocumentNr);
         }
 

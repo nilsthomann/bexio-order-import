@@ -30,19 +30,7 @@ public partial class SettingsControl : UserControl
 
     private void Hyperlink_RequestNavigate(object sender, System.Windows.Navigation.RequestNavigateEventArgs e)
     {
-        try
-        {
-            var psi = new System.Diagnostics.ProcessStartInfo
-            {
-                FileName = e.Uri.AbsoluteUri,
-                UseShellExecute = true
-            };
-            System.Diagnostics.Process.Start(psi);
-            e.Handled = true;
-        }
-        catch
-        {
-            // Ignore navigation failure
-        }
+        Helpers.WindowHelper.OpenUrl(e.Uri);
+        e.Handled = true;
     }
 }

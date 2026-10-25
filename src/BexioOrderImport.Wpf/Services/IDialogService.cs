@@ -20,6 +20,11 @@ public interface IDialogService
     bool ShowConfirmDialog(string message, string title);
     bool ShowCustomerConfirmDialog(Customer customer);
     void ShowErrorDialog(string message, string title);
+
+    /// <summary>
+    /// Error of an import that already wrote to a Bexio order: <paramref name="note"/> shows the order number at {0} as a link to <paramref name="orderUri"/>.
+    /// </summary>
+    void ShowImportErrorDialog(string message, string title, string note, string orderNumber, Uri orderUri);
     void ShowInfoDialog(string message);
     void RestartMainWindow();
 }

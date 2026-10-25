@@ -18,7 +18,10 @@ public static class Translations
     public static string Import_UploadButton => ResourceManager.GetString(nameof(Import_UploadButton)) ?? string.Empty;
     public static string Import_LogHeader => ResourceManager.GetString(nameof(Import_LogHeader)) ?? string.Empty;
     public static string Import_SuccessTitle => ResourceManager.GetString(nameof(Import_SuccessTitle)) ?? string.Empty;
-    public static string Import_SuccessMessage => ResourceManager.GetString(nameof(Import_SuccessMessage)) ?? string.Empty;
+    public static string Import_SuccessPrefix => ResourceManager.GetString(nameof(Import_SuccessPrefix)) ?? string.Empty;
+    public static string Import_SuccessSuffix => ResourceManager.GetString(nameof(Import_SuccessSuffix)) ?? string.Empty;
+    public static string Import_OrderCreatedError => ResourceManager.GetString(nameof(Import_OrderCreatedError)) ?? string.Empty;
+    public static string Import_OrderPartlyFilledError => ResourceManager.GetString(nameof(Import_OrderPartlyFilledError)) ?? string.Empty;
     public static string Import_SelectProfileHeader => ResourceManager.GetString(nameof(Import_SelectProfileHeader)) ?? string.Empty;
     public static string Import_ActiveProfileTooltip => ResourceManager.GetString(nameof(Import_ActiveProfileTooltip)) ?? string.Empty;
     public static string Settings_Header => ResourceManager.GetString(nameof(Settings_Header)) ?? string.Empty;

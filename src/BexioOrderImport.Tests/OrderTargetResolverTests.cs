@@ -35,6 +35,21 @@ public class OrderTargetResolverTests
     }
 
     [Test]
+    public async Task ResolveAsync_ShouldReportTheNewOrExistingOrder()
+    {
+        _bexio.Setup(b => b.FindContactByNrAsync("1001")).ReturnsAsync(new BexioContact { Id = 5 });
+        _bexio.Setup(b => b.CreateOrderAsync(5, It.IsAny<Order>())).ReturnsAsync(new BexioOrder { Id = 7, DocumentNr = "AU-7" });
+        _bexio.Setup(b => b.FindOrderByDocumentNrAsync("AU-1")).ReturnsAsync(new BexioOrder { Id = 40, DocumentNr = "AU-1", ContactId = 5 });
+        var reported = new List<(int, string, bool)>();
+        var interaction = new DelegateImportUserInteractionService(orderResolved: (id, nr, isNew) => reported.Add((id, nr, isNew)));
+
+        await OrderTargetResolver.ResolveAsync(new Order { CustomerNumber = "1001" }, "", "", _bexio.Object, interaction);
+        await OrderTargetResolver.ResolveAsync(new Order { OrderNumber = "AU-1" }, "", "", _bexio.Object, interaction);
+
+        reported.Should().Equal((7, "AU-7", true), (40, "AU-1", false));
+    }
+
+    [Test]
     public async Task ResolveAsync_WhenCustomerNameIsEmpty_ShouldUseTheContactNameOnlyIfAsked()
     {
         _bexio.Setup(b => b.FindContactByNrAsync("1001")).ReturnsAsync(new BexioContact { Id = 5, Name = "Bexio Name" });

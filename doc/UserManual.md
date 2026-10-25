@@ -164,7 +164,10 @@ The preview depends on the format of the active profile. For Peakmile order form
    - **If found**: It proceeds automatically using that contact's internal ID.
    - **If NOT found**: A dialog pops up showing the new customer details. You can review, correct errors (e.g., misspelled street names), and click **Create** to insert them directly into Bexio. If you click **Cancel**, the import is aborted and the file remains loaded in your view.
    - A new order is created in Bexio under the matched/created contact.
-5. Once the target order is resolved (either existing or newly created), the positions are uploaded, a full-screen loading card covers the interface, and a success dialog displays the Bexio order number.
+5. Once the target order is resolved (either existing or newly created), the positions are uploaded, a full-screen loading card covers the interface, and a success dialog displays the Bexio order number. Click the order number to open the order in Bexio.
+6. **Errors after the order was resolved**: If the import fails while the positions are uploaded (eg. an article is not found), the error dialog links the order number to Bexio:
+   - **New order**: The order was already created in Bexio. Delete it manually and import the file again.
+   - **Existing order**: The order was partly filled. Remove the added positions manually.
 
 ---
 
@@ -245,7 +248,7 @@ The application checks for updates automatically from its GitHub repository on e
 #### 3. Import fails / throws article-not-found error
 
 - The importer queries your Bexio database for an article code matching the Excel `Art. No.` column.
-- If the article number is not found in your Bexio product catalog, the importer aborts the import process to prevent incomplete imports. Make sure the article codes in the Excel sheet match your Bexio catalog exactly.
+- If the article number is not found in your Bexio product catalog, the importer aborts the import. Positions uploaded before the error stay in the order; the error dialog links the order so you can delete it or remove the positions (see [Step 3](#step-3-trigger-the-import)). Make sure the article codes in the Excel sheet match your Bexio catalog exactly.
 
 #### 4. EAN list import is cancelled or fails
 

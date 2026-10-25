@@ -316,10 +316,9 @@
                                    HorizontalAlignment="Center" Margin="0,0,0,8" Grid.Row="1"/>
                         
                         <!-- Success Message -->
-                        <TextBlock Text="{Binding ImportSuccessMessage}" 
-                                   Style="{StaticResource MutedTextBlockStyle}" 
+                        <TextBlock Style="{StaticResource MutedTextBlockStyle}" 
                                    FontSize="13" TextWrapping="Wrap" TextAlignment="Center"
-                                   HorizontalAlignment="Center" Margin="0,0,0,8" Grid.Row="2"/>
+                                   HorizontalAlignment="Center" Margin="0,0,0,8" Grid.Row="2"><Run Text="{x:Static lex:Translations.Import_SuccessPrefix}"/><Hyperlink NavigateUri="{Binding ImportedOrderUri}" RequestNavigate="Hyperlink_RequestNavigate" Foreground="{StaticResource AccentBrush}"><Run Text="{Binding ImportedOrderNumber, Mode=OneWay}"/></Hyperlink><Run Text="{x:Static lex:Translations.Import_SuccessSuffix}"/></TextBlock>
 
                         <!-- Duration Text -->
                         <TextBlock Text="{Binding ImportDurationText}" 

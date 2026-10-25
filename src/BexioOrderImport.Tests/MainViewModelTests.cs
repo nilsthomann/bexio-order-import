@@ -358,6 +358,60 @@ public class MainViewModelTests : IDisposable
         vm.IsModified.Should().BeFalse();
     }
 
+    private async Task RunImportAsync(FakeFormatAdapter format)
+    {
+        _clientMock.Setup(c => c.CreateOrderAsync(It.IsAny<int>(), It.IsAny<Order>())).ReturnsAsync(new BexioOrder { Id = 77, DocumentNr = "AU-001" });
+        var vm = new MainViewModel(
+            _updateServiceMock.Object,
+            _clientFactoryMock.Object,
+            _dialogServiceMock.Object,
+            _dispatcherServiceMock.Object,
+            _encryptionServiceMock.Object,
+            new FormatRegistry([format]),
+            _tempFilePath)
+        {
+            AccountId = 1,
+            TaxId = 1,
+            PaymentTypeId = 1
+        };
+        vm._loadedOrder = new Order();
+        _dialogServiceMock.Setup(d => d.ShowConfirmDialog(It.IsAny<string>(), It.IsAny<string>())).Returns(true);
+
+        var import = typeof(MainViewModel).GetMethod("ImportToBexioAsync", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+        await (Task)import!.Invoke(vm, [])!;
+    }
+
+    [Test]
+    [Arguments(false)]
+    [Arguments(true)]
+    public async Task ImportToBexioAsync_WhenItFailsAfterTheOrderIsResolved_ShouldLinkTheOrderInTheErrorDialog(bool existingOrder)
+    {
+        await RunImportAsync(new FakeFormatAdapter { UploadError = new InvalidOperationException("EAN not found"), UsesExistingOrder = existingOrder });
+
+        // A new order has to be deleted, an existing one only cleaned up
+        string expectedNote = existingOrder
+            ? BexioOrderImport.Wpf.Resources.Translations.Import_OrderPartlyFilledError
+            : BexioOrderImport.Wpf.Resources.Translations.Import_OrderCreatedError;
+        _dialogServiceMock.Verify(d => d.ShowImportErrorDialog(
+            "EAN not found",
+            It.IsAny<string>(),
+            expectedNote,
+            "AU-001",
+            new Uri("https://office.bexio.com/index.php/kb_order/show/id/77")), Times.Once);
+        _dialogServiceMock.Verify(d => d.ShowErrorDialog(It.IsAny<string>(), It.IsAny<string>()), Times.Never);
+    }
+
+    [Test]
+    public async Task ImportToBexioAsync_WhenItFailsBeforeAnOrderIsResolved_ShouldShowThePlainErrorDialog()
+    {
+        _clientFactoryMock.Setup(f => f.Create(It.IsAny<string>(), It.IsAny<int?>(), It.IsAny<int?>(), It.IsAny<int?>(), It.IsAny<string>())).Throws(new InvalidOperationException("no connection"));
+
+        await RunImportAsync(new FakeFormatAdapter());
+
+        _dialogServiceMock.Verify(d => d.ShowErrorDialog("no connection", It.IsAny<string>()), Times.Once);
+        _dialogServiceMock.Verify(d => d.ShowImportErrorDialog(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<Uri>()), Times.Never);
+    }
+
     [Test]
     public async Task LoadExcelFileAsync_WhenFileParsingFails_ShouldShowErrorDialog()
     {

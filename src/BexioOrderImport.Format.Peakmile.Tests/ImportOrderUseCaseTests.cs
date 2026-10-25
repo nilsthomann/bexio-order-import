@@ -34,12 +34,14 @@ public class ImportOrderUseCaseTests
         _matcherMock.Setup(c => c.FindArticleAsync(It.Is<PeakmileArticleCriteria>(a => a.ArticleNumber == "123" && a.Color == "Black"))).ReturnsAsync(ArticleMatch.Found(new BexioArticle { Id = 789, Description = "Product Description Text", Name = "Product Name Text" }));
 
         var loggedMessages = new List<string>();
+        (int, string, bool)? resolvedOrder = null;
         var interaction = new DelegateImportUserInteractionService(
             showPreview: o => { },
             confirmUpload: () => Task.FromResult(true),
             confirmCustomerCreation: c => Task.FromResult(true),
             confirmEmailMismatch: (ex, el) => Task.FromResult(true),
-            logInfo: loggedMessages.Add
+            logInfo: loggedMessages.Add,
+            orderResolved: (id, nr, isNew) => resolvedOrder = (id, nr, isNew)
         );
 
         // Act
@@ -48,6 +50,7 @@ public class ImportOrderUseCaseTests
         // Assert
         result.Success.Should().BeTrue();
         result.OrderNumber.Should().Be("AU-00456");
+        resolvedOrder.Should().Be((456, "AU-00456", true), "the order created by email is reported to the host");
         _clientMock.Verify(c => c.CreateContactAsync(It.IsAny<Customer>()), Times.Never);
         _clientMock.Verify(c => c.CreateOrderAsync(123, order), Times.Once);
         _clientMock.Verify(c => c.AddArticlePositionAsync(456, 789, order.Positions[0], It.IsAny<string?>()), Times.Once);

@@ -147,8 +147,17 @@
   <data name="Import_SuccessTitle" xml:space="preserve">
     <value>Success</value>
   </data>
-  <data name="Import_SuccessMessage" xml:space="preserve">
-    <value>Order #{0} was successfully imported in Bexio!</value>
+  <data name="Import_SuccessPrefix" xml:space="preserve">
+    <value>Order </value>
+  </data>
+  <data name="Import_SuccessSuffix" xml:space="preserve">
+    <value> was successfully imported in Bexio!</value>
+  </data>
+  <data name="Import_OrderCreatedError" xml:space="preserve">
+    <value>Order {0} was created in Bexio, but the import failed. Please delete the order manually.</value>
+  </data>
+  <data name="Import_OrderPartlyFilledError" xml:space="preserve">
+    <value>Order {0} has been partly filled. Please remove the added positions manually.</value>
   </data>
   <data name="Import_SuccessDuration" xml:space="preserve">
     <value>Total duration: {0}</value>

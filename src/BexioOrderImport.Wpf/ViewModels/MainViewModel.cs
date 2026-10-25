@@ -167,7 +167,8 @@ public partial class MainViewModel : ViewModelBase
 
     private bool _isImportSuccess;
     private string _importSuccessTitle = string.Empty;
-    private string _importSuccessMessage = string.Empty;
+    private string _importedOrderNumber = string.Empty;
+    private Uri? _importedOrderUri;
     private string _importDurationText = string.Empty;
 
     public bool IsImportSuccess
@@ -182,10 +183,19 @@ public partial class MainViewModel : ViewModelBase
         set => SetProperty(ref _importSuccessTitle, value);
     }
 
-    public string ImportSuccessMessage
+    public string ImportedOrderNumber
     {
-        get => _importSuccessMessage;
-        set => SetProperty(ref _importSuccessMessage, value);
+        get => _importedOrderNumber;
+        set => SetProperty(ref _importedOrderNumber, value);
+    }
+
+    /// <summary>
+    /// Link to the imported order in Bexio, null if the format did not report the order.
+    /// </summary>
+    public Uri? ImportedOrderUri
+    {
+        get => _importedOrderUri;
+        set => SetProperty(ref _importedOrderUri, value);
     }
 
     public string ImportDurationText
