@@ -1,10 +1,9 @@
 using BexioOrderImport.Domain.Models;
-using BexioOrderImport.Format.EanList.Resources;
 
 namespace BexioOrderImport.Format.EanList;
 
 /// <summary>
-/// Customer and order number and the positions of a parsed EAN list. Bexio is not called before the import.
+/// Customer number and the positions of a parsed EAN list. Bexio is not called before the import.
 /// </summary>
 public sealed class EanListPreviewViewModel
 {
@@ -15,11 +14,9 @@ public sealed class EanListPreviewViewModel
 
         IsCustomerNumberMissing = string.IsNullOrWhiteSpace(order.CustomerNumber);
         CustomerNumber = IsCustomerNumberMissing ? "-" : order.CustomerNumber!;
-        CustomerNumberMissingMessage = string.Format(EanListTranslations.Preview_CustomerNumberMissing, settings.StartRow);
-        OrderNumber = string.IsNullOrWhiteSpace(order.OrderNumber) ? EanListTranslations.Preview_NewOrder : order.OrderNumber;
 
         Positions = order.Positions;
-        TotalQuantity = order.Positions.Sum(p => p.Quantity);
+        TotalQuantity = order.Positions.Sum(p => p.Quantity * p.SalesUnit);
         SkippedRows = order.SkippedRows;
     }
 
@@ -30,12 +27,11 @@ public sealed class EanListPreviewViewModel
     /// </summary>
     public bool IsCustomerNumberMissing { get; }
 
-    public string CustomerNumberMissingMessage { get; }
-
-    public string OrderNumber { get; }
-
     public IReadOnlyList<OrderPosition> Positions { get; }
 
+    /// <summary>
+    /// Pieces that are imported: quantity × sales unit (VE).
+    /// </summary>
     public int TotalQuantity { get; }
 
     public int SkippedRows { get; }

@@ -7,7 +7,7 @@ using Nager.ArticleNumber;
 namespace BexioOrderImport.Format.EanList;
 
 /// <summary>
-/// Reads an EAN list: one position per row with EAN and quantity, the customer and order number from the first data row.
+/// Reads an EAN list: one position per row with EAN and quantity. The customer number comes from the profile.
 /// </summary>
 public sealed class EanListExcelParser
 {
@@ -27,12 +27,8 @@ public sealed class EanListExcelParser
         using var workbook = new XLWorkbook(stream);
         var sheet = workbook.Worksheet(_settings.WorksheetIndex);
 
-        // Only the first data row counts, later values are ignored
-        var order = new Order
-        {
-            CustomerNumber = ReadText(sheet.Cell(_settings.StartRow, _settings.CustomerNumberColumn)),
-            OrderNumber = ReadText(sheet.Cell(_settings.StartRow, _settings.OrderNumberColumn))
-        };
+        // Without an order number the importer creates a new order
+        var order = new Order { CustomerNumber = _settings.CustomerNumber };
 
         int lastRow = sheet.LastRowUsed()?.RowNumber() ?? _settings.StartRow;
         for (int row = _settings.StartRow; row <= lastRow; row++)
@@ -44,7 +40,7 @@ public sealed class EanListExcelParser
                 continue;
             }
 
-            int? quantity = ReadQuantity(quantityCell, row);
+            int? quantity = ReadWholeNumber(quantityCell, row, EanListTranslations.Error_InvalidQuantity);
             if (quantity is null or <= 0)
             {
                 order.SkippedRows++;
@@ -55,6 +51,7 @@ public sealed class EanListExcelParser
             {
                 Ean = ReadEan(eanCell, row),
                 Quantity = quantity.Value,
+                SalesUnit = _settings.UseSalesUnitColumn ? ReadSalesUnit(sheet.Cell(row, _settings.SalesUnitColumn), row) : 1,
                 SourceRow = row
             });
         }
@@ -62,16 +59,22 @@ public sealed class EanListExcelParser
         return order;
     }
 
-    private static string? ReadText(IXLCell cell)
+    /// <summary>
+    /// An empty cell is the sales unit 1. Other values must be whole numbers greater than 0.
+    /// </summary>
+    private static int ReadSalesUnit(IXLCell cell, int row)
     {
-        string value = cell.Value.ToString().Trim();
-        return string.IsNullOrWhiteSpace(value) ? null : value;
+        int salesUnit = ReadWholeNumber(cell, row, EanListTranslations.Error_InvalidSalesUnit) ?? 1;
+        return salesUnit > 0
+            ? salesUnit
+            : throw new FormatException(string.Format(EanListTranslations.Error_InvalidSalesUnit, cell.Value.ToString().Trim(), row));
     }
 
     /// <summary>
     /// Null for an empty cell. Decimals and text that isn't a whole number are invalid.
     /// </summary>
-    private static int? ReadQuantity(IXLCell cell, int row)
+    /// <param name="errorFormat">Message with the cell value ({0}) and the row ({1}).</param>
+    private static int? ReadWholeNumber(IXLCell cell, int row, string errorFormat)
     {
         if (cell.IsEmpty()) return null;
 
@@ -93,7 +96,7 @@ public sealed class EanListExcelParser
             }
         }
 
-        throw new FormatException(string.Format(EanListTranslations.Error_InvalidQuantity, cell.Value.ToString().Trim(), row));
+        throw new FormatException(string.Format(errorFormat, cell.Value.ToString().Trim(), row));
     }
 
     /// <summary>

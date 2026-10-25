@@ -57,7 +57,7 @@ public class EanListUiTests
         {
             var control = new EanListUiProvider().CreateProfileConfigControl();
 
-            control.Load(new EanListSettings { EanColumn = "E" });
+            control.Load(new EanListSettings { EanColumn = "E", CustomerNumber = "1001" });
 
             control.View.DataContext.Should().BeOfType<EanListProfileConfigViewModel>();
             control.Validate().Should().BeEmpty();

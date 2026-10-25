@@ -121,7 +121,7 @@
     <value>EAN list</value>
   </data>
   <data name="Format_Description" xml:space="preserve">
-    <value>Simple list with EAN, quantity and customer number. Articles and prices come from Bexio.</value>
+    <value>Simple list with EAN and quantity, the customer number is set in the profile. Articles and prices come from Bexio.</value>
   </data>
   <data name="Settings_SourceSection" xml:space="preserve">
     <value>Excel source</value>
@@ -133,7 +133,7 @@
     <value>First Data Row:</value>
   </data>
   <data name="Settings_StartRowHint" xml:space="preserve">
-    <value>The customer and order number are read from this row only.</value>
+    <value>Rows above it (eg. headers) are ignored.</value>
   </data>
   <data name="Settings_EanColumn" xml:space="preserve">
     <value>EAN Column</value>
@@ -141,14 +141,20 @@
   <data name="Settings_QuantityColumn" xml:space="preserve">
     <value>Quantity Column</value>
   </data>
-  <data name="Settings_CustomerNumberColumn" xml:space="preserve">
-    <value>Customer Number Column</value>
+  <data name="Settings_UseSalesUnitColumn" xml:space="preserve">
+    <value>Enable VE column</value>
   </data>
-  <data name="Settings_OrderNumberColumn" xml:space="preserve">
-    <value>Order Number Column</value>
+  <data name="Settings_SalesUnitColumn" xml:space="preserve">
+    <value>Sales Unit (VE) Column</value>
+  </data>
+  <data name="Settings_CustomerNumberLabel" xml:space="preserve">
+    <value>Customer Number:</value>
+  </data>
+  <data name="Settings_CustomerNumberHint" xml:space="preserve">
+    <value>Bexio contact number of the customer. Each customer has its own profile.</value>
   </data>
   <data name="Settings_NumbersHint" xml:space="preserve">
-    <value>If the order number is empty, a new order is created. Without a customer number the import is cancelled. Rows with an empty quantity or quantity 0 are ignored.</value>
+    <value>Every import creates a new order for the customer number of the profile. Rows with an empty quantity or quantity 0 are ignored. With VE, the quantity times the VE is imported; without a VE column or with an empty cell the VE is 1.</value>
   </data>
   <data name="Settings_TextTemplatesSection" xml:space="preserve">
     <value>Texts &amp; Templates</value>
@@ -163,13 +169,16 @@
     <value>Position Text Template:</value>
   </data>
   <data name="Settings_PositionTextTemplateHint" xml:space="preserve">
-    <value>Placeholders: {Ean}, {BexioArticleName}, {BexioArticleDescription}</value>
+    <value>Placeholders: {EAN}, {BexioArticleName}, {BexioArticleDescription}</value>
   </data>
   <data name="Validation_PositiveNumber" xml:space="preserve">
     <value>&quot;{0}&quot; must be a whole number greater than 0.</value>
   </data>
   <data name="Validation_InvalidColumn" xml:space="preserve">
     <value>&quot;{0}&quot; needs a valid column (eg. A, B or AA).</value>
+  </data>
+  <data name="Validation_Required" xml:space="preserve">
+    <value>&quot;{0}&quot; must not be empty.</value>
   </data>
   <data name="Error_InvalidEan" xml:space="preserve">
     <value>Invalid EAN &quot;{0}&quot; in row {1}. An EAN-13 with 13 digits and a valid check digit is expected.</value>
@@ -180,20 +189,17 @@
   <data name="Error_InvalidQuantity" xml:space="preserve">
     <value>Invalid quantity &quot;{0}&quot; in row {1}. A whole number is expected.</value>
   </data>
+  <data name="Error_InvalidSalesUnit" xml:space="preserve">
+    <value>Invalid sales unit (VE) &quot;{0}&quot; in row {1}. A whole number greater than 0 is expected.</value>
+  </data>
   <data name="Preview_Header" xml:space="preserve">
     <value>Order</value>
   </data>
   <data name="Preview_CustomerNumber" xml:space="preserve">
     <value>Customer Number</value>
   </data>
-  <data name="Preview_OrderNumber" xml:space="preserve">
-    <value>Order Number</value>
-  </data>
-  <data name="Preview_NewOrder" xml:space="preserve">
-    <value>New order</value>
-  </data>
   <data name="Preview_CustomerNumberMissing" xml:space="preserve">
-    <value>No customer number in row {0}. The import will be cancelled.</value>
+    <value>No customer number in the profile. The import will be cancelled.</value>
   </data>
   <data name="Preview_PositionsHeader" xml:space="preserve">
     <value>Positions</value>
@@ -207,11 +213,14 @@
   <data name="Preview_ColQuantity" xml:space="preserve">
     <value>Quantity</value>
   </data>
+  <data name="Preview_ColSalesUnit" xml:space="preserve">
+    <value>VE</value>
+  </data>
   <data name="Preview_Positions" xml:space="preserve">
     <value>Positions:</value>
   </data>
   <data name="Preview_TotalQuantity" xml:space="preserve">
-    <value>Quantity:</value>
+    <value>Pieces (quantity × VE):</value>
   </data>
   <data name="Preview_SkippedRows" xml:space="preserve">
     <value>Ignored (quantity empty or 0):</value>

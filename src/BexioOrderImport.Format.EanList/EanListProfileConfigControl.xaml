@@ -16,7 +16,22 @@
             <StackPanel>
                 <TextBlock Text="{x:Static res:EanListTranslations.Settings_SourceSection}" Style="{StaticResource SectionHeaderTextBlockStyle}"/>
 
-                <Grid Margin="0,8,0,8">
+                <Grid Margin="0,8,0,12">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="200"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+                    <TextBlock Text="{x:Static res:EanListTranslations.Settings_CustomerNumberLabel}" VerticalAlignment="Center" Margin="0,0,12,0"/>
+                    <TextBox Grid.Column="1" Text="{Binding CustomerNumber, UpdateSourceTrigger=PropertyChanged}" Width="200" HorizontalAlignment="Left"/>
+                    <TextBlock Grid.Row="1" Grid.Column="1" Text="{x:Static res:EanListTranslations.Settings_CustomerNumberHint}"
+                               Style="{StaticResource MutedTextBlockStyle}" FontStyle="Italic" TextWrapping="Wrap" Margin="0,4,0,0"/>
+                </Grid>
+
+                <Grid Margin="0,0,0,8">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="200"/>
                         <ColumnDefinition Width="*"/>
@@ -56,13 +71,14 @@
                         <TextBlock Text="{x:Static res:EanListTranslations.Settings_QuantityColumn}" Style="{StaticResource MutedTextBlockStyle}"/>
                         <TextBox Text="{Binding QuantityColumn, UpdateSourceTrigger=PropertyChanged}"/>
                     </StackPanel>
-                    <StackPanel Grid.Column="2" Margin="0,0,8,0">
-                        <TextBlock Text="{x:Static res:EanListTranslations.Settings_CustomerNumberColumn}" Style="{StaticResource MutedTextBlockStyle}"/>
-                        <TextBox Text="{Binding CustomerNumberColumn, UpdateSourceTrigger=PropertyChanged}"/>
-                    </StackPanel>
+                    <CheckBox x:Name="UseSalesUnitColumnCheckBox" Grid.Column="2"
+                              Content="{x:Static res:EanListTranslations.Settings_UseSalesUnitColumn}"
+                              IsChecked="{Binding UseSalesUnitColumn}"
+                              VerticalAlignment="Center" Margin="0,16,8,0"
+                              Foreground="{StaticResource TextBrush}" FontWeight="Medium"/>
                     <StackPanel Grid.Column="3">
-                        <TextBlock Text="{x:Static res:EanListTranslations.Settings_OrderNumberColumn}" Style="{StaticResource MutedTextBlockStyle}"/>
-                        <TextBox Text="{Binding OrderNumberColumn, UpdateSourceTrigger=PropertyChanged}"/>
+                        <TextBlock Text="{x:Static res:EanListTranslations.Settings_SalesUnitColumn}" Style="{StaticResource MutedTextBlockStyle}"/>
+                        <TextBox Text="{Binding SalesUnitColumn, UpdateSourceTrigger=PropertyChanged}" IsEnabled="{Binding ElementName=UseSalesUnitColumnCheckBox, Path=IsChecked}"/>
                     </StackPanel>
                 </Grid>
 

@@ -9,8 +9,8 @@ public class EanListViewModelTests
     [Test]
     public void ProfileConfig_LoadAndSave_WithoutChanges_ShouldKeepAllValues()
     {
-        var settings = new EanListSettings { WorksheetIndex = 2, StartRow = 4, EanColumn = "C", QuantityColumn = "D", CustomerNumberColumn = "E", OrderNumberColumn = "F", DefaultOrderName = "Order {CustomerName}", PositionTextTemplate = "{Ean}" };
-        var expected = new EanListSettings { WorksheetIndex = 2, StartRow = 4, EanColumn = "C", QuantityColumn = "D", CustomerNumberColumn = "E", OrderNumberColumn = "F", DefaultOrderName = "Order {CustomerName}", PositionTextTemplate = "{Ean}" };
+        var settings = new EanListSettings { WorksheetIndex = 2, StartRow = 4, EanColumn = "C", QuantityColumn = "D", UseSalesUnitColumn = true, SalesUnitColumn = "G", CustomerNumber = "1001", DefaultOrderName = "Order {CustomerName}", PositionTextTemplate = "{EAN}" };
+        var expected = new EanListSettings { WorksheetIndex = 2, StartRow = 4, EanColumn = "C", QuantityColumn = "D", UseSalesUnitColumn = true, SalesUnitColumn = "G", CustomerNumber = "1001", DefaultOrderName = "Order {CustomerName}", PositionTextTemplate = "{EAN}" };
         var viewModel = new EanListProfileConfigViewModel();
 
         viewModel.Load(settings);
@@ -24,17 +24,23 @@ public class EanListViewModelTests
     {
         var viewModel = new EanListProfileConfigViewModel();
         viewModel.Load(new EanListSettings());
+        viewModel.CustomerNumber = " 1001 ";
         viewModel.WorksheetIndex = " 3 ";
         viewModel.EanColumn = "b";
         viewModel.QuantityColumn = "3";
+        viewModel.UseSalesUnitColumn = true;
+        viewModel.SalesUnitColumn = "e";
         viewModel.DefaultOrderName = " Order ";
 
         viewModel.Validate().Should().BeEmpty();
         var saved = viewModel.Save();
 
+        saved.CustomerNumber.Should().Be("1001");
         saved.WorksheetIndex.Should().Be(3);
         saved.EanColumn.Should().Be("B");
         saved.QuantityColumn.Should().Be("C");
+        saved.UseSalesUnitColumn.Should().BeTrue();
+        saved.SalesUnitColumn.Should().Be("E");
         saved.DefaultOrderName.Should().Be("Order");
     }
 
@@ -47,14 +53,27 @@ public class EanListViewModelTests
         viewModel.StartRow = "x";
         viewModel.EanColumn = "1A";
         viewModel.QuantityColumn = "";
-        viewModel.CustomerNumberColumn = "-1";
-        viewModel.OrderNumberColumn = "#";
+        viewModel.CustomerNumber = " ";
 
         var errors = viewModel.Validate();
 
-        errors.Should().HaveCount(6);
+        errors.Should().HaveCount(5);
         errors[0].Should().Contain(EanListTranslations.Settings_WorksheetLabel.TrimEnd(':'));
         errors[2].Should().Contain(EanListTranslations.Settings_EanColumn);
+        errors[4].Should().Be(string.Format(EanListTranslations.Validation_Required, EanListTranslations.Settings_CustomerNumberLabel.TrimEnd(':')));
+    }
+
+    [Test]
+    public void ProfileConfig_Validate_ShouldCheckTheSalesUnitColumnOnlyWhenItIsUsed()
+    {
+        var viewModel = new EanListProfileConfigViewModel();
+        viewModel.Load(new EanListSettings { CustomerNumber = "1001" });
+        viewModel.SalesUnitColumn = "#";
+
+        viewModel.Validate().Should().BeEmpty();
+
+        viewModel.UseSalesUnitColumn = true;
+        viewModel.Validate().Should().ContainSingle().Which.Should().Contain(EanListTranslations.Settings_SalesUnitColumn);
     }
 
     [Test]
@@ -71,30 +90,26 @@ public class EanListViewModelTests
         var order = new Order
         {
             CustomerNumber = "1001",
-            OrderNumber = "AU-1",
             SkippedRows = 2,
-            Positions = [new OrderPosition { Ean = "1", Quantity = 2 }, new OrderPosition { Ean = "2", Quantity = 3 }]
+            Positions = [new OrderPosition { Ean = "1", Quantity = 2, SalesUnit = 6 }, new OrderPosition { Ean = "2", Quantity = 3 }]
         };
 
         var preview = new EanListPreviewViewModel(order, new EanListSettings());
 
         preview.CustomerNumber.Should().Be("1001");
         preview.IsCustomerNumberMissing.Should().BeFalse();
-        preview.OrderNumber.Should().Be("AU-1");
         preview.Positions.Should().BeSameAs(order.Positions);
-        preview.TotalQuantity.Should().Be(5);
+        preview.TotalQuantity.Should().Be(15, "2 × VE 6 + 3 × VE 1 pieces are imported");
         preview.SkippedRows.Should().Be(2);
     }
 
     [Test]
-    public void Preview_WhenNumbersAreMissing_ShouldWarnAndShowNewOrder()
+    public void Preview_WhenCustomerNumberIsMissing_ShouldWarn()
     {
-        var preview = new EanListPreviewViewModel(new Order(), new EanListSettings { StartRow = 3 });
+        var preview = new EanListPreviewViewModel(new Order(), new EanListSettings());
 
         preview.CustomerNumber.Should().Be("-");
         preview.IsCustomerNumberMissing.Should().BeTrue();
-        preview.CustomerNumberMissingMessage.Should().Be(string.Format(EanListTranslations.Preview_CustomerNumberMissing, 3));
-        preview.OrderNumber.Should().Be(EanListTranslations.Preview_NewOrder);
     }
 
     [Test]

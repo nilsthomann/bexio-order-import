@@ -33,6 +33,7 @@
                     <DataGridTextColumn Header="{x:Static res:EanListTranslations.Preview_ColRow}" Binding="{Binding SourceRow}" Width="70" ElementStyle="{StaticResource DataGridCellTextBlockStyle}"/>
                     <DataGridTextColumn Header="{x:Static res:EanListTranslations.Preview_ColEan}" Binding="{Binding Ean}" Width="*" ElementStyle="{StaticResource DataGridCellTextBlockStyle}"/>
                     <DataGridTextColumn Header="{x:Static res:EanListTranslations.Preview_ColQuantity}" Binding="{Binding Quantity}" Width="90" ElementStyle="{StaticResource DataGridCellTextBlockStyle}"/>
+                    <DataGridTextColumn Header="{x:Static res:EanListTranslations.Preview_ColSalesUnit}" Binding="{Binding SalesUnit}" Width="70" ElementStyle="{StaticResource DataGridCellTextBlockStyle}"/>
                 </DataGrid.Columns>
             </DataGrid>
 

@@ -10,12 +10,10 @@ public class EanListExcelParserTests
     private static readonly EanListExcelParser DefaultParser = new(new EanListSettings());
 
     [Test]
-    public void ParseOrderForm_WithFixture_ShouldReadPositionsAndFirstRowNumbers()
+    public void ParseOrderForm_WithFixture_ShouldReadThePositions()
     {
         var order = DefaultParser.ParseOrderForm(FixturePath);
 
-        order.CustomerNumber.Should().Be("1001", "only the first data row counts, row 9 has another customer");
-        order.OrderNumber.Should().BeNull("the order number of row 2 is empty, row 9 is ignored");
         order.Positions.Select(p => p.Ean).Should().Equal("7612345678900", "0012345678905", "4006381333931", "0826710896036");
         order.Positions.Select(p => p.Quantity).Should().Equal(3, 2, 1, 5);
         order.Positions.Select(p => p.SourceRow).Should().Equal(2, 3, 8, 9);
@@ -33,46 +31,29 @@ public class EanListExcelParserTests
     }
 
     [Test]
-    public void ParseOrderForm_ShouldReadTheOrderNumberOfTheFirstRow()
+    public void ParseOrderForm_ShouldNotReadAnOrderNumber()
     {
         using var file = new TempWorkbook(sheet =>
         {
-            sheet.Cell("A2").Value = "4006381333931"; sheet.Cell("B2").Value = 1; sheet.Cell("C2").Value = "1001"; sheet.Cell("D2").Value = " AU-1 ";
+            sheet.Cell("A2").Value = "4006381333931"; sheet.Cell("B2").Value = 1; sheet.Cell("C2").Value = "1001"; sheet.Cell("D2").Value = "AU-1";
         });
 
         var order = DefaultParser.ParseOrderForm(file.Path);
 
-        order.OrderNumber.Should().Be("AU-1");
+        order.OrderNumber.Should().BeNull("every EAN list import creates a new order");
     }
 
     [Test]
-    public void ParseOrderForm_WhenFirstRowHasNoCustomerNumber_ShouldIgnoreLaterRows()
+    public void ParseOrderForm_ShouldTakeTheCustomerNumberFromTheProfile()
     {
         using var file = new TempWorkbook(sheet =>
         {
-            sheet.Cell("A2").Value = "4006381333931"; sheet.Cell("B2").Value = 1;
-            sheet.Cell("A3").Value = "4006381333931"; sheet.Cell("B3").Value = 1; sheet.Cell("C3").Value = "1001";
+            sheet.Cell("A2").Value = "4006381333931"; sheet.Cell("B2").Value = 1; sheet.Cell("C2").Value = "9999";
         });
 
-        var order = DefaultParser.ParseOrderForm(file.Path);
+        var order = new EanListExcelParser(new EanListSettings { CustomerNumber = "1001" }).ParseOrderForm(file.Path);
 
-        order.CustomerNumber.Should().BeNull();
-    }
-
-    [Test]
-    public void ParseOrderForm_WhenFirstRowIsSkipped_ShouldStillReadItsCustomerNumber()
-    {
-        using var file = new TempWorkbook(sheet =>
-        {
-            sheet.Cell("A2").Value = "4006381333931"; sheet.Cell("B2").Value = 0; sheet.Cell("C2").Value = 1001;
-            sheet.Cell("A3").Value = "4006381333931"; sheet.Cell("B3").Value = 2;
-        });
-
-        var order = DefaultParser.ParseOrderForm(file.Path);
-
-        order.CustomerNumber.Should().Be("1001");
-        order.Positions.Should().ContainSingle().Which.SourceRow.Should().Be(3);
-        order.SkippedRows.Should().Be(1);
+        order.CustomerNumber.Should().Be("1001", "customer numbers in the file are ignored");
     }
 
     [Test]
@@ -153,6 +134,57 @@ public class EanListExcelParserTests
     }
 
     [Test]
+    public void ParseOrderForm_WithoutSalesUnitColumn_ShouldUseSalesUnit1()
+    {
+        using var file = new TempWorkbook(sheet =>
+        {
+            sheet.Cell("A2").Value = "4006381333931"; sheet.Cell("B2").Value = 2; sheet.Cell("C2").Value = 6;
+        });
+
+        var order = DefaultParser.ParseOrderForm(file.Path);
+
+        order.Positions.Should().ContainSingle().Which.SalesUnit.Should().Be(1, "the VE column is off by default");
+    }
+
+    [Test]
+    public void ParseOrderForm_WithSalesUnitColumn_ShouldReadTheSalesUnitAndUse1ForEmptyCells()
+    {
+        using var file = new TempWorkbook(sheet =>
+        {
+            sheet.Cell("A2").Value = "4006381333931"; sheet.Cell("B2").Value = 2; sheet.Cell("E2").Value = 6;
+            sheet.Cell("A3").Value = "4006381333931"; sheet.Cell("B3").Value = 1; sheet.Cell("E3").Value = " 12 ";
+            sheet.Cell("A4").Value = "4006381333931"; sheet.Cell("B4").Value = 3;
+            sheet.Cell("A5").Value = "4006381333931"; sheet.Cell("B5").Value = 0; sheet.Cell("E5").Value = "x";
+        });
+        var parser = new EanListExcelParser(new EanListSettings { UseSalesUnitColumn = true, SalesUnitColumn = "E" });
+
+        var order = parser.ParseOrderForm(file.Path);
+
+        order.Positions.Select(p => p.SalesUnit).Should().Equal(6, 12, 1);
+        order.SkippedRows.Should().Be(1, "the VE of skipped rows is not read");
+    }
+
+    [Test]
+    [Arguments("1.5")]
+    [Arguments("abc")]
+    [Arguments("0")]
+    [Arguments("-2")]
+    public void ParseOrderForm_WhenSalesUnitIsNoWholeNumberAboveZero_ShouldThrowWithRow(string salesUnit)
+    {
+        using var file = new TempWorkbook(sheet =>
+        {
+            sheet.Cell("A2").Value = "4006381333931"; sheet.Cell("B2").Value = 1;
+            sheet.Cell("A3").Value = "4006381333931"; sheet.Cell("B3").Value = 1;
+            if (salesUnit == "1.5") sheet.Cell("C3").Value = 1.5; else sheet.Cell("C3").Value = salesUnit;
+        });
+        var parser = new EanListExcelParser(new EanListSettings { UseSalesUnitColumn = true });
+
+        Action act = () => parser.ParseOrderForm(file.Path);
+
+        act.Should().Throw<FormatException>().WithMessage("*VE*3*");
+    }
+
+    [Test]
     public void ParseOrderForm_WhenEanIsMissing_ShouldThrowWithRow()
     {
         using var file = new TempWorkbook(sheet =>
@@ -173,20 +205,18 @@ public class EanListExcelParserTests
         {
             workbook.AddWorksheet("Info");
             var sheet = workbook.AddWorksheet("Daten");
-            sheet.Cell("B5").Value = 7; sheet.Cell("D5").Value = "4006381333931"; sheet.Cell("E5").Value = "1001"; sheet.Cell("F5").Value = "AU-2";
+            sheet.Cell("B5").Value = 7; sheet.Cell("D5").Value = "4006381333931";
             workbook.SaveAs(path);
         }
         var parser = new EanListExcelParser(new EanListSettings
         {
-            WorksheetIndex = 2, StartRow = 5, EanColumn = "D", QuantityColumn = "B", CustomerNumberColumn = "E", OrderNumberColumn = "F"
+            WorksheetIndex = 2, StartRow = 5, EanColumn = "D", QuantityColumn = "B"
         });
 
         try
         {
             var order = parser.ParseOrderForm(path);
 
-            order.CustomerNumber.Should().Be("1001");
-            order.OrderNumber.Should().Be("AU-2");
             order.Positions.Should().ContainSingle().Which.Quantity.Should().Be(7);
         }
         finally

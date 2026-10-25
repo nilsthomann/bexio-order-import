@@ -17,12 +17,8 @@
                     <TextBlock Text="{x:Static res:EanListTranslations.Preview_CustomerNumber}" Style="{StaticResource MutedTextBlockStyle}"/>
                     <TextBlock Text="{Binding CustomerNumber}" FontWeight="SemiBold"/>
                 </StackPanel>
-                <StackPanel Grid.Column="1" Margin="0,4">
-                    <TextBlock Text="{x:Static res:EanListTranslations.Preview_OrderNumber}" Style="{StaticResource MutedTextBlockStyle}"/>
-                    <TextBlock Text="{Binding OrderNumber}" FontWeight="SemiBold"/>
-                </StackPanel>
             </Grid>
-            <TextBlock Text="{Binding CustomerNumberMissingMessage}" Foreground="{StaticResource ErrorBrush}" FontWeight="SemiBold"
+            <TextBlock Text="{x:Static res:EanListTranslations.Preview_CustomerNumberMissing}" Foreground="{StaticResource ErrorBrush}" FontWeight="SemiBold"
                        TextWrapping="Wrap" Margin="0,8,0,0"
                        Visibility="{Binding IsCustomerNumberMissing, Converter={StaticResource BooleanToVisibilityConverter}}"/>
         </StackPanel>

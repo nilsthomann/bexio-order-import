@@ -7,7 +7,7 @@ using BexioOrderImport.Format.EanList.Resources;
 namespace BexioOrderImport.Format.EanList;
 
 /// <summary>
-/// EAN lists: EAN, quantity and customer number per row; articles and prices come from Bexio.
+/// EAN lists: EAN and quantity per row, the customer number from the profile; articles and prices come from Bexio.
 /// </summary>
 public sealed class EanListFormatAdapter : FormatAdapter<EanListSettings>
 {

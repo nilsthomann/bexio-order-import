@@ -27,7 +27,7 @@ public sealed class EanListImporter
         // Without a customer number there is no email or customer creation fallback
         if (string.IsNullOrWhiteSpace(order.CustomerNumber))
         {
-            interaction.LogInfo($"⛔ No customer number in row {settings.StartRow}.");
+            interaction.LogInfo("⛔ No customer number in the profile.");
             return new ImportResult(Success: false, ErrorMessage: "Customer number missing.");
         }
 
@@ -71,11 +71,22 @@ public sealed class EanListImporter
             position.GrossUnitPrice = article.SalePrice ?? 0m;
             position.ArticleName = article.Name;
 
+            // {Ean} is the older spelling, profiles may still use it
             string positionText = (settings.PositionTextTemplate ?? string.Empty)
+                .Replace("{EAN}", ean)
                 .Replace("{Ean}", ean)
                 .Replace("{BexioArticleName}", article.Name ?? string.Empty)
                 .Replace("{BexioArticleDescription}", article.Description ?? string.Empty);
-            await _bexio.AddArticlePositionAsync(target.OrderId, article.Id, position, positionText);
+            // Bexio gets pieces; the parsed position keeps the quantity in sales units for the preview
+            var piecesPosition = new OrderPosition
+            {
+                Ean = ean,
+                SourceRow = position.SourceRow,
+                ArticleName = position.ArticleName,
+                Quantity = position.Quantity * position.SalesUnit,
+                GrossUnitPrice = position.GrossUnitPrice
+            };
+            await _bexio.AddArticlePositionAsync(target.OrderId, article.Id, piecesPosition, positionText);
 
             count++;
             interaction.ReportProgress(count, order.Positions.Count);

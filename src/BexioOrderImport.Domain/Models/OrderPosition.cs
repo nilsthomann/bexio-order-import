@@ -18,6 +18,11 @@ public class OrderPosition
     public string SizeCategory { get; set; } = string.Empty;
     public string Size { get; set; } = string.Empty;
     public int Quantity { get; set; }
+
+    /// <summary>
+    /// Pieces per sales unit (VE) of formats that order in sales units; Bexio gets Quantity × SalesUnit pieces.
+    /// </summary>
+    public int SalesUnit { get; set; } = 1;
     public decimal GrossUnitPrice { get; set; }
     public decimal? DiscountPercent { get; set; }
 
