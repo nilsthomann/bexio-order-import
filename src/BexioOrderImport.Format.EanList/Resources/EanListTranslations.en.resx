@@ -142,7 +142,7 @@
     <value>Quantity Column</value>
   </data>
   <data name="Settings_UseSalesUnitColumn" xml:space="preserve">
-    <value>Read VE</value>
+    <value>Enable VE column</value>
   </data>
   <data name="Settings_SalesUnitColumn" xml:space="preserve">
     <value>Sales Unit (VE) Column</value>

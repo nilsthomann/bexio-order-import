@@ -114,7 +114,7 @@ An EAN list has one article per row. Each customer has its own profile: the **cu
 |---|---|---|
 | A | EAN | An EAN-13: 13 digits with a valid check digit. Excel drops the leading zeros of EANs stored as numbers, so shorter codes get them back: `826710896036` is read as `0826710896036`. An invalid EAN stops reading the file. |
 | B | Quantity | Whole number. Rows with an empty quantity or a quantity of 0 or less are ignored. |
-| C | Sales unit (VE) | Optional, only read if **Read VE** is checked in the profile. Pieces per sales unit as a whole number greater than 0; an empty cell counts as 1. Without the VE column every VE is 1. |
+| C | Sales unit (VE) | Optional, only read if **Enable VE column** is checked in the profile. Pieces per sales unit as a whole number greater than 0; an empty cell counts as 1. Without the VE column every VE is 1. |
 
 Row 1 is the header; data starts in row 2.
 

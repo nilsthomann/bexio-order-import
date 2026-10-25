@@ -142,7 +142,7 @@
     <value>Spalte Menge</value>
   </data>
   <data name="Settings_UseSalesUnitColumn" xml:space="preserve">
-    <value>VE lesen</value>
+    <value>Spalte VE aktivieren</value>
   </data>
   <data name="Settings_SalesUnitColumn" xml:space="preserve">
     <value>Spalte VE (Verkaufseinheit)</value>
