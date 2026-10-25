@@ -147,8 +147,17 @@
   <data name="Import_SuccessTitle" xml:space="preserve">
     <value>Erfolgreich</value>
   </data>
-  <data name="Import_SuccessMessage" xml:space="preserve">
-    <value>Auftrag #{0} wurde erfolgreich in Bexio importiert!</value>
+  <data name="Import_SuccessPrefix" xml:space="preserve">
+    <value>Auftrag </value>
+  </data>
+  <data name="Import_SuccessSuffix" xml:space="preserve">
+    <value> wurde erfolgreich in Bexio importiert!</value>
+  </data>
+  <data name="Import_OrderCreatedError" xml:space="preserve">
+    <value>Der Auftrag {0} wurde in Bexio bereits erstellt, der Import ist aber fehlgeschlagen. Bitte löschen Sie den Auftrag manuell.</value>
+  </data>
+  <data name="Import_OrderPartlyFilledError" xml:space="preserve">
+    <value>Der Auftrag {0} wurde nur teilweise befüllt. Bitte entfernen Sie die hinzugefügten Positionen manuell.</value>
   </data>
   <data name="Import_SuccessDuration" xml:space="preserve">
     <value>Benötigte Zeit: {0}</value>

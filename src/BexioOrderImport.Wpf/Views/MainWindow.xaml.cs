@@ -12,4 +12,10 @@ public partial class MainWindow : Window
         InitializeComponent();
         DataContext = App.Services.GetRequiredService<MainViewModel>();
     }
+
+    private void Hyperlink_RequestNavigate(object sender, System.Windows.Navigation.RequestNavigateEventArgs e)
+    {
+        Helpers.WindowHelper.OpenUrl(e.Uri);
+        e.Handled = true;
+    }
 }

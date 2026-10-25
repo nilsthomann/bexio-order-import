@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.IO;
 using BexioOrderImport.Abstractions.Bexio;
 using BexioOrderImport.Abstractions.Formats;
@@ -13,6 +14,12 @@ public partial class MainViewModel
     private const string ConnectionColorConnected    = "#10B981"; // Green
     private const string ConnectionColorDisconnected = "#EF4444"; // Red
     private const string ConnectionColorChecking     = "#F59E0B"; // Amber
+
+    /// <summary>
+    /// Bexio links orders by their id, not by the document number.
+    /// </summary>
+    public static Uri GetBexioOrderUri(int orderId) =>
+        new(string.Create(CultureInfo.InvariantCulture, $"https://office.bexio.com/index.php/kb_order/show/id/{orderId}"));
 
     private (IFormatAdapter Format, IFormatSettings Settings) GetActiveFormat()
     {
@@ -143,14 +150,15 @@ public partial class MainViewModel
         };
         uiTimer.Start();
 
+        var interaction = new WpfImportUserInteractionService(
+            this,
+            (uploaded, total, sw) => UpdateRemainingTime(uploaded, total, sw),
+            importStopwatch);
+
         try
         {
             var (format, settings) = GetActiveFormat();
             var bexioClient = _bexioClientFactory.Create(BexioToken, AccountId, TaxId, PaymentTypeId, SelectedLanguage);
-            var interaction = new WpfImportUserInteractionService(
-                this,
-                (uploaded, total, sw) => UpdateRemainingTime(uploaded, total, sw),
-                importStopwatch);
 
             var result = await format.ImportAsync(_loadedOrder, settings, bexioClient, interaction);
 
@@ -169,7 +177,8 @@ public partial class MainViewModel
                 InvokeOnUi(() =>
                 {
                     ImportSuccessTitle = Resources.Translations.Import_SuccessTitle;
-                    ImportSuccessMessage = string.Format(Resources.Translations.Import_SuccessMessage, displayOrderNr);
+                    ImportedOrderNumber = displayOrderNr;
+                    ImportedOrderUri = interaction.ResolvedOrder is { } resolved ? GetBexioOrderUri(resolved.Id) : null;
                     ImportDurationText = string.Format(Resources.Translations.Import_SuccessDuration, formattedDuration);
                     IsImportSuccess = true;
                 });
@@ -184,7 +193,13 @@ public partial class MainViewModel
         catch (Exception ex)
         {
             AppendLog($"⛔ Error during import: {ex.Message}");
-            if (IsFileLockedException(ex))
+            if (interaction.ResolvedOrder is { } resolved)
+            {
+                // The order already exists in Bexio, the user has to clean it up
+                string note = resolved.IsNew ? Resources.Translations.Import_OrderCreatedError : Resources.Translations.Import_OrderPartlyFilledError;
+                _dialogService.ShowImportErrorDialog(ex.Message, Resources.Translations.Dialog_ErrorTitle, note, resolved.DocumentNr, GetBexioOrderUri(resolved.Id));
+            }
+            else if (IsFileLockedException(ex))
             {
                 string fileName = !string.IsNullOrEmpty(SelectedFilePath) ? Path.GetFileName(SelectedFilePath) : "Excel";
                 string title = Resources.Translations.Import_FileLockedTitle;
@@ -355,7 +370,11 @@ public partial class MainViewModel
             _stopwatch = stopwatch;
         }
 
+        public (int Id, string DocumentNr, bool IsNew)? ResolvedOrder { get; private set; }
+
         public void ShowPreview(Order order) { }
+
+        public void OrderResolved(int orderId, string documentNr, bool isNew) => ResolvedOrder = (orderId, documentNr, isNew);
 
         public Task<bool> ConfirmUploadAsync() => _vm.ConfirmUploadAsync();
 

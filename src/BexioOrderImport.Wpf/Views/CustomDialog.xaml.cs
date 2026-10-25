@@ -1,4 +1,6 @@
 using System.Windows;
+using System.Windows.Documents;
+using System.Windows.Media;
 using BexioOrderImport.Wpf.Resources;
 
 namespace BexioOrderImport.Wpf.Views;
@@ -139,6 +141,33 @@ public partial class CustomDialog : Window
         if (IsUnitTest()) return;
         var dlg = CreateDialog(CustomDialogType.Error, title ?? Translations.Dialog_ErrorTitle, message);
         dlg.ShowDialog();
+    }
+
+    /// <summary>
+    /// Error with a note below the message whose {0} is a link (eg. to the Bexio order).
+    /// </summary>
+    public static void ShowError(string message, string title, string note, string linkText, Uri linkUri)
+    {
+        if (IsUnitTest()) return;
+        var dlg = CreateDialog(CustomDialogType.Error, title, message);
+        dlg.AddLinkNote(note, linkText, linkUri);
+        dlg.ShowDialog();
+    }
+
+    private void AddLinkNote(string note, string linkText, Uri linkUri)
+    {
+        string[] parts = note.Split("{0}", 2);
+        var link = new Hyperlink(new Run(linkText)) { NavigateUri = linkUri, Foreground = (Brush)FindResource("AccentBrush") };
+        link.RequestNavigate += (_, e) =>
+        {
+            Helpers.WindowHelper.OpenUrl(e.Uri);
+            e.Handled = true;
+        };
+        MessageText.Inlines.Add(new LineBreak());
+        MessageText.Inlines.Add(new LineBreak());
+        MessageText.Inlines.Add(new Run(parts[0]));
+        MessageText.Inlines.Add(link);
+        if (parts.Length > 1) MessageText.Inlines.Add(new Run(parts[1]));
     }
 
     public static bool ShowConfirm(string message, string? title = null)

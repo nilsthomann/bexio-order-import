@@ -10,6 +10,7 @@ public class DelegateImportUserInteractionService : IImportUserInteractionServic
     private readonly Func<string, string, Task<bool>>? _confirmEmailMismatch;
     private readonly Action<string>? _logInfo;
     private readonly Action<int, int>? _reportProgress;
+    private readonly Action<int, string, bool>? _orderResolved;
 
     public DelegateImportUserInteractionService(
         Action<Order>? showPreview = null,
@@ -17,7 +18,8 @@ public class DelegateImportUserInteractionService : IImportUserInteractionServic
         Func<Customer, Task<bool>>? confirmCustomerCreation = null,
         Func<string, string, Task<bool>>? confirmEmailMismatch = null,
         Action<string>? logInfo = null,
-        Action<int, int>? reportProgress = null)
+        Action<int, int>? reportProgress = null,
+        Action<int, string, bool>? orderResolved = null)
     {
         _showPreview = showPreview;
         _confirmUpload = confirmUpload;
@@ -25,6 +27,7 @@ public class DelegateImportUserInteractionService : IImportUserInteractionServic
         _confirmEmailMismatch = confirmEmailMismatch;
         _logInfo = logInfo;
         _reportProgress = reportProgress;
+        _orderResolved = orderResolved;
     }
 
     public void ShowPreview(Order order) => _showPreview?.Invoke(order);
@@ -33,4 +36,5 @@ public class DelegateImportUserInteractionService : IImportUserInteractionServic
     public Task<bool> ConfirmEmailMismatchAsync(string existingEmail, string excelEmail) => _confirmEmailMismatch != null ? _confirmEmailMismatch(existingEmail, excelEmail) : Task.FromResult(true);
     public void LogInfo(string message) => _logInfo?.Invoke(message);
     public void ReportProgress(int current, int total) => _reportProgress?.Invoke(current, total);
+    public void OrderResolved(int orderId, string documentNr, bool isNew) => _orderResolved?.Invoke(orderId, documentNr, isNew);
 }

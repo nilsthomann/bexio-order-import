@@ -20,6 +20,21 @@ public static class WindowHelper
         public int Bottom;
     }
 
+    /// <summary>
+    /// Opens the link in the default browser; a failure is ignored.
+    /// </summary>
+    public static void OpenUrl(Uri uri)
+    {
+        try
+        {
+            System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo { FileName = uri.AbsoluteUri, UseShellExecute = true });
+        }
+        catch
+        {
+            // Ignore navigation failure
+        }
+    }
+
     public static Rect GetAbsolutePlacement(Window window)
     {
         var hwnd = new WindowInteropHelper(window).Handle;

@@ -10,4 +10,9 @@ public interface IImportUserInteractionService
     Task<bool> ConfirmEmailMismatchAsync(string existingEmail, string excelEmail);
     void LogInfo(string message);
     void ReportProgress(int current, int total);
+
+    /// <summary>
+    /// The Bexio order that receives the positions is known; <paramref name="isNew"/> if the import created it.
+    /// </summary>
+    void OrderResolved(int orderId, string documentNr, bool isNew);
 }
