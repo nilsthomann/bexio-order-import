@@ -106,7 +106,7 @@ public class EanListImporterTests
     }
 
     [Test]
-    [Arguments(null, "<strong>Article 1</strong><br />Description 1<br />4006381333931")]
+    [Arguments(null, "<strong>Article 1</strong><br />Description 1<br />Produktcode: 4006381333931")]
     [Arguments("{Ean} / {EAN}", "4006381333931 / 4006381333931")]
     public async Task ExecuteAsync_ShouldWriteThePositionTextWithTheEan(string? template, string expected)
     {
