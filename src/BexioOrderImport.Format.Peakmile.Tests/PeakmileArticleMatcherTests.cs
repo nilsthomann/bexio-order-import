@@ -140,6 +140,37 @@ public class PeakmileArticleMatcherTests
     }
 
     [Test]
+    public async Task FindArticleAsync_WhenInternCodeHasSpaces_ShouldMatchItThroughTheArticleNumberSearch()
+    {
+        // Arrange: the exact lookups miss, the like search by article number returns the codes with spaces
+        var handler = new MockHttpMessageHandler
+        {
+            SendAsyncFunc = async (req, token) =>
+            {
+                string requestBody = await req.Content!.ReadAsStringAsync(token);
+                string json = requestBody.Contains("\"like\"")
+                    ? "[{\"id\": 1, \"intern_code\": \"NOOS 5440 White\", \"intern_name\": \"Jacket White\"}," +
+                      "{\"id\": 2, \"intern_code\": \"NOOS 5440 Black\", \"intern_name\": \"Jacket Black\"}]"
+                    : "[]";
+                return new HttpResponseMessage(HttpStatusCode.OK)
+                {
+                    Content = new StringContent(json, Encoding.UTF8, "application/json")
+                };
+            }
+        };
+
+        var client = new BexioApiClient(new HttpClient(handler), "dummy-token", 1, 1);
+        var matcher = new PeakmileArticleMatcher(client);
+
+        // Act
+        var result = (await matcher.FindArticleAsync(new("5440", "140 Black", "FS27", ["NOOS"]))).Article;
+
+        // Assert
+        result.Should().NotBeNull();
+        result!.Id.Should().Be(2);
+    }
+
+    [Test]
     public async Task FindArticleAsync_WhenSeasonCodeMatches_ShouldNotQueryFallbackCodes()
     {
         // Arrange
