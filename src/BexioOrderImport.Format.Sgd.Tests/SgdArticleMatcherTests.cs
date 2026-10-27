@@ -76,6 +76,19 @@ public class SgdArticleMatcherTests
     }
 
     [Test]
+    public async Task FindArticleAsync_WhenInternCodeHasSpaces_ShouldMatchItThroughTheArticleNumberSearch()
+    {
+        var matcher = Matcher(body => body.Contains("\"like\"")
+            ? "[{\"id\": 1, \"intern_code\": \"NOOS 5440 White\", \"intern_name\": \"Jacket White\"}," +
+              "{\"id\": 2, \"intern_code\": \"NOOS 5440 Black\", \"intern_name\": \"Jacket Black\"}]"
+            : "[]");
+
+        var article = (await matcher.FindArticleAsync(new("5440", "1001 Black", "FS27", ["NOOS"]))).Article;
+
+        article!.Id.Should().Be(2);
+    }
+
+    [Test]
     public async Task FindArticleAsync_WhenTheArticleNumberSearchFindsOneArticle_ShouldUseIt()
     {
         var matcher = Matcher(body => body.Contains("\"like\"")

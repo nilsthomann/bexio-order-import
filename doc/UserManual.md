@@ -150,7 +150,7 @@ Row 1 is the header; data starts in row 2. Example:
 
 The profile also sets:
 
-- **Season code** and **season fallback codes**: articles are found like Peakmile articles, by the Bexio **internal code** `{SeasonCode}{ArticleNumber}{Color}`, first with the season code, then with each fallback code (eg. `NOOS`). If none matches, the articles of the article number are searched and filtered by color and season code in the article name.
+- **Season code** and **season fallback codes**: articles are found like Peakmile articles, by the Bexio **internal code** `{SeasonCode}{ArticleNumber}{Color}`, first with the season code, then with each fallback code (eg. `NOOS`). If none matches, the articles of the article number are searched and filtered by color and season code in the article name. Spaces in the Bexio internal code are ignored (`NOOS 5440 Black` matches `NOOS5440Black`).
 - **Discount in %**: added as one discount position at the end of the order, with the **discount position text template** (placeholder `{DiscountInPercent}`). `0` adds no discount position. The file has no discount.
 - **Position creation**: **Single position per size** creates one Bexio position per row. **Grouped position per article and color** creates one position per article number and color, with one size row per size from the **size row template** (eg. `2x Size S`, `3x Size M`); equal sizes are summed. The grouped position text template must contain `{SizesRows}`.
 - **Order name template** (`{CustomerName}`, `{SeasonCode}`) and the **position text templates** with the placeholders `{Color}`, `{Size}` or `{SizesRows}`, `{ArticleNumber}`, `{ArticleName}`, `{BexioArticleName}` and `{BexioArticleDescription}`.

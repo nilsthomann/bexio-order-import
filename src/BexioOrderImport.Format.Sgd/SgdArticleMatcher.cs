@@ -43,7 +43,8 @@ public sealed class SgdArticleMatcher : ISgdArticleMatcher
         // The color can have a color code in front, eg. "1001 Black"; the intern code has only the color name
         string cleanColor = Regex.Replace(criteria.Color, @"^\d+", "").Trim();
 
-        foreach (var code in (string[])[criteria.SeasonCode, .. criteria.FallbackSeasonCodes ?? []])
+        string[] seasonCodes = [criteria.SeasonCode, .. criteria.FallbackSeasonCodes ?? []];
+        foreach (var code in seasonCodes)
         {
             var articles = await FindArticlesByInternCodeAsync(criteria.ArticleNumber, cleanColor, code);
             if (articles.Count == 1)
@@ -52,7 +53,7 @@ public sealed class SgdArticleMatcher : ISgdArticleMatcher
             }
         }
 
-        var article = await FindArticleByArticleNumberAndFilterAsync(criteria.ArticleNumber, cleanColor, criteria.SeasonCode);
+        var article = await FindArticleByArticleNumberAndFilterAsync(criteria.ArticleNumber, cleanColor, seasonCodes);
         return article != null ? ArticleMatch.Found(article) : ArticleMatch.NotFound();
     }
 
@@ -100,16 +101,21 @@ public sealed class SgdArticleMatcher : ISgdArticleMatcher
         return articles;
     }
 
-    private async Task<BexioArticle?> FindArticleByArticleNumberAndFilterAsync(string articleNumber, string cleanColor, string seasonCode)
+    private async Task<BexioArticle?> FindArticleByArticleNumberAndFilterAsync(string articleNumber, string cleanColor, string[] seasonCodes)
     {
-        var cachedArticle = _cachedArticles.FirstOrDefault(x =>
-            x.Code.Contains(articleNumber.Trim(), StringComparison.OrdinalIgnoreCase) &&
-            x.Name.Contains(cleanColor, StringComparison.OrdinalIgnoreCase) &&
-            x.Name.Contains(seasonCode, StringComparison.OrdinalIgnoreCase));
+        string seasonCode = seasonCodes[0];
+        var cachedArticle = FindByInternCodeIgnoringSpaces(_cachedArticles, articleNumber, cleanColor, seasonCodes)
+            ?? _cachedArticles.FirstOrDefault(x =>
+                x.Code.Contains(articleNumber.Trim(), StringComparison.OrdinalIgnoreCase) &&
+                x.Name.Contains(cleanColor, StringComparison.OrdinalIgnoreCase) &&
+                x.Name.Contains(seasonCode, StringComparison.OrdinalIgnoreCase));
         if (cachedArticle != null) return cachedArticle;
 
         var articles = await SearchByInternCodeLikeAsync(articleNumber.Trim());
         AddToCache(articles);
+
+        var spacedArticle = FindByInternCodeIgnoringSpaces(articles, articleNumber, cleanColor, seasonCodes);
+        if (spacedArticle != null) return spacedArticle;
 
         if (articles.Count == 1)
         {
@@ -119,6 +125,20 @@ public sealed class SgdArticleMatcher : ISgdArticleMatcher
             x.Name.Contains(cleanColor, StringComparison.OrdinalIgnoreCase) &&
             x.Name.Contains(seasonCode, StringComparison.OrdinalIgnoreCase));
     }
+
+    // Some intern codes are stored with spaces (eg. "NOOS 5440 Black"), which the exact Bexio search misses
+    private static BexioArticle? FindByInternCodeIgnoringSpaces(IEnumerable<BexioArticle> articles, string articleNumber, string cleanColor, string[] seasonCodes)
+    {
+        foreach (var code in seasonCodes)
+        {
+            string internCode = RemoveWhitespace($"{code}{articleNumber}{cleanColor}");
+            var article = articles.FirstOrDefault(a => RemoveWhitespace(a.Code).Equals(internCode, StringComparison.OrdinalIgnoreCase));
+            if (article != null) return article;
+        }
+        return null;
+    }
+
+    private static string RemoveWhitespace(string value) => Regex.Replace(value, @"\s+", "");
 
     private Task<IReadOnlyList<BexioArticle>> SearchByInternCodeLikeAsync(string value)
         => _bexio.SearchArticlesAsync([new BexioSearchCriteria { Field = "intern_code", Value = value, Criteria = "like" }]);
