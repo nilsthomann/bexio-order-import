@@ -258,6 +258,36 @@ public class BexioApiClient : IBexioService
         }
     }
 
+    public async Task<int> DeleteAllPositionsAsync(int orderId)
+    {
+        var response = await SendWithRateLimitCheckAsync(CreateRequest(HttpMethod.Get, $"2.0/kb_order/{orderId}"));
+        if (!response.IsSuccessStatusCode)
+        {
+            var errorContent = await response.Content.ReadAsStringAsync();
+            throw new HttpRequestException($"Error reading the positions of order {orderId}: {errorContent}", null, response.StatusCode);
+        }
+
+        var order = await response.Content.ReadFromJsonAsync<BexioOrder>();
+        int deleted = 0;
+        foreach (var position in order?.Positions ?? [])
+        {
+            // The type names the endpoint, eg. KbPositionArticle -> kb_position_article
+            string endpoint = JsonNamingPolicy.SnakeCaseLower.ConvertName(position.Type);
+            var deleteResponse = await SendWithRateLimitCheckAsync(CreateRequest(HttpMethod.Delete, $"2.0/kb_order/{orderId}/{endpoint}/{position.Id}"));
+
+            // Positions of a sub position group are deleted with the group
+            if (deleteResponse.StatusCode == System.Net.HttpStatusCode.NotFound) continue;
+
+            if (!deleteResponse.IsSuccessStatusCode)
+            {
+                var errorContent = await deleteResponse.Content.ReadAsStringAsync();
+                throw new HttpRequestException($"Error deleting position {position.Id} of order {orderId}: {errorContent}", null, deleteResponse.StatusCode);
+            }
+            deleted++;
+        }
+        return deleted;
+    }
+
     public async Task<bool> CheckConnectionAsync()
     {
         try
