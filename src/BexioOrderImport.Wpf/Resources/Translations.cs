@@ -22,6 +22,7 @@ public static class Translations
     public static string Import_SuccessSuffix => ResourceManager.GetString(nameof(Import_SuccessSuffix)) ?? string.Empty;
     public static string Import_OrderCreatedError => ResourceManager.GetString(nameof(Import_OrderCreatedError)) ?? string.Empty;
     public static string Import_OrderPartlyFilledError => ResourceManager.GetString(nameof(Import_OrderPartlyFilledError)) ?? string.Empty;
+    public static string Import_OrderReplacedError => ResourceManager.GetString(nameof(Import_OrderReplacedError)) ?? string.Empty;
     public static string Import_SelectProfileHeader => ResourceManager.GetString(nameof(Import_SelectProfileHeader)) ?? string.Empty;
     public static string Import_ActiveProfileTooltip => ResourceManager.GetString(nameof(Import_ActiveProfileTooltip)) ?? string.Empty;
     public static string Settings_Header => ResourceManager.GetString(nameof(Settings_Header)) ?? string.Empty;

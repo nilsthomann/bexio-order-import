@@ -61,6 +61,11 @@ public interface IBexioService
     Task AddDiscountPositionAsync(int orderId, decimal discountPercent, string text = "Rabatt");
 
     /// <summary>
+    /// Deletes all positions of an existing order (articles, discounts, texts, ...). Returns the number of deleted positions.
+    /// </summary>
+    Task<int> DeleteAllPositionsAsync(int orderId);
+
+    /// <summary>
     /// Verifies API connectivity with Bexio.
     /// </summary>
     Task<bool> CheckConnectionAsync();

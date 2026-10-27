@@ -767,6 +767,99 @@ public class BexioApiClientTests
     }
 
     [Test]
+    public async Task DeleteAllPositionsAsync_ShouldDeleteEachPositionAtTheEndpointOfItsType()
+    {
+        var requests = new List<string>();
+        var handler = new MockHttpMessageHandler
+        {
+            SendAsyncFunc = (req, token) =>
+            {
+                requests.Add($"{req.Method} {req.RequestUri!.AbsolutePath}");
+                string json = req.Method == HttpMethod.Get
+                    ? "{\"id\": 77, \"document_nr\": \"AU-77\", \"positions\": [" +
+                      "{\"id\": 1, \"type\": \"KbPositionArticle\"}," +
+                      "{\"id\": 2, \"type\": \"KbPositionSubposition\"}," +
+                      "{\"id\": 3, \"type\": \"KbPositionArticle\", \"parent_id\": 2}," +
+                      "{\"id\": 4, \"type\": \"KbPositionDiscount\"}]}"
+                    : "{\"success\": true}";
+                // The article of the sub position group is gone with its group
+                var status = req.RequestUri!.AbsolutePath.EndsWith("/3", StringComparison.Ordinal) ? HttpStatusCode.NotFound : HttpStatusCode.OK;
+                return Task.FromResult(new HttpResponseMessage(status) { Content = new StringContent(json, Encoding.UTF8, "application/json") });
+            }
+        };
+        var client = new BexioApiClient(new HttpClient(handler), "dummy-token", 1, 1);
+
+        int deleted = await client.DeleteAllPositionsAsync(77);
+
+        deleted.Should().Be(3);
+        requests.Should().Equal(
+            "GET /2.0/kb_order/77",
+            "DELETE /2.0/kb_order/77/kb_position_article/1",
+            "DELETE /2.0/kb_order/77/kb_position_subposition/2",
+            "DELETE /2.0/kb_order/77/kb_position_article/3",
+            "DELETE /2.0/kb_order/77/kb_position_discount/4");
+    }
+
+    [Test]
+    public async Task DeleteAllPositionsAsync_WhenTheOrderHasNoPositions_ShouldDeleteNothing()
+    {
+        int calls = 0;
+        var handler = new MockHttpMessageHandler
+        {
+            SendAsyncFunc = (req, token) =>
+            {
+                calls++;
+                return Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent("{\"id\": 77, \"positions\": []}", Encoding.UTF8, "application/json") });
+            }
+        };
+        var client = new BexioApiClient(new HttpClient(handler), "dummy-token", 1, 1);
+
+        (await client.DeleteAllPositionsAsync(77)).Should().Be(0);
+        calls.Should().Be(1);
+    }
+
+    [Test]
+    public async Task DeleteAllPositionsAsync_WhenTheOrderCannotBeRead_ShouldThrow()
+    {
+        var handler = new MockHttpMessageHandler
+        {
+            SendAsyncFunc = (req, token) => Task.FromResult(new HttpResponseMessage(HttpStatusCode.Forbidden) { Content = new StringContent("forbidden") })
+        };
+        var client = new BexioApiClient(new HttpClient(handler), "dummy-token", 1, 1);
+
+        Func<Task> act = () => client.DeleteAllPositionsAsync(77);
+
+        await act.Should().ThrowAsync<HttpRequestException>().WithMessage("*reading the positions of order 77*forbidden*");
+    }
+
+    [Test]
+    public async Task DeleteAllPositionsAsync_WhenADeleteFails_ShouldStopAndThrow()
+    {
+        int deletes = 0;
+        var handler = new MockHttpMessageHandler
+        {
+            SendAsyncFunc = (req, token) =>
+            {
+                if (req.Method == HttpMethod.Get)
+                {
+                    return Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK)
+                    {
+                        Content = new StringContent("{\"id\": 77, \"positions\": [{\"id\": 1, \"type\": \"KbPositionText\"}, {\"id\": 2, \"type\": \"KbPositionText\"}]}", Encoding.UTF8, "application/json")
+                    });
+                }
+                deletes++;
+                return Task.FromResult(new HttpResponseMessage(HttpStatusCode.InternalServerError) { Content = new StringContent("locked") });
+            }
+        };
+        var client = new BexioApiClient(new HttpClient(handler), "dummy-token", 1, 1);
+
+        Func<Task> act = () => client.DeleteAllPositionsAsync(77);
+
+        await act.Should().ThrowAsync<HttpRequestException>().WithMessage("*deleting position 1 of order 77*locked*");
+        deletes.Should().Be(1);
+    }
+
+    [Test]
     public async Task AddDiscountPositionAsync_WhenHttpFails_ShouldThrowHttpRequestException()
     {
         var handler = new MockHttpMessageHandler
