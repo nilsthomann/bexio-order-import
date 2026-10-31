@@ -87,6 +87,29 @@ public class BexioArticleLookupTests
     }
 
     [Test]
+    public async Task SearchArticlesAsync_ShouldLoadPagesUntilAPageIsNotFull()
+    {
+        var uris = new List<string>();
+        var handler = new MockHttpMessageHandler
+        {
+            SendAsyncFunc = (req, token) =>
+            {
+                uris.Add(req.RequestUri!.PathAndQuery);
+                // A full first page of 2000 articles, then a page with one more
+                int count = uris.Count == 1 ? 2000 : 1;
+                string json = JsonSerializer.Serialize(Enumerable.Range(uris.Count * 10000, count).Select(id => new { id, intern_code = $"FS26{id}" }));
+                return Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent(json, Encoding.UTF8, "application/json") });
+            }
+        };
+        var client = new BexioApiClient(new HttpClient(handler), "dummy-token", 1, 1);
+
+        var articles = await client.SearchArticlesAsync([new BexioSearchCriteria { Field = "intern_code", Value = "FS26", Criteria = "like" }]);
+
+        articles.Should().HaveCount(2001);
+        uris.Should().Equal("/2.0/article/search?limit=2000&offset=0", "/2.0/article/search?limit=2000&offset=2000");
+    }
+
+    [Test]
     public async Task SearchArticlesAsync_WhenBexioFails_ShouldReturnEmpty()
     {
         var handler = new MockHttpMessageHandler

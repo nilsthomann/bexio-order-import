@@ -196,7 +196,9 @@ public partial class MainViewModel
             if (interaction.ResolvedOrder is { } resolved)
             {
                 // The order already exists in Bexio, the user has to clean it up
-                string note = resolved.IsNew ? Resources.Translations.Import_OrderCreatedError : Resources.Translations.Import_OrderPartlyFilledError;
+                string note = resolved.IsNew ? Resources.Translations.Import_OrderCreatedError
+                    : interaction.PositionsDeleted ? Resources.Translations.Import_OrderReplacedError
+                    : Resources.Translations.Import_OrderPartlyFilledError;
                 _dialogService.ShowImportErrorDialog(ex.Message, Resources.Translations.Dialog_ErrorTitle, note, resolved.DocumentNr, GetBexioOrderUri(resolved.Id));
             }
             else if (IsFileLockedException(ex))
@@ -292,6 +294,22 @@ public partial class MainViewModel
         }
     }
 
+    /// <summary>
+    /// Shows a dialog of the import; the progress overlay is hidden while it is open.
+    /// </summary>
+    private Task<T> AskDuringImportAsync<T>(Func<T> showDialog)
+    {
+        IsImportingActive = false;
+        try
+        {
+            return Task.FromResult(showDialog());
+        }
+        finally
+        {
+            if (IsImporting) IsImportingActive = true;
+        }
+    }
+
     public async Task CheckBexioConnectionAsync()
     {
         ConnectionStatusText = Resources.Translations.Status_BexioChecking;
@@ -372,9 +390,22 @@ public partial class MainViewModel
 
         public (int Id, string DocumentNr, bool IsNew)? ResolvedOrder { get; private set; }
 
+        public bool PositionsDeleted { get; private set; }
+
         public void ShowPreview(Order order) { }
 
         public void OrderResolved(int orderId, string documentNr, bool isNew) => ResolvedOrder = (orderId, documentNr, isNew);
+
+        public void OrderPositionsDeleted() => PositionsDeleted = true;
+
+        public Task<string?> AskTextAsync(string title, string message, string? errorMessage = null)
+            => _vm.AskDuringImportAsync(() => _vm._dialogService.ShowInputDialog(message, title, errorMessage));
+
+        public Task<int?> ChooseAsync(string title, string message, IReadOnlyList<string> options)
+            => _vm.AskDuringImportAsync(() => _vm._dialogService.ShowChoiceDialog(message, title, options));
+
+        public Task<bool> ConfirmWarningAsync(string title, string message)
+            => _vm.AskDuringImportAsync(() => _vm._dialogService.ShowConfirmDialog(message, title));
 
         public Task<bool> ConfirmUploadAsync() => _vm.ConfirmUploadAsync();
 

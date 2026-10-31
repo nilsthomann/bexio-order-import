@@ -19,6 +19,16 @@ public interface IDialogService
     string? ShowSaveFileDialog(string filter, string defaultExt, string defaultFileName);
     bool ShowConfirmDialog(string message, string title);
     bool ShowCustomerConfirmDialog(Customer customer);
+
+    /// <summary>
+    /// Asks for a text; <paramref name="errorMessage"/> is shown below the input. Null if the user cancels.
+    /// </summary>
+    string? ShowInputDialog(string message, string title, string? errorMessage);
+
+    /// <summary>
+    /// Shows one button per option. The index of the chosen option, or null if the user cancels.
+    /// </summary>
+    int? ShowChoiceDialog(string message, string title, IReadOnlyList<string> options);
     void ShowErrorDialog(string message, string title);
 
     /// <summary>

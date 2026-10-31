@@ -110,6 +110,16 @@ public class WpfDialogService : IDialogService
         });
     }
 
+    public string? ShowInputDialog(string message, string title, string? errorMessage)
+    {
+        return InvokeOnDispatcher(() => Views.CustomDialog.ShowInput(message, title, errorMessage));
+    }
+
+    public int? ShowChoiceDialog(string message, string title, IReadOnlyList<string> options)
+    {
+        return InvokeOnDispatcher(() => Views.CustomDialog.ShowChoice(message, title, options));
+    }
+
     public void ShowErrorDialog(string message, string title)
     {
         InvokeOnDispatcher(() => Views.CustomDialog.ShowError(message, title));

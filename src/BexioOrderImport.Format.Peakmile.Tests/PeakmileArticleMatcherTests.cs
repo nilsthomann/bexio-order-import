@@ -8,329 +8,181 @@ using FluentAssertions;
 namespace BexioOrderImport.Format.Peakmile.Tests;
 
 /// <summary>
-/// The Peakmile article lookup against the real Bexio client with a mocked HTTP handler.
-/// These cases tested BexioApiClient.FindArticleAsync before the matching moved into the format.
+/// The Peakmile article lookup against the real Bexio client with a mocked HTTP handler; no request leaves the test.
 /// </summary>
 public class PeakmileArticleMatcherTests
-{    [Test]
-    public async Task FindArticleAsync_WithKnownArticle_ReturnsArticle()
+{
+    private readonly List<string> _searches = [];
+
+    /// <summary>
+    /// Matcher whose Bexio client answers each article search with the articles whose intern code contains the searched value.
+    /// </summary>
+    private PeakmileArticleMatcher Matcher(params (int Id, string? Code)[] articles)
     {
-        // Arrange
-        var handler = new MockHttpMessageHandler
-        {
-            SendAsyncFunc = (req, token) =>
-            {
-                var response = new HttpResponseMessage(HttpStatusCode.OK)
-                {
-                    Content = new StringContent("[{\"id\": 77777, \"intern_name\": \"Sample Product Name\",\"intern_description\": \"Sample Product Description\"}]", System.Text.Encoding.UTF8, "application/json")
-                };
-                return Task.FromResult(response);
-            }
-        };
-
-        var httpClient = new HttpClient(handler);
-        var client = new BexioApiClient(httpClient, "dummy-token", 1, 1);
-        var matcher = new PeakmileArticleMatcher(client);
-
-        // Act
-        var result = (await matcher.FindArticleAsync(new("ART-001", "Black", "FS27"))).Article;
-
-        // Assert
-        result.Should().NotBeNull();
-        result!.Id.Should().Be(77777);
-        result.Name.Should().Be("Sample Product Name");
-        result.Description.Should().Be("Sample Product Description");
-    }
-
-    [Test]
-    public async Task FindArticleAsync_WithDuplicateArticles_Fallback_To_Filter_ReturnsArticle()
-    {
-        // Arrange
-        var handler = new MockHttpMessageHandler
-        {
-            SendAsyncFunc = (req, token) =>
-            {
-                var response = new HttpResponseMessage(HttpStatusCode.OK)
-                {
-                    Content = new StringContent("[" +
-                    "{\"id\": 77777, \"intern_name\": \"FS27 Sample Product Name Black\",\"intern_description\": \"Sample Product Description\"}," +
-                    "{\"id\": 77778, \"intern_name\": \"FS27 Sample Product Name White\",\"intern_description\": \"Sample Product Description\"}]"
-                    , System.Text.Encoding.UTF8, "application/json")
-                };
-                return Task.FromResult(response);
-            }
-        };
-
-        var httpClient = new HttpClient(handler);
-        var client = new BexioApiClient(httpClient, "dummy-token", 1, 1);
-        var matcher = new PeakmileArticleMatcher(client);
-
-        // Act
-        var result = (await matcher.FindArticleAsync(new("ART-001", "Black", "FS27"))).Article;
-
-        // Assert
-        result.Should().NotBeNull();
-        result!.Id.Should().Be(77777);
-        result.Name.Should().Be("FS27 Sample Product Name Black");
-        result.Description.Should().Be("Sample Product Description");
-    }
-
-    [Test]
-    public async Task FindArticleAsync_WithUnknownArticle_ShouldNotMatch()
-    {
-        // Arrange
-        var handler = new MockHttpMessageHandler
-        {
-            SendAsyncFunc = (req, token) =>
-            {
-                var response = new HttpResponseMessage(HttpStatusCode.OK)
-                {
-                    Content = new StringContent("[]", System.Text.Encoding.UTF8, "application/json")
-                };
-                return Task.FromResult(response);
-            }
-        };
-
-        var httpClient = new HttpClient(handler);
-        var client = new BexioApiClient(httpClient, "dummy-token", 1, 1);
-        var matcher = new PeakmileArticleMatcher(client);
-
-        // Act
-        var result = await matcher.FindArticleAsync(new("ART-01", "Black", "FS27"));
-
-        // Assert
-        result.Should().Be(new ArticleMatch(null, "not found"));
-    }
-
-    [Test]
-    public async Task FindArticleAsync_WhenSeasonCodeMisses_ShouldMatchFallbackCodesInOrder()
-    {
-        // Arrange
-        var requestBodies = new List<string>();
         var handler = new MockHttpMessageHandler
         {
             SendAsyncFunc = async (req, token) =>
             {
-                string requestBody = await req.Content!.ReadAsStringAsync(token);
-                requestBodies.Add(requestBody);
-                string json = requestBody.Contains("\"EXART-001Black\"")
-                    ? "[{\"id\": 555, \"intern_code\": \"EXART-001Black\", \"intern_name\": \"Sample Product Name\"}]"
-                    : "[]";
-                return new HttpResponseMessage(HttpStatusCode.OK)
-                {
-                    Content = new StringContent(json, System.Text.Encoding.UTF8, "application/json")
-                };
+                string body = await req.Content!.ReadAsStringAsync(token);
+                string value = System.Text.Json.JsonDocument.Parse(body).RootElement[0].GetProperty("value").GetString()!;
+                _searches.Add(value);
+                // An article without intern code is returned by every search
+                var found = articles.Where(a => a.Code == null || a.Code.Contains(value, StringComparison.OrdinalIgnoreCase));
+                string json = System.Text.Json.JsonSerializer.Serialize(found.Select(a => new { id = a.Id, intern_code = a.Code, intern_name = $"Article {a.Id}" }));
+                return new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent(json, Encoding.UTF8, "application/json") };
             }
         };
+        return new PeakmileArticleMatcher(new BexioApiClient(new HttpClient(handler), "dummy-token", 1, 1));
+    }
 
-        var httpClient = new HttpClient(handler);
-        var client = new BexioApiClient(httpClient, "dummy-token", 1, 1);
-        var matcher = new PeakmileArticleMatcher(client);
+    private static PeakmileArticleCriteria Criteria(string color = "1001 Black", params string[] fallbackCodes) => new("E183801", color, "FS26", fallbackCodes);
 
-        // Act
-        var result = (await matcher.FindArticleAsync(new("ART-001", "Black", "FS27", ["NOOS", "EX"]))).Article;
+    [Test]
+    [Arguments("FS26E1838011001 Black")]
+    [Arguments("FS26E1838011001Black")]
+    [Arguments("FS26 E183801 1001 Black")]
+    [Arguments("FS26 E183801 1001Black")]
+    [Arguments("FS26E183801 Black")]
+    [Arguments("FS26E183801Black")]
+    [Arguments("FS26 E183801 Black")]
+    [Arguments("FS26 E183801Black")]
+    [Arguments("fs26 e183801black")]
+    [Arguments("FS26E1838011001")]
+    [Arguments("FS26 E183801 1001")]
+    public async Task FindArticleAsync_ShouldMatchTheInternCodeWithOrWithoutSpacesColorCodeOrColorName(string internCode)
+    {
+        var matcher = Matcher((7, internCode), (8, "FS26E183801 White"), (9, "FS25E183801 Black"));
 
-        // Assert
-        result.Should().NotBeNull();
-        result!.Id.Should().Be(555);
-        requestBodies.Should().HaveCount(3);
-        requestBodies[0].Should().Contain("\"FS27ART-001Black\"");
-        requestBodies[1].Should().Contain("\"NOOSART-001Black\"");
-        requestBodies[2].Should().Contain("\"EXART-001Black\"");
+        await matcher.PreFetchArticlesAsync("FS26", ["E183801"]);
+        var match = await matcher.FindArticleAsync(Criteria());
+
+        match.Article!.Id.Should().Be(7);
+        _searches.Should().Equal("FS26");
     }
 
     [Test]
-    public async Task FindArticleAsync_WhenInternCodeHasSpaces_ShouldMatchItThroughTheArticleNumberSearch()
+    public async Task FindArticleAsync_ShouldNeedOneRequestForAllPositionsOfAnImport()
     {
-        // Arrange: the exact lookups miss, the like search by article number returns the codes with spaces
-        var handler = new MockHttpMessageHandler
-        {
-            SendAsyncFunc = async (req, token) =>
-            {
-                string requestBody = await req.Content!.ReadAsStringAsync(token);
-                string json = requestBody.Contains("\"like\"")
-                    ? "[{\"id\": 1, \"intern_code\": \"NOOS 5440 White\", \"intern_name\": \"Jacket White\"}," +
-                      "{\"id\": 2, \"intern_code\": \"NOOS 5440 Black\", \"intern_name\": \"Jacket Black\"}]"
-                    : "[]";
-                return new HttpResponseMessage(HttpStatusCode.OK)
-                {
-                    Content = new StringContent(json, Encoding.UTF8, "application/json")
-                };
-            }
-        };
+        var matcher = Matcher((1, "FS26 E183801 1001 Black"), (2, "FS26 E183801 2048 Navy"), (3, "NOOS E200 Red"));
 
-        var client = new BexioApiClient(new HttpClient(handler), "dummy-token", 1, 1);
-        var matcher = new PeakmileArticleMatcher(client);
+        await matcher.PreFetchArticlesAsync("FS26", ["E183801", "E200"]);
+        await matcher.PreFetchArticlesAsync("NOOS", ["E183801", "E200"]);
+        var black = await matcher.FindArticleAsync(Criteria());
+        var navy = await matcher.FindArticleAsync(Criteria("2048 Navy"));
+        var red = await matcher.FindArticleAsync(new("E200", "Red", "FS26", ["NOOS"]));
+        await matcher.FindArticleAsync(Criteria());
 
-        // Act
-        var result = (await matcher.FindArticleAsync(new("5440", "140 Black", "FS27", ["NOOS"]))).Article;
-
-        // Assert
-        result.Should().NotBeNull();
-        result!.Id.Should().Be(2);
+        (black.Article!.Id, navy.Article!.Id, red.Article!.Id).Should().Be((1, 2, 3));
+        _searches.Should().Equal("FS26", "NOOS");
     }
 
     [Test]
-    public async Task FindArticleAsync_WhenSeasonCodeMatches_ShouldNotQueryFallbackCodes()
+    public async Task FindArticleAsync_WithoutPreFetch_ShouldSearchTheArticleNumberOnce()
     {
-        // Arrange
-        var requestBodies = new List<string>();
-        var handler = new MockHttpMessageHandler
-        {
-            SendAsyncFunc = async (req, token) =>
-            {
-                string requestBody = await req.Content!.ReadAsStringAsync(token);
-                requestBodies.Add(requestBody);
-                string json = requestBody.Contains("\"FS27ART-001Black\"")
-                    ? "[{\"id\": 111, \"intern_code\": \"FS27ART-001Black\", \"intern_name\": \"Season Product\"}]"
-                    : "[{\"id\": 555, \"intern_code\": \"EXART-001Black\", \"intern_name\": \"Fallback Product\"}]";
-                return new HttpResponseMessage(HttpStatusCode.OK)
-                {
-                    Content = new StringContent(json, System.Text.Encoding.UTF8, "application/json")
-                };
-            }
-        };
+        var matcher = Matcher((1, "FS26E183801Black"), (2, "FS26E183801White"));
 
-        var httpClient = new HttpClient(handler);
-        var client = new BexioApiClient(httpClient, "dummy-token", 1, 1);
-        var matcher = new PeakmileArticleMatcher(client);
+        var black = await matcher.FindArticleAsync(Criteria());
+        var white = await matcher.FindArticleAsync(Criteria("White"));
+        var red = await matcher.FindArticleAsync(Criteria("Red"));
+        await matcher.FindArticleAsync(Criteria("Red"));
 
-        // Act
-        var result = (await matcher.FindArticleAsync(new("ART-001", "Black", "FS27", ["EX"]))).Article;
-
-        // Assert
-        result.Should().NotBeNull();
-        result!.Id.Should().Be(111);
-        requestBodies.Should().ContainSingle();
+        (black.Article!.Id, white.Article!.Id).Should().Be((1, 2));
+        red.Should().Be(ArticleMatch.NotFound());
+        _searches.Should().Equal("E183801");
     }
 
     [Test]
-    public async Task FindArticleAsync_WhenNoCodeMatchesExactly_ShouldFilterByNameWithSeasonCodeOnly()
+    public async Task FindArticleAsync_WhenThePreFetchedSeasonHasNoMatch_ShouldSearchTheArticleNumber()
     {
-        // Arrange
-        var handler = new MockHttpMessageHandler
-        {
-            SendAsyncFunc = async (req, token) =>
-            {
-                string requestBody = await req.Content!.ReadAsStringAsync(token);
-                // Only the "like" search by article number returns articles, both exact intern code searches miss
-                string json = requestBody.Contains("\"ART-001\"")
-                    ? "[" +
-                      "{\"id\": 555, \"intern_code\": \"X1ART-001\", \"intern_name\": \"EX Sample Product Name Black\"}," +
-                      "{\"id\": 111, \"intern_code\": \"X2ART-001\", \"intern_name\": \"FS27 Sample Product Name Black\"}]"
-                    : "[]";
-                return new HttpResponseMessage(HttpStatusCode.OK)
-                {
-                    Content = new StringContent(json, System.Text.Encoding.UTF8, "application/json")
-                };
-            }
-        };
+        var matcher = Matcher((1, "FS26 E999 Black"), (2, "NOOS E183801 Black"));
 
-        var httpClient = new HttpClient(handler);
-        var client = new BexioApiClient(httpClient, "dummy-token", 1, 1);
-        var matcher = new PeakmileArticleMatcher(client);
+        await matcher.PreFetchArticlesAsync("FS26", ["E183801"]);
+        var match = await matcher.FindArticleAsync(Criteria("1001 Black", "NOOS"));
 
-        // Act
-        var result = (await matcher.FindArticleAsync(new("ART-001", "Black", "FS27", ["EX"]))).Article;
-
-        // Assert
-        result.Should().NotBeNull();
-        result!.Id.Should().Be(111);
+        match.Article!.Id.Should().Be(2);
+        _searches.Should().Equal("FS26", "E183801");
     }
 
     [Test]
-    public async Task PreFetchArticlesAsync_CachesArticles_SubsequentLookupsUseCache()
+    public async Task FindArticleAsync_ShouldPreferTheFullColorAndTheSeasonCode()
     {
-        // Arrange
-        int apiCallCount = 0;
-        var handler = new MockHttpMessageHandler
-        {
-            SendAsyncFunc = (req, token) =>
-            {
-                apiCallCount++;
-                var response = new HttpResponseMessage(HttpStatusCode.OK)
-                {
-                    Content = new StringContent("[{\"id\": 500, \"intern_code\": \"FS27ART-100Black\", \"intern_name\": \"FS27 Sample Black\"}]", System.Text.Encoding.UTF8, "application/json")
-                };
-                return Task.FromResult(response);
-            }
-        };
+        var matcher = Matcher((1, "NOOSE1838011001Black"), (2, "FS26E183801Black"), (3, "FS26E1838011001Black"), (4, "FS26E1838011001"));
 
-        var httpClient = new HttpClient(handler);
-        var client = new BexioApiClient(httpClient, "dummy-token", 1, 1);
-        var matcher = new PeakmileArticleMatcher(client);
+        var match = await matcher.FindArticleAsync(Criteria("1001 Black", "NOOS"));
 
-        // Act - PreFetch
-        await matcher.PreFetchArticlesAsync("FS27", ["ART-100"]);
-        int initialCallCount = apiCallCount;
-
-        // Act - Find Article (should hit cache)
-        var article = (await matcher.FindArticleAsync(new("ART-100", "140 Black", "FS27"))).Article;
-
-        // Assert
-        article.Should().NotBeNull();
-        article!.Id.Should().Be(500);
-        apiCallCount.Should().Be(initialCallCount); // No additional API calls made
+        match.Article!.Id.Should().Be(3);
     }
 
     [Test]
-    public async Task PreFetchArticlesAsync_WhenBulkSearchEmpty_ShouldFallbackToIndividualSearch()
+    public async Task FindArticleAsync_ShouldPreferTheColorNameOverTheColorCode()
     {
-        var handler = new MockHttpMessageHandler
-        {
-            SendAsyncFunc = (req, token) =>
-            {
-                string uri = req.RequestUri!.ToString();
-                if (uri.Contains("article/search"))
-                {
-                    return Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK)
-                    {
-                        Content = new StringContent("[{\"id\": 101, \"intern_code\": \"ART-999\", \"intern_name\": \"Fallback Article\"}]", Encoding.UTF8, "application/json")
-                    });
-                }
-                return Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK)
-                {
-                    Content = new StringContent("[]", Encoding.UTF8, "application/json")
-                });
-            }
-        };
+        var matcher = Matcher((1, "FS26E1838011001"), (2, "FS26E183801Black"));
 
-        var httpClient = new HttpClient(handler);
-        var client = new BexioApiClient(httpClient, "dummy-token", 1, 1);
-        var matcher = new PeakmileArticleMatcher(client);
+        var match = await matcher.FindArticleAsync(Criteria());
 
-        await matcher.PreFetchArticlesAsync("SS26", ["ART-999"]);
-
-        var article = (await matcher.FindArticleAsync(new("ART-999", "Red", "SS26"))).Article;
-        article.Should().NotBeNull();
-        article!.Id.Should().Be(101);
+        match.Article!.Id.Should().Be(2);
     }
 
     [Test]
-    public async Task FindArticleByArticleNumberAndFilterAsync_WithMultipleMatchesAndFilterFallback_ReturnsMatchingArticle()
+    public async Task FindArticleAsync_WhenTheSeasonCodeMisses_ShouldMatchTheFallbackCodesInOrder()
     {
-        var handler = new MockHttpMessageHandler
-        {
-            SendAsyncFunc = (req, token) => Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK)
-            {
-                Content = new StringContent("[{\"id\": 10, \"intern_code\": \"ART123\", \"intern_name\": \"Shirt Blue SS26\"}, {\"id\": 20, \"intern_code\": \"ART123\", \"intern_name\": \"Shirt Red FW26\"}]", Encoding.UTF8, "application/json")
-            })
-        };
+        var matcher = Matcher((1, "EX E183801 Black"), (2, "NOOS E183801 Black"));
 
-        var httpClient = new HttpClient(handler);
-        var client = new BexioApiClient(httpClient, "dummy-token", 1, 1);
-        var matcher = new PeakmileArticleMatcher(client);
+        var match = await matcher.FindArticleAsync(Criteria("1001 Black", "NOOS", "EX"));
 
-        var article = (await matcher.FindArticleAsync(new("ART123", "Red", "FW26"))).Article;
-        article.Should().NotBeNull();
-        article!.Id.Should().Be(20);
+        match.Article!.Id.Should().Be(2);
     }
 
     [Test]
-    public async Task FindArticleAsync_WhenCriteriaIsNull_ShouldThrow()
+    public async Task FindArticleAsync_WhenSeveralArticlesHaveTheCode_ShouldNotBeUnique()
     {
-        var matcher = new PeakmileArticleMatcher(new BexioApiClient(new HttpClient(), "dummy-token", 1, 1));
+        var matcher = Matcher((1, "FS26 E183801 Black"), (2, "FS26E183801Black"));
+
+        var match = await matcher.FindArticleAsync(Criteria());
+
+        match.Should().Be(ArticleMatch.NotFound("not unique (2 articles)"));
+    }
+
+    [Test]
+    public async Task FindArticleAsync_ShouldNotGuessAnArticleOfAnotherColorOrSeason()
+    {
+        var matcher = Matcher((1, "FS26E183801White"), (2, "FS25E183801Black"), (3, null));
+
+        var match = await matcher.FindArticleAsync(Criteria());
+
+        match.Should().Be(ArticleMatch.NotFound());
+    }
+
+    [Test]
+    public async Task FindArticleAsync_WhenTheColorIsOnlyACode_ShouldNotMatchTheArticleWithoutColor()
+    {
+        var matcher = Matcher((1, "FS26E183801"), (2, "FS26 E183801 1001"));
+
+        var match = await matcher.FindArticleAsync(Criteria("1001"));
+
+        match.Article!.Id.Should().Be(2);
+    }
+
+    [Test]
+    public async Task PreFetchArticlesAsync_ShouldSearchEachSeasonCodeOnceAndOnlyWithArticleNumbers()
+    {
+        var matcher = Matcher((1, "FS26E183801Black"));
+
+        await matcher.PreFetchArticlesAsync("FS26", [null!, " "]);
+        await matcher.PreFetchArticlesAsync(" ", ["E183801"]);
+        await matcher.PreFetchArticlesAsync("FS26", ["E183801"]);
+        await matcher.PreFetchArticlesAsync("fs26 ", ["E183801"]);
+
+        _searches.Should().Equal("FS26");
+    }
+
+    [Test]
+    public async Task ArgumentsShouldNotBeNull()
+    {
+        var matcher = Matcher();
 
         await ((Func<Task>)(() => matcher.FindArticleAsync(null!))).Should().ThrowAsync<ArgumentNullException>();
+        await ((Func<Task>)(() => matcher.PreFetchArticlesAsync("FS26", null!))).Should().ThrowAsync<ArgumentNullException>();
+        ((Action)(() => _ = new PeakmileArticleMatcher(null!))).Should().Throw<ArgumentNullException>();
     }
 }

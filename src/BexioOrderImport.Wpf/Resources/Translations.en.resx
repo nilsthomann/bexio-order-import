@@ -159,6 +159,9 @@
   <data name="Import_OrderPartlyFilledError" xml:space="preserve">
     <value>Order {0} has been partly filled. Please remove the added positions manually.</value>
   </data>
+  <data name="Import_OrderReplacedError" xml:space="preserve">
+    <value>The previous positions of order {0} were deleted, but the new ones were only partly imported. Import the file again and choose "Update an existing order".</value>
+  </data>
   <data name="Import_SuccessDuration" xml:space="preserve">
     <value>Total duration: {0}</value>
   </data>

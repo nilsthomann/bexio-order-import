@@ -402,6 +402,20 @@ public class MainViewModelTests : IDisposable
     }
 
     [Test]
+    public async Task ImportToBexioAsync_WhenItFailsAfterThePositionsWereDeleted_ShouldTellToImportAgain()
+    {
+        await RunImportAsync(new FakeFormatAdapter { UploadError = new InvalidOperationException("upload failed"), UsesExistingOrder = true, DeletesPositions = true });
+
+        // Removing the added positions would leave an empty order, a new import replaces them again
+        _dialogServiceMock.Verify(d => d.ShowImportErrorDialog(
+            "upload failed",
+            It.IsAny<string>(),
+            BexioOrderImport.Wpf.Resources.Translations.Import_OrderReplacedError,
+            "AU-001",
+            It.IsAny<Uri>()), Times.Once);
+    }
+
+    [Test]
     public async Task ImportToBexioAsync_WhenItFailsBeforeAnOrderIsResolved_ShouldShowThePlainErrorDialog()
     {
         _clientFactoryMock.Setup(f => f.Create(It.IsAny<string>(), It.IsAny<int?>(), It.IsAny<int?>(), It.IsAny<int?>(), It.IsAny<string>())).Throws(new InvalidOperationException("no connection"));
@@ -542,6 +556,30 @@ public class MainViewModelTests : IDisposable
         // Act & Assert - ReportProgress
         service.ReportProgress(5, 10);
         vm.ProgressPercentage.Should().Be(50.0);
+    }
+
+    [Test]
+    public async Task WpfImportUserInteractionService_ShouldShowTheInputChoiceAndWarningDialogs()
+    {
+        var vm = CreateVm();
+        _dialogServiceMock.Setup(d => d.ShowInputDialog("Customer?", "Customer", "unknown")).Returns("1001");
+        _dialogServiceMock.Setup(d => d.ShowChoiceDialog("New or existing?", "Order", It.Is<IReadOnlyList<string>>(o => o.Count == 2))).Returns(1);
+        _dialogServiceMock.Setup(d => d.ShowConfirmDialog("Delete all?", "Warning")).Returns(true);
+        var type = typeof(MainViewModel).GetNestedType("WpfImportUserInteractionService", System.Reflection.BindingFlags.NonPublic);
+        var service = (IImportUserInteractionService)Activator.CreateInstance(type!, [
+            vm,
+            (Action<double, double, System.Diagnostics.Stopwatch>)((c, t, sw) => { }),
+            new System.Diagnostics.Stopwatch()
+        ])!;
+
+        (await service.AskTextAsync("Customer", "Customer?", "unknown")).Should().Be("1001");
+        (await service.ChooseAsync("Order", "New or existing?", ["New", "Existing"])).Should().Be(1);
+        (await service.ConfirmWarningAsync("Warning", "Delete all?")).Should().BeTrue();
+
+        type!.GetProperty("PositionsDeleted")!.GetValue(service).Should().Be(false);
+        service.OrderPositionsDeleted();
+        type.GetProperty("PositionsDeleted")!.GetValue(service).Should().Be(true);
+        vm.IsImportingActive.Should().BeFalse("the overlay only comes back while an import is running");
     }
 
     [Test]

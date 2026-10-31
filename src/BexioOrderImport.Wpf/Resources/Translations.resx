@@ -159,6 +159,9 @@
   <data name="Import_OrderPartlyFilledError" xml:space="preserve">
     <value>Der Auftrag {0} wurde nur teilweise befüllt. Bitte entfernen Sie die hinzugefügten Positionen manuell.</value>
   </data>
+  <data name="Import_OrderReplacedError" xml:space="preserve">
+    <value>Die bisherigen Positionen des Auftrags {0} wurden gelöscht, die neuen aber nur teilweise importiert. Importieren Sie die Datei erneut und wählen Sie «Bestehenden Auftrag aktualisieren».</value>
+  </data>
   <data name="Import_SuccessDuration" xml:space="preserve">
     <value>Benötigte Zeit: {0}</value>
   </data>
