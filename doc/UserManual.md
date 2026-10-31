@@ -150,12 +150,22 @@ Row 1 is the header; data starts in row 2. Example:
 
 The profile also sets:
 
-- **Season code** and **season fallback codes**: articles are found like Peakmile articles, by the Bexio **internal code** `{SeasonCode}{ArticleNumber}{Color}`, first with the season code, then with each fallback code (eg. `NOOS`). If none matches, the articles of the article number are searched and filtered by color and season code in the article name. Spaces in the Bexio internal code are ignored (`NOOS 5440 Black` matches `NOOS5440Black`).
+- **Season code** and **season fallback codes**: articles are found like Peakmile articles, see [Article lookup](#article-lookup-peakmile-and-sgd).
 - **Discount in %**: added as one discount position at the end of the order, with the **discount position text template** (placeholder `{DiscountInPercent}`). `0` adds no discount position. The file has no discount.
 - **Position creation**: **Single position per size** creates one Bexio position per row. **Grouped position per article and color** creates one position per article number and color, with one size row per size from the **size row template** (eg. `2x Size S`, `3x Size M`); equal sizes are summed. The grouped position text template must contain `{SizesRows}`.
 - **Order name template** (`{CustomerName}`, `{SeasonCode}`) and the **position text templates** with the placeholders `{Color}`, `{Size}` or `{SizesRows}`, `{ArticleNumber}`, `{ArticleName}`, `{BexioArticleName}` and `{BexioArticleDescription}`.
 
 The price of each position is the **sale price of the Bexio article**. The preview shows the season code, the discount and every position with its Excel row, article, color, size and quantity.
+
+### Article lookup (Peakmile and SGD)
+
+Peakmile and SGD find a Bexio article by its **internal code** (`intern_code`): season code + article number + color. Spaces and upper/lower case are ignored, and the color counts with its color code and name, with its name only or with its code only. For season code `FS26`, article number `E183801` and color `1001 Black`, all these internal codes match:
+
+`FS26E1838011001 Black`, `FS26E1838011001Black`, `FS26 E183801 1001 Black`, `FS26 E183801 1001Black`, `FS26E183801 Black`, `FS26E183801Black`, `FS26 E183801 Black`, `FS26 E183801Black`, `FS26E1838011001`, `FS26 E183801 1001`
+
+- The season code is tried first, then each season fallback code (eg. `NOOS`) in order. With each code, the color with color code (`1001 Black`) comes first, then the color name (`Black`), then the color code (`1001`).
+- An article of another color or season is never taken instead. If several articles have the same internal code, the article is reported as *not unique*.
+- The articles are loaded with one search per season code at the start of the import, plus one search per article number that is not found there. The positions themselves cause no further requests to Bexio.
 
 ---
 
@@ -194,7 +204,7 @@ The preview depends on the format of the active profile. For Peakmile order form
    - **If NOT found**: A dialog pops up showing the new customer details. You can review, correct errors (e.g., misspelled street names), and click **Create** to insert them directly into Bexio. If you click **Cancel**, the import is aborted and the file remains loaded in your view.
    - A new order is created in Bexio under the matched/created contact.
 5. Once the target order is resolved (either existing or newly created), the positions are uploaded, a full-screen loading card covers the interface, and a success dialog displays the Bexio order number. Click the order number to open the order in Bexio.
-6. **Errors after the order was resolved**: If the import fails while the positions are uploaded (eg. an article is not found), the error dialog links the order number to Bexio:
+6. **Errors after the order was resolved**: If the import fails while the positions are uploaded (eg. Bexio rejects a position), the error dialog links the order number to Bexio:
    - **New order**: The order was already created in Bexio. Delete it manually and import the file again.
    - **Existing order**: The order was partly filled. Remove the added positions manually.
    - **Updated SGD order**: Its previous positions were already deleted. Import the file again and choose **Update an existing order**; this replaces the positions again.
@@ -287,8 +297,9 @@ The application checks for updates automatically from its GitHub repository on e
 
 #### 3. Import fails / throws article-not-found error
 
-- The importer queries your Bexio database for an article code matching the Excel `Art. No.` column.
-- If the article number is not found in your Bexio product catalog, the importer aborts the import. Positions uploaded before the error stay in the order; the error dialog links the order so you can delete it or remove the positions (see [Step 3](#step-3-trigger-the-import)). Make sure the article codes in the Excel sheet match your Bexio catalog exactly.
+- Peakmile and SGD imports search all articles before anything is changed in Bexio. If articles are missing, the message lists each missing article number with its color, and neither a customer, an order nor a position is created.
+- Check the season code and the season fallback codes of the profile and the internal codes of the articles in Bexio (see [Article lookup](#article-lookup-peakmile-and-sgd)).
+- **"not unique"**: several Bexio articles have the same internal code once spaces and case are ignored (eg. `FS26 E183801 Black` and `FS26E183801Black`). Remove or rename the duplicate in Bexio.
 
 #### 4. EAN list import is cancelled or fails
 

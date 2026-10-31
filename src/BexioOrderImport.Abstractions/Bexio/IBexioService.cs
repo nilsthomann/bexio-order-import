@@ -45,7 +45,8 @@ public interface IBexioService
     Task<IReadOnlyList<BexioArticle>> FindArticlesByInternCodeAsync(string internCode);
 
     /// <summary>
-    /// Searches articles with the given criteria (eg. intern_code "like" a value). Not cached; empty if the search fails.
+    /// Searches articles with the given criteria (eg. intern_code "like" a value) and loads all result pages.
+    /// Not cached; empty if the search fails.
     /// </summary>
     Task<IReadOnlyList<BexioArticle>> SearchArticlesAsync(IReadOnlyList<BexioSearchCriteria> criteria);
 

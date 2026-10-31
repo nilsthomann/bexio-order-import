@@ -12,155 +12,177 @@ namespace BexioOrderImport.Format.Sgd.Tests;
 /// </summary>
 public class SgdArticleMatcherTests
 {
-    private readonly List<string> _requestBodies = [];
+    private readonly List<string> _searches = [];
 
     /// <summary>
-    /// Matcher whose Bexio client answers each request with the JSON returned for its body.
+    /// Matcher whose Bexio client answers each article search with the articles whose intern code contains the searched value.
     /// </summary>
-    private SgdArticleMatcher Matcher(Func<string, string> respond)
+    private SgdArticleMatcher Matcher(params (int Id, string? Code)[] articles)
     {
         var handler = new MockHttpMessageHandler
         {
             SendAsyncFunc = async (req, token) =>
             {
-                string body = req.Content == null ? string.Empty : await req.Content.ReadAsStringAsync(token);
-                _requestBodies.Add(body);
-                return new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent(respond(body), Encoding.UTF8, "application/json") };
+                string body = await req.Content!.ReadAsStringAsync(token);
+                string value = System.Text.Json.JsonDocument.Parse(body).RootElement[0].GetProperty("value").GetString()!;
+                _searches.Add(value);
+                // An article without intern code is returned by every search
+                var found = articles.Where(a => a.Code == null || a.Code.Contains(value, StringComparison.OrdinalIgnoreCase));
+                string json = System.Text.Json.JsonSerializer.Serialize(found.Select(a => new { id = a.Id, intern_code = a.Code, intern_name = $"Article {a.Id}" }));
+                return new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent(json, Encoding.UTF8, "application/json") };
             }
         };
         return new SgdArticleMatcher(new BexioApiClient(new HttpClient(handler), "dummy-token", 1, 1));
     }
 
+    private static SgdArticleCriteria Criteria(string color = "1001 Black", params string[] fallbackCodes) => new("E183801", color, "FS26", fallbackCodes);
+
     [Test]
-    public async Task FindArticleAsync_ShouldMatchTheInternCodeOfSeasonArticleNumberAndColorName()
+    [Arguments("FS26E1838011001 Black")]
+    [Arguments("FS26E1838011001Black")]
+    [Arguments("FS26 E183801 1001 Black")]
+    [Arguments("FS26 E183801 1001Black")]
+    [Arguments("FS26E183801 Black")]
+    [Arguments("FS26E183801Black")]
+    [Arguments("FS26 E183801 Black")]
+    [Arguments("FS26 E183801Black")]
+    [Arguments("fs26 e183801black")]
+    [Arguments("FS26E1838011001")]
+    [Arguments("FS26 E183801 1001")]
+    public async Task FindArticleAsync_ShouldMatchTheInternCodeWithOrWithoutSpacesColorCodeOrColorName(string internCode)
     {
-        var matcher = Matcher(body => body.Contains("\"FS27E231001Black\"")
-            ? "[{\"id\": 7, \"intern_code\": \"FS27E231001Black\", \"intern_name\": \"Run Jacket\", \"intern_description\": \"Light\"}]"
-            : "[]");
+        var matcher = Matcher((7, internCode), (8, "FS26E183801 White"), (9, "FS25E183801 Black"));
 
-        var article = (await matcher.FindArticleAsync(new("E231001", "1001 Black", "FS27"))).Article;
+        await matcher.PreFetchArticlesAsync("FS26", ["E183801"]);
+        var match = await matcher.FindArticleAsync(Criteria());
 
-        article.Should().NotBeNull();
-        article!.Id.Should().Be(7);
-        article.Name.Should().Be("Run Jacket");
-        _requestBodies.Should().ContainSingle("the color code 1001 is not part of the intern code");
+        match.Article!.Id.Should().Be(7);
+        _searches.Should().Equal("FS26");
     }
 
     [Test]
-    public async Task FindArticleAsync_WhenSeasonCodeMisses_ShouldMatchFallbackCodesInOrder()
+    public async Task FindArticleAsync_ShouldNeedOneRequestForAllPositionsOfAnImport()
     {
-        var matcher = Matcher(body => body.Contains("\"EXART-001Black\"")
-            ? "[{\"id\": 555, \"intern_code\": \"EXART-001Black\", \"intern_name\": \"Sample\"}]"
-            : "[]");
+        var matcher = Matcher((1, "FS26 E183801 1001 Black"), (2, "FS26 E183801 2048 Navy"), (3, "NOOS E200 Red"));
 
-        var article = (await matcher.FindArticleAsync(new("ART-001", "Black", "FS27", ["NOOS", "EX"]))).Article;
+        await matcher.PreFetchArticlesAsync("FS26", ["E183801", "E200"]);
+        await matcher.PreFetchArticlesAsync("NOOS", ["E183801", "E200"]);
+        var black = await matcher.FindArticleAsync(Criteria());
+        var navy = await matcher.FindArticleAsync(Criteria("2048 Navy"));
+        var red = await matcher.FindArticleAsync(new("E200", "Red", "FS26", ["NOOS"]));
+        await matcher.FindArticleAsync(Criteria());
 
-        article!.Id.Should().Be(555);
-        _requestBodies.Should().HaveCount(3);
-        _requestBodies[0].Should().Contain("\"FS27ART-001Black\"");
-        _requestBodies[1].Should().Contain("\"NOOSART-001Black\"");
-        _requestBodies[2].Should().Contain("\"EXART-001Black\"");
+        (black.Article!.Id, navy.Article!.Id, red.Article!.Id).Should().Be((1, 2, 3));
+        _searches.Should().Equal("FS26", "NOOS");
     }
 
     [Test]
-    public async Task FindArticleAsync_WhenNoCodeMatchesExactly_ShouldFilterByNameWithSeasonCodeOnly()
+    public async Task FindArticleAsync_WithoutPreFetch_ShouldSearchTheArticleNumberOnce()
     {
-        var matcher = Matcher(body => body.Contains("\"ART-001\"")
-            ? "[{\"id\": 555, \"intern_code\": \"X1ART-001\", \"intern_name\": \"EX Sample Black\"}," +
-              "{\"id\": 111, \"intern_code\": \"X2ART-001\", \"intern_name\": \"FS27 Sample Black\"}]"
-            : "[]");
+        var matcher = Matcher((1, "FS26E183801Black"), (2, "FS26E183801White"));
 
-        var article = (await matcher.FindArticleAsync(new("ART-001", "Black", "FS27", ["EX"]))).Article;
+        var black = await matcher.FindArticleAsync(Criteria());
+        var white = await matcher.FindArticleAsync(Criteria("White"));
+        var red = await matcher.FindArticleAsync(Criteria("Red"));
+        await matcher.FindArticleAsync(Criteria("Red"));
 
-        article!.Id.Should().Be(111);
+        (black.Article!.Id, white.Article!.Id).Should().Be((1, 2));
+        red.Should().Be(ArticleMatch.NotFound());
+        _searches.Should().Equal("E183801");
     }
 
     [Test]
-    public async Task FindArticleAsync_WhenInternCodeHasSpaces_ShouldMatchItThroughTheArticleNumberSearch()
+    public async Task FindArticleAsync_WhenThePreFetchedSeasonHasNoMatch_ShouldSearchTheArticleNumber()
     {
-        var matcher = Matcher(body => body.Contains("\"like\"")
-            ? "[{\"id\": 1, \"intern_code\": \"NOOS 5440 White\", \"intern_name\": \"Jacket White\"}," +
-              "{\"id\": 2, \"intern_code\": \"NOOS 5440 Black\", \"intern_name\": \"Jacket Black\"}]"
-            : "[]");
+        var matcher = Matcher((1, "FS26 E999 Black"), (2, "NOOS E183801 Black"));
 
-        var article = (await matcher.FindArticleAsync(new("5440", "1001 Black", "FS27", ["NOOS"]))).Article;
+        await matcher.PreFetchArticlesAsync("FS26", ["E183801"]);
+        var match = await matcher.FindArticleAsync(Criteria("1001 Black", "NOOS"));
 
-        article!.Id.Should().Be(2);
+        match.Article!.Id.Should().Be(2);
+        _searches.Should().Equal("FS26", "E183801");
     }
 
     [Test]
-    public async Task FindArticleAsync_WhenTheArticleNumberSearchFindsOneArticle_ShouldUseIt()
+    public async Task FindArticleAsync_ShouldPreferTheFullColorAndTheSeasonCode()
     {
-        var matcher = Matcher(body => body.Contains("\"like\"")
-            ? "[{\"id\": 9, \"intern_code\": \"OTHERART-9\", \"intern_name\": \"Without season\"}]"
-            : "[]");
+        var matcher = Matcher((1, "NOOSE1838011001Black"), (2, "FS26E183801Black"), (3, "FS26E1838011001Black"), (4, "FS26E1838011001"));
 
-        var article = (await matcher.FindArticleAsync(new("ART-9", "Red", "FS27"))).Article;
+        var match = await matcher.FindArticleAsync(Criteria("1001 Black", "NOOS"));
 
-        article!.Id.Should().Be(9);
+        match.Article!.Id.Should().Be(3);
     }
 
     [Test]
-    public async Task FindArticleAsync_WithUnknownArticle_ShouldNotMatch()
+    public async Task FindArticleAsync_ShouldPreferTheColorNameOverTheColorCode()
     {
-        var matcher = Matcher(_ => "[]");
+        var matcher = Matcher((1, "FS26E1838011001"), (2, "FS26E183801Black"));
 
-        var result = await matcher.FindArticleAsync(new("ART-01", "Black", "FS27"));
+        var match = await matcher.FindArticleAsync(Criteria());
 
-        result.Should().Be(new ArticleMatch(null, "not found"));
+        match.Article!.Id.Should().Be(2);
     }
 
     [Test]
-    public async Task PreFetchArticlesAsync_ShouldCacheTheArticlesOfTheSeasonForTheLookups()
+    public async Task FindArticleAsync_WhenTheSeasonCodeMisses_ShouldMatchTheFallbackCodesInOrder()
     {
-        var matcher = Matcher(_ => "[{\"id\": 500, \"intern_code\": \"FS27ART-100Black\", \"intern_name\": \"FS27 Sample Black\"}," +
-                                   "{\"id\": 501, \"intern_code\": \"FS27OTHERBlack\", \"intern_name\": \"Not ordered\"}]");
+        var matcher = Matcher((1, "EX E183801 Black"), (2, "NOOS E183801 Black"));
 
-        await matcher.PreFetchArticlesAsync("FS27", ["ART-100", " ", "ART-100"]);
-        int requests = _requestBodies.Count;
-        var article = (await matcher.FindArticleAsync(new("ART-100", "140 Black", "FS27"))).Article;
+        var match = await matcher.FindArticleAsync(Criteria("1001 Black", "NOOS", "EX"));
 
-        article!.Id.Should().Be(500);
-        _requestBodies.Should().HaveCount(requests, "the lookup uses the cache");
+        match.Article!.Id.Should().Be(2);
     }
 
     [Test]
-    public async Task PreFetchArticlesAsync_WhenTheSeasonSearchIsEmpty_ShouldSearchEachArticleNumber()
+    public async Task FindArticleAsync_WhenSeveralArticlesHaveTheCode_ShouldNotBeUnique()
     {
-        var matcher = Matcher(body => body.Contains("\"ART-999\"")
-            ? "[{\"id\": 101, \"intern_code\": \"ART-999\", \"intern_name\": \"Fallback Article\"}]"
-            : "[]");
+        var matcher = Matcher((1, "FS26 E183801 Black"), (2, "FS26E183801Black"));
 
-        await matcher.PreFetchArticlesAsync("SS26", ["ART-999"]);
-        await matcher.PreFetchArticlesAsync(string.Empty, ["ART-999"]);
+        var match = await matcher.FindArticleAsync(Criteria());
 
-        _requestBodies.Count(b => b.Contains("\"ART-999\"")).Should().Be(1, "an article number already in the cache is not searched again");
-        (await matcher.FindArticleAsync(new("ART-999", "Red", "SS26"))).Article!.Id.Should().Be(101);
+        match.Should().Be(ArticleMatch.NotFound("not unique (2 articles)"));
     }
 
     [Test]
-    public async Task PreFetchArticlesAsync_WithoutArticleNumbers_ShouldNotCallBexio()
+    public async Task FindArticleAsync_ShouldNotGuessAnArticleOfAnotherColorOrSeason()
     {
-        var matcher = Matcher(_ => "[]");
+        var matcher = Matcher((1, "FS26E183801White"), (2, "FS25E183801Black"), (3, null));
 
-        await matcher.PreFetchArticlesAsync("FS27", [null!, ""]);
+        var match = await matcher.FindArticleAsync(Criteria());
 
-        _requestBodies.Should().BeEmpty();
+        match.Should().Be(ArticleMatch.NotFound());
     }
 
     [Test]
-    public async Task FindArticleAsync_WhenCriteriaIsNull_ShouldThrow()
+    public async Task FindArticleAsync_WhenTheColorIsOnlyACode_ShouldNotMatchTheArticleWithoutColor()
     {
-        var matcher = Matcher(_ => "[]");
+        var matcher = Matcher((1, "FS26E183801"), (2, "FS26 E183801 1001"));
+
+        var match = await matcher.FindArticleAsync(Criteria("1001"));
+
+        match.Article!.Id.Should().Be(2);
+    }
+
+    [Test]
+    public async Task PreFetchArticlesAsync_ShouldSearchEachSeasonCodeOnceAndOnlyWithArticleNumbers()
+    {
+        var matcher = Matcher((1, "FS26E183801Black"));
+
+        await matcher.PreFetchArticlesAsync("FS26", [null!, " "]);
+        await matcher.PreFetchArticlesAsync(" ", ["E183801"]);
+        await matcher.PreFetchArticlesAsync("FS26", ["E183801"]);
+        await matcher.PreFetchArticlesAsync("fs26 ", ["E183801"]);
+
+        _searches.Should().Equal("FS26");
+    }
+
+    [Test]
+    public async Task ArgumentsShouldNotBeNull()
+    {
+        var matcher = Matcher();
 
         await ((Func<Task>)(() => matcher.FindArticleAsync(null!))).Should().ThrowAsync<ArgumentNullException>();
-    }
-
-    [Test]
-    public void Constructor_WhenBexioIsNull_ShouldThrow()
-    {
-        Action act = () => _ = new SgdArticleMatcher(null!);
-
-        act.Should().Throw<ArgumentNullException>();
+        await ((Func<Task>)(() => matcher.PreFetchArticlesAsync("FS26", null!))).Should().ThrowAsync<ArgumentNullException>();
+        ((Action)(() => _ = new SgdArticleMatcher(null!))).Should().Throw<ArgumentNullException>();
     }
 }

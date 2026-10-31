@@ -201,14 +201,25 @@ public class BexioApiClient : IBexioService
     {
         ArgumentNullException.ThrowIfNull(criteria);
 
-        var body = new StringContent(JsonSerializer.Serialize(criteria), Encoding.UTF8, "application/json");
-        var response = await SendWithRateLimitCheckAsync(CreateRequest(HttpMethod.Post, "2.0/article/search", body));
-
-        if (response.IsSuccessStatusCode)
+        // Bexio returns 500 results by default and at most 2000 per page; a full page means there may be more
+        const int pageSize = 2000;
+        var articles = new List<BexioArticle>();
+        while (true)
         {
-            return await response.Content.ReadFromJsonAsync<List<BexioArticle>>() ?? [];
+            var body = new StringContent(JsonSerializer.Serialize(criteria), Encoding.UTF8, "application/json");
+            var response = await SendWithRateLimitCheckAsync(CreateRequest(HttpMethod.Post, $"2.0/article/search?limit={pageSize}&offset={articles.Count}", body));
+            if (!response.IsSuccessStatusCode)
+            {
+                return [];
+            }
+
+            var page = await response.Content.ReadFromJsonAsync<List<BexioArticle>>() ?? [];
+            articles.AddRange(page);
+            if (page.Count < pageSize)
+            {
+                return articles;
+            }
         }
-        return [];
     }
     public async Task AddArticlePositionAsync(int orderId, int articleId, OrderPosition position, string? positionText = null)
     {

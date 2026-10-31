@@ -20,6 +20,8 @@ public class ImportOrderUseCaseTests
         _parserMock = new Mock<IExcelParser>();
         _clientMock = new Mock<IBexioService>();
         _matcherMock = new Mock<IPeakmileArticleMatcher>();
+        // Articles are matched before the customer and the order; tests override this to test the article lookup
+        _matcherMock.Setup(c => c.FindArticleAsync(It.IsAny<PeakmileArticleCriteria>())).ReturnsAsync(ArticleMatch.Found(new BexioArticle { Id = 1 }));
         _useCase = new PeakmileImporter(_parserMock.Object, _clientMock.Object, _matcherMock.Object);
     }
 
@@ -178,6 +180,33 @@ public class ImportOrderUseCaseTests
         // Assert
         await act.Should().ThrowAsync<InvalidOperationException>().WithMessage("*UNKNOWN*");
         _clientMock.Verify(c => c.AddArticlePositionAsync(It.IsAny<int>(), It.IsAny<int>(), It.IsAny<OrderPosition>(), It.IsAny<string?>()), Times.Never);
+    }
+
+    [Test]
+    public async Task ExecuteAsync_WhenArticlesAreMissing_ShouldListEachOnceAndChangeNothingInBexio()
+    {
+        var order = new Order
+        {
+            Customer = new Customer { Email = "t@t.com", CompanyName = "Test AG" },
+            Positions =
+            [
+                new OrderPosition { ArticleNumber = "A1", Color = "Black", Size = "S", Quantity = 1 },
+                new OrderPosition { ArticleNumber = "A1", Color = "Black", Size = "M", Quantity = 1 },
+                new OrderPosition { ArticleNumber = "A2", Color = "Red", Size = "M", Quantity = 1 },
+                new OrderPosition { ArticleNumber = "A3", Color = "Blue", Size = "M", Quantity = 1 }
+            ]
+        };
+        _parserMock.Setup(p => p.ParseOrderForm(It.IsAny<string>())).Returns(order);
+        _matcherMock.Setup(c => c.FindArticleAsync(It.IsAny<PeakmileArticleCriteria>())).ReturnsAsync(ArticleMatch.NotFound());
+        _matcherMock.Setup(c => c.FindArticleAsync(It.Is<PeakmileArticleCriteria>(a => a.ArticleNumber == "A3"))).ReturnsAsync(ArticleMatch.Found(new BexioArticle { Id = 3 }));
+
+        Func<Task> act = () => _useCase.ExecuteAsync("test.xlsx", new DelegateImportUserInteractionService(), new PeakmileImportOptions(SeasonCode: "FS26"));
+
+        await act.Should().ThrowAsync<InvalidOperationException>()
+            .WithMessage("2 article(s) not found in Bexio with season code 'FS26': 'A1' with color 'Black', 'A2' with color 'Red'. Nothing was changed in Bexio.");
+        _clientMock.Verify(c => c.FindContactByEmailAsync(It.IsAny<string>()), Times.Never);
+        _clientMock.Verify(c => c.CreateContactAsync(It.IsAny<Customer>()), Times.Never);
+        _clientMock.Verify(c => c.CreateOrderAsync(It.IsAny<int>(), It.IsAny<Order>()), Times.Never);
     }
 
     [Test]
