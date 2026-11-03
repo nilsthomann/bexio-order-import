@@ -47,7 +47,6 @@ public static class Translations
     public static string Import_ConfirmMessage => ResourceManager.GetString(nameof(Import_ConfirmMessage)) ?? string.Empty;
     public static string Settings_ErrorLoad => ResourceManager.GetString(nameof(Settings_ErrorLoad)) ?? string.Empty;
     public static string Settings_ErrorSave => ResourceManager.GetString(nameof(Settings_ErrorSave)) ?? string.Empty;
-    public static string Settings_ErrorTitle => ResourceManager.GetString(nameof(Settings_ErrorTitle)) ?? string.Empty;
     public static string Settings_LanguageSection => ResourceManager.GetString(nameof(Settings_LanguageSection)) ?? string.Empty;
     public static string Settings_LanguageLabel => ResourceManager.GetString(nameof(Settings_LanguageLabel)) ?? string.Empty;
     public static string Settings_LanguageGerman => ResourceManager.GetString(nameof(Settings_LanguageGerman)) ?? string.Empty;
@@ -112,4 +111,16 @@ public static class Translations
     public static string Dialog_DiscardChanges => ResourceManager.GetString(nameof(Dialog_DiscardChanges)) ?? string.Empty;
     public static string Dialog_PendingChangesTitle => ResourceManager.GetString(nameof(Dialog_PendingChangesTitle)) ?? string.Empty;
     public static string Dialog_PendingChangesMessage => ResourceManager.GetString(nameof(Dialog_PendingChangesMessage)) ?? string.Empty;
+    public static string Dialog_SettingsSavedTitle => ResourceManager.GetString(nameof(Dialog_SettingsSavedTitle)) ?? string.Empty;
+    public static string Dialog_ExportSuccessTitle => ResourceManager.GetString(nameof(Dialog_ExportSuccessTitle)) ?? string.Empty;
+    public static string Dialog_ImportSuccessTitle => ResourceManager.GetString(nameof(Dialog_ImportSuccessTitle)) ?? string.Empty;
+    public static string Dialog_ExportErrorTitle => ResourceManager.GetString(nameof(Dialog_ExportErrorTitle)) ?? string.Empty;
+    public static string Dialog_ImportErrorTitle => ResourceManager.GetString(nameof(Dialog_ImportErrorTitle)) ?? string.Empty;
+    public static string Dialog_Delete => ResourceManager.GetString(nameof(Dialog_Delete)) ?? string.Empty;
+    public static string Dialog_Continue => ResourceManager.GetString(nameof(Dialog_Continue)) ?? string.Empty;
+    public static string Error_SettingsIncompleteTitle => ResourceManager.GetString(nameof(Error_SettingsIncompleteTitle)) ?? string.Empty;
+    public static string Import_FailedTitle => ResourceManager.GetString(nameof(Import_FailedTitle)) ?? string.Empty;
+    public static string Import_ReadErrorTitle => ResourceManager.GetString(nameof(Import_ReadErrorTitle)) ?? string.Empty;
+    public static string Settings_ProfilesCreateHint => ResourceManager.GetString(nameof(Settings_ProfilesCreateHint)) ?? string.Empty;
+    public static string Settings_ProfilesEditHint => ResourceManager.GetString(nameof(Settings_ProfilesEditHint)) ?? string.Empty;
 }

@@ -14,6 +14,9 @@ namespace BexioOrderImport.Format.Sgd;
 public sealed class SgdImporter
 {
     private const int ExistingOrderOption = 1;
+    // Examples of a Bexio customer and order number in the empty input, the same in every language
+    private const string CustomerNumberPlaceholder = "001234";
+    private const string OrderNumberPlaceholder = "AU-01234";
 
     private readonly IBexioService _bexio;
     private readonly ISgdArticleMatcher _articleMatcher;
@@ -59,7 +62,7 @@ public sealed class SgdImporter
         {
             string? orderNumber = await AskOrderNumberAsync(interaction);
             if (orderNumber == null || !await interaction.ConfirmWarningAsync(
-                SgdTranslations.Import_ReplaceWarningTitle, string.Format(SgdTranslations.Import_ReplaceWarningMessage, orderNumber)))
+                string.Format(SgdTranslations.Import_ReplaceWarningTitle, orderNumber), string.Format(SgdTranslations.Import_ReplaceWarningMessage, orderNumber)))
             {
                 return Cancelled(interaction);
             }
@@ -144,7 +147,7 @@ public sealed class SgdImporter
         while (true)
         {
             string? customerNumber = (await interaction.AskTextAsync(
-                SgdTranslations.Import_CustomerTitle, SgdTranslations.Import_CustomerMessage, errorMessage))?.Trim();
+                SgdTranslations.Import_CustomerTitle, SgdTranslations.Import_CustomerMessage, errorMessage, CustomerNumberPlaceholder))?.Trim();
             if (customerNumber == null) return null;
 
             if (customerNumber.Length == 0)
@@ -175,7 +178,7 @@ public sealed class SgdImporter
         while (true)
         {
             string? orderNumber = (await interaction.AskTextAsync(
-                SgdTranslations.Import_OrderNumberTitle, SgdTranslations.Import_OrderNumberMessage, errorMessage))?.Trim();
+                SgdTranslations.Import_OrderNumberTitle, SgdTranslations.Import_OrderNumberMessage, errorMessage, OrderNumberPlaceholder))?.Trim();
             if (orderNumber == null || orderNumber.Length > 0) return orderNumber;
 
             errorMessage = SgdTranslations.Import_OrderNumberRequired;
@@ -216,7 +219,8 @@ public sealed class SgdImporter
         {
             string seasonCodes = string.Join("', '", [seasonCode, .. fallbackSeasonCodes]);
             throw new InvalidOperationException(
-                $"{missing.Count} article(s) not found in Bexio with season code '{seasonCodes}': {string.Join(", ", missing)}. Nothing was changed in Bexio.");
+                $"{missing.Count} article(s) not found in Bexio with season code '{seasonCodes}'. Nothing was changed in Bexio.{Environment.NewLine}"
+                + string.Join(Environment.NewLine, missing.Select(m => $"• {m}")));
         }
         return articles;
     }

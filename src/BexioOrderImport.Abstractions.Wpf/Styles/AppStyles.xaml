@@ -90,6 +90,30 @@
         </Setter>
     </Style>
 
+    <!-- Dialogs: dark backdrop with a centered card, like the import success dialog -->
+    <SolidColorBrush x:Key="DialogBackdropBrush" Color="#A8000000"/>
+    <Style x:Key="DialogCardStyle" TargetType="{x:Type Border}">
+        <Setter Property="Background" Value="{StaticResource BackgroundBrush}"/>
+        <Setter Property="BorderBrush" Value="{StaticResource BorderBrush}"/>
+        <Setter Property="BorderThickness" Value="1"/>
+        <Setter Property="CornerRadius" Value="16"/>
+        <Setter Property="Padding" Value="28"/>
+        <Setter Property="HorizontalAlignment" Value="Center"/>
+        <Setter Property="VerticalAlignment" Value="Center"/>
+        <Setter Property="Effect">
+            <Setter.Value>
+                <DropShadowEffect Color="#000000" Opacity="0.35" BlurRadius="40" ShadowDepth="12" Direction="270"/>
+            </Setter.Value>
+        </Setter>
+    </Style>
+    <Style x:Key="DialogTitleTextBlockStyle" TargetType="{x:Type TextBlock}">
+        <Setter Property="Foreground" Value="{StaticResource TextBrush}"/>
+        <Setter Property="FontSize" Value="18"/>
+        <Setter Property="FontWeight" Value="Bold"/>
+        <Setter Property="TextWrapping" Value="Wrap"/>
+        <Setter Property="Margin" Value="0,0,0,8"/>
+    </Style>
+
     <!-- Spinner Style -->
     <Style x:Key="SpinnerStyle" TargetType="{x:Type Control}">
         <Setter Property="Template">

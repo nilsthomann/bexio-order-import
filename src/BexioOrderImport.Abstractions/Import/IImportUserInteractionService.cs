@@ -17,10 +17,11 @@ public interface IImportUserInteractionService
     void OrderResolved(int orderId, string documentNr, bool isNew);
 
     /// <summary>
-    /// Asks for a text, eg. a customer number. <paramref name="errorMessage"/> explains why the previous input was rejected.
+    /// Asks for a text, eg. a customer number. <paramref name="errorMessage"/> explains why the previous input was rejected,
+    /// <paramref name="placeholder"/> is an example of the input shown in the empty box (eg. <c>001234</c>).
     /// </summary>
     /// <returns>The entered text, or null if the user cancels.</returns>
-    Task<string?> AskTextAsync(string title, string message, string? errorMessage = null);
+    Task<string?> AskTextAsync(string title, string message, string? errorMessage = null, string? placeholder = null);
 
     /// <summary>
     /// Lets the user pick one of the <paramref name="options"/>.

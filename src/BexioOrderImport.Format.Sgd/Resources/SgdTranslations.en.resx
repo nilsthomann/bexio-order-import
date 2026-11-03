@@ -280,10 +280,10 @@
     <value>Articles and prices are taken from Bexio on import.</value>
   </data>
   <data name="Import_CustomerTitle" xml:space="preserve">
-    <value>Customer</value>
+    <value>Which customer is the order for?</value>
   </data>
   <data name="Import_CustomerMessage" xml:space="preserve">
-    <value>Bexio customer number for this order:</value>
+    <value>Enter the Bexio customer number.</value>
   </data>
   <data name="Import_CustomerRequired" xml:space="preserve">
     <value>Please enter a customer number.</value>
@@ -292,10 +292,10 @@
     <value>Customer {0} was not found in Bexio.</value>
   </data>
   <data name="Import_OrderChoiceTitle" xml:space="preserve">
-    <value>Order</value>
+    <value>Create or update an order?</value>
   </data>
   <data name="Import_OrderChoiceMessage" xml:space="preserve">
-    <value>Customer: {0}. Do you want to create a new order or update an existing order?</value>
+    <value>Create a new order for the customer **{0}** or update an existing order?</value>
   </data>
   <data name="Import_NewOrder" xml:space="preserve">
     <value>Create a new order</value>
@@ -304,18 +304,18 @@
     <value>Update an existing order</value>
   </data>
   <data name="Import_OrderNumberTitle" xml:space="preserve">
-    <value>Existing order</value>
+    <value>Which order should be updated?</value>
   </data>
   <data name="Import_OrderNumberMessage" xml:space="preserve">
-    <value>Bexio number of the order to update:</value>
+    <value>Its positions are replaced by the positions of this file.</value>
   </data>
   <data name="Import_OrderNumberRequired" xml:space="preserve">
     <value>Please enter an order number.</value>
   </data>
   <data name="Import_ReplaceWarningTitle" xml:space="preserve">
-    <value>Delete positions?</value>
+    <value>Replace the positions of order {0}?</value>
   </data>
   <data name="Import_ReplaceWarningMessage" xml:space="preserve">
-    <value>All existing positions of order {0} will be deleted in Bexio and replaced by the positions of this file. This cannot be undone. Continue?</value>
+    <value>All existing positions of order **{0}** are deleted in Bexio and replaced by the positions of this file. This cannot be undone.</value>
   </data>
 </root>

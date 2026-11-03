@@ -85,7 +85,7 @@ public class ProfileManagerService : IProfileManagerService
         if (profile == null || profiles.Count <= 1) return false;
 
         string message = string.Format(Resources.Translations.Confirm_DeleteProfileMessage, profile.Name);
-        bool confirmed = _dialogService.ShowConfirmDialog(message, Resources.Translations.Confirm_DeleteProfileTitle);
+        bool confirmed = _dialogService.ShowWarningConfirmDialog(message, Resources.Translations.Confirm_DeleteProfileTitle, Resources.Translations.Dialog_Delete);
         if (!confirmed) return false;
 
         profiles.Remove(profile);
@@ -104,12 +104,12 @@ public class ProfileManagerService : IProfileManagerService
                 string json = JsonSerializer.Serialize(exportList, IndentedJson);
                 File.WriteAllText(fileName, json);
                 logInfo($"Profiles exported successfully to: {fileName}");
-                _dialogService.ShowInfoDialog(Resources.Translations.Dialog_ExportSuccess);
+                _dialogService.ShowInfoDialog(Resources.Translations.Dialog_ExportSuccess, Resources.Translations.Dialog_ExportSuccessTitle);
             }
         }
         catch (Exception ex)
         {
-            _dialogService.ShowErrorDialog($"{Resources.Translations.Settings_ErrorSave}: {ex.Message}", Resources.Translations.Settings_ErrorTitle);
+            _dialogService.ShowErrorDialog(ex.Message, Resources.Translations.Dialog_ExportErrorTitle);
         }
     }
 
@@ -124,7 +124,7 @@ public class ProfileManagerService : IProfileManagerService
                 var importedDtos = JsonSerializer.Deserialize<System.Collections.Generic.List<MappingProfileDto>>(json);
                 if (importedDtos == null)
                 {
-                    _dialogService.ShowErrorDialog(Resources.Translations.Dialog_ImportInvalidFormat, Resources.Translations.Dialog_ErrorTitle);
+                    _dialogService.ShowErrorDialog(Resources.Translations.Dialog_ImportInvalidFormat, Resources.Translations.Dialog_ImportErrorTitle);
                     return false;
                 }
 
@@ -155,14 +155,14 @@ public class ProfileManagerService : IProfileManagerService
                 if (importedAny)
                 {
                     logInfo($"Profiles imported successfully from: {fileName}");
-                    _dialogService.ShowInfoDialog(Resources.Translations.Dialog_ImportSuccess);
+                    _dialogService.ShowInfoDialog(Resources.Translations.Dialog_ImportSuccess, Resources.Translations.Dialog_ImportSuccessTitle);
                     return true;
                 }
             }
         }
         catch (Exception ex)
         {
-            _dialogService.ShowErrorDialog($"{Resources.Translations.Settings_ErrorLoad}: {ex.Message}", Resources.Translations.Settings_ErrorTitle);
+            _dialogService.ShowErrorDialog(ex.Message, Resources.Translations.Dialog_ImportErrorTitle);
         }
         return false;
     }

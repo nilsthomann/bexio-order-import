@@ -98,7 +98,7 @@ public partial class ProfileEditWindow : Window
         }
         catch (Exception ex)
         {
-            CustomDialog.ShowError($"{Translations.Settings_ErrorSave}: {ex.Message}", Translations.Settings_ErrorTitle);
+            CustomDialog.ShowError(ex.Message, Translations.Settings_ErrorSave);
         }
     }
 

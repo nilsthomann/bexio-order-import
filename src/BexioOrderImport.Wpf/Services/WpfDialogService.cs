@@ -98,6 +98,11 @@ public class WpfDialogService : IDialogService
         return InvokeOnDispatcher(() => Views.CustomDialog.ShowConfirm(message, title));
     }
 
+    public bool ShowWarningConfirmDialog(string message, string title, string confirmText)
+    {
+        return InvokeOnDispatcher(() => Views.CustomDialog.ShowWarningConfirm(message, title, confirmText));
+    }
+
     public bool ShowCustomerConfirmDialog(Customer customer)
     {
         return InvokeOnDispatcher(() =>
@@ -110,9 +115,9 @@ public class WpfDialogService : IDialogService
         });
     }
 
-    public string? ShowInputDialog(string message, string title, string? errorMessage)
+    public string? ShowInputDialog(string message, string title, string? errorMessage, string? placeholder)
     {
-        return InvokeOnDispatcher(() => Views.CustomDialog.ShowInput(message, title, errorMessage));
+        return InvokeOnDispatcher(() => Views.CustomDialog.ShowInput(message, title, errorMessage, placeholder));
     }
 
     public int? ShowChoiceDialog(string message, string title, IReadOnlyList<string> options)
@@ -130,9 +135,9 @@ public class WpfDialogService : IDialogService
         InvokeOnDispatcher(() => Views.CustomDialog.ShowError(message, title, note, orderNumber, orderUri));
     }
 
-    public void ShowInfoDialog(string message)
+    public void ShowInfoDialog(string message, string title)
     {
-        InvokeOnDispatcher(() => Views.CustomDialog.ShowInfo(message));
+        InvokeOnDispatcher(() => Views.CustomDialog.ShowInfo(message, title));
     }
 
     public void RestartMainWindow()

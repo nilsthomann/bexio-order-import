@@ -87,7 +87,7 @@ public partial class MainViewModel
         }
         catch (Exception ex)
         {
-            _dialogService.ShowErrorDialog($"{Resources.Translations.Settings_ErrorLoad}: {ex.Message}", Resources.Translations.Settings_ErrorTitle);
+            _dialogService.ShowErrorDialog(ex.Message, Resources.Translations.Settings_ErrorLoad);
         }
         IsModified = false;
         SaveSettingsCommand.RaiseCanExecuteChanged();
@@ -134,7 +134,7 @@ public partial class MainViewModel
         }
         catch (Exception ex)
         {
-            _dialogService.ShowErrorDialog($"{Resources.Translations.Settings_ErrorSave}: {ex.Message}", Resources.Translations.Settings_ErrorTitle);
+            _dialogService.ShowErrorDialog(ex.Message, Resources.Translations.Settings_ErrorSave);
         }
     }
 
@@ -161,7 +161,7 @@ public partial class MainViewModel
     {
         if (!languageChanged)
         {
-            _dialogService.ShowInfoDialog(Resources.Translations.Dialog_SettingsSaved);
+            _dialogService.ShowInfoDialog(Resources.Translations.Dialog_SettingsSaved, Resources.Translations.Dialog_SettingsSavedTitle);
             return;
         }
 

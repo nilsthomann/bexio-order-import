@@ -264,7 +264,7 @@ public class MainViewModelTests : IDisposable
         var vm = CreateVm();
         var secondProfile = ProfileTestExtensions.FakeProfile("Profile2");
         vm.Profiles.Add(secondProfile);
-        _dialogServiceMock.Setup(d => d.ShowConfirmDialog(It.IsAny<string>(), It.IsAny<string>())).Returns(true);
+        _dialogServiceMock.Setup(d => d.ShowWarningConfirmDialog(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>())).Returns(true);
 
         // Act
         var defaultProfile = vm.Profiles[0];
@@ -562,9 +562,9 @@ public class MainViewModelTests : IDisposable
     public async Task WpfImportUserInteractionService_ShouldShowTheInputChoiceAndWarningDialogs()
     {
         var vm = CreateVm();
-        _dialogServiceMock.Setup(d => d.ShowInputDialog("Customer?", "Customer", "unknown")).Returns("1001");
+        _dialogServiceMock.Setup(d => d.ShowInputDialog("Customer?", "Customer", "unknown", "001234")).Returns("1001");
         _dialogServiceMock.Setup(d => d.ShowChoiceDialog("New or existing?", "Order", It.Is<IReadOnlyList<string>>(o => o.Count == 2))).Returns(1);
-        _dialogServiceMock.Setup(d => d.ShowConfirmDialog("Delete all?", "Warning")).Returns(true);
+        _dialogServiceMock.Setup(d => d.ShowWarningConfirmDialog("Delete all?", "Warning", It.IsAny<string>())).Returns(true);
         var type = typeof(MainViewModel).GetNestedType("WpfImportUserInteractionService", System.Reflection.BindingFlags.NonPublic);
         var service = (IImportUserInteractionService)Activator.CreateInstance(type!, [
             vm,
@@ -572,7 +572,7 @@ public class MainViewModelTests : IDisposable
             new System.Diagnostics.Stopwatch()
         ])!;
 
-        (await service.AskTextAsync("Customer", "Customer?", "unknown")).Should().Be("1001");
+        (await service.AskTextAsync("Customer", "Customer?", "unknown", "001234")).Should().Be("1001");
         (await service.ChooseAsync("Order", "New or existing?", ["New", "Existing"])).Should().Be(1);
         (await service.ConfirmWarningAsync("Warning", "Delete all?")).Should().BeTrue();
 

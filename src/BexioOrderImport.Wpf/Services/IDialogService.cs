@@ -18,12 +18,17 @@ public interface IDialogService
     string? ShowOpenFileDialog(string filter, string defaultExt);
     string? ShowSaveFileDialog(string filter, string defaultExt, string defaultFileName);
     bool ShowConfirmDialog(string message, string title);
+
+    /// <summary>
+    /// Confirmation of an action that can't be undone, eg. deleting: warning icon, <paramref name="confirmText"/> and cancel.
+    /// </summary>
+    bool ShowWarningConfirmDialog(string message, string title, string confirmText);
     bool ShowCustomerConfirmDialog(Customer customer);
 
     /// <summary>
-    /// Asks for a text; <paramref name="errorMessage"/> is shown below the input. Null if the user cancels.
+    /// Asks for a text; <paramref name="errorMessage"/> is shown below the input, <paramref name="placeholder"/> in the empty input. Null if the user cancels.
     /// </summary>
-    string? ShowInputDialog(string message, string title, string? errorMessage);
+    string? ShowInputDialog(string message, string title, string? errorMessage, string? placeholder);
 
     /// <summary>
     /// Shows one button per option. The index of the chosen option, or null if the user cancels.
@@ -35,6 +40,6 @@ public interface IDialogService
     /// Error of an import that already wrote to a Bexio order: <paramref name="note"/> shows the order number at {0} as a link to <paramref name="orderUri"/>.
     /// </summary>
     void ShowImportErrorDialog(string message, string title, string note, string orderNumber, Uri orderUri);
-    void ShowInfoDialog(string message);
+    void ShowInfoDialog(string message, string title);
     void RestartMainWindow();
 }

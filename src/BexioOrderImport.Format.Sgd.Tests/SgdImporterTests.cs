@@ -204,7 +204,7 @@ public class SgdImporterTests
         Func<Task> act = () => Importer().ExecuteAsync(Order(), _settings, Interaction());
 
         await act.Should().ThrowAsync<InvalidOperationException>()
-            .WithMessage("2 article(s) not found*'FS27'*'E1' with color '1001 Black' (row 2), 'E2' with color 'Red' (row 3)*Nothing was changed*");
+            .WithMessage($"2 article(s) not found*'FS27'*Nothing was changed*• 'E1' with color '1001 Black' (row 2){Environment.NewLine}• 'E2' with color 'Red' (row 3)");
         _calls.Should().BeEmpty();
         _positionsDeleted.Should().BeFalse();
         _bexio.Verify(b => b.FindOrderByDocumentNrAsync(It.IsAny<string>()), Times.Never);

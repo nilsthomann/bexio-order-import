@@ -93,12 +93,14 @@ public class SettingsPersistenceTests : StaTestBase, IDisposable
             .Returns((string filter, string ext, string defaultName) => _saveFileDialogFunc != null ? _saveFileDialogFunc(filter, ext, defaultName) : "mock_save_file.json");
         _dialogServiceMock.Setup(d => d.ShowConfirmDialog(It.IsAny<string>(), It.IsAny<string>()))
             .Returns((string msg, string title) => _confirmDialogFunc == null || _confirmDialogFunc(msg, title));
+        _dialogServiceMock.Setup(d => d.ShowWarningConfirmDialog(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()))
+            .Returns((string msg, string title, string _) => _confirmDialogFunc == null || _confirmDialogFunc(msg, title));
         _dialogServiceMock.Setup(d => d.ShowCustomerConfirmDialog(It.IsAny<Customer>()))
             .Returns((Customer c) => _customerConfirmDialogFunc == null || _customerConfirmDialogFunc(c));
         _dialogServiceMock.Setup(d => d.ShowErrorDialog(It.IsAny<string>(), It.IsAny<string>()))
             .Callback((string msg, string title) => _errorDialogAction?.Invoke(msg, title));
-        _dialogServiceMock.Setup(d => d.ShowInfoDialog(It.IsAny<string>()))
-            .Callback((string msg) => _infoDialogAction?.Invoke(msg));
+        _dialogServiceMock.Setup(d => d.ShowInfoDialog(It.IsAny<string>(), It.IsAny<string>()))
+            .Callback((string msg, string _) => _infoDialogAction?.Invoke(msg));
 
         var dispatcherMock = new Mock<IDispatcherService>();
         dispatcherMock.Setup(d => d.Invoke(It.IsAny<Action>())).Callback((Action a) => a());
