@@ -56,6 +56,12 @@
                     <TextBlock x:Name="MessageText" TextWrapping="Wrap" FontSize="13"
                                Foreground="{StaticResource TextBrush}"
                                LineHeight="20" Margin="0,0,0,20"/>
+                    <!-- Input dialog: text box with the error of the previous input -->
+                    <TextBox x:Name="InputBox" Height="32" Margin="0,-8,0,8" Visibility="Collapsed"/>
+                    <TextBlock x:Name="InputErrorText" TextWrapping="Wrap" Foreground="{StaticResource ErrorBrush}"
+                               Margin="0,0,0,12" Visibility="Collapsed"/>
+                    <!-- Choice dialog: one button per option -->
+                    <StackPanel x:Name="ChoicePanel" Margin="0,-8,0,12" Visibility="Collapsed"/>
                     <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
                         <Button x:Name="CancelButton" Click="CancelButton_Click"
                                 Style="{StaticResource SecondaryButtonStyle}"

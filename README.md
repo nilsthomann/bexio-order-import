@@ -69,11 +69,13 @@ src/
 ├── BexioOrderImport.Abstractions.Wpf/ # UI contracts of the formats, shared theme and converters
 ├── BexioOrderImport.Format.Peakmile/ # Peakmile import format (settings, ClosedXML parser, import, profile and preview controls)
 ├── BexioOrderImport.Format.EanList/  # EAN list import format (EAN, quantity and customer number per row)
+├── BexioOrderImport.Format.Sgd/      # SGD (Sports Group Denmark) import format (article, color, size and quantity per row)
 ├── BexioOrderImport.Infrastructure/  # External integrations (Bexio REST Client)
 ├── BexioOrderImport.Wpf/             # WPF Desktop App (MVVM views, custom dialogs, styles)
 ├── BexioOrderImport.Tests/           # Host tests: Bexio client, profiles, view models (TUnit & Microsoft Testing Platform)
 ├── BexioOrderImport.Format.Peakmile.Tests/ # Peakmile format tests with their own Excel fixture
-└── BexioOrderImport.Format.EanList.Tests/  # EAN list format tests with their own Excel fixture
+├── BexioOrderImport.Format.EanList.Tests/  # EAN list format tests with their own Excel fixture
+└── BexioOrderImport.Format.Sgd.Tests/      # SGD format tests with their own Excel fixture
 ```
 
 ---

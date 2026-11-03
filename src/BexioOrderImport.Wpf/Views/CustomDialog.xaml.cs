@@ -177,6 +177,60 @@ public partial class CustomDialog : Window
         return dlg.ShowDialog() == true;
     }
 
+    /// <summary>
+    /// Asks for a text. Null if the user cancels; in unit tests always null.
+    /// </summary>
+    public static string? ShowInput(string message, string title, string? errorMessage = null)
+    {
+        if (IsUnitTest()) return null;
+        var dlg = CreateDialog(CustomDialogType.Confirm, title, message);
+        dlg.OkButton.Content = Translations.Dialog_OK;
+        dlg.OkButton.IsDefault = true;
+        dlg.CancelButton.Content = Translations.Dialog_Cancel;
+        dlg.InputBox.Visibility = Visibility.Visible;
+        if (!string.IsNullOrWhiteSpace(errorMessage))
+        {
+            dlg.InputErrorText.Text = errorMessage;
+            dlg.InputErrorText.Visibility = Visibility.Visible;
+        }
+        dlg.Loaded += (_, _) => dlg.InputBox.Focus();
+        return dlg.ShowDialog() == true ? dlg.InputBox.Text.Trim() : null;
+    }
+
+    /// <summary>
+    /// Shows one button per option. The index of the chosen option, or null if the user cancels; in unit tests always null.
+    /// </summary>
+    public static int? ShowChoice(string message, string title, IReadOnlyList<string> options)
+    {
+        if (IsUnitTest()) return null;
+        var dlg = CreateDialog(CustomDialogType.Confirm, title, message);
+        dlg.OkButton.Visibility = Visibility.Collapsed;
+        dlg.CancelButton.Content = Translations.Dialog_Cancel;
+        dlg.CancelButton.Margin = new Thickness(0);
+        dlg.ChoicePanel.Visibility = Visibility.Visible;
+
+        int? choice = null;
+        for (int i = 0; i < options.Count; i++)
+        {
+            int index = i;
+            var button = new System.Windows.Controls.Button
+            {
+                Content = options[i],
+                Height = 36,
+                Margin = new Thickness(0, 0, 0, 8),
+                Style = (Style)dlg.FindResource("ModernButtonStyle")
+            };
+            button.Click += (_, _) =>
+            {
+                choice = index;
+                dlg.DialogResult = true;
+                dlg.Close();
+            };
+            dlg.ChoicePanel.Children.Add(button);
+        }
+        return dlg.ShowDialog() == true ? choice : null;
+    }
+
     public static bool ShowPendingChanges(string? message = null, string? title = null)
     {
         if (IsUnitTest()) return true;

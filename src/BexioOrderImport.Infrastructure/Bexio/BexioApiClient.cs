@@ -201,14 +201,25 @@ public class BexioApiClient : IBexioService
     {
         ArgumentNullException.ThrowIfNull(criteria);
 
-        var body = new StringContent(JsonSerializer.Serialize(criteria), Encoding.UTF8, "application/json");
-        var response = await SendWithRateLimitCheckAsync(CreateRequest(HttpMethod.Post, "2.0/article/search", body));
-
-        if (response.IsSuccessStatusCode)
+        // Bexio returns 500 results by default and at most 2000 per page; a full page means there may be more
+        const int pageSize = 2000;
+        var articles = new List<BexioArticle>();
+        while (true)
         {
-            return await response.Content.ReadFromJsonAsync<List<BexioArticle>>() ?? [];
+            var body = new StringContent(JsonSerializer.Serialize(criteria), Encoding.UTF8, "application/json");
+            var response = await SendWithRateLimitCheckAsync(CreateRequest(HttpMethod.Post, $"2.0/article/search?limit={pageSize}&offset={articles.Count}", body));
+            if (!response.IsSuccessStatusCode)
+            {
+                return [];
+            }
+
+            var page = await response.Content.ReadFromJsonAsync<List<BexioArticle>>() ?? [];
+            articles.AddRange(page);
+            if (page.Count < pageSize)
+            {
+                return articles;
+            }
         }
-        return [];
     }
     public async Task AddArticlePositionAsync(int orderId, int articleId, OrderPosition position, string? positionText = null)
     {
@@ -256,6 +267,36 @@ public class BexioApiClient : IBexioService
             var errorContent = await response.Content.ReadAsStringAsync();
             throw new HttpRequestException($"Error adding discount position to order {orderId}: {errorContent}", null, response.StatusCode);
         }
+    }
+
+    public async Task<int> DeleteAllPositionsAsync(int orderId)
+    {
+        var response = await SendWithRateLimitCheckAsync(CreateRequest(HttpMethod.Get, $"2.0/kb_order/{orderId}"));
+        if (!response.IsSuccessStatusCode)
+        {
+            var errorContent = await response.Content.ReadAsStringAsync();
+            throw new HttpRequestException($"Error reading the positions of order {orderId}: {errorContent}", null, response.StatusCode);
+        }
+
+        var order = await response.Content.ReadFromJsonAsync<BexioOrder>();
+        int deleted = 0;
+        foreach (var position in order?.Positions ?? [])
+        {
+            // The type names the endpoint, eg. KbPositionArticle -> kb_position_article
+            string endpoint = JsonNamingPolicy.SnakeCaseLower.ConvertName(position.Type);
+            var deleteResponse = await SendWithRateLimitCheckAsync(CreateRequest(HttpMethod.Delete, $"2.0/kb_order/{orderId}/{endpoint}/{position.Id}"));
+
+            // Positions of a sub position group are deleted with the group
+            if (deleteResponse.StatusCode == System.Net.HttpStatusCode.NotFound) continue;
+
+            if (!deleteResponse.IsSuccessStatusCode)
+            {
+                var errorContent = await deleteResponse.Content.ReadAsStringAsync();
+                throw new HttpRequestException($"Error deleting position {position.Id} of order {orderId}: {errorContent}", null, deleteResponse.StatusCode);
+            }
+            deleted++;
+        }
+        return deleted;
     }
 
     public async Task<bool> CheckConnectionAsync()

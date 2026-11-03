@@ -45,7 +45,8 @@ public interface IBexioService
     Task<IReadOnlyList<BexioArticle>> FindArticlesByInternCodeAsync(string internCode);
 
     /// <summary>
-    /// Searches articles with the given criteria (eg. intern_code "like" a value). Not cached; empty if the search fails.
+    /// Searches articles with the given criteria (eg. intern_code "like" a value) and loads all result pages.
+    /// Not cached; empty if the search fails.
     /// </summary>
     Task<IReadOnlyList<BexioArticle>> SearchArticlesAsync(IReadOnlyList<BexioSearchCriteria> criteria);
 
@@ -59,6 +60,11 @@ public interface IBexioService
     /// Appends a global discount position to an existing order in Bexio.
     /// </summary>
     Task AddDiscountPositionAsync(int orderId, decimal discountPercent, string text = "Rabatt");
+
+    /// <summary>
+    /// Deletes all positions of an existing order (articles, discounts, texts, ...). Returns the number of deleted positions.
+    /// </summary>
+    Task<int> DeleteAllPositionsAsync(int orderId);
 
     /// <summary>
     /// Verifies API connectivity with Bexio.

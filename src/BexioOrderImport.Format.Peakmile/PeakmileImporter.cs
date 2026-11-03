@@ -69,6 +69,10 @@ public class PeakmileImporter
 
         // 2. Start API upload
         interaction.LogInfo("Connecting to Bexio API...");
+
+        // All articles are found before Bexio is changed, so a missing article neither creates a customer nor an order
+        var articles = await FindArticlesAsync(order, options, interaction);
+
         int orderId;
         string orderNumberDisplay;
         string titleTemplate = options.DefaultOrderName ?? "Order: {CustomerName} {SeasonCode}";
@@ -114,44 +118,22 @@ public class PeakmileImporter
             interaction.LogInfo($"Order created successfully (Order #{orderNumberDisplay}). Uploading positions...");
             interaction.OrderResolved(orderId, orderNumberDisplay, isNew: true);
         }
-        interaction.LogInfo("Pre-fetching article data from Bexio...");
-        var uniqueArticleNumbers = order.Positions.Select(p => p.ArticleNumber).Distinct();
-        string seasonCode = options.SeasonCode ?? string.Empty;
-        string[] fallbackSeasonCodes = [.. (options.SeasonFallbackCodes ?? []).Where(c => !string.IsNullOrWhiteSpace(c)).Select(c => c.Trim())];
-        string[] allSeasonCodes = [seasonCode, .. fallbackSeasonCodes];
-        foreach (var code in allSeasonCodes)
-        {
-            await _articleMatcher.PreFetchArticlesAsync(code, uniqueArticleNumbers);
-        }
-
         interaction.LogInfo($"Uploading {order.Positions.Count} positions to Bexio...");
 
         int count = 0;
-        for (int i = 0; i < order.Positions.Count; i++)
+        foreach (var pos in order.Positions)
         {
-            OrderPosition pos = order.Positions[i];
+            var article = articles[pos];
+            string positionText = (options.PositionTextTemplate ?? string.Empty)
+                .Replace("{Color}", pos.Color ?? string.Empty)
+                .Replace("{SizesRows}", pos.Size ?? string.Empty)
+                .Replace("{Size}", pos.Size ?? string.Empty)
+                .Replace("{ArticleNumber}", pos.ArticleNumber ?? string.Empty)
+                .Replace("{ArticleName}", pos.ArticleName ?? string.Empty)
+                .Replace("{BexioArticleName}", article.Name ?? string.Empty)
+                .Replace("{BexioArticleDescription}", article.Description ?? string.Empty);
 
-            var match = await _articleMatcher.FindArticleAsync(new PeakmileArticleCriteria(pos.ArticleNumber, pos.Color, seasonCode, fallbackSeasonCodes));
-            if (match.IsFound)
-            {
-                var article = match.Article;
-                string positionText = (options.PositionTextTemplate ?? string.Empty)
-                    .Replace("{Color}", pos.Color ?? string.Empty)
-                    .Replace("{SizesRows}", pos.Size ?? string.Empty)
-                    .Replace("{Size}", pos.Size ?? string.Empty)
-                    .Replace("{ArticleNumber}", pos.ArticleNumber ?? string.Empty)
-                    .Replace("{ArticleName}", pos.ArticleName ?? string.Empty)
-                    .Replace("{BexioArticleName}", article.Name ?? string.Empty)
-                    .Replace("{BexioArticleDescription}", article.Description ?? string.Empty);
-
-                await _bexioClient.AddArticlePositionAsync(orderId, article.Id, pos, positionText);
-            }
-            else
-            {
-                string triedCodes = string.Join("', '", allSeasonCodes);
-                interaction.LogInfo($"⛔ Article '{pos.ArticleNumber}' with color '{pos.Color}' and season code '{triedCodes}' not found in Bexio.");
-                throw new InvalidOperationException($"Article '{pos.ArticleNumber}' with color '{pos.Color}' and season code '{triedCodes}' not found in Bexio.");
-            }
+            await _bexioClient.AddArticlePositionAsync(orderId, article.Id, pos, positionText);
 
             count++;
             interaction.ReportProgress(count, order.Positions.Count);
@@ -177,6 +159,50 @@ public class PeakmileImporter
             Success: true,
             OrderNumber: orderNumberDisplay,
             UploadedPositionsCount: count);
+    }
+
+    /// <summary>
+    /// The Bexio article of each position. Throws with all missing articles before anything is changed in Bexio.
+    /// </summary>
+    private async Task<Dictionary<OrderPosition, BexioArticle>> FindArticlesAsync(Order order, PeakmileImportOptions options, IImportUserInteractionService interaction)
+    {
+        interaction.LogInfo("Pre-fetching article data from Bexio...");
+        string seasonCode = options.SeasonCode ?? string.Empty;
+        string[] fallbackSeasonCodes = [.. (options.SeasonFallbackCodes ?? []).Where(c => !string.IsNullOrWhiteSpace(c)).Select(c => c.Trim())];
+        string[] allSeasonCodes = [seasonCode, .. fallbackSeasonCodes];
+        var articleNumbers = order.Positions.Select(p => p.ArticleNumber).Distinct().ToList();
+        foreach (var code in allSeasonCodes)
+        {
+            await _articleMatcher.PreFetchArticlesAsync(code, articleNumbers);
+        }
+
+        var articles = new Dictionary<OrderPosition, BexioArticle>();
+        var missing = new List<string>();
+        foreach (var pos in order.Positions)
+        {
+            var match = await _articleMatcher.FindArticleAsync(new PeakmileArticleCriteria(pos.ArticleNumber, pos.Color, seasonCode, fallbackSeasonCodes));
+            if (match.IsFound)
+            {
+                articles[pos] = match.Article;
+                continue;
+            }
+
+            // The sizes of an article are separate positions; list each article and color once
+            string article = $"'{pos.ArticleNumber}' with color '{pos.Color}'";
+            if (!missing.Contains(article))
+            {
+                interaction.LogInfo($"⛔ Article {article} {match.FailureReason} in Bexio.");
+                missing.Add(article);
+            }
+        }
+
+        if (missing.Count > 0)
+        {
+            string seasonCodes = string.Join("', '", allSeasonCodes);
+            throw new InvalidOperationException(
+                $"{missing.Count} article(s) not found in Bexio with season code '{seasonCodes}': {string.Join(", ", missing)}. Nothing was changed in Bexio.");
+        }
+        return articles;
     }
 
     /// <summary>

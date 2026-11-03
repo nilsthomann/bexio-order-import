@@ -6,7 +6,7 @@ namespace BexioOrderImport.Format.Peakmile;
 
 /// <summary>
 /// Criteria to find the Bexio article of a Peakmile position. The fallback season codes are tried in order
-/// (exact intern code match only) when the season code yields no match.
+/// when the season code yields no match.
 /// </summary>
 public sealed record PeakmileArticleCriteria(string ArticleNumber, string Color, string SeasonCode, IReadOnlyList<string>? FallbackSeasonCodes = null);
 
@@ -16,20 +16,25 @@ public sealed record PeakmileArticleCriteria(string ArticleNumber, string Color,
 public interface IPeakmileArticleMatcher : IArticleMatcher<PeakmileArticleCriteria>
 {
     /// <summary>
-    /// Pre-fetches the articles of the season code and keeps those of the given article numbers, to speed up the lookups of an import.
+    /// Loads the articles of the season code once, so the lookups of an import need no request per position.
+    /// Does nothing without article numbers.
     /// </summary>
     Task PreFetchArticlesAsync(string seasonCode, IEnumerable<string> articleNumbers);
 }
 
 /// <summary>
-/// Matches the Bexio intern_code exactly as {SeasonCode}{ArticleNumber}{Color}, first with the season code, then with each
-/// fallback code. Only if all miss, it searches by article number and filters by color and season code in the article name.
-/// Found articles are cached for the lifetime of the matcher (one import).
+/// Matches the Bexio intern_code as {SeasonCode}{ArticleNumber}{Color}, ignoring whitespace and case, with the color as written
+/// in the order (eg. "1001 Black"), only its name ("Black") or only its code ("1001"); first with the season code, then with each fallback code.
+/// So "FS26 E183801 1001 Black", "FS26E1838011001Black", "FS26E183801 Black" and "FS26E1838011001" all match. The articles come from one search per
+/// season code (<see cref="PreFetchArticlesAsync"/>) and one per article number that is not found in them; each search runs once
+/// per matcher (one import). Several articles with the same code are not unique and match none.
 /// </summary>
-public sealed class PeakmileArticleMatcher : IPeakmileArticleMatcher
+public sealed partial class PeakmileArticleMatcher : IPeakmileArticleMatcher
 {
     private readonly IBexioService _bexio;
-    private List<BexioArticle> _cachedArticles = [];
+    private readonly Dictionary<string, List<BexioArticle>> _articlesByCode = [];
+    private readonly HashSet<int> _articleIds = [];
+    private readonly HashSet<string> _searchedValues = [];
 
     public PeakmileArticleMatcher(IBexioService bexio)
     {
@@ -40,122 +45,83 @@ public sealed class PeakmileArticleMatcher : IPeakmileArticleMatcher
     {
         ArgumentNullException.ThrowIfNull(criteria);
 
-        // Color can be "Black" or eg. "140 Black", we need only the Color Name
-        string cleanColor = Regex.Replace(criteria.Color, @"^\d+", "").Trim();
-
-        // Season code first, then the fallback codes of multi-season articles (eg. "NOOS", "EX")
-        // ponytail: a fallback article costs one missed season code lookup per position; cache missed intern codes if that gets slow
-        string[] seasonCodes = [criteria.SeasonCode, .. criteria.FallbackSeasonCodes ?? []];
-        foreach (var code in seasonCodes)
+        string[] codes = CandidateCodes(criteria);
+        var match = Match(codes);
+        if (match == null)
         {
-            var articles = await FindArticlesByInternCodeAsync(criteria.ArticleNumber, cleanColor, code);
-
-            if (articles.Count == 1)
-            {
-                return ArticleMatch.Found(articles[0]);
-            }
+            await SearchOnceAsync(criteria.ArticleNumber);
+            match = Match(codes);
         }
-
-        // Fallback
-        var article = await FindArticleByArticleNumberAndFilterAsync(criteria.ArticleNumber, cleanColor, seasonCodes);
-        return article != null ? ArticleMatch.Found(article) : ArticleMatch.NotFound();
+        return match ?? ArticleMatch.NotFound();
     }
 
     public async Task PreFetchArticlesAsync(string seasonCode, IEnumerable<string> articleNumbers)
     {
-        var distinctNumbers = articleNumbers
-            .Where(n => !string.IsNullOrWhiteSpace(n))
-            .Select(n => n.Trim())
-            .Distinct()
-            .ToList();
-
-        if (distinctNumbers.Count == 0) return;
-
-        IReadOnlyList<BexioArticle> fetchedArticles = [];
-
-        if (!string.IsNullOrWhiteSpace(seasonCode))
+        ArgumentNullException.ThrowIfNull(articleNumbers);
+        if (articleNumbers.Any(n => !string.IsNullOrWhiteSpace(n)))
         {
-            fetchedArticles = await SearchByInternCodeLikeAsync(seasonCode.Trim());
+            await SearchOnceAsync(seasonCode);
         }
+    }
 
-        if (fetchedArticles.Count == 0)
+    /// <summary>
+    /// Normalized intern codes in the order they are tried: per season code first with the full color, then with its name only, then with its code only.
+    /// </summary>
+    private static string[] CandidateCodes(PeakmileArticleCriteria criteria)
+    {
+        string color = criteria.Color ?? string.Empty;
+        var colorCode = ColorCodePrefix().Match(color);
+        string colorName = color[colorCode.Length..];
+        // A color with code and name also matches by its name or its code alone; a color that is only a code matches as is
+        string[] colors = colorCode.Success && colorName.Length > 0 ? [color, colorName, colorCode.Value] : [color];
+        return [.. ((string[])[criteria.SeasonCode, .. criteria.FallbackSeasonCodes ?? []])
+            .SelectMany(season => colors.Select(c => Normalize($"{season}{criteria.ArticleNumber}{c}")))
+            .Distinct()];
+    }
+
+    /// <summary>
+    /// The articles of the first code that has any, or null if no code has one.
+    /// </summary>
+    private ArticleMatch? Match(string[] codes)
+    {
+        foreach (var code in codes)
         {
-            foreach (var artNo in distinctNumbers)
+            if (_articlesByCode.TryGetValue(code, out var articles))
             {
-                if (_cachedArticles.Any(a => a.Code.Contains(artNo, StringComparison.OrdinalIgnoreCase))) continue;
-
-                var articles = await SearchByInternCodeLikeAsync(artNo);
-                var relevant = articles.Where(a => distinctNumbers.Any(num => a.Code.Contains(num, StringComparison.OrdinalIgnoreCase)));
-                AddToCache(relevant);
+                return ArticleMatch.FromCandidates(articles);
             }
-            return;
-        }
-
-        // Save only articles in _cachedArticles that are present in the provided article numbers list
-        AddToCache(fetchedArticles.Where(a => distinctNumbers.Any(num => a.Code.Contains(num, StringComparison.OrdinalIgnoreCase))));
-    }
-
-    private async Task<IReadOnlyList<BexioArticle>> FindArticlesByInternCodeAsync(string articleNumber, string cleanColor, string seasonCode)
-    {
-        string internCode = $"{seasonCode?.Trim() ?? string.Empty}{articleNumber.Trim()}{cleanColor}".Trim();
-
-        var cached = _cachedArticles.Where(x => x.Code.Equals(internCode, StringComparison.OrdinalIgnoreCase)).ToList();
-        if (cached.Count > 0) return cached;
-
-        var articles = await _bexio.FindArticlesByInternCodeAsync(internCode);
-        AddToCache(articles);
-        return articles;
-    }
-
-    private async Task<BexioArticle?> FindArticleByArticleNumberAndFilterAsync(string articleNumber, string cleanColor, string[] seasonCodes)
-    {
-        string seasonCode = seasonCodes[0];
-        var cachedArticle = FindByInternCodeIgnoringSpaces(_cachedArticles, articleNumber, cleanColor, seasonCodes)
-            ?? _cachedArticles.FirstOrDefault(x =>
-                x.Code.Contains(articleNumber.Trim(), StringComparison.OrdinalIgnoreCase) &&
-                x.Name.Contains(cleanColor, StringComparison.OrdinalIgnoreCase) &&
-                x.Name.Contains(seasonCode, StringComparison.OrdinalIgnoreCase));
-        if (cachedArticle != null) return cachedArticle;
-
-        var articles = await SearchByInternCodeLikeAsync(articleNumber.Trim());
-        AddToCache(articles);
-
-        var spacedArticle = FindByInternCodeIgnoringSpaces(articles, articleNumber, cleanColor, seasonCodes);
-        if (spacedArticle != null) return spacedArticle;
-
-        if (articles.Count == 1)
-        {
-            return articles[0];
-        }
-        if (articles.Count > 1)
-        {
-            return articles.FirstOrDefault(x =>
-                x.Name.Contains(cleanColor, StringComparison.OrdinalIgnoreCase) &&
-                x.Name.Contains(seasonCode, StringComparison.OrdinalIgnoreCase));
-        }
-
-        return null;
-    }
-
-    // Some intern codes are stored with spaces (eg. "NOOS 5440 Black"), which the exact Bexio search misses
-    private static BexioArticle? FindByInternCodeIgnoringSpaces(IEnumerable<BexioArticle> articles, string articleNumber, string cleanColor, string[] seasonCodes)
-    {
-        foreach (var code in seasonCodes)
-        {
-            string internCode = RemoveWhitespace($"{code}{articleNumber}{cleanColor}");
-            var article = articles.FirstOrDefault(a => RemoveWhitespace(a.Code).Equals(internCode, StringComparison.OrdinalIgnoreCase));
-            if (article != null) return article;
         }
         return null;
     }
 
-    private static string RemoveWhitespace(string value) => Regex.Replace(value, @"\s+", "");
-
-    private Task<IReadOnlyList<BexioArticle>> SearchByInternCodeLikeAsync(string value)
-        => _bexio.SearchArticlesAsync([new BexioSearchCriteria { Field = "intern_code", Value = value, Criteria = "like" }]);
-
-    private void AddToCache(IEnumerable<BexioArticle> articles)
+    /// <summary>
+    /// Loads the articles whose intern code contains the value, once per value.
+    /// </summary>
+    private async Task SearchOnceAsync(string value)
     {
-        _cachedArticles = [.. _cachedArticles.UnionBy(articles, x => x.Id)];
+        string search = value?.Trim() ?? string.Empty;
+        if (search.Length == 0 || !_searchedValues.Add(search.ToUpperInvariant())) return;
+
+        var articles = await _bexio.SearchArticlesAsync([new BexioSearchCriteria { Field = "intern_code", Value = search, Criteria = "like" }]);
+        foreach (var article in articles)
+        {
+            if (!_articleIds.Add(article.Id)) continue;
+
+            string code = Normalize(article.Code);
+            if (!_articlesByCode.TryGetValue(code, out var sameCode))
+            {
+                _articlesByCode[code] = sameCode = [];
+            }
+            sameCode.Add(article);
+        }
     }
+
+    private static string Normalize(string? value) => Whitespace().Replace(value ?? string.Empty, string.Empty).ToUpperInvariant();
+
+    [GeneratedRegex(@"\s+")]
+    private static partial Regex Whitespace();
+
+    // The color can start with a color code, eg. "1001 Black"
+    [GeneratedRegex(@"^\s*\d+\s*")]
+    private static partial Regex ColorCodePrefix();
 }

@@ -27,7 +27,13 @@ namespace BexioOrderImport.Domain.Models.Bexio
 
         [JsonPropertyName("contact_id")]
         public int ContactId { get; set; }
-        
+
+        /// <summary>
+        /// Positions of the order; only filled when a single order is fetched.
+        /// </summary>
+        [JsonPropertyName("positions")]
+        public List<BexioPosition>? Positions { get; set; }
+
     }
 
     public enum MwstType

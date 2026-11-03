@@ -1,0 +1,321 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <!-- 
+    Microsoft ResX Schema 
+    
+    Version 2.0
+    
+    The primary goals of this format is to allow a simple XML format 
+    that is mostly human readable. The generation and parsing of the 
+    various data types are done through the TypeConverter classes 
+    associated with the data types.
+    
+    Example:
+    
+    ... ado.net/XML headers & schema ...
+    <resheader name="resmimetype">text/microsoft-resx</resheader>
+    <resheader name="version">2.0</resheader>
+    <resheader name="reader">System.Resources.ResXResourceReader, System.Windows.Forms, ...</resheader>
+    <resheader name="writer">System.Resources.ResXResourceWriter, System.Windows.Forms, ...</resheader>
+    <data name="Name1"><value>this is my long string</value><comment>this is a comment</comment></data>
+    <data name="Color1" type="System.Drawing.Color, System.Drawing">Blue</data>
+    <data name="Bitmap1" mimetype="application/x-microsoft.net.object.binary.base64">
+        <value>[base64 mime encoded serialized .NET Framework object]</value>
+    </data>
+    <data name="Icon1" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+        <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
+        <comment>This is a comment</comment>
+    </data>
+                
+    There are any number of "resheader" rows that contain simple 
+    name/value pairs.
+    
+    Each data row contains a name, and value. The row also contains a 
+    type or mimetype. Type corresponds to a .NET class that support 
+    text/value conversion through the TypeConverter architecture. 
+    Classes that don't support this are serialized and stored with the 
+    mimetype set.
+    
+    The mimetype is used for serialized objects, and tells the 
+    ResXResourceReader how to depersist the object. This is currently not 
+    extensible. For a given mimetype the value must be set accordingly:
+    
+    Note - application/x-microsoft.net.object.binary.base64 is the format 
+    that the ResXResourceWriter will generate, however the reader can 
+    read any of the formats listed below.
+    
+    mimetype: application/x-microsoft.net.object.binary.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
+            : and then encoded with base64 encoding.
+    
+    mimetype: application/x-microsoft.net.object.soap.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
+            : and then encoded with base64 encoding.
+
+    mimetype: application/x-microsoft.net.object.bytearray.base64
+    value   : The object must be serialized into a byte array 
+            : using a System.ComponentModel.TypeConverter
+            : and then encoded with base64 encoding.
+    -->
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="Format_DisplayName" xml:space="preserve">
+    <value>SGD (Sports Group Denmark)</value>
+  </data>
+  <data name="Format_Description" xml:space="preserve">
+    <value>List with article number, color, size and quantity. The customer number and the order are asked for on import; articles and prices come from Bexio.</value>
+  </data>
+  <data name="Settings_SourceSection" xml:space="preserve">
+    <value>Excel source</value>
+  </data>
+  <data name="Settings_WorksheetLabel" xml:space="preserve">
+    <value>Excel worksheet index:</value>
+  </data>
+  <data name="Settings_StartRowLabel" xml:space="preserve">
+    <value>First data row:</value>
+  </data>
+  <data name="Settings_StartRowHint" xml:space="preserve">
+    <value>Rows above it (eg. headers) are ignored.</value>
+  </data>
+  <data name="Settings_ArticleNumberColumn" xml:space="preserve">
+    <value>Article number column</value>
+  </data>
+  <data name="Settings_ArticleNameColumn" xml:space="preserve">
+    <value>Article name column</value>
+  </data>
+  <data name="Settings_ColorColumn" xml:space="preserve">
+    <value>Color column</value>
+  </data>
+  <data name="Settings_SizeColumn" xml:space="preserve">
+    <value>Size column</value>
+  </data>
+  <data name="Settings_QuantityColumn" xml:space="preserve">
+    <value>Quantity column</value>
+  </data>
+  <data name="Settings_RowsHint" xml:space="preserve">
+    <value>Rows with an empty quantity or quantity 0 are ignored. The color may start with a color code (eg. 1001 Black).</value>
+  </data>
+  <data name="Settings_ArticleSection" xml:space="preserve">
+    <value>Article lookup &amp; discount</value>
+  </data>
+  <data name="Settings_SeasonCodeLabel" xml:space="preserve">
+    <value>Season code:</value>
+  </data>
+  <data name="Settings_SeasonCodeHint" xml:space="preserve">
+    <value>Bexio articles are found by the intern code season code + article number + color.</value>
+  </data>
+  <data name="Settings_SeasonFallbackCodesLabel" xml:space="preserve">
+    <value>Season fallback codes:</value>
+  </data>
+  <data name="Settings_SeasonFallbackCodesHint" xml:space="preserve">
+    <value>Comma-separated. Example: NOOS, EX</value>
+  </data>
+  <data name="Settings_DiscountLabel" xml:space="preserve">
+    <value>Discount in %:</value>
+  </data>
+  <data name="Settings_DiscountHint" xml:space="preserve">
+    <value>Added as a discount position at the end of the order. 0 = no discount.</value>
+  </data>
+  <data name="Settings_TextTemplatesSection" xml:space="preserve">
+    <value>Texts &amp; templates</value>
+  </data>
+  <data name="Settings_DefaultOrderNameLabel" xml:space="preserve">
+    <value>Order name template:</value>
+  </data>
+  <data name="Settings_DefaultOrderNameHint" xml:space="preserve">
+    <value>Placeholders: {CustomerName} (name of the Bexio contact), {SeasonCode}</value>
+  </data>
+  <data name="Settings_PositionGroupingModeLabel" xml:space="preserve">
+    <value>Position creation:</value>
+  </data>
+  <data name="Settings_PositionGroupingSingle" xml:space="preserve">
+    <value>Single position per size</value>
+  </data>
+  <data name="Settings_PositionGroupingGrouped" xml:space="preserve">
+    <value>Grouped position per article and color</value>
+  </data>
+  <data name="Settings_PositionTextTemplateLabel" xml:space="preserve">
+    <value>Position text template:</value>
+  </data>
+  <data name="Settings_SinglePositionTextTemplateHint" xml:space="preserve">
+    <value>Placeholders: {Color}, {Size}, {ArticleNumber}, {ArticleName}, {BexioArticleName}, {BexioArticleDescription}</value>
+  </data>
+  <data name="Settings_GroupedPositionTextTemplateHint" xml:space="preserve">
+    <value>Placeholders: {Color}, {SizesRows}, {ArticleNumber}, {ArticleName}, {BexioArticleName}, {BexioArticleDescription}</value>
+  </data>
+  <data name="Settings_SizeRowTemplateLabel" xml:space="preserve">
+    <value>Size row template:</value>
+  </data>
+  <data name="Settings_SizeRowTemplateHint" xml:space="preserve">
+    <value>Placeholders: {Amount}, {Size}. Example: {Amount}x Size {Size}</value>
+  </data>
+  <data name="Settings_DiscountPositionTextTemplateLabel" xml:space="preserve">
+    <value>Discount position text template:</value>
+  </data>
+  <data name="Settings_DiscountPositionTextTemplateHint" xml:space="preserve">
+    <value>Placeholders: {DiscountInPercent}</value>
+  </data>
+  <data name="Validation_PositiveNumber" xml:space="preserve">
+    <value>&quot;{0}&quot; must be a whole number greater than 0.</value>
+  </data>
+  <data name="Validation_InvalidColumn" xml:space="preserve">
+    <value>&quot;{0}&quot; needs a valid column (eg. A, B or AA).</value>
+  </data>
+  <data name="Validation_InvalidDiscount" xml:space="preserve">
+    <value>The discount must be a number between 0 and 100.</value>
+  </data>
+  <data name="Validation_SizesRowsRequired" xml:space="preserve">
+    <value>If &quot;Grouped position per article and color&quot; is selected, the position text template must contain the placeholder {SizesRows}.</value>
+  </data>
+  <data name="Error_MissingArticleNumber" xml:space="preserve">
+    <value>The article number is missing in row {0}.</value>
+  </data>
+  <data name="Error_MissingColor" xml:space="preserve">
+    <value>The color is missing in row {0}.</value>
+  </data>
+  <data name="Error_InvalidQuantity" xml:space="preserve">
+    <value>Invalid quantity &quot;{0}&quot; in row {1}. A whole number is expected.</value>
+  </data>
+  <data name="Preview_Header" xml:space="preserve">
+    <value>Order</value>
+  </data>
+  <data name="Preview_SeasonCode" xml:space="preserve">
+    <value>Season code</value>
+  </data>
+  <data name="Preview_Discount" xml:space="preserve">
+    <value>Discount</value>
+  </data>
+  <data name="Preview_CustomerHint" xml:space="preserve">
+    <value>The customer number and the order are asked for on import.</value>
+  </data>
+  <data name="Preview_PositionsHeader" xml:space="preserve">
+    <value>Positions</value>
+  </data>
+  <data name="Preview_ColRow" xml:space="preserve">
+    <value>Row</value>
+  </data>
+  <data name="Preview_ColArticleNumber" xml:space="preserve">
+    <value>Art. no.</value>
+  </data>
+  <data name="Preview_ColArticleName" xml:space="preserve">
+    <value>Article</value>
+  </data>
+  <data name="Preview_ColColor" xml:space="preserve">
+    <value>Color</value>
+  </data>
+  <data name="Preview_ColSize" xml:space="preserve">
+    <value>Size</value>
+  </data>
+  <data name="Preview_ColQuantity" xml:space="preserve">
+    <value>Quantity</value>
+  </data>
+  <data name="Preview_Positions" xml:space="preserve">
+    <value>Positions:</value>
+  </data>
+  <data name="Preview_TotalQuantity" xml:space="preserve">
+    <value>Pieces:</value>
+  </data>
+  <data name="Preview_SkippedRows" xml:space="preserve">
+    <value>Ignored (quantity empty or 0):</value>
+  </data>
+  <data name="Preview_PricesHint" xml:space="preserve">
+    <value>Articles and prices are taken from Bexio on import.</value>
+  </data>
+  <data name="Import_CustomerTitle" xml:space="preserve">
+    <value>Customer</value>
+  </data>
+  <data name="Import_CustomerMessage" xml:space="preserve">
+    <value>Bexio customer number for this order:</value>
+  </data>
+  <data name="Import_CustomerRequired" xml:space="preserve">
+    <value>Please enter a customer number.</value>
+  </data>
+  <data name="Import_CustomerNotFound" xml:space="preserve">
+    <value>Customer {0} was not found in Bexio.</value>
+  </data>
+  <data name="Import_OrderChoiceTitle" xml:space="preserve">
+    <value>Order</value>
+  </data>
+  <data name="Import_OrderChoiceMessage" xml:space="preserve">
+    <value>Customer: {0}. Do you want to create a new order or update an existing order?</value>
+  </data>
+  <data name="Import_NewOrder" xml:space="preserve">
+    <value>Create a new order</value>
+  </data>
+  <data name="Import_ExistingOrder" xml:space="preserve">
+    <value>Update an existing order</value>
+  </data>
+  <data name="Import_OrderNumberTitle" xml:space="preserve">
+    <value>Existing order</value>
+  </data>
+  <data name="Import_OrderNumberMessage" xml:space="preserve">
+    <value>Bexio number of the order to update:</value>
+  </data>
+  <data name="Import_OrderNumberRequired" xml:space="preserve">
+    <value>Please enter an order number.</value>
+  </data>
+  <data name="Import_ReplaceWarningTitle" xml:space="preserve">
+    <value>Delete positions?</value>
+  </data>
+  <data name="Import_ReplaceWarningMessage" xml:space="preserve">
+    <value>All existing positions of order {0} will be deleted in Bexio and replaced by the positions of this file. This cannot be undone. Continue?</value>
+  </data>
+</root>

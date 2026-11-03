@@ -20,6 +20,7 @@
     <ProjectReference Include="..\BexioOrderImport.Domain\BexioOrderImport.Domain.csproj" />
     <ProjectReference Include="..\BexioOrderImport.Format.Peakmile\BexioOrderImport.Format.Peakmile.csproj" />
     <ProjectReference Include="..\BexioOrderImport.Format.EanList\BexioOrderImport.Format.EanList.csproj" />
+    <ProjectReference Include="..\BexioOrderImport.Format.Sgd\BexioOrderImport.Format.Sgd.csproj" />
     <ProjectReference Include="..\BexioOrderImport.Infrastructure\BexioOrderImport.Infrastructure.csproj" />
     <ProjectReference Include="..\BexioOrderImport.Abstractions\BexioOrderImport.Abstractions.csproj" />
     <ProjectReference Include="..\BexioOrderImport.Abstractions.Wpf\BexioOrderImport.Abstractions.Wpf.csproj" />

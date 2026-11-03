@@ -6,6 +6,7 @@ using BexioOrderImport.Abstractions.Bexio;
 using BexioOrderImport.Abstractions.Formats;
 using BexioOrderImport.Format.EanList;
 using BexioOrderImport.Format.Peakmile;
+using BexioOrderImport.Format.Sgd;
 using BexioOrderImport.Infrastructure.Bexio;
 using BexioOrderImport.Wpf.Helpers;
 using BexioOrderImport.Wpf.Services;
@@ -65,6 +66,7 @@ public partial class App : System.Windows.Application
         services.AddSingleton<IBexioServiceFactory, BexioServiceFactory>();
         services.AddFormat<PeakmileFormatAdapter, PeakmileUiProvider>();
         services.AddFormat<EanListFormatAdapter, EanListUiProvider>();
+        services.AddFormat<SgdFormatAdapter, SgdUiProvider>();
         services.AddSingleton<IFormatRegistry, FormatRegistry>();
         services.AddSingleton<FormatUiRegistry>();
         services.AddSingleton<IEncryptionService, DpapiEncryptionService>();

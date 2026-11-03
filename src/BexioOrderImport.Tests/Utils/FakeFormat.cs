@@ -42,6 +42,11 @@ public sealed class FakeFormatAdapter : FormatAdapter<FakeSettings>
     /// </summary>
     public bool UsesExistingOrder { get; set; }
 
+    /// <summary>
+    /// Reports that the positions of the order were deleted before the upload.
+    /// </summary>
+    public bool DeletesPositions { get; set; }
+
     protected override Order Parse(string filePath, FakeSettings settings) => ParseFunc?.Invoke(filePath) ?? ParsedOrder;
 
     /// <summary>
@@ -56,6 +61,10 @@ public sealed class FakeFormatAdapter : FormatAdapter<FakeSettings>
 
         var created = await bexio.CreateOrderAsync(1, order);
         interaction.OrderResolved(created.Id, created.DocumentNr, isNew: !UsesExistingOrder);
+        if (DeletesPositions)
+        {
+            interaction.OrderPositionsDeleted();
+        }
         if (UploadError != null)
         {
             throw UploadError;
