@@ -66,7 +66,7 @@ public class BexioApiClient : IBexioService
 
         var criteria = new[] { new BexioSearchCriteria { Field = field, Value = value.Trim(), Criteria = "=" } };
         var response = await SendWithRateLimitCheckAsync(CreateRequest(HttpMethod.Post, searchUri, JsonBody(criteria)));
-        if (!response.IsSuccessStatusCode) return null;
+        await EnsureSuccessAsync(response, $"Error searching {searchUri} for {field} '{value.Trim()}'");
 
         var results = await response.Content.ReadFromJsonAsync<List<T>>();
         return results?.FirstOrDefault();
@@ -157,10 +157,7 @@ public class BexioApiClient : IBexioService
         {
             var body = JsonBody(criteria);
             var response = await SendWithRateLimitCheckAsync(CreateRequest(HttpMethod.Post, $"2.0/article/search?limit={pageSize}&offset={articles.Count}", body));
-            if (!response.IsSuccessStatusCode)
-            {
-                return [];
-            }
+            await EnsureSuccessAsync(response, "Error searching articles");
 
             var page = await response.Content.ReadFromJsonAsync<List<BexioArticle>>() ?? [];
             articles.AddRange(page);
@@ -191,11 +188,7 @@ public class BexioApiClient : IBexioService
         var request = CreateRequest(HttpMethod.Post, $"2.0/kb_order/{orderId}/kb_position_article", body);
         var response = await SendWithRateLimitCheckAsync(request);
 
-        if (!response.IsSuccessStatusCode)
-        {
-            var errorContent = await response.Content.ReadAsStringAsync();
-            throw new HttpRequestException($"Error adding article position to order {orderId}: {errorContent}", null, response.StatusCode);
-        }
+        await EnsureSuccessAsync(response, $"Error adding article position to order {orderId}");
     }
 
     public async Task AddDiscountPositionAsync(int orderId, decimal discountPercent, string text = "Rabatt")
@@ -211,21 +204,13 @@ public class BexioApiClient : IBexioService
         var request = CreateRequest(HttpMethod.Post, $"2.0/kb_order/{orderId}/kb_position_discount", body);
         var response = await SendWithRateLimitCheckAsync(request);
 
-        if (!response.IsSuccessStatusCode)
-        {
-            var errorContent = await response.Content.ReadAsStringAsync();
-            throw new HttpRequestException($"Error adding discount position to order {orderId}: {errorContent}", null, response.StatusCode);
-        }
+        await EnsureSuccessAsync(response, $"Error adding discount position to order {orderId}");
     }
 
     public async Task<int> DeleteAllPositionsAsync(int orderId)
     {
         var response = await SendWithRateLimitCheckAsync(CreateRequest(HttpMethod.Get, $"2.0/kb_order/{orderId}"));
-        if (!response.IsSuccessStatusCode)
-        {
-            var errorContent = await response.Content.ReadAsStringAsync();
-            throw new HttpRequestException($"Error reading the positions of order {orderId}: {errorContent}", null, response.StatusCode);
-        }
+        await EnsureSuccessAsync(response, $"Error reading the positions of order {orderId}");
 
         var order = await response.Content.ReadFromJsonAsync<BexioOrder>();
         int deleted = 0;
@@ -238,11 +223,7 @@ public class BexioApiClient : IBexioService
             // Positions of a sub position group are deleted with the group
             if (deleteResponse.StatusCode == System.Net.HttpStatusCode.NotFound) continue;
 
-            if (!deleteResponse.IsSuccessStatusCode)
-            {
-                var errorContent = await deleteResponse.Content.ReadAsStringAsync();
-                throw new HttpRequestException($"Error deleting position {position.Id} of order {orderId}: {errorContent}", null, deleteResponse.StatusCode);
-            }
+            await EnsureSuccessAsync(deleteResponse, $"Error deleting position {position.Id} of order {orderId}");
             deleted++;
         }
         return deleted;
@@ -289,6 +270,17 @@ public class BexioApiClient : IBexioService
             _cachedLists[uri] = items;
         }
         return items;
+    }
+
+    /// <summary>
+    /// Throws with the error Bexio returned, so a failed request is never read as an empty result.
+    /// </summary>
+    private static async Task EnsureSuccessAsync(HttpResponseMessage response, string message)
+    {
+        if (response.IsSuccessStatusCode) return;
+
+        string errorContent = await response.Content.ReadAsStringAsync();
+        throw new HttpRequestException($"{message}: {errorContent}", null, response.StatusCode);
     }
 
     private static StringContent JsonBody(object payload) => new(JsonSerializer.Serialize(payload), Encoding.UTF8, "application/json");
