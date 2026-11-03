@@ -63,7 +63,7 @@ _(See section 4 below for mapping detailed coordinates matching the order sheet)
 6. **Position Text Template**: Define the template for the text written to Bexio order positions (default: `Color: {Color}, Size: {Size}`). Supported placeholders are `{Color}`, `{Size}`, `{ArticleNumber}`, `{ArticleName}`, `{BexioArticleName}`, and `{BexioArticleDescription}`. HTML formatting (e.g. `<strong>`, `<br />`) is fully supported by Bexio. You can configure this template within individual mapping profiles.
 
 > [!NOTE]
-> All configuration files are securely saved in your local user directory at `%LocalAppData%\BexioOrderImport\appsettings.json`. They remain fully preserved when the application updates itself to a newer version.
+> All configuration files are securely saved in your local user directory at `%LocalAppData%\BexioOrderImport\appsettings.json`. They remain fully preserved when the application updates itself to a newer version. If the file can't be read (eg. after editing it by hand), the application shows an error and copies it to `appsettings.invalid.json` in the same folder before the next save replaces it. A single profile with invalid settings is kept unchanged and shows an error when it is edited or used.
 
 ---
 

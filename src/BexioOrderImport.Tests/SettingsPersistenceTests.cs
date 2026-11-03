@@ -882,6 +882,61 @@ public class SettingsPersistenceTests : StaTestBase, IDisposable
     }
 
     [Test]
+    public void LoadSettings_WhenInvalidJson_ShouldKeepACopyBeforeTheNextSaveReplacesIt()
+    {
+        RunInSta(() =>
+        {
+            const string corruptJson = "{ invalid json";
+            File.WriteAllText(_tempFilePath, corruptJson);
+            string invalidCopyPath = Path.ChangeExtension(_tempFilePath, ".invalid.json");
+
+            try
+            {
+                var vm = CreateVm();
+                vm.SaveSettingsCommand.Execute(null);
+
+                File.ReadAllText(invalidCopyPath).Should().Be(corruptJson);
+            }
+            finally
+            {
+                try { File.Delete(invalidCopyPath); } catch { }
+            }
+        });
+    }
+
+    [Test]
+    public void SaveSettings_WhenAProfileHasInvalidSettings_ShouldKeepAllProfilesAndTheStoredSettings()
+    {
+        RunInSta(() =>
+        {
+            File.WriteAllText(_tempFilePath, """
+                {
+                  "Bexio": { "ApiToken": "", "Language": "de" },
+                  "ActiveProfileName": "Good",
+                  "Profiles": [
+                    { "Name": "Broken", "Format": "peakmile", "Settings": { "WorksheetIndex": "abc" } },
+                    { "Name": "Good", "Format": "peakmile", "Settings": { "WorksheetIndex": 3 } }
+                  ]
+                }
+                """);
+
+            var vm = CreateVm();
+            vm.Profiles.Select(p => p.Name).Should().Equal("Broken", "Good");
+            vm.Profiles[0].Settings.Should().BeNull();
+            vm.LogText.Should().Contain("Broken");
+
+            vm.BexioToken = "changed";
+            vm.SaveSettingsCommand.Execute(null);
+
+            var dto = JsonSerializer.Deserialize<AppSettingsDto>(File.ReadAllText(_tempFilePath))!;
+            dto.Profiles.Select(p => p.Name).Should().Equal("Broken", "Good");
+            dto.Profiles[0].Settings!.Value.GetProperty("WorksheetIndex").GetString().Should().Be("abc");
+            dto.Profiles[1].Settings!.Value.GetProperty("WorksheetIndex").GetInt32().Should().Be(3);
+            File.Exists(_tempFilePath + ".tmp").Should().BeFalse();
+        });
+    }
+
+    [Test]
     public void SaveSettings_WhenWriteFails_ShouldShowError()
     {
         RunInSta(() =>
