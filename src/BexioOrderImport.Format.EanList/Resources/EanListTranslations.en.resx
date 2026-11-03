@@ -123,8 +123,11 @@
   <data name="Format_Description" xml:space="preserve">
     <value>Simple list with EAN and quantity, the customer number is set in the profile. Articles and prices come from Bexio.</value>
   </data>
-  <data name="Settings_SourceSection" xml:space="preserve">
-    <value>Excel source</value>
+  <data name="Settings_ProfileSection" xml:space="preserve">
+    <value>Profile Information</value>
+  </data>
+  <data name="Settings_ColumnsSection" xml:space="preserve">
+    <value>Excel Columns</value>
   </data>
   <data name="Settings_WorksheetLabel" xml:space="preserve">
     <value>Excel Worksheet Index:</value>
@@ -151,10 +154,13 @@
     <value>Customer Number:</value>
   </data>
   <data name="Settings_CustomerNumberHint" xml:space="preserve">
-    <value>Bexio contact number of the customer. Each customer has its own profile.</value>
+    <value>Bexio contact number of the customer. Each customer has its own profile. Every import creates a new order for this customer number.</value>
+  </data>
+  <data name="Settings_CustomerNumberPlaceholder" xml:space="preserve">
+    <value>001234</value>
   </data>
   <data name="Settings_NumbersHint" xml:space="preserve">
-    <value>Every import creates a new order for the customer number of the profile. Rows with an empty quantity or quantity 0 are ignored. With VE, the quantity times the VE is imported; without a VE column or with an empty cell the VE is 1.</value>
+    <value>Rows with an empty quantity or quantity 0 are ignored. With VE, the quantity times the VE is imported; without a VE column or with an empty cell the VE is 1.</value>
   </data>
   <data name="Settings_TextTemplatesSection" xml:space="preserve">
     <value>Texts &amp; Templates</value>

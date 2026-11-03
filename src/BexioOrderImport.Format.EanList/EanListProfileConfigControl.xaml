@@ -11,27 +11,12 @@
 
     <StackPanel>
 
-        <!-- 1. Excel source -->
+        <!-- 1. Profile information -->
         <Border Style="{StaticResource CardBorderStyle}" Margin="0,0,0,16">
             <StackPanel>
-                <TextBlock Text="{x:Static res:EanListTranslations.Settings_SourceSection}" Style="{StaticResource SectionHeaderTextBlockStyle}"/>
+                <TextBlock Text="{x:Static res:EanListTranslations.Settings_ProfileSection}" Style="{StaticResource SectionHeaderTextBlockStyle}"/>
 
-                <Grid Margin="0,8,0,12">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="200"/>
-                        <ColumnDefinition Width="*"/>
-                    </Grid.ColumnDefinitions>
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="Auto"/>
-                    </Grid.RowDefinitions>
-                    <TextBlock Text="{x:Static res:EanListTranslations.Settings_CustomerNumberLabel}" VerticalAlignment="Center" Margin="0,0,12,0"/>
-                    <TextBox Grid.Column="1" Text="{Binding CustomerNumber, UpdateSourceTrigger=PropertyChanged}" Width="200" HorizontalAlignment="Left"/>
-                    <TextBlock Grid.Row="1" Grid.Column="1" Text="{x:Static res:EanListTranslations.Settings_CustomerNumberHint}"
-                               Style="{StaticResource MutedTextBlockStyle}" FontStyle="Italic" TextWrapping="Wrap" Margin="0,4,0,0"/>
-                </Grid>
-
-                <Grid Margin="0,0,0,8">
+                <Grid Margin="0,8,0,8">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="200"/>
                         <ColumnDefinition Width="*"/>
@@ -56,6 +41,44 @@
                 </Grid>
 
                 <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="200"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+                    <TextBlock Text="{x:Static res:EanListTranslations.Settings_CustomerNumberLabel}" VerticalAlignment="Center" Margin="0,0,12,0"/>
+                    <Grid Grid.Column="1" Width="200" HorizontalAlignment="Left">
+                        <TextBox x:Name="CustomerNumberBox" Text="{Binding CustomerNumber, UpdateSourceTrigger=PropertyChanged}"/>
+                        <!-- Example of the expected input, shown while the box is empty -->
+                        <TextBlock Text="{x:Static res:EanListTranslations.Settings_CustomerNumberPlaceholder}" Margin="11,0,0,0" VerticalAlignment="Center"
+                                   IsHitTestVisible="False" Foreground="{StaticResource TextMutedBrush}" Opacity="0.7">
+                            <TextBlock.Style>
+                                <Style TargetType="TextBlock">
+                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding Text, ElementName=CustomerNumberBox}" Value="">
+                                            <Setter Property="Visibility" Value="Visible"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </TextBlock.Style>
+                        </TextBlock>
+                    </Grid>
+                    <TextBlock Grid.Row="1" Grid.Column="1" Text="{x:Static res:EanListTranslations.Settings_CustomerNumberHint}"
+                               Style="{StaticResource MutedTextBlockStyle}" FontStyle="Italic" TextWrapping="Wrap" Margin="0,4,0,0"/>
+                </Grid>
+            </StackPanel>
+        </Border>
+
+        <!-- 2. Excel columns -->
+        <Border Style="{StaticResource CardBorderStyle}" Margin="0,0,0,16">
+            <StackPanel>
+                <TextBlock Text="{x:Static res:EanListTranslations.Settings_ColumnsSection}" Style="{StaticResource SectionHeaderTextBlockStyle}"/>
+
+                <Grid Margin="0,8,0,0">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*"/>
                         <ColumnDefinition Width="*"/>
@@ -87,7 +110,7 @@
             </StackPanel>
         </Border>
 
-        <!-- 2. Texts and templates -->
+        <!-- 3. Texts and templates -->
         <Border Style="{StaticResource CardBorderStyle}">
             <StackPanel>
                 <TextBlock Text="{x:Static res:EanListTranslations.Settings_TextTemplatesSection}" Style="{StaticResource SectionHeaderTextBlockStyle}"/>

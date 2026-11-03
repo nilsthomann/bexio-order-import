@@ -123,8 +123,11 @@
   <data name="Format_Description" xml:space="preserve">
     <value>Einfache Liste mit EAN und Menge, die Kundennummer steht im Profil. Artikel und Preise kommen aus Bexio.</value>
   </data>
-  <data name="Settings_SourceSection" xml:space="preserve">
-    <value>Excel-Quelle</value>
+  <data name="Settings_ProfileSection" xml:space="preserve">
+    <value>Profil-Informationen</value>
+  </data>
+  <data name="Settings_ColumnsSection" xml:space="preserve">
+    <value>Excel-Spalten</value>
   </data>
   <data name="Settings_WorksheetLabel" xml:space="preserve">
     <value>Excel Arbeitsblatt Index:</value>
@@ -151,10 +154,13 @@
     <value>Kundennummer:</value>
   </data>
   <data name="Settings_CustomerNumberHint" xml:space="preserve">
-    <value>Bexio-Kontaktnummer des Kunden. Pro Kunde gibt es ein eigenes Profil.</value>
+    <value>Bexio-Kontaktnummer des Kunden. Pro Kunde gibt es ein eigenes Profil. Jeder Import erstellt einen neuen Auftrag für diese Kundennummer.</value>
+  </data>
+  <data name="Settings_CustomerNumberPlaceholder" xml:space="preserve">
+    <value>001234</value>
   </data>
   <data name="Settings_NumbersHint" xml:space="preserve">
-    <value>Jeder Import erstellt einen neuen Auftrag für die Kundennummer des Profils. Zeilen mit leerer Menge oder Menge 0 werden ignoriert. Mit VE wird die Menge mal VE importiert; ohne VE-Spalte oder bei leerer Zelle ist die VE 1.</value>
+    <value>Zeilen mit leerer Menge oder Menge 0 werden ignoriert. Mit VE wird die Menge mal VE importiert; ohne VE-Spalte oder bei leerer Zelle ist die VE 1.</value>
   </data>
   <data name="Settings_TextTemplatesSection" xml:space="preserve">
     <value>Texte &amp; Vorlagen</value>

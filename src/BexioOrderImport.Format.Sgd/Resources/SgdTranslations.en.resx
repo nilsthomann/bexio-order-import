@@ -123,8 +123,8 @@
   <data name="Format_Description" xml:space="preserve">
     <value>List with article number, color, size and quantity. The customer number and the order are asked for on import; articles and prices come from Bexio.</value>
   </data>
-  <data name="Settings_SourceSection" xml:space="preserve">
-    <value>Excel source</value>
+  <data name="Settings_ProfileSection" xml:space="preserve">
+    <value>Profile information</value>
   </data>
   <data name="Settings_WorksheetLabel" xml:space="preserve">
     <value>Excel worksheet index:</value>
@@ -153,8 +153,8 @@
   <data name="Settings_RowsHint" xml:space="preserve">
     <value>Rows with an empty quantity or quantity 0 are ignored. The color may start with a color code (eg. 1001 Black).</value>
   </data>
-  <data name="Settings_ArticleSection" xml:space="preserve">
-    <value>Article lookup &amp; discount</value>
+  <data name="Settings_ColumnsSection" xml:space="preserve">
+    <value>Excel columns</value>
   </data>
   <data name="Settings_SeasonCodeLabel" xml:space="preserve">
     <value>Season code:</value>
