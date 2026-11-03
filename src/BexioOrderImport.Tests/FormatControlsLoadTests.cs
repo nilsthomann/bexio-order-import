@@ -1,5 +1,6 @@
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Documents;
 using BexioOrderImport.Domain.Models;
 using BexioOrderImport.Tests.Utils;
 using BexioOrderImport.Wpf.Views;
@@ -66,6 +67,28 @@ public class FormatControlsLoadTests
             clone.FormatInput.IsEnabled.Should().BeFalse();
             create.Close();
             clone.Close();
+        });
+    }
+
+    [Test]
+    public void CustomDialog_ShouldShowBoldPartsAndBulletLines()
+    {
+        RunOnUiThread(() =>
+        {
+            var dialog = new CustomDialog();
+
+            dialog.SetMessage("Order **AU-12** failed.\r\n• 'A1' with color 'Black'\r\n• 'A2'");
+
+            dialog.MessageText.Inlines.Should().HaveCount(3);
+            dialog.MessageText.Inlines.OfType<Bold>().Should().ContainSingle()
+                .Which.Inlines.OfType<Run>().Single().Text.Should().Be("AU-12");
+            dialog.BulletList.ItemsSource.Should().BeEquivalentTo(new List<string> { "'A1' with color 'Black'", "'A2'" });
+            dialog.BulletBox.Visibility.Should().Be(Visibility.Visible);
+
+            dialog.SetMessage("No list");
+            dialog.MessageText.Inlines.OfType<Bold>().Should().BeEmpty();
+            dialog.BulletBox.Visibility.Should().Be(Visibility.Collapsed);
+            dialog.Close();
         });
     }
 

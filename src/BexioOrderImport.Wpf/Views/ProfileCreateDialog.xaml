@@ -14,19 +14,10 @@
 
     <Grid>
         <!-- Backdrop -->
-        <Rectangle Fill="#99000000"/>
+        <Rectangle Fill="{StaticResource DialogBackdropBrush}"/>
 
         <!-- Dialog Card -->
-        <Border Width="440"
-                HorizontalAlignment="Center"
-                VerticalAlignment="Center"
-                Background="{StaticResource BackgroundBrush}"
-                CornerRadius="12"
-                BorderBrush="{StaticResource BorderBrush}"
-                BorderThickness="1">
-            <Border.Effect>
-                <DropShadowEffect Color="#000000" Opacity="0.25" BlurRadius="32" ShadowDepth="8" Direction="270"/>
-            </Border.Effect>
+        <Border Width="440" Style="{StaticResource DialogCardStyle}">
             <Grid>
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto"/>
@@ -34,31 +25,14 @@
                     <RowDefinition Height="Auto"/>
                 </Grid.RowDefinitions>
 
-                <!-- Header -->
-                <Border Grid.Row="0" CornerRadius="12,12,0,0" Padding="20,14"
-                        Background="{StaticResource SidebarBrush}">
-                    <Grid>
-                        <TextBlock x:Name="TitleTextBlock"
-                                   Text="{x:Static lex:Translations.Settings_ProfilesCreateTitle}"
-                                   FontSize="15" FontWeight="SemiBold"
-                                   Foreground="{StaticResource TextBrush}"
-                                   VerticalAlignment="Center"/>
-                        <Button HorizontalAlignment="Right" VerticalAlignment="Center"
-                                Click="Cancel_Click"
-                                Style="{StaticResource SecondaryButtonStyle}"
-                                Width="28" Height="28" Padding="0" BorderThickness="0"
-                                ToolTip="Schliessen">
-                            <Path Data="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"
-                                  Fill="{StaticResource TextMutedBrush}" Stretch="Uniform" Width="12" Height="12"/>
-                        </Button>
-                    </Grid>
-                </Border>
-
-                <!-- Separator -->
-                <Border Grid.Row="1" Height="1" Background="{StaticResource BorderBrush}"/>
+                <!-- Title in the style of the import success dialog, without a title bar -->
+                <StackPanel Grid.Row="0" Margin="0,0,0,20">
+                    <TextBlock x:Name="TitleTextBlock" Text="{x:Static lex:Translations.Settings_ProfilesCreateTitle}" Style="{StaticResource DialogTitleTextBlockStyle}"/>
+                    <TextBlock Text="{x:Static lex:Translations.Settings_ProfilesCreateHint}" Style="{StaticResource MutedTextBlockStyle}" FontSize="13" TextWrapping="Wrap" Margin="0"/>
+                </StackPanel>
 
                 <!-- Body -->
-                <StackPanel Grid.Row="2" Margin="20,16,20,20">
+                <StackPanel Grid.Row="2">
                     <Grid Margin="0,0,0,20">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="Auto"/>

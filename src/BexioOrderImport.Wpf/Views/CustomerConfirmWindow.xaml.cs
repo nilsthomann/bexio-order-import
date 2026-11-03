@@ -10,6 +10,7 @@ public partial class CustomerConfirmWindow : Window
     {
         InitializeComponent();
         DataContext = customer;
+        CustomDialog.SetFormattedText(WarningText, string.Format(System.Globalization.CultureInfo.CurrentCulture, Wpf.Resources.Translations.CustomerConfirm_Warning, customer.Email));
     }
 
     protected override void OnSourceInitialized(EventArgs e)

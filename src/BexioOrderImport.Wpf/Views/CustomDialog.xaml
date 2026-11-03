@@ -7,71 +7,116 @@
         WindowStartupLocation="Manual"
         UseLayoutRounding="True"
         ShowInTaskbar="False">
-    <!-- Full-window backdrop + centered card -->
     <Grid>
-        <!-- Semi-transparent backdrop -->
-        <Rectangle Fill="#99000000"/>
+        <Rectangle Fill="{StaticResource DialogBackdropBrush}"/>
 
-        <!-- Dialog Card -->
-        <Border Width="440"
-                HorizontalAlignment="Center"
-                VerticalAlignment="Center"
-                Background="{StaticResource BackgroundBrush}"
-                CornerRadius="12"
-                BorderBrush="{StaticResource BorderBrush}"
-                BorderThickness="1">
-            <Border.Effect>
-                <DropShadowEffect Color="#000000" Opacity="0.25" BlurRadius="32" ShadowDepth="8" Direction="270"/>
-            </Border.Effect>
-            <Grid>
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="Auto"/>
-                </Grid.RowDefinitions>
+        <!-- Card in the style of the import success dialog -->
+        <Border Width="440" Style="{StaticResource DialogCardStyle}">
+            <StackPanel>
+                <!-- Icon of the dialog type, pops in like the success check -->
+                <Grid Width="64" Height="64" HorizontalAlignment="Center" Margin="0,0,0,20" RenderTransformOrigin="0.5,0.5">
+                    <Grid.RenderTransform>
+                        <ScaleTransform ScaleX="1" ScaleY="1"/>
+                    </Grid.RenderTransform>
+                    <Grid.Triggers>
+                        <EventTrigger RoutedEvent="FrameworkElement.Loaded">
+                            <BeginStoryboard>
+                                <Storyboard>
+                                    <DoubleAnimation Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleX)"
+                                                     From="0.2" To="1.0" Duration="0:0:0.4">
+                                        <DoubleAnimation.EasingFunction>
+                                            <BackEase EasingMode="EaseOut" Amplitude="0.7"/>
+                                        </DoubleAnimation.EasingFunction>
+                                    </DoubleAnimation>
+                                    <DoubleAnimation Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleY)"
+                                                     From="0.2" To="1.0" Duration="0:0:0.4">
+                                        <DoubleAnimation.EasingFunction>
+                                            <BackEase EasingMode="EaseOut" Amplitude="0.7"/>
+                                        </DoubleAnimation.EasingFunction>
+                                    </DoubleAnimation>
+                                </Storyboard>
+                            </BeginStoryboard>
+                        </EventTrigger>
+                    </Grid.Triggers>
+                    <Ellipse x:Name="IconCircle" Width="64" Height="64">
+                        <Ellipse.Effect>
+                            <DropShadowEffect x:Name="IconShadow" Opacity="0.45" BlurRadius="20" ShadowDepth="4" Direction="270"/>
+                        </Ellipse.Effect>
+                    </Ellipse>
+                    <Canvas Width="64" Height="64">
+                        <Path x:Name="IconPath" Stroke="White" StrokeThickness="4.5"
+                              StrokeStartLineCap="Round" StrokeEndLineCap="Round" StrokeLineJoin="Round"/>
+                    </Canvas>
+                </Grid>
 
-                <!-- Header -->
-                <Border Grid.Row="0" CornerRadius="12,12,0,0" Padding="20,14"
-                        Background="{StaticResource SidebarBrush}">
-                    <Grid>
-                        <TextBlock x:Name="TitleText" FontSize="15" FontWeight="SemiBold"
-                                   Foreground="{StaticResource TextBrush}"
-                                   VerticalAlignment="Center"/>
-                        <Button HorizontalAlignment="Right" VerticalAlignment="Center"
-                                Click="CloseButton_Click"
-                                Style="{StaticResource SecondaryButtonStyle}"
-                                Width="28" Height="28" Padding="0" BorderThickness="0"
-                                ToolTip="Schliessen">
-                            <Path Data="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"
-                                  Fill="{StaticResource TextMutedBrush}" Stretch="Uniform" Width="12" Height="12"/>
-                        </Button>
-                    </Grid>
+                <TextBlock x:Name="TitleText" Style="{StaticResource DialogTitleTextBlockStyle}"
+                           HorizontalAlignment="Center" TextAlignment="Center"/>
+                <TextBlock x:Name="MessageText" Style="{StaticResource MutedTextBlockStyle}"
+                           FontSize="13" LineHeight="20" TextWrapping="Wrap" TextAlignment="Center"
+                           HorizontalAlignment="Center" Margin="0,0,0,16"/>
+
+                <!-- Lines of the message that start with "• ", eg. the missing articles of an import -->
+                <Border x:Name="BulletBox" Background="{StaticResource SidebarBrush}"
+                        BorderBrush="{StaticResource BorderBrush}" BorderThickness="1"
+                        CornerRadius="8" Padding="12,8" Margin="0,0,0,16" Visibility="Collapsed">
+                    <ScrollViewer MaxHeight="200" VerticalScrollBarVisibility="Auto">
+                        <ItemsControl x:Name="BulletList">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Grid Margin="0,2">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="14"/>
+                                            <ColumnDefinition Width="*"/>
+                                        </Grid.ColumnDefinitions>
+                                        <TextBlock Text="•" Foreground="{StaticResource TextMutedBrush}"/>
+                                        <TextBlock Grid.Column="1" Text="{Binding}" TextWrapping="Wrap"
+                                                   Foreground="{StaticResource TextBrush}"/>
+                                    </Grid>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </ScrollViewer>
                 </Border>
 
-                <!-- Separator -->
-                <Border Grid.Row="1" Height="1" Background="{StaticResource BorderBrush}"/>
+                <!-- Note with a link, eg. to the Bexio order of a failed import -->
+                <TextBlock x:Name="NoteText" Style="{StaticResource MutedTextBlockStyle}"
+                           FontSize="13" LineHeight="20" TextWrapping="Wrap" TextAlignment="Center"
+                           HorizontalAlignment="Center" Margin="0,0,0,16" Visibility="Collapsed"/>
 
-                <!-- Body -->
-                <StackPanel Grid.Row="2" Margin="20,16,20,20">
-                    <TextBlock x:Name="MessageText" TextWrapping="Wrap" FontSize="13"
-                               Foreground="{StaticResource TextBrush}"
-                               LineHeight="20" Margin="0,0,0,20"/>
-                    <!-- Input dialog: text box with the error of the previous input -->
-                    <TextBox x:Name="InputBox" Height="32" Margin="0,-8,0,8" Visibility="Collapsed"/>
-                    <TextBlock x:Name="InputErrorText" TextWrapping="Wrap" Foreground="{StaticResource ErrorBrush}"
-                               Margin="0,0,0,12" Visibility="Collapsed"/>
-                    <!-- Choice dialog: one button per option -->
-                    <StackPanel x:Name="ChoicePanel" Margin="0,-8,0,12" Visibility="Collapsed"/>
-                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
-                        <Button x:Name="CancelButton" Click="CancelButton_Click"
-                                Style="{StaticResource SecondaryButtonStyle}"
-                                Width="100" Height="34" Margin="0,0,8,0"
-                                Visibility="Collapsed"/>
-                        <Button x:Name="OkButton" Click="OkButton_Click"
-                                Width="100" Height="34"/>
-                    </StackPanel>
+                <!-- Input dialog: text box with the error of the previous input -->
+                <Grid Margin="0,0,0,8" Visibility="{Binding Visibility, ElementName=InputBox}">
+                    <TextBox x:Name="InputBox" Height="36" Visibility="Collapsed"/>
+                    <!-- Example of the expected input, shown while the box is empty -->
+                    <TextBlock x:Name="InputPlaceholder" Margin="11,0,0,0" VerticalAlignment="Center"
+                               IsHitTestVisible="False" Foreground="{StaticResource TextMutedBrush}" Opacity="0.7">
+                        <TextBlock.Style>
+                            <Style TargetType="TextBlock">
+                                <Setter Property="Visibility" Value="Collapsed"/>
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding Text, ElementName=InputBox}" Value="">
+                                        <Setter Property="Visibility" Value="Visible"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </TextBlock.Style>
+                    </TextBlock>
+                </Grid>
+                <TextBlock x:Name="InputErrorText" TextWrapping="Wrap" TextAlignment="Center"
+                           Foreground="{StaticResource ErrorBrush}" Margin="0,0,0,8" Visibility="Collapsed"/>
+
+                <!-- Choice dialog: one button per option -->
+                <StackPanel x:Name="ChoicePanel" Visibility="Collapsed"/>
+
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,8,0,0">
+                    <Button x:Name="CancelButton" Click="CancelButton_Click"
+                            Style="{StaticResource SecondaryButtonStyle}"
+                            Width="140" Height="36" Margin="0,0,8,0"
+                            Visibility="Collapsed"/>
+                    <Button x:Name="OkButton" Click="OkButton_Click"
+                            Style="{StaticResource ModernButtonStyle}"
+                            Width="140" Height="36"/>
                 </StackPanel>
-            </Grid>
+            </StackPanel>
         </Border>
     </Grid>
 </Window>

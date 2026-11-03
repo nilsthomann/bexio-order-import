@@ -59,7 +59,7 @@ public class ProfileManagerServiceTests
         var customP = ProfileTestExtensions.FakeProfile("Custom");
         var profiles = new ObservableCollection<MappingProfile> { defaultP, customP };
 
-        _dialogMock.Setup(d => d.ShowConfirmDialog(It.IsAny<string>(), It.IsAny<string>())).Returns(true);
+        _dialogMock.Setup(d => d.ShowWarningConfirmDialog(It.Is<string>(m => m.Contains("**Custom**")), It.IsAny<string>(), It.IsAny<string>())).Returns(true);
 
         bool result = _service.DeleteProfile(profiles, customP);
 

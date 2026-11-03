@@ -203,7 +203,7 @@ public class ImportOrderUseCaseTests
         Func<Task> act = () => _useCase.ExecuteAsync("test.xlsx", new DelegateImportUserInteractionService(), new PeakmileImportOptions(SeasonCode: "FS26"));
 
         await act.Should().ThrowAsync<InvalidOperationException>()
-            .WithMessage("2 article(s) not found in Bexio with season code 'FS26': 'A1' with color 'Black', 'A2' with color 'Red'. Nothing was changed in Bexio.");
+            .WithMessage($"2 article(s) not found in Bexio with season code 'FS26'. Nothing was changed in Bexio.{Environment.NewLine}• 'A1' with color 'Black'{Environment.NewLine}• 'A2' with color 'Red'");
         _clientMock.Verify(c => c.FindContactByEmailAsync(It.IsAny<string>()), Times.Never);
         _clientMock.Verify(c => c.CreateContactAsync(It.IsAny<Customer>()), Times.Never);
         _clientMock.Verify(c => c.CreateOrderAsync(It.IsAny<int>(), It.IsAny<Order>()), Times.Never);

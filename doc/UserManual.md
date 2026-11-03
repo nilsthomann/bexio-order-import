@@ -191,7 +191,7 @@ The preview depends on the format of the active profile. For Peakmile order form
 
 1. Click **Import to Bexio** in the bottom right corner. A preview of the order data is shown.
 2. **Confirm Upload**:
-   - A confirmation dialog asks if you want to push the order to Bexio.
+   - A confirmation dialog shows the number of positions and the file name and asks if you want to submit the order to Bexio.
    - Click **Yes** to proceed.
 3. **Existing Order Flow (if Order Number provided)**:
    - The application searches for the existing order by `document_nr` in Bexio. If the order is not found, the import is aborted with an error.
@@ -215,8 +215,8 @@ An SGD import asks a few questions after you click **Import to Bexio**. **Cancel
 
 1. **Customer**: Enter the Bexio customer number. If it is empty or not found in Bexio, the dialog asks again and shows why.
 2. **Order**: Choose **Create a new order** or **Update an existing order**.
-3. For an existing order, enter its **order number**, then confirm the warning: **all positions of that order are deleted in Bexio** and replaced by the positions of the file. This cannot be undone.
-4. All articles are searched in Bexio before anything is changed. If articles are missing, the error lists all of them and neither an order is created nor are positions deleted.
+3. For an existing order, enter its **order number**, then confirm the warning with **Continue**: **all positions of that order are deleted in Bexio** and replaced by the positions of the file. This cannot be undone.
+4. All articles are searched in Bexio before anything is changed. If articles are missing, the **Import failed** dialog lists each of them on its own line and neither an order is created nor are positions deleted.
 5. A new order is created for the customer, or the existing order is checked: it must belong to the entered customer number. Then the old positions are deleted (existing order only), the positions of the file are added and the discount position follows.
 
 ---

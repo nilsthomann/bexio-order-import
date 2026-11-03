@@ -41,7 +41,7 @@ public partial class MainViewModel
         if (string.Equals(Path.GetExtension(filePath), ".xls", StringComparison.OrdinalIgnoreCase))
         {
             AppendLog($"⛔ Unsupported file format: {Path.GetFileName(filePath)}");
-            _dialogService.ShowErrorDialog(string.Format(Resources.Translations.Import_XlsNotSupported, Path.GetFileName(filePath)), Resources.Translations.Dialog_ErrorTitle);
+            _dialogService.ShowErrorDialog(string.Format(Resources.Translations.Import_XlsNotSupported, Path.GetFileName(filePath)), Resources.Translations.Import_ReadErrorTitle);
             return;
         }
 
@@ -82,7 +82,7 @@ public partial class MainViewModel
             }
             else
             {
-                _dialogService.ShowErrorDialog(ex.Message, Resources.Translations.Dialog_ErrorTitle);
+                _dialogService.ShowErrorDialog(ex.Message, Resources.Translations.Import_ReadErrorTitle);
             }
         }
         finally
@@ -123,7 +123,7 @@ public partial class MainViewModel
         {
             _dialogService.ShowErrorDialog(
                 Resources.Translations.Error_SelectAccountAndTax,
-                Resources.Translations.Dialog_ErrorTitle);
+                Resources.Translations.Error_SettingsIncompleteTitle);
             return;
         }
 
@@ -199,7 +199,7 @@ public partial class MainViewModel
                 string note = resolved.IsNew ? Resources.Translations.Import_OrderCreatedError
                     : interaction.PositionsDeleted ? Resources.Translations.Import_OrderReplacedError
                     : Resources.Translations.Import_OrderPartlyFilledError;
-                _dialogService.ShowImportErrorDialog(ex.Message, Resources.Translations.Dialog_ErrorTitle, note, resolved.DocumentNr, GetBexioOrderUri(resolved.Id));
+                _dialogService.ShowImportErrorDialog(ex.Message, Resources.Translations.Import_FailedTitle, note, resolved.DocumentNr, GetBexioOrderUri(resolved.Id));
             }
             else if (IsFileLockedException(ex))
             {
@@ -210,7 +210,7 @@ public partial class MainViewModel
             }
             else
             {
-                _dialogService.ShowErrorDialog(ex.Message, Resources.Translations.Dialog_ErrorTitle);
+                _dialogService.ShowErrorDialog(ex.Message, Resources.Translations.Import_FailedTitle);
             }
         }
         finally
@@ -259,7 +259,8 @@ public partial class MainViewModel
         IsImportingActive = false;
         try
         {
-            return _dialogService.ShowConfirmDialog(Resources.Translations.Import_ConfirmMessage, Resources.Translations.Import_ConfirmTitle);
+            string message = string.Format(CultureInfo.CurrentCulture, Resources.Translations.Import_ConfirmMessage, _loadedOrder?.Positions.Count ?? 0, SelectedFileName);
+            return _dialogService.ShowConfirmDialog(message, Resources.Translations.Import_ConfirmTitle);
         }
         finally
         {
@@ -398,14 +399,14 @@ public partial class MainViewModel
 
         public void OrderPositionsDeleted() => PositionsDeleted = true;
 
-        public Task<string?> AskTextAsync(string title, string message, string? errorMessage = null)
-            => _vm.AskDuringImportAsync(() => _vm._dialogService.ShowInputDialog(message, title, errorMessage));
+        public Task<string?> AskTextAsync(string title, string message, string? errorMessage = null, string? placeholder = null)
+            => _vm.AskDuringImportAsync(() => _vm._dialogService.ShowInputDialog(message, title, errorMessage, placeholder));
 
         public Task<int?> ChooseAsync(string title, string message, IReadOnlyList<string> options)
             => _vm.AskDuringImportAsync(() => _vm._dialogService.ShowChoiceDialog(message, title, options));
 
         public Task<bool> ConfirmWarningAsync(string title, string message)
-            => _vm.AskDuringImportAsync(() => _vm._dialogService.ShowConfirmDialog(message, title));
+            => _vm.AskDuringImportAsync(() => _vm._dialogService.ShowWarningConfirmDialog(message, title, Resources.Translations.Dialog_Continue));
 
         public Task<bool> ConfirmUploadAsync() => _vm.ConfirmUploadAsync();
 

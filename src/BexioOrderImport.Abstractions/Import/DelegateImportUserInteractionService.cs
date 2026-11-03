@@ -53,7 +53,7 @@ public class DelegateImportUserInteractionService : IImportUserInteractionServic
     public void LogInfo(string message) => _logInfo?.Invoke(message);
     public void ReportProgress(int current, int total) => _reportProgress?.Invoke(current, total);
     public void OrderResolved(int orderId, string documentNr, bool isNew) => _orderResolved?.Invoke(orderId, documentNr, isNew);
-    public Task<string?> AskTextAsync(string title, string message, string? errorMessage = null) => _askText != null ? _askText(title, message, errorMessage) : Task.FromResult<string?>(null);
+    public Task<string?> AskTextAsync(string title, string message, string? errorMessage = null, string? placeholder = null) => _askText != null ? _askText(title, message, errorMessage) : Task.FromResult<string?>(null);
     public Task<int?> ChooseAsync(string title, string message, IReadOnlyList<string> options) => _choose != null ? _choose(title, message, options) : Task.FromResult<int?>(null);
     public Task<bool> ConfirmWarningAsync(string title, string message) => _confirmWarning != null ? _confirmWarning(title, message) : Task.FromResult(false);
     public void OrderPositionsDeleted() => _orderPositionsDeleted?.Invoke();

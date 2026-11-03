@@ -13,19 +13,10 @@
         ShowInTaskbar="False">
     <Grid>
         <!-- Backdrop -->
-        <Rectangle Fill="#99000000"/>
+        <Rectangle Fill="{StaticResource DialogBackdropBrush}"/>
 
         <!-- Card -->
-        <Border Width="580"
-                HorizontalAlignment="Center"
-                VerticalAlignment="Center"
-                Background="{StaticResource BackgroundBrush}"
-                CornerRadius="12"
-                BorderBrush="{StaticResource BorderBrush}"
-                BorderThickness="1">
-            <Border.Effect>
-                <DropShadowEffect Color="#000000" Opacity="0.25" BlurRadius="32" ShadowDepth="8" Direction="270"/>
-            </Border.Effect>
+        <Border Width="580" Style="{StaticResource DialogCardStyle}">
             <Grid>
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto"/>
@@ -35,34 +26,14 @@
                     <RowDefinition Height="Auto"/>
                 </Grid.RowDefinitions>
 
-                <!-- Header -->
-                <Border Grid.Row="0" CornerRadius="12,12,0,0" Padding="20,14"
-                        Background="{StaticResource SidebarBrush}">
-                    <Grid>
-                        <TextBlock Text="{x:Static lex:Translations.CustomerConfirm_Title}" 
-                                   FontSize="15" FontWeight="SemiBold"
-                                   Foreground="{StaticResource TextBrush}"
-                                   VerticalAlignment="Center"/>
-                        <Button HorizontalAlignment="Right" VerticalAlignment="Center"
-                                Click="CancelButton_Click"
-                                Style="{StaticResource SecondaryButtonStyle}"
-                                Width="28" Height="28" Padding="0" BorderThickness="0"
-                                ToolTip="Schliessen">
-                            <Path Data="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"
-                                  Fill="{StaticResource TextMutedBrush}" Stretch="Uniform" Width="12" Height="12"/>
-                        </Button>
-                    </Grid>
-                </Border>
-
-                <!-- Separator -->
-                <Border Grid.Row="1" Height="1" Background="{StaticResource BorderBrush}"/>
+                <!-- Title in the style of the import success dialog, without a title bar -->
+                <StackPanel Grid.Row="0" Margin="0,0,0,20">
+                    <TextBlock Text="{x:Static lex:Translations.CustomerConfirm_Title}" Style="{StaticResource DialogTitleTextBlockStyle}"/>
+                    <TextBlock x:Name="WarningText" Style="{StaticResource MutedTextBlockStyle}" FontSize="13" TextWrapping="Wrap" Margin="0"/>
+                </StackPanel>
 
                 <!-- Body Content -->
-                <StackPanel Grid.Row="2" Margin="20,16,20,0">
-                    <TextBlock Text="{x:Static lex:Translations.CustomerConfirm_Warning}" 
-                               Style="{StaticResource MutedTextBlockStyle}" 
-                               TextWrapping="Wrap" Margin="0,0,0,16"/>
-                    
+                <StackPanel Grid.Row="2">
                     <Border Style="{StaticResource CardBorderStyle}" Margin="0" Padding="12">
                         <Grid>
                             <Grid.ColumnDefinitions>
@@ -95,11 +66,8 @@
                     </Border>
                 </StackPanel>
 
-                <!-- Bottom Separator -->
-                <Border Grid.Row="3" Height="1" Background="{StaticResource BorderBrush}" Margin="0,16,0,0"/>
-
                 <!-- Footer Actions -->
-                <StackPanel Grid.Row="4" Orientation="Horizontal" HorizontalAlignment="Right" Margin="20,12,20,16">
+                <StackPanel Grid.Row="4" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,24,0,0">
                     <Button Content="{x:Static lex:Translations.CustomerConfirm_CancelButton}" 
                             Click="CancelButton_Click"
                             Style="{StaticResource SecondaryButtonStyle}" 

@@ -200,7 +200,8 @@ public class PeakmileImporter
         {
             string seasonCodes = string.Join("', '", allSeasonCodes);
             throw new InvalidOperationException(
-                $"{missing.Count} article(s) not found in Bexio with season code '{seasonCodes}': {string.Join(", ", missing)}. Nothing was changed in Bexio.");
+                $"{missing.Count} article(s) not found in Bexio with season code '{seasonCodes}'. Nothing was changed in Bexio.{Environment.NewLine}"
+                + string.Join(Environment.NewLine, missing.Select(m => $"• {m}")));
         }
         return articles;
     }

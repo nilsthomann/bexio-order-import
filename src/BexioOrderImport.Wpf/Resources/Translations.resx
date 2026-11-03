@@ -172,12 +172,12 @@
     <value>Datei wird verwendet</value>
   </data>
   <data name="Import_XlsNotSupported" xml:space="preserve">
-    <value>Die Datei "{0}" ist im alten Excel-Format (.xls), das nicht unterstützt wird.
+    <value>Die Datei **{0}** ist im alten Excel-Format (.xls), das nicht unterstützt wird.
 
 Bitte speichern Sie die Datei in Excel als .xlsx und laden Sie sie erneut.</value>
   </data>
   <data name="Import_FileLockedMessage" xml:space="preserve">
-    <value>Die Datei "{0}" kann nicht geöffnet werden, da sie von einem anderen Programm (z.B. Microsoft Excel) verwendet wird.
+    <value>Die Datei **{0}** kann nicht geöffnet werden, da sie von einem anderen Programm (z.B. Microsoft Excel) verwendet wird.
 
 Bitte schliessen Sie die Datei in Excel und versuchen Sie es erneut.</value>
   </data>
@@ -212,7 +212,7 @@ Bitte schliessen Sie die Datei in Excel und versuchen Sie es erneut.</value>
     <value>Neuer Kunde in Bexio anlegen?</value>
   </data>
   <data name="CustomerConfirm_Warning" xml:space="preserve">
-    <value>Ein Kunde mit dieser E-Mail wurde in Bexio nicht gefunden. Soll ein neuer Kontakt erstellt werden?</value>
+    <value>Für **{0}** wurde in Bexio kein Kunde gefunden. Soll ein neuer Kontakt mit diesen Angaben erstellt werden?</value>
   </data>
   <data name="CustomerConfirm_CreateButton" xml:space="preserve">
     <value>Kunde erstellen &amp; fortfahren</value>
@@ -236,19 +236,16 @@ Bitte schliessen Sie die Datei in Excel und versuchen Sie es erneut.</value>
     <value>E-Mail</value>
   </data>
   <data name="Import_ConfirmTitle" xml:space="preserve">
-    <value>Auftrag übermitteln?</value>
+    <value>Auftrag an Bexio übermitteln?</value>
   </data>
   <data name="Import_ConfirmMessage" xml:space="preserve">
-    <value>Möchten Sie diese Auftrag jetzt an Bexio übermitteln?</value>
+    <value>Sollen die **{0} Positionen** aus **{1}** an Bexio übermittelt werden?</value>
   </data>
   <data name="Settings_ErrorLoad" xml:space="preserve">
-    <value>Fehler beim Laden der Einstellungen</value>
+    <value>Einstellungen konnten nicht geladen werden</value>
   </data>
   <data name="Settings_ErrorSave" xml:space="preserve">
-    <value>Fehler beim Speichern der Einstellungen</value>
-  </data>
-  <data name="Settings_ErrorTitle" xml:space="preserve">
-    <value>Fehler</value>
+    <value>Einstellungen konnten nicht gespeichert werden</value>
   </data>
   <data name="Settings_LanguageSection" xml:space="preserve">
     <value>Sprachen</value>
@@ -323,7 +320,7 @@ Bitte schliessen Sie die Datei in Excel und versuchen Sie es erneut.</value>
     <value>Profil löschen</value>
   </data>
   <data name="Confirm_DeleteProfileMessage" xml:space="preserve">
-    <value>Möchten Sie das Profil '{0}' wirklich löschen? Diese Aktion kann nicht rückgängig gemacht werden.</value>
+    <value>Möchten Sie das Profil **{0}** wirklich löschen? Diese Aktion kann nicht rückgängig gemacht werden.</value>
   </data>
   <data name="Dialog_ImportInvalidFormat" xml:space="preserve">
     <value>Ungültiges Format: Das Root-Element muss ein JSON-Array sein.</value>
@@ -389,13 +386,13 @@ Bitte schliessen Sie die Datei in Excel und versuchen Sie es erneut.</value>
     <value>Bitte wählen Sie ein Standard-Konto, einen Standard-Steuersatz und eine Zahlungsart in den Einstellungen.</value>
   </data>
   <data name="Error_FormatUnavailable" xml:space="preserve">
-    <value>Das Format '{0}' des aktiven Profils ist in dieser Version nicht verfügbar.</value>
+    <value>Das Format **{0}** des aktiven Profils ist in dieser Version nicht verfügbar.</value>
   </data>
   <data name="Import_EmailMismatchTitle" xml:space="preserve">
-    <value>E-Mail Abweichung</value>
+    <value>E-Mail stimmt nicht überein</value>
   </data>
   <data name="Import_EmailMismatchMessage" xml:space="preserve">
-    <value>Die E-Mail des Bexio-Auftrags ({0}) stimmt nicht mit der E-Mail im Excel ({1}) überein. Möchten Sie den Import trotzdem fortsetzen?</value>
+    <value>Die E-Mail des Bexio-Auftrags (**{0}**) stimmt nicht mit der E-Mail im Excel (**{1}**) überein. Möchten Sie den Import trotzdem fortsetzen?</value>
   </data>
   <data name="Import_ProgressTime" xml:space="preserve">
     <value>Verstrichen: {0} | Verbleibend: {1}</value>
@@ -432,5 +429,41 @@ Bitte schliessen Sie die Datei in Excel und versuchen Sie es erneut.</value>
   </data>
   <data name="Settings_FormatUnavailable" xml:space="preserve">
     <value>{0} (nicht verfügbar)</value>
+  </data>
+  <data name="Dialog_SettingsSavedTitle" xml:space="preserve">
+    <value>Einstellungen gespeichert</value>
+  </data>
+  <data name="Dialog_ExportSuccessTitle" xml:space="preserve">
+    <value>Profile exportiert</value>
+  </data>
+  <data name="Dialog_ImportSuccessTitle" xml:space="preserve">
+    <value>Profile importiert</value>
+  </data>
+  <data name="Dialog_ExportErrorTitle" xml:space="preserve">
+    <value>Profile konnten nicht exportiert werden</value>
+  </data>
+  <data name="Dialog_ImportErrorTitle" xml:space="preserve">
+    <value>Profile konnten nicht importiert werden</value>
+  </data>
+  <data name="Dialog_Delete" xml:space="preserve">
+    <value>Löschen</value>
+  </data>
+  <data name="Dialog_Continue" xml:space="preserve">
+    <value>Fortfahren</value>
+  </data>
+  <data name="Error_SettingsIncompleteTitle" xml:space="preserve">
+    <value>Einstellungen unvollständig</value>
+  </data>
+  <data name="Import_FailedTitle" xml:space="preserve">
+    <value>Import fehlgeschlagen</value>
+  </data>
+  <data name="Import_ReadErrorTitle" xml:space="preserve">
+    <value>Datei konnte nicht gelesen werden</value>
+  </data>
+  <data name="Settings_ProfilesCreateHint" xml:space="preserve">
+    <value>Geben Sie dem Profil einen Namen und wählen Sie das Format der Excel-Datei.</value>
+  </data>
+  <data name="Settings_ProfilesEditHint" xml:space="preserve">
+    <value>Passen Sie an, wie die Excel-Datei gelesen und in Bexio importiert wird.</value>
   </data>
 </root>

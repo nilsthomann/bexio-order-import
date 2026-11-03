@@ -280,10 +280,10 @@
     <value>Artikel und Preise werden beim Import aus Bexio übernommen.</value>
   </data>
   <data name="Import_CustomerTitle" xml:space="preserve">
-    <value>Kunde</value>
+    <value>Für welchen Kunden ist die Bestellung?</value>
   </data>
   <data name="Import_CustomerMessage" xml:space="preserve">
-    <value>Bexio-Kundennummer für diese Bestellung:</value>
+    <value>Geben Sie die Bexio-Kundennummer ein.</value>
   </data>
   <data name="Import_CustomerRequired" xml:space="preserve">
     <value>Bitte geben Sie eine Kundennummer ein.</value>
@@ -292,10 +292,10 @@
     <value>Der Kunde {0} wurde in Bexio nicht gefunden.</value>
   </data>
   <data name="Import_OrderChoiceTitle" xml:space="preserve">
-    <value>Auftrag</value>
+    <value>Auftrag erstellen oder aktualisieren?</value>
   </data>
   <data name="Import_OrderChoiceMessage" xml:space="preserve">
-    <value>Kunde: {0}. Möchten Sie einen neuen Auftrag erstellen oder einen bestehenden Auftrag aktualisieren?</value>
+    <value>Soll für den Kunden **{0}** ein neuer Auftrag erstellt oder ein bestehender Auftrag aktualisiert werden?</value>
   </data>
   <data name="Import_NewOrder" xml:space="preserve">
     <value>Neuen Auftrag erstellen</value>
@@ -304,18 +304,18 @@
     <value>Bestehenden Auftrag aktualisieren</value>
   </data>
   <data name="Import_OrderNumberTitle" xml:space="preserve">
-    <value>Bestehender Auftrag</value>
+    <value>Welcher Auftrag soll aktualisiert werden?</value>
   </data>
   <data name="Import_OrderNumberMessage" xml:space="preserve">
-    <value>Bexio-Auftragsnummer, die aktualisiert werden soll:</value>
+    <value>Die Positionen werden durch die Positionen dieser Datei ersetzt.</value>
   </data>
   <data name="Import_OrderNumberRequired" xml:space="preserve">
     <value>Bitte geben Sie eine Auftragsnummer ein.</value>
   </data>
   <data name="Import_ReplaceWarningTitle" xml:space="preserve">
-    <value>Positionen löschen?</value>
+    <value>Positionen von Auftrag {0} ersetzen?</value>
   </data>
   <data name="Import_ReplaceWarningMessage" xml:space="preserve">
-    <value>Alle bestehenden Positionen des Auftrags {0} werden in Bexio gelöscht und durch die Positionen dieser Datei ersetzt. Dies kann nicht rückgängig gemacht werden. Fortfahren?</value>
+    <value>Alle bestehenden Positionen des Auftrags **{0}** werden in Bexio gelöscht und durch die Positionen dieser Datei ersetzt. Dies kann nicht rückgängig gemacht werden.</value>
   </data>
 </root>
