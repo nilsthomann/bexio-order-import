@@ -542,6 +542,28 @@ public class BexioApiClientTests
     }
 
     [Test]
+    public async Task CheckConnectionAsync_WhenAlwaysRateLimited_ShouldStopAfterTheLastRetry()
+    {
+        int attempt = 0;
+        var handler = new MockHttpMessageHandler
+        {
+            SendAsyncFunc = (req, token) =>
+            {
+                attempt++;
+                var response429 = new HttpResponseMessage((HttpStatusCode)429);
+                response429.Headers.Add("ratelimit-reset", "1");
+                return Task.FromResult(response429);
+            }
+        };
+        var client = new BexioApiClient(new HttpClient(handler), "dummy-token", 1, 1);
+
+        var connected = await client.CheckConnectionAsync();
+
+        connected.Should().BeFalse();
+        attempt.Should().Be(BexioApiClient.MaxRateLimitRetries + 1);
+    }
+
+    [Test]
     public async Task GetAccountsAsync_ShouldCacheResultsOnConsecutiveCalls()
     {
         int callCount = 0;
