@@ -1,4 +1,3 @@
-using System.IO;
 using BexioOrderImport.Abstractions.Bexio;
 using BexioOrderImport.Abstractions.Import;
 using BexioOrderImport.Domain.Models;
@@ -8,39 +7,13 @@ namespace BexioOrderImport.Format.Peakmile;
 
 public class PeakmileImporter
 {
-    private readonly IExcelParser? _excelParser;
     private readonly IBexioService _bexioClient;
     private readonly IPeakmileArticleMatcher _articleMatcher;
 
     public PeakmileImporter(IBexioService bexioClient, IPeakmileArticleMatcher? articleMatcher = null)
-        : this(excelParser: null, bexioClient: bexioClient, articleMatcher: articleMatcher)
     {
-    }
-
-    public PeakmileImporter(IExcelParser? excelParser, IBexioService bexioClient, IPeakmileArticleMatcher? articleMatcher = null)
-    {
-        _excelParser = excelParser;
         _bexioClient = bexioClient ?? throw new ArgumentNullException(nameof(bexioClient));
         _articleMatcher = articleMatcher ?? new PeakmileArticleMatcher(bexioClient);
-    }
-
-    public async Task<ImportResult> ExecuteAsync(
-        string filePath,
-        IImportUserInteractionService interaction,
-        PeakmileImportOptions? options = null)
-    {
-        ArgumentNullException.ThrowIfNull(interaction);
-
-        if (_excelParser == null)
-        {
-            throw new InvalidOperationException("IExcelParser is required to parse order from file path.");
-        }
-
-        interaction.LogInfo($"Reading Excel file: {Path.GetFileName(filePath)}...");
-        var order = _excelParser.ParseOrderForm(filePath);
-        interaction.ShowPreview(order);
-
-        return await ExecuteAsync(order, interaction, options);
     }
 
     public async Task<ImportResult> ExecuteAsync(

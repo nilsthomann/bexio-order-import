@@ -147,8 +147,7 @@ public class PeakmileFormatAdapterTests
             SeasonFallbackCodes = ["NOOS"],
             PositionGroupingMode = PositionGroupingMode.GroupedSizePosition,
             GroupedPositionTextTemplate = "{SizesRows}",
-            DiscountPositionTextTemplate = "Discount {DiscountInPercent}",
-            SizeRowTemplate = "{Amount} x {Size}"
+            DiscountPositionTextTemplate = "Discount {DiscountInPercent}"
         };
 
         var options = PeakmileFormatAdapter.CreateImportOptions(settings);
@@ -158,7 +157,6 @@ public class PeakmileFormatAdapterTests
             SeasonCode: "HW26",
             PositionTextTemplate: "{SizesRows}",
             DiscountPositionTextTemplate: "Discount {DiscountInPercent}",
-            SizeRowTemplate: "{Amount} x {Size}",
             SeasonFallbackCodes: ["NOOS"]));
     }
 }

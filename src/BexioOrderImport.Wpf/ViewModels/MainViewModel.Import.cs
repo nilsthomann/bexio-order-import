@@ -393,8 +393,6 @@ public partial class MainViewModel
 
         public bool PositionsDeleted { get; private set; }
 
-        public void ShowPreview(Order order) { }
-
         public void OrderResolved(int orderId, string documentNr, bool isNew) => ResolvedOrder = (orderId, documentNr, isNew);
 
         public void OrderPositionsDeleted() => PositionsDeleted = true;
