@@ -69,10 +69,11 @@ _(See section 4 below for mapping detailed coordinates matching the order sheet)
 
 ## 4. Understanding the Excel Order Template
 
-Each profile uses one of two import formats:
+Each profile uses one of three import formats:
 
 - **Peakmile order form**: complex order forms with a size matrix, described below.
 - **EAN list**: a simple list with EAN and quantity for one customer, see [EAN List Format](#ean-list-format).
+- **SGD (Sports Group Denmark)**: a list with article number, color, size and quantity, see [SGD Format](#sgd-format-sports-group-denmark).
 
 The Peakmile importer is built to parse complex order forms that list article rows horizontally but expand size quantities vertically (as a matrix).
 
@@ -250,6 +251,18 @@ The **Import formats** card on the **Settings** tab lists all formats installed 
 2. Click **Edit** to open the profile editor dialog. The format is shown but can't be changed.
 3. Modify the desired values. Invalid numbers (eg. a row of 0) are reported when saving.
 4. Confirm with **Save**, or **Cancel** to discard all changes.
+
+### Profile editor
+
+The editor starts with the profile name and the format. Below follow the settings of the format, grouped in cards. All formats start with **Profile Information** and end with the order name and position text templates:
+
+| Format | Cards and settings |
+|---|---|
+| Peakmile order form | **Profile Information**: worksheet index, season code, season fallback codes. **Header Coordinates (Cells)**: customer, address, email, buyer, payment terms, discount, optional order and customer number. **Size Matrix**: rows and columns of the size headers. **Article Grid Columns**: first data row and the article columns. **Text Templates & Formatting**. |
+| EAN list | **Profile Information**: worksheet index, first data row, customer number (eg. `001234`; every import creates a new order for it). **Excel Columns**: EAN, quantity and the optional VE column. **Texts & Templates**: order name and position text. |
+| SGD (Sports Group Denmark) | **Profile Information**: worksheet index, season code, season fallback codes, first data row, discount in %. **Excel Columns**: article number, article name, color, size, quantity. **Texts & Templates**: order name, position creation and position texts. |
+
+The settings are described in [section 4](#4-understanding-the-excel-order-template).
 
 ### Set a profile as active
 

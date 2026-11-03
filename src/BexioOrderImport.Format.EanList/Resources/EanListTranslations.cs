@@ -10,7 +10,8 @@ public static class EanListTranslations
 
     public static string Format_DisplayName => ResourceManager.GetString(nameof(Format_DisplayName)) ?? string.Empty;
     public static string Format_Description => ResourceManager.GetString(nameof(Format_Description)) ?? string.Empty;
-    public static string Settings_SourceSection => ResourceManager.GetString(nameof(Settings_SourceSection)) ?? string.Empty;
+    public static string Settings_ProfileSection => ResourceManager.GetString(nameof(Settings_ProfileSection)) ?? string.Empty;
+    public static string Settings_ColumnsSection => ResourceManager.GetString(nameof(Settings_ColumnsSection)) ?? string.Empty;
     public static string Settings_WorksheetLabel => ResourceManager.GetString(nameof(Settings_WorksheetLabel)) ?? string.Empty;
     public static string Settings_StartRowLabel => ResourceManager.GetString(nameof(Settings_StartRowLabel)) ?? string.Empty;
     public static string Settings_StartRowHint => ResourceManager.GetString(nameof(Settings_StartRowHint)) ?? string.Empty;
@@ -20,6 +21,7 @@ public static class EanListTranslations
     public static string Settings_SalesUnitColumn => ResourceManager.GetString(nameof(Settings_SalesUnitColumn)) ?? string.Empty;
     public static string Settings_CustomerNumberLabel => ResourceManager.GetString(nameof(Settings_CustomerNumberLabel)) ?? string.Empty;
     public static string Settings_CustomerNumberHint => ResourceManager.GetString(nameof(Settings_CustomerNumberHint)) ?? string.Empty;
+    public static string Settings_CustomerNumberPlaceholder => ResourceManager.GetString(nameof(Settings_CustomerNumberPlaceholder)) ?? string.Empty;
     public static string Settings_NumbersHint => ResourceManager.GetString(nameof(Settings_NumbersHint)) ?? string.Empty;
     public static string Settings_TextTemplatesSection => ResourceManager.GetString(nameof(Settings_TextTemplatesSection)) ?? string.Empty;
     public static string Settings_DefaultOrderNameLabel => ResourceManager.GetString(nameof(Settings_DefaultOrderNameLabel)) ?? string.Empty;

@@ -11,10 +11,10 @@
 
     <StackPanel>
 
-        <!-- 1. Excel source -->
+        <!-- 1. Profile information -->
         <Border Style="{StaticResource CardBorderStyle}" Margin="0,0,0,16">
             <StackPanel>
-                <TextBlock Text="{x:Static res:SgdTranslations.Settings_SourceSection}" Style="{StaticResource SectionHeaderTextBlockStyle}"/>
+                <TextBlock Text="{x:Static res:SgdTranslations.Settings_ProfileSection}" Style="{StaticResource SectionHeaderTextBlockStyle}"/>
 
                 <Grid Margin="0,8,0,8">
                     <Grid.ColumnDefinitions>
@@ -34,6 +34,36 @@
                         <RowDefinition Height="Auto"/>
                         <RowDefinition Height="Auto"/>
                     </Grid.RowDefinitions>
+                    <TextBlock Text="{x:Static res:SgdTranslations.Settings_SeasonCodeLabel}" VerticalAlignment="Center" Margin="0,0,12,0"/>
+                    <TextBox Grid.Column="1" Text="{Binding SeasonCode, UpdateSourceTrigger=PropertyChanged}" Width="200" HorizontalAlignment="Left"/>
+                    <TextBlock Grid.Row="1" Grid.Column="1" Text="{x:Static res:SgdTranslations.Settings_SeasonCodeHint}"
+                               Style="{StaticResource MutedTextBlockStyle}" FontStyle="Italic" TextWrapping="Wrap" Margin="0,4,0,0"/>
+                </Grid>
+
+                <Grid Margin="0,0,0,12">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="200"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+                    <TextBlock Text="{x:Static res:SgdTranslations.Settings_SeasonFallbackCodesLabel}" VerticalAlignment="Center" Margin="0,0,12,0"/>
+                    <TextBox Grid.Column="1" Text="{Binding SeasonFallbackCodes, UpdateSourceTrigger=PropertyChanged}" Width="200" HorizontalAlignment="Left"/>
+                    <TextBlock Grid.Row="1" Grid.Column="1" Text="{x:Static res:SgdTranslations.Settings_SeasonFallbackCodesHint}"
+                               Style="{StaticResource MutedTextBlockStyle}" FontStyle="Italic" Margin="0,4,0,0"/>
+                </Grid>
+
+                <Grid Margin="0,0,0,12">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="200"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
                     <TextBlock Text="{x:Static res:SgdTranslations.Settings_StartRowLabel}" VerticalAlignment="Center" Margin="0,0,12,0"/>
                     <TextBox Grid.Column="1" Text="{Binding StartRow, UpdateSourceTrigger=PropertyChanged}" Width="100" HorizontalAlignment="Left"/>
                     <TextBlock Grid.Row="1" Grid.Column="1" Text="{x:Static res:SgdTranslations.Settings_StartRowHint}"
@@ -41,6 +71,28 @@
                 </Grid>
 
                 <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="200"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+                    <TextBlock Text="{x:Static res:SgdTranslations.Settings_DiscountLabel}" VerticalAlignment="Center" Margin="0,0,12,0"/>
+                    <TextBox Grid.Column="1" Text="{Binding DiscountPercent, UpdateSourceTrigger=PropertyChanged}" Width="100" HorizontalAlignment="Left"/>
+                    <TextBlock Grid.Row="1" Grid.Column="1" Text="{x:Static res:SgdTranslations.Settings_DiscountHint}"
+                               Style="{StaticResource MutedTextBlockStyle}" FontStyle="Italic" TextWrapping="Wrap" Margin="0,4,0,0"/>
+                </Grid>
+            </StackPanel>
+        </Border>
+
+        <!-- 2. Excel columns -->
+        <Border Style="{StaticResource CardBorderStyle}" Margin="0,0,0,16">
+            <StackPanel>
+                <TextBlock Text="{x:Static res:SgdTranslations.Settings_ColumnsSection}" Style="{StaticResource SectionHeaderTextBlockStyle}"/>
+
+                <Grid Margin="0,8,0,0">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*"/>
                         <ColumnDefinition Width="*"/>
@@ -73,58 +125,6 @@
 
                 <TextBlock Text="{x:Static res:SgdTranslations.Settings_RowsHint}" Style="{StaticResource MutedTextBlockStyle}"
                            FontStyle="Italic" TextWrapping="Wrap" Margin="0,8,0,0"/>
-            </StackPanel>
-        </Border>
-
-        <!-- 2. Article lookup and discount -->
-        <Border Style="{StaticResource CardBorderStyle}" Margin="0,0,0,16">
-            <StackPanel>
-                <TextBlock Text="{x:Static res:SgdTranslations.Settings_ArticleSection}" Style="{StaticResource SectionHeaderTextBlockStyle}"/>
-
-                <Grid Margin="0,8,0,12">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="200"/>
-                        <ColumnDefinition Width="*"/>
-                    </Grid.ColumnDefinitions>
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="Auto"/>
-                    </Grid.RowDefinitions>
-                    <TextBlock Text="{x:Static res:SgdTranslations.Settings_SeasonCodeLabel}" VerticalAlignment="Center" Margin="0,0,12,0"/>
-                    <TextBox Grid.Column="1" Text="{Binding SeasonCode, UpdateSourceTrigger=PropertyChanged}" Width="200" HorizontalAlignment="Left"/>
-                    <TextBlock Grid.Row="1" Grid.Column="1" Text="{x:Static res:SgdTranslations.Settings_SeasonCodeHint}"
-                               Style="{StaticResource MutedTextBlockStyle}" FontStyle="Italic" TextWrapping="Wrap" Margin="0,4,0,0"/>
-                </Grid>
-
-                <Grid Margin="0,0,0,12">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="200"/>
-                        <ColumnDefinition Width="*"/>
-                    </Grid.ColumnDefinitions>
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="Auto"/>
-                    </Grid.RowDefinitions>
-                    <TextBlock Text="{x:Static res:SgdTranslations.Settings_SeasonFallbackCodesLabel}" VerticalAlignment="Center" Margin="0,0,12,0"/>
-                    <TextBox Grid.Column="1" Text="{Binding SeasonFallbackCodes, UpdateSourceTrigger=PropertyChanged}" Width="200" HorizontalAlignment="Left"/>
-                    <TextBlock Grid.Row="1" Grid.Column="1" Text="{x:Static res:SgdTranslations.Settings_SeasonFallbackCodesHint}"
-                               Style="{StaticResource MutedTextBlockStyle}" FontStyle="Italic" Margin="0,4,0,0"/>
-                </Grid>
-
-                <Grid>
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="200"/>
-                        <ColumnDefinition Width="*"/>
-                    </Grid.ColumnDefinitions>
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="Auto"/>
-                    </Grid.RowDefinitions>
-                    <TextBlock Text="{x:Static res:SgdTranslations.Settings_DiscountLabel}" VerticalAlignment="Center" Margin="0,0,12,0"/>
-                    <TextBox Grid.Column="1" Text="{Binding DiscountPercent, UpdateSourceTrigger=PropertyChanged}" Width="100" HorizontalAlignment="Left"/>
-                    <TextBlock Grid.Row="1" Grid.Column="1" Text="{x:Static res:SgdTranslations.Settings_DiscountHint}"
-                               Style="{StaticResource MutedTextBlockStyle}" FontStyle="Italic" TextWrapping="Wrap" Margin="0,4,0,0"/>
-                </Grid>
             </StackPanel>
         </Border>
 

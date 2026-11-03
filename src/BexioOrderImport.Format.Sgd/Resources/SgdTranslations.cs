@@ -10,7 +10,7 @@ public static class SgdTranslations
 
     public static string Format_DisplayName => ResourceManager.GetString(nameof(Format_DisplayName)) ?? string.Empty;
     public static string Format_Description => ResourceManager.GetString(nameof(Format_Description)) ?? string.Empty;
-    public static string Settings_SourceSection => ResourceManager.GetString(nameof(Settings_SourceSection)) ?? string.Empty;
+    public static string Settings_ProfileSection => ResourceManager.GetString(nameof(Settings_ProfileSection)) ?? string.Empty;
     public static string Settings_WorksheetLabel => ResourceManager.GetString(nameof(Settings_WorksheetLabel)) ?? string.Empty;
     public static string Settings_StartRowLabel => ResourceManager.GetString(nameof(Settings_StartRowLabel)) ?? string.Empty;
     public static string Settings_StartRowHint => ResourceManager.GetString(nameof(Settings_StartRowHint)) ?? string.Empty;
@@ -20,7 +20,7 @@ public static class SgdTranslations
     public static string Settings_SizeColumn => ResourceManager.GetString(nameof(Settings_SizeColumn)) ?? string.Empty;
     public static string Settings_QuantityColumn => ResourceManager.GetString(nameof(Settings_QuantityColumn)) ?? string.Empty;
     public static string Settings_RowsHint => ResourceManager.GetString(nameof(Settings_RowsHint)) ?? string.Empty;
-    public static string Settings_ArticleSection => ResourceManager.GetString(nameof(Settings_ArticleSection)) ?? string.Empty;
+    public static string Settings_ColumnsSection => ResourceManager.GetString(nameof(Settings_ColumnsSection)) ?? string.Empty;
     public static string Settings_SeasonCodeLabel => ResourceManager.GetString(nameof(Settings_SeasonCodeLabel)) ?? string.Empty;
     public static string Settings_SeasonCodeHint => ResourceManager.GetString(nameof(Settings_SeasonCodeHint)) ?? string.Empty;
     public static string Settings_SeasonFallbackCodesLabel => ResourceManager.GetString(nameof(Settings_SeasonFallbackCodesLabel)) ?? string.Empty;
