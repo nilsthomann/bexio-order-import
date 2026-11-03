@@ -19,9 +19,7 @@ public class BexioApiClient : IBexioService
     private readonly string _language;
 
     private readonly Lock _cacheLock = new();
-    private List<BexioAccount>? _cachedAccounts;
-    private List<BexioTax>? _cachedTaxes;
-    private List<BexioPaymentType>? _cachedPaymentTypes;
+    private readonly Dictionary<string, object> _cachedLists = [];
     private List<BexioArticle> _cachedArticles = [];
 
     public BexioApiClient(HttpClient httpClient, string apiToken, int? accountId, int? taxId, string language = "de", int? paymentTypeId = null)
@@ -53,74 +51,25 @@ public class BexioApiClient : IBexioService
         return request;
     }
 
-    public async Task<BexioContact?> FindContactByNrAsync(string customerNumber)
+    public Task<BexioContact?> FindContactByNrAsync(string customerNumber) => SearchFirstAsync<BexioContact>("2.0/contact/search", "nr", customerNumber);
+
+    public Task<BexioOrder?> FindOrderByDocumentNrAsync(string orderNumber) => SearchFirstAsync<BexioOrder>("2.0/kb_order/search", "document_nr", orderNumber);
+
+    public Task<BexioContact?> FindContactByEmailAsync(string email) => SearchFirstAsync<BexioContact>("2.0/contact/search", "mail", email);
+
+    /// <summary>
+    /// The first result of a search where the field equals the trimmed value; null for a blank value or no result.
+    /// </summary>
+    private async Task<T?> SearchFirstAsync<T>(string searchUri, string field, string value) where T : class
     {
-        if (string.IsNullOrWhiteSpace(customerNumber)) return null;
+        if (string.IsNullOrWhiteSpace(value)) return null;
 
-        var searchPayload = new[]
-        {
-            new BexioSearchCriteria { Field = "nr", Value = customerNumber.Trim(), Criteria = "=" }
-        };
+        var criteria = new[] { new BexioSearchCriteria { Field = field, Value = value.Trim(), Criteria = "=" } };
+        var response = await SendWithRateLimitCheckAsync(CreateRequest(HttpMethod.Post, searchUri, JsonBody(criteria)));
+        if (!response.IsSuccessStatusCode) return null;
 
-        var body = new StringContent(JsonSerializer.Serialize(searchPayload), Encoding.UTF8, "application/json");
-        var response = await SendWithRateLimitCheckAsync(CreateRequest(HttpMethod.Post, "2.0/contact/search", body));
-
-        if (response.IsSuccessStatusCode)
-        {
-            var contacts = await response.Content.ReadFromJsonAsync<List<BexioContact>>();
-            if (contacts != null && contacts.Count > 0)
-            {
-                return contacts[0];
-            }
-        }
-
-        return null;
-    }
-
-    public async Task<BexioOrder?> FindOrderByDocumentNrAsync(string orderNumber)
-    {
-        if (string.IsNullOrWhiteSpace(orderNumber)) return null;
-
-        var searchPayload = new[]
-        {
-            new BexioSearchCriteria { Field = "document_nr", Value = orderNumber.Trim(), Criteria = "=" }
-        };
-
-        var body = new StringContent(JsonSerializer.Serialize(searchPayload), Encoding.UTF8, "application/json");
-        var response = await SendWithRateLimitCheckAsync(CreateRequest(HttpMethod.Post, "2.0/kb_order/search", body));
-
-        if (response.IsSuccessStatusCode)
-        {
-            var orders = await response.Content.ReadFromJsonAsync<List<BexioOrder>>();
-            if (orders != null && orders.Count > 0)
-            {
-                return orders[0];
-            }
-        }
-
-        return null;
-    }
-
-    public async Task<BexioContact?> FindContactByEmailAsync(string email)
-    {
-        var searchPayload = new[]
-        {
-            new BexioSearchCriteria { Field = "mail", Value = email, Criteria = "=" }
-        };
-
-        var body = new StringContent(JsonSerializer.Serialize(searchPayload), Encoding.UTF8, "application/json");
-        var response = await SendWithRateLimitCheckAsync(CreateRequest(HttpMethod.Post, "2.0/contact/search", body));
-
-        if (response.IsSuccessStatusCode)
-        {
-            var contacts = await response.Content.ReadFromJsonAsync<List<BexioContact>>();
-            if (contacts != null && contacts.Count > 0)
-            {
-                return contacts[0];
-            }
-        }
-
-        return null;
+        var results = await response.Content.ReadFromJsonAsync<List<T>>();
+        return results?.FirstOrDefault();
     }
 
     public async Task<int> CreateContactAsync(Customer customer)
@@ -137,7 +86,7 @@ public class BexioApiClient : IBexioService
             OwnerId = 1 // Default owner
         };
 
-        var body = new StringContent(JsonSerializer.Serialize(createPayload), Encoding.UTF8, "application/json");
+        var body = JsonBody(createPayload);
         var createResponse = await SendWithRateLimitCheckAsync(CreateRequest(HttpMethod.Post, "2.0/contact", body));
         createResponse.EnsureSuccessStatusCode();
 
@@ -160,7 +109,7 @@ public class BexioApiClient : IBexioService
             Positions = [] // Positions added subsequently
         };
 
-        var body = new StringContent(JsonSerializer.Serialize(orderPayload), Encoding.UTF8, "application/json");
+        var body = JsonBody(orderPayload);
         var response = await SendWithRateLimitCheckAsync(CreateRequest(HttpMethod.Post, "2.0/kb_order", body));
         response.EnsureSuccessStatusCode();
 
@@ -206,7 +155,7 @@ public class BexioApiClient : IBexioService
         var articles = new List<BexioArticle>();
         while (true)
         {
-            var body = new StringContent(JsonSerializer.Serialize(criteria), Encoding.UTF8, "application/json");
+            var body = JsonBody(criteria);
             var response = await SendWithRateLimitCheckAsync(CreateRequest(HttpMethod.Post, $"2.0/article/search?limit={pageSize}&offset={articles.Count}", body));
             if (!response.IsSuccessStatusCode)
             {
@@ -238,7 +187,7 @@ public class BexioApiClient : IBexioService
             DiscountInPercent = position.DiscountPercent
         };
 
-        var body = new StringContent(JsonSerializer.Serialize(positionPayload), Encoding.UTF8, "application/json");
+        var body = JsonBody(positionPayload);
         var request = CreateRequest(HttpMethod.Post, $"2.0/kb_order/{orderId}/kb_position_article", body);
         var response = await SendWithRateLimitCheckAsync(request);
 
@@ -258,7 +207,7 @@ public class BexioApiClient : IBexioService
             IsPercentual = true
         };
 
-        var body = new StringContent(JsonSerializer.Serialize(discountPayload), Encoding.UTF8, "application/json");
+        var body = JsonBody(discountPayload);
         var request = CreateRequest(HttpMethod.Post, $"2.0/kb_order/{orderId}/kb_position_discount", body);
         var response = await SendWithRateLimitCheckAsync(request);
 
@@ -312,59 +261,37 @@ public class BexioApiClient : IBexioService
         }
     }
 
-    public async Task<List<BexioAccount>> GetAccountsAsync()
+    public Task<List<BexioAccount>> GetAccountsAsync()
+        => GetCachedListAsync<BexioAccount>("2.0/accounts", a => a.IsActive && a.AccountType == 1);
+
+    public Task<List<BexioTax>> GetTaxesAsync()
+        => GetCachedListAsync<BexioTax>("3.0/taxes", t => t.IsActive && t.Type is "sales_tax" or "not_taxable_turnover");
+
+    public Task<List<BexioPaymentType>> GetPaymentTypesAsync()
+        => GetCachedListAsync<BexioPaymentType>("2.0/payment_type", _ => true);
+
+    /// <summary>
+    /// Loads the list once per client and keeps the items that match the filter.
+    /// </summary>
+    private async Task<List<T>> GetCachedListAsync<T>(string uri, Func<T, bool> filter)
     {
         lock (_cacheLock)
         {
-            if (_cachedAccounts != null) return _cachedAccounts;
+            if (_cachedLists.TryGetValue(uri, out var cached)) return (List<T>)cached;
         }
 
-        var response = await SendWithRateLimitCheckAsync(CreateRequest(HttpMethod.Get, "2.0/accounts"));
+        var response = await SendWithRateLimitCheckAsync(CreateRequest(HttpMethod.Get, uri));
         response.EnsureSuccessStatusCode();
-        var accounts = await response.Content.ReadFromJsonAsync<List<BexioAccount>>();
+        var items = (await response.Content.ReadFromJsonAsync<List<T>>())?.Where(filter).ToList() ?? [];
 
         lock (_cacheLock)
         {
-            _cachedAccounts = accounts?.Where(a => a.IsActive && a.AccountType == 1).ToList() ?? [];
-            return _cachedAccounts;
+            _cachedLists[uri] = items;
         }
+        return items;
     }
 
-    public async Task<List<BexioTax>> GetTaxesAsync()
-    {
-        lock (_cacheLock)
-        {
-            if (_cachedTaxes != null) return _cachedTaxes;
-        }
-
-        var response = await SendWithRateLimitCheckAsync(CreateRequest(HttpMethod.Get, "3.0/taxes"));
-        response.EnsureSuccessStatusCode();
-        var taxes = await response.Content.ReadFromJsonAsync<List<BexioTax>>();
-
-        lock (_cacheLock)
-        {
-            _cachedTaxes = taxes?.Where(t => t.IsActive && (t.Type == "sales_tax" || t.Type == "not_taxable_turnover")).ToList() ?? [];
-            return _cachedTaxes;
-        }
-    }
-
-    public async Task<List<BexioPaymentType>> GetPaymentTypesAsync()
-    {
-        lock (_cacheLock)
-        {
-            if (_cachedPaymentTypes != null) return _cachedPaymentTypes;
-        }
-
-        var response = await SendWithRateLimitCheckAsync(CreateRequest(HttpMethod.Get, "2.0/payment_type"));
-        response.EnsureSuccessStatusCode();
-        var paymentTypes = await response.Content.ReadFromJsonAsync<List<BexioPaymentType>>();
-
-        lock (_cacheLock)
-        {
-            _cachedPaymentTypes = paymentTypes ?? [];
-            return _cachedPaymentTypes;
-        }
-    }
+    private static StringContent JsonBody(object payload) => new(JsonSerializer.Serialize(payload), Encoding.UTF8, "application/json");
 
     /// <summary>
     /// Sends an HTTP request and inspects Bexio Rate Limit headers.
