@@ -105,7 +105,7 @@ Below is a typical order template layout showing how the parser reads the metada
   - **Article Name** [Column `2` / B]: Product description.
   - **Color** [Column `3` / C]: Product color.
   - **Category** [Column `4` / D]: Product category matching the matrix headers.
-  - **UnitPrice (EP)** [Column `20` / T]: Individual wholesale price.
+  - **UnitPrice (EP)** [Column `20` / T]: Individual wholesale price. A price written as text must not contain thousands separators: `12.50` (or `12,50` on Windows with a decimal comma) is read, a value like `1'250.00` stops the file with an error instead of importing a wrong price.
 
 ### EAN List Format
 

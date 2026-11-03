@@ -289,6 +289,62 @@ public class ExcelParserEdgeCaseTests
     }
 
     [Test]
+    [Arguments("de-CH", "12.50", true)]
+    [Arguments("de-DE", "12,50", true)]
+    [Arguments("en-US", "12.50", true)]
+    [Arguments("de-CH", "12,50", false)]
+    [Arguments("en-US", "12,50", false)]
+    [Arguments("en-US", "1,250", false)]
+    public void ParseOrderForm_WithTextPrice_ShouldReadDecimalsOrFailButNeverReadThousands(string cultureName, string price, bool isValid)
+    {
+        var options = new PeakmileSettings();
+        options.SizeMatrix.StartRow = 10;
+        options.SizeMatrix.EndRow = 10;
+        options.SizeMatrix.CategoryColumn = "D";
+        options.SizeMatrix.StartSizeColumn = "E";
+        options.SizeMatrix.EndSizeColumn = "E";
+        options.Data.StartRow = 11;
+        options.Data.CategoryColumn = "D";
+        options.Data.StartQtyColumn = "E";
+        options.Data.EndQtyColumn = "E";
+        options.Data.UnitPriceColumn = "G";
+
+        string tempPath = Path.Combine(Path.GetTempPath(), $"test_{Guid.NewGuid():N}.xlsx");
+        var previousCulture = System.Globalization.CultureInfo.CurrentCulture;
+        try
+        {
+            using (var wb = new ClosedXML.Excel.XLWorkbook())
+            {
+                var ws = wb.AddWorksheet("Sheet1");
+                ws.Cell(10, 4).Value = "CAT1";
+                ws.Cell(10, 5).Value = "S";
+                ws.Cell(11, 1).Value = "ART001";
+                ws.Cell(11, 4).Value = "CAT1";
+                ws.Cell(11, 5).Value = 1;
+                ws.Cell(11, 7).Value = price; // text, not a number cell
+                wb.SaveAs(tempPath);
+            }
+            System.Globalization.CultureInfo.CurrentCulture = new System.Globalization.CultureInfo(cultureName);
+
+            Func<Domain.Models.Order> parse = () => new PeakmileExcelParser(options).ParseOrderForm(tempPath);
+
+            if (isValid)
+            {
+                parse().Positions.Should().ContainSingle().Which.GrossUnitPrice.Should().Be(12.5m);
+            }
+            else
+            {
+                parse.Should().Throw<FormatException>();
+            }
+        }
+        finally
+        {
+            System.Globalization.CultureInfo.CurrentCulture = previousCulture;
+            if (File.Exists(tempPath)) File.Delete(tempPath);
+        }
+    }
+
+    [Test]
     public void ExtractZipAndCity_WithWhitespaceOnly_ShouldReturnEmptyTuple()
     {
         var result = PeakmileExcelParser.ExtractZipAndCity("   ");

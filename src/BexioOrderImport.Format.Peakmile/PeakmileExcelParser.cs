@@ -70,7 +70,8 @@ public class PeakmileExcelParser : IExcelParser
 
             // Read unit price from column
             var priceCell = row.Cell(_options.Data.UnitPriceColumn);
-            if (!TryReadDecimal(priceCell, NumberStyles.Any, out decimal unitPrice, CultureInfo.InvariantCulture, CultureInfo.CurrentCulture))
+            // No thousands separators: the invariant culture would read the decimal comma of "12,50" as one and import 1250
+            if (!TryReadDecimal(priceCell, NumberStyles.Any & ~NumberStyles.AllowThousands, out decimal unitPrice, CultureInfo.InvariantCulture, CultureInfo.CurrentCulture))
             {
                 string priceStr = priceCell.Value.ToString(CultureInfo.CurrentCulture).Trim();
                 if (!string.IsNullOrWhiteSpace(priceStr))
