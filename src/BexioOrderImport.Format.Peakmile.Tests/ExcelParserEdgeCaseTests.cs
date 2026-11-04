@@ -159,7 +159,7 @@ public class ExcelParserEdgeCaseTests
             var parser = new PeakmileExcelParser(options);
             Action act = () => parser.ParseOrderForm(tempPath);
 
-            act.Should().Throw<FormatException>().WithMessage("*Ungültiges Preisformat*");
+            act.Should().Throw<FormatException>().WithMessage(string.Format(Resources.PeakmileTranslations.Error_InvalidPrice, "NOT_A_PRICE", 11, "G"));
         }
         finally
         {
