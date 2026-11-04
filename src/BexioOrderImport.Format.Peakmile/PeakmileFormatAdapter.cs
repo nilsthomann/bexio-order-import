@@ -34,12 +34,5 @@ public sealed class PeakmileFormatAdapter : FormatAdapter<PeakmileSettings>
         => _createParser(settings).ParseOrderForm(filePath);
 
     protected override Task<ImportResult> ImportAsync(Order order, PeakmileSettings settings, IBexioService bexio, IImportUserInteractionService interaction)
-        => new PeakmileImporter(bexio).ExecuteAsync(order, interaction, CreateImportOptions(settings));
-
-    internal static PeakmileImportOptions CreateImportOptions(PeakmileSettings settings) => new(
-        DefaultOrderName: settings.DefaultOrderName,
-        SeasonCode: settings.SeasonCode,
-        PositionTextTemplate: settings.PositionTextTemplate,
-        DiscountPositionTextTemplate: settings.DiscountPositionTextTemplate,
-        SeasonFallbackCodes: settings.SeasonFallbackCodes);
+        => new PeakmileImporter(bexio).ExecuteAsync(order, interaction, settings);
 }

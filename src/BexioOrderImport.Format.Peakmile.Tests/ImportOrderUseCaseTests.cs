@@ -187,7 +187,7 @@ public class ImportOrderUseCaseTests
         _matcherMock.Setup(c => c.FindArticleAsync(It.IsAny<PeakmileArticleCriteria>())).ReturnsAsync(ArticleMatch.NotFound());
         _matcherMock.Setup(c => c.FindArticleAsync(It.Is<PeakmileArticleCriteria>(a => a.ArticleNumber == "A3"))).ReturnsAsync(ArticleMatch.Found(new BexioArticle { Id = 3 }));
 
-        Func<Task> act = () => _useCase.ExecuteAsync(order, new DelegateImportUserInteractionService(), new PeakmileImportOptions(SeasonCode: "FS26"));
+        Func<Task> act = () => _useCase.ExecuteAsync(order, new DelegateImportUserInteractionService(), new PeakmileSettings { SeasonCode = "FS26" });
 
         await act.Should().ThrowAsync<InvalidOperationException>()
             .WithMessage($"2 article(s) not found in Bexio with season code 'FS26'. Nothing was changed in Bexio.{Environment.NewLine}• 'A1' with color 'Black'{Environment.NewLine}• 'A2' with color 'Red'");
@@ -460,7 +460,7 @@ public class ImportOrderUseCaseTests
             .ReturnsAsync(ArticleMatch.Found(new BexioArticle { Id = 789, Description = "Product Description", Name = "Product Name" }));
 
         var interaction = new DelegateImportUserInteractionService();
-        var options = new PeakmileImportOptions(SeasonCode: "FS27");
+        var options = new PeakmileSettings { SeasonCode = "FS27" };
 
         // Act
         await _useCase.ExecuteAsync(order, interaction, options);
@@ -484,7 +484,7 @@ public class ImportOrderUseCaseTests
             .ReturnsAsync(ArticleMatch.Found(new BexioArticle { Id = 789, Description = "Product Description", Name = "Product Name" }));
 
         var interaction = new DelegateImportUserInteractionService();
-        var options = new PeakmileImportOptions(SeasonCode: "FS27", SeasonFallbackCodes: ["NOOS", " EX ", ""]);
+        var options = new PeakmileSettings { SeasonCode = "FS27", SeasonFallbackCodes = ["NOOS", " EX ", ""] };
 
         // Act
         await _useCase.ExecuteAsync(order, interaction, options);
@@ -550,13 +550,35 @@ public class ImportOrderUseCaseTests
             .ReturnsAsync(ArticleMatch.Found(new BexioArticle { Id = 789, Description = "Desc", Name = "Name" }));
 
         var interaction = new DelegateImportUserInteractionService();
-        var options = new PeakmileImportOptions(DiscountPositionTextTemplate: "Sonderrabatt ({DiscountInPercent}%)");
+        var options = new PeakmileSettings { DiscountPositionTextTemplate = "Sonderrabatt ({DiscountInPercent}%)" };
 
         // Act
         await _useCase.ExecuteAsync(order, interaction, options);
 
         // Assert
         _clientMock.Verify(c => c.AddDiscountPositionAsync(456, 15m, "Sonderrabatt (15%)"), Times.Once);
+    }
+
+    [Test]
+    [Arguments(PositionGroupingMode.SinglePositionPerSize, "single Name 2x S")]
+    [Arguments(PositionGroupingMode.GroupedSizePosition, "grouped Name 2x S")]
+    public async Task ExecuteAsync_ShouldUseThePositionTextTemplateOfTheGroupingMode(PositionGroupingMode mode, string expectedText)
+    {
+        var order = CreateSampleOrder();
+        order.Positions[0].Size = "2x S";
+        _clientMock.Setup(c => c.FindContactByEmailAsync(order.Customer.Email)).ReturnsAsync(new BexioContact { Id = 123 });
+        _clientMock.Setup(c => c.CreateOrderAsync(123, order)).ReturnsAsync(new BexioOrder { Id = 456, DocumentNr = "AU-00456" });
+        _matcherMock.Setup(c => c.FindArticleAsync(It.IsAny<PeakmileArticleCriteria>())).ReturnsAsync(ArticleMatch.Found(new BexioArticle { Id = 789, Name = "Name" }));
+        var settings = new PeakmileSettings
+        {
+            PositionGroupingMode = mode,
+            SinglePositionTextTemplate = "single {BexioArticleName} {Size}",
+            GroupedPositionTextTemplate = "grouped {BexioArticleName} {SizesRows}"
+        };
+
+        await _useCase.ExecuteAsync(order, new DelegateImportUserInteractionService(), settings);
+
+        _clientMock.Verify(c => c.AddArticlePositionAsync(456, 789, order.Positions[0], expectedText), Times.Once);
     }
 
     [Test]
@@ -593,7 +615,7 @@ public class ImportOrderUseCaseTests
         interactionMock.Setup(i => i.ConfirmCustomerCreationAsync(It.IsAny<Customer>())).ReturnsAsync(true);
         interactionMock.Setup(i => i.ConfirmEmailMismatchAsync(It.IsAny<string>(), It.IsAny<string>())).ReturnsAsync(true);
 
-        var options = new PeakmileImportOptions(SeasonCode: "SS26");
+        var options = new PeakmileSettings { SeasonCode = "SS26" };
 
         // Act
         var result = await _useCase.ExecuteAsync(order, interactionMock.Object, options);
