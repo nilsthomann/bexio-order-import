@@ -1,4 +1,3 @@
-using System.IO;
 using System.Text;
 using System.Collections.ObjectModel;
 using BexioOrderImport.Abstractions.Bexio;
@@ -126,17 +125,8 @@ public partial class MainViewModel : ViewModelBase
         InstallUpdateCommand = new RelayCommand(async () => await InstallUpdateAsync(), () => !string.IsNullOrEmpty(_updateDownloadUrl) && !_isDownloadingUpdate);
         CloseImportSuccessCommand = new RelayCommand(CloseImportSuccess);
 
-        // Path to CLI appsettings.json or WPF appsettings.json.
-        // We will store settings in user LocalAppData so updates do not delete them.
-        if (configFilePath != null)
-        {
-            _configFilePath = configFilePath;
-        }
-        else
-        {
-            string appDataFolder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "BexioOrderImport");
-            _configFilePath = Path.Combine(appDataFolder, "appsettings.json");
-        }
+        // Tests pass a temp file; the app keeps its settings in LocalAppData, so updates do not delete them
+        _configFilePath = configFilePath ?? Helpers.AppPaths.SettingsFile;
 
         // Copy appsettings.json from CLI directory if exists, or write default
         EnsureAppSettingsFile();

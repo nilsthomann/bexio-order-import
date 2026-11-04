@@ -26,10 +26,7 @@ public partial class App : System.Windows.Application
         // so that {x:Static} XAML bindings resolve with the correct culture.
         try
         {
-            string appDataFolder = Path.Combine(
-                Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-                "BexioOrderImport");
-            string configPath = Path.Combine(appDataFolder, "appsettings.json");
+            string configPath = AppPaths.SettingsFile;
             if (!File.Exists(configPath))
             {
                 configPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "appsettings.json");
