@@ -30,12 +30,6 @@ public class OrderPosition
         ? RoundUp(GrossUnitPrice * (1m - DiscountPercent.Value / 100m), 1)
         : GrossUnitPrice;
 
-    public decimal UnitPrice
-    {
-        get => NetUnitPrice;
-        set => GrossUnitPrice = value;
-    }
-
     public decimal TotalPrice => Quantity * NetUnitPrice;
 
 

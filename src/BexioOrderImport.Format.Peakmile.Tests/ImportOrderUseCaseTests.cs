@@ -153,7 +153,7 @@ public class ImportOrderUseCaseTests
             Customer = new Customer { Email = "t@t.com", CompanyName = "Test AG" },
             Positions =
             [
-                new OrderPosition { ArticleNumber = "UNKNOWN", ArticleName = "Part", Quantity = 1, UnitPrice = 10m }
+                new OrderPosition { ArticleNumber = "UNKNOWN", ArticleName = "Part", Quantity = 1, GrossUnitPrice = 10m }
             ]
         };
         _clientMock.Setup(c => c.FindContactByEmailAsync(order.Customer.Email)).ReturnsAsync(new BexioContact { Id = 123 });
@@ -205,7 +205,7 @@ public class ImportOrderUseCaseTests
             Customer = new Customer { Email = string.Empty, CompanyName = "Test AG" },
             Positions =
             [
-                new OrderPosition { ArticleNumber = "ART1", ArticleName = "Part", Quantity = 1, UnitPrice = 10m }
+                new OrderPosition { ArticleNumber = "ART1", ArticleName = "Part", Quantity = 1, GrossUnitPrice = 10m }
             ]
         };
 
@@ -660,7 +660,7 @@ public class ImportOrderUseCaseTests
             ArticleName = "Test Artikel",
             Color = "Black",
             Quantity = 2,
-            UnitPrice = 10.0m
+            GrossUnitPrice = 10.0m
         });
         return order;
     }

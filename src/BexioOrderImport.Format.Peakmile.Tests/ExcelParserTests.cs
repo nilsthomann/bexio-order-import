@@ -111,7 +111,7 @@ public class ExcelParserTests
         itemPos!.ArticleName.Should().Be("T-Shirt");
         itemPos.SizeCategory.Should().Be("Mini");
         itemPos.Quantity.Should().Be(1);
-        itemPos.UnitPrice.Should().Be(18.2m);
+        itemPos.NetUnitPrice.Should().Be(18.2m);
         itemPos.TotalPrice.Should().Be(18.2m);
     }
 
