@@ -497,24 +497,6 @@ public class MainViewModelTests : IDisposable
     }
 
     [Test]
-    public async Task ConfirmEmailMismatchAsync_ShouldShowConfirmDialog()
-    {
-        // Arrange
-        var vm = CreateVm();
-        vm.IsImportingActive = true;
-        _dialogServiceMock.Setup(d => d.ShowConfirmDialog(It.IsAny<string>(), It.IsAny<string>())).Returns(true);
-
-        // Act - Call private ConfirmEmailMismatchAsync via reflection
-        var method = typeof(MainViewModel).GetMethod("ConfirmEmailMismatchAsync", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-        var task = (Task<bool>)method!.Invoke(vm, ["existing@test.com", "excel@test.com"])!;
-        bool result = await task;
-
-        // Assert
-        result.Should().BeTrue();
-        _dialogServiceMock.Verify(d => d.ShowConfirmDialog(It.Is<string>(s => s.Contains("existing@test.com") && s.Contains("excel@test.com")), It.IsAny<string>()), Times.Once);
-    }
-
-    [Test]
     public async Task WpfImportUserInteractionService_ShouldDelegateCallsToViewModelAndDialogService()
     {
         // Arrange
@@ -540,6 +522,8 @@ public class MainViewModelTests : IDisposable
         // Act & Assert - ConfirmEmailMismatchAsync
         bool emailConfirmed = await service.ConfirmEmailMismatchAsync("old@email.com", "new@email.com");
         emailConfirmed.Should().BeTrue();
+        _dialogServiceMock.Verify(d => d.ShowConfirmDialog(It.Is<string>(s => s.Contains("old@email.com") && s.Contains("new@email.com")), It.IsAny<string>()), Times.Once);
+        vm.IsImportingActive.Should().BeFalse("the overlay stays hidden after a dialog when no import runs");
 
         // Act & Assert - ConfirmCustomerCreationAsync
         bool customerConfirmed = await service.ConfirmCustomerCreationAsync(new BexioOrderImport.Domain.Models.Customer { CompanyName = "Test Co" });
