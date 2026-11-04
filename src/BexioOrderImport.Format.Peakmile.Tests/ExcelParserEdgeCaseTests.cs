@@ -52,7 +52,7 @@ public class ExcelParserEdgeCaseTests
         options.Header.ZipCityCell = "B3";
         options.Header.BuyerEmailCell = "B4";
         options.Header.BuyerNameCell = "B5";
-        options.Header.OrderIdCell = "B6";
+        options.Header.OrderNumberCell = "B6";
         options.Header.PaymentTermsCell = "B7";
         options.Header.DiscountCell = "B8";
 

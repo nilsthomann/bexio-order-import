@@ -20,7 +20,7 @@ public class ExcelParserTests
                 ZipCityCell = "B6",
                 BuyerEmailCell = "E5",
                 BuyerNameCell = "E4",
-                OrderIdCell = "E6",
+                OrderNumberCell = "E6",
                 PaymentTermsCell = "A9",
                 DiscountCell = "V12"
             },
@@ -502,7 +502,7 @@ public class ExcelParserTests
                 ZipCityCell = "A3",
                 BuyerEmailCell = "A4",
                 BuyerNameCell = "A5",
-                OrderIdCell = "A6",
+                OrderNumberCell = "A6",
                 PaymentTermsCell = "A7",
                 DiscountCell = "A8"
             },

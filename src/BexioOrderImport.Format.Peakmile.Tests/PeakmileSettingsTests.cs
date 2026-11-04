@@ -60,30 +60,31 @@ public class PeakmileSettingsTests
     }
 
     [Test]
-    public void PositionTextTemplate_ShouldReadAndWriteTheTemplateOfTheGroupingMode()
+    [Arguments(PositionGroupingMode.SinglePositionPerSize, "single")]
+    [Arguments(PositionGroupingMode.GroupedSizePosition, "grouped")]
+    public void PositionTextTemplate_ShouldBeTheTemplateOfTheGroupingMode(PositionGroupingMode mode, string expected)
     {
         var settings = new PeakmileSettings
         {
-            PositionTextTemplate = "single",
-            PositionGroupingMode = PositionGroupingMode.GroupedSizePosition
+            SinglePositionTextTemplate = "single",
+            GroupedPositionTextTemplate = "grouped",
+            PositionGroupingMode = mode
         };
-        settings.PositionTextTemplate = "grouped";
 
-        settings.SinglePositionTextTemplate.Should().Be("single");
-        settings.GroupedPositionTextTemplate.Should().Be("grouped");
-        settings.PositionTextTemplate.Should().Be("grouped");
+        settings.PositionTextTemplate.Should().Be(expected);
     }
 
     [Test]
-    public void PositionTextTemplate_WhenGroupedMode_ShouldGetAndSetGroupedPositionTextTemplate()
+    public void Serialize_ShouldNotWriteTheOldHeaderNames()
     {
-        var options = new PeakmileSettings
-        {
-            PositionGroupingMode = PositionGroupingMode.GroupedSizePosition
-        };
-        options.PositionTextTemplate.Should().Be(options.GroupedPositionTextTemplate);
+        var settings = new PeakmileSettings();
+        settings.Header.EnableOrderNumber = true;
+        settings.Header.OrderNumberCell = "G1";
 
-        options.PositionTextTemplate = "Custom Grouped {SizesRows}";
-        options.GroupedPositionTextTemplate.Should().Be("Custom Grouped {SizesRows}");
+        string json = JsonSerializer.Serialize(settings);
+
+        json.Should().Contain("\"OrderNumberCell\":\"G1\"").And.NotContain("OrderIdCell").And.NotContain("EnableOrderId")
+            .And.NotContain("EnableCustomerId").And.NotContain("CustomerIdCell");
+        JsonSerializer.Deserialize<PeakmileSettings>(json)!.Header.OrderNumberCell.Should().Be("G1");
     }
 }

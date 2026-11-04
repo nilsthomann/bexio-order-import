@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using System.Text.Json.Serialization;
 using BexioOrderImport.Abstractions.Excel;
 using BexioOrderImport.Abstractions.Formats;
@@ -27,20 +28,13 @@ public class PeakmileSettings : IFormatSettings, IJsonOnDeserialized
 
     public string GroupedPositionTextTemplate { get; set; } = "<strong>{BexioArticleName}</strong><br />{SizesRows}<br />{BexioArticleDescription}";
 
+    /// <summary>
+    /// The position text template of the grouping mode.
+    /// </summary>
     [JsonIgnore]
-    public string PositionTextTemplate
-    {
-        get => PositionGroupingMode == PositionGroupingMode.GroupedSizePosition
-            ? GroupedPositionTextTemplate
-            : SinglePositionTextTemplate;
-        set
-        {
-            if (PositionGroupingMode == PositionGroupingMode.GroupedSizePosition)
-                GroupedPositionTextTemplate = value;
-            else
-                SinglePositionTextTemplate = value;
-        }
-    }
+    public string PositionTextTemplate => PositionGroupingMode == PositionGroupingMode.GroupedSizePosition
+        ? GroupedPositionTextTemplate
+        : SinglePositionTextTemplate;
 
     public string DiscountPositionTextTemplate { get; set; } = "Rabatt ({DiscountInPercent}%)";
     public string SizeRowTemplate { get; set; } = "{Amount}x Size {Size}";
@@ -55,7 +49,7 @@ public class PeakmileSettings : IFormatSettings, IJsonOnDeserialized
     [JsonInclude]
     [JsonPropertyName("PositionTextTemplate")]
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    [System.Diagnostics.CodeAnalysis.SuppressMessage("CodeQuality", "IDE0051", Justification = "Set by System.Text.Json when reading old profiles")]
+    [SuppressMessage("CodeQuality", "IDE0051", Justification = "Set by System.Text.Json when reading old profiles")]
     private string? LegacyPositionTextTemplate
     {
         get => null;
@@ -85,35 +79,46 @@ public class HeaderMapping
     public string CustomerNumberCell { get; set; } = "E3";
 
     // TODO: [Backward Compatibility] Remove in future version
+    // Names of profiles before v1.5.0. They are only read and set the new properties; the getters return the default,
+    // so they are not written again.
+    [JsonInclude]
     [JsonPropertyName("EnableOrderId")]
-    public bool EnableOrderId
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+    [SuppressMessage("CodeQuality", "IDE0051", Justification = "Set by System.Text.Json when reading old profiles")]
+    private bool LegacyEnableOrderId
     {
-        get => EnableOrderNumber;
+        get => false;
         set => EnableOrderNumber = value;
     }
 
-    // TODO: [Backward Compatibility] Remove in future version
+    [JsonInclude]
     [JsonPropertyName("OrderIdCell")]
-    public string OrderIdCell
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+    [SuppressMessage("CodeQuality", "IDE0051", Justification = "Set by System.Text.Json when reading old profiles")]
+    private string? LegacyOrderIdCell
     {
-        get => OrderNumberCell;
-        set => OrderNumberCell = value;
+        get => null;
+        set => OrderNumberCell = value ?? OrderNumberCell;
     }
 
-    // TODO: [Backward Compatibility] Remove in future version
+    [JsonInclude]
     [JsonPropertyName("EnableCustomerId")]
-    public bool EnableCustomerId
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+    [SuppressMessage("CodeQuality", "IDE0051", Justification = "Set by System.Text.Json when reading old profiles")]
+    private bool LegacyEnableCustomerId
     {
-        get => EnableCustomerNumber;
+        get => false;
         set => EnableCustomerNumber = value;
     }
 
-    // TODO: [Backward Compatibility] Remove in future version
+    [JsonInclude]
     [JsonPropertyName("CustomerIdCell")]
-    public string CustomerIdCell
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+    [SuppressMessage("CodeQuality", "IDE0051", Justification = "Set by System.Text.Json when reading old profiles")]
+    private string? LegacyCustomerIdCell
     {
-        get => CustomerNumberCell;
-        set => CustomerNumberCell = value;
+        get => null;
+        set => CustomerNumberCell = value ?? CustomerNumberCell;
     }
 
     public string PaymentTermsCell { get; set; } = "A9";
