@@ -36,12 +36,6 @@ public static class ExcelColumnHelper
         return sum;
     }
 
-    public static bool IsNumeric(string? input)
-    {
-        if (string.IsNullOrWhiteSpace(input)) return false;
-        return int.TryParse(input.Trim(), out _);
-    }
-
     public static bool IsValidColumnLetter(string? input)
     {
         if (string.IsNullOrWhiteSpace(input)) return false;
@@ -57,7 +51,7 @@ public static class ExcelColumnHelper
     {
         if (string.IsNullOrWhiteSpace(input)) return fallback;
         string trimmed = input.Trim();
-        if (int.TryParse(trimmed, out int num) && num > 0)
+        if (int.TryParse(trimmed, NumberStyles.Integer, CultureInfo.InvariantCulture, out int num) && num > 0)
         {
             return IndexToColumnLetter(num);
         }
@@ -81,14 +75,11 @@ public class ExcelColumnJsonConverter : JsonConverter<string>
 
         if (reader.TokenType == JsonTokenType.String)
         {
+            // Read like it is written, so an invalid column becomes "A" at once instead of after the next save
             string? val = reader.GetString();
             if (!string.IsNullOrWhiteSpace(val))
             {
-                if (int.TryParse(val.Trim(), out int num) && num > 0)
-                {
-                    return ExcelColumnHelper.IndexToColumnLetter(num);
-                }
-                return val.Trim().ToUpperInvariant();
+                return ExcelColumnHelper.NormalizeColumnLetter(val);
             }
         }
 

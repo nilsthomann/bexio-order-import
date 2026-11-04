@@ -70,16 +70,6 @@ public class ExcelColumnHelperTests
     [Test]
     [Arguments(null, false)]
     [Arguments("   ", false)]
-    [Arguments("abc", false)]
-    [Arguments("123", true)]
-    public void IsNumeric_ShouldValidateCorrectly(string? input, bool expected)
-    {
-        ExcelColumnHelper.IsNumeric(input).Should().Be(expected);
-    }
-
-    [Test]
-    [Arguments(null, false)]
-    [Arguments("   ", false)]
     [Arguments("0", false)]
     [Arguments("-1", false)]
     [Arguments("123", true)]
@@ -116,6 +106,13 @@ public class ExcelColumnHelperTests
         string jsonWithInvalidNumber = "{\"CategoryColumn\": -1}";
         var deserializedInvalidNum = JsonSerializer.Deserialize<SizeMatrixMapping>(jsonWithInvalidNumber);
         deserializedInvalidNum!.CategoryColumn.Should().Be("A");
+
+        string jsonWithInvalidString = "{\"CategoryColumn\": \"1A\"}";
+        var deserializedInvalidStr = JsonSerializer.Deserialize<SizeMatrixMapping>(jsonWithInvalidString);
+        deserializedInvalidStr!.CategoryColumn.Should().Be("A", "an invalid column reads like it is written");
+
+        string jsonWithLowerCase = "{\"CategoryColumn\": \" d \"}";
+        JsonSerializer.Deserialize<SizeMatrixMapping>(jsonWithLowerCase)!.CategoryColumn.Should().Be("D");
 
         string jsonWithEmptyString = "{\"CategoryColumn\": \"\"}";
         var deserializedEmptyStr = JsonSerializer.Deserialize<SizeMatrixMapping>(jsonWithEmptyString);
