@@ -41,6 +41,5 @@ public sealed class PeakmileFormatAdapter : FormatAdapter<PeakmileSettings>
         SeasonCode: settings.SeasonCode,
         PositionTextTemplate: settings.PositionTextTemplate,
         DiscountPositionTextTemplate: settings.DiscountPositionTextTemplate,
-        SizeRowTemplate: settings.SizeRowTemplate,
         SeasonFallbackCodes: settings.SeasonFallbackCodes);
 }

@@ -4,7 +4,6 @@ namespace BexioOrderImport.Abstractions.Import;
 
 public interface IImportUserInteractionService
 {
-    void ShowPreview(Order order);
     Task<bool> ConfirmUploadAsync();
     Task<bool> ConfirmCustomerCreationAsync(Customer customer);
     Task<bool> ConfirmEmailMismatchAsync(string existingEmail, string excelEmail);

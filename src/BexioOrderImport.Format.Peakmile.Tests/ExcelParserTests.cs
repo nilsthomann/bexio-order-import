@@ -1,5 +1,4 @@
 using BexioOrderImport.Domain.Models;
-using BexioOrderImport.Format.Peakmile.Tests.Utils;
 using FluentAssertions;
 
 namespace BexioOrderImport.Format.Peakmile.Tests;
@@ -164,21 +163,6 @@ public class ExcelParserTests
         {
             if (File.Exists(filePath)) File.Delete(filePath);
         }
-    }
-
-    [Test]
-    public void InMemoryExcelParser_ShouldReturnProvidedOrder()
-    {
-        // Arrange
-        var expectedOrder = new Order();
-        expectedOrder.Positions.Add(new OrderPosition { Quantity = 42 });
-        var parser = new InMemoryExcelParser(expectedOrder);
-
-        // Act
-        var order = parser.ParseOrderForm("anypath.xlsx");
-
-        // Assert
-        order.Should().BeSameAs(expectedOrder);
     }
 
     [Test]

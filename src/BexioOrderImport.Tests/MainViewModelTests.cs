@@ -534,9 +534,6 @@ public class MainViewModelTests : IDisposable
             stopwatch
         ])!;
 
-        // Act & Assert - ShowPreview (void, no-op)
-        service.ShowPreview(new BexioOrderImport.Domain.Models.Order());
-
         // Act & Assert - ConfirmEmailMismatchAsync
         bool emailConfirmed = await service.ConfirmEmailMismatchAsync("old@email.com", "new@email.com");
         emailConfirmed.Should().BeTrue();
