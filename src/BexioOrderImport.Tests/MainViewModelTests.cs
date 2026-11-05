@@ -296,7 +296,7 @@ public class MainViewModelTests : IDisposable
         vm.SelectedTabIndex = 1; // Settings tab
         vm.BexioToken = "unsaved-token"; // Modifies VM state
         vm.IsModified.Should().BeTrue();
-        _dialogServiceMock.Setup(d => d.ShowPendingChangesDialog()).Returns(true); // User selects "Discard Changes"
+        SetupPendingChangesChoice(1); // User selects "Discard Changes"
 
         // Act
         vm.SelectedTabIndex = 0; // Try switching to Import tab
@@ -304,7 +304,47 @@ public class MainViewModelTests : IDisposable
         // Assert
         vm.SelectedTabIndex.Should().Be(0); // Tab successfully switched to Import tab
         vm.IsModified.Should().BeFalse(); // Settings reloaded, unsaved state cleared
+        vm.BexioToken.Should().NotBe("unsaved-token");
     }
+
+    [Test]
+    public void SelectedTabIndex_WhenUserSavesChanges_ShouldSaveSettingsAndSwitchTab()
+    {
+        var vm = CreateVm();
+        vm.SelectedTabIndex = 1;
+        vm.BexioToken = "unsaved-token";
+        SetupPendingChangesChoice(0); // User selects "Save Changes"
+
+        vm.SelectedTabIndex = 0;
+
+        vm.SelectedTabIndex.Should().Be(0);
+        vm.IsModified.Should().BeFalse();
+        _encryptionServiceMock.Verify(e => e.Encrypt("unsaved-token"), Times.Once);
+        File.Exists(_tempFilePath).Should().BeTrue();
+    }
+
+    [Test]
+    public void SelectedTabIndex_WhenSavingChangesFails_ShouldRemainOnSettingsTab()
+    {
+        var vm = CreateVm();
+        vm.SelectedTabIndex = 1;
+        vm.BexioToken = "unsaved-token";
+        _encryptionServiceMock.Setup(e => e.Encrypt(It.IsAny<string>())).Throws(new InvalidOperationException("no key"));
+        SetupPendingChangesChoice(0);
+
+        vm.SelectedTabIndex = 0;
+
+        vm.SelectedTabIndex.Should().Be(1);
+        vm.IsModified.Should().BeTrue();
+        _dialogServiceMock.Verify(d => d.ShowErrorDialog("no key", It.IsAny<string>()), Times.Once);
+    }
+
+    private void SetupPendingChangesChoice(int? choice) =>
+        _dialogServiceMock.Setup(d => d.ShowChoiceDialog(
+            BexioOrderImport.Wpf.Resources.Translations.Dialog_PendingChangesMessage,
+            BexioOrderImport.Wpf.Resources.Translations.Dialog_PendingChangesTitle,
+            It.Is<IReadOnlyList<string>>(o => o.Count == 2),
+            true)).Returns(choice);
 
     [Test]
     public void SelectedTabIndex_WhenUserCancelsPendingChanges_ShouldRemainOnSettingsTab()
@@ -313,7 +353,7 @@ public class MainViewModelTests : IDisposable
         var vm = CreateVm();
         vm.SelectedTabIndex = 1; // Settings tab
         vm.IsModified = true;
-        _dialogServiceMock.Setup(d => d.ShowPendingChangesDialog()).Returns(false); // User selects "Cancel"
+        SetupPendingChangesChoice(null); // User selects "Cancel"
 
         // Act
         vm.SelectedTabIndex = 0; // Try switching to Import tab
@@ -544,7 +584,7 @@ public class MainViewModelTests : IDisposable
     {
         var vm = CreateVm();
         _dialogServiceMock.Setup(d => d.ShowInputDialog("Customer?", "Customer", "unknown", "001234")).Returns("1001");
-        _dialogServiceMock.Setup(d => d.ShowChoiceDialog("New or existing?", "Order", It.Is<IReadOnlyList<string>>(o => o.Count == 2))).Returns(1);
+        _dialogServiceMock.Setup(d => d.ShowChoiceDialog("New or existing?", "Order", It.Is<IReadOnlyList<string>>(o => o.Count == 2), false)).Returns(1);
         _dialogServiceMock.Setup(d => d.ShowWarningConfirmDialog("Delete all?", "Warning", It.IsAny<string>())).Returns(true);
         var type = typeof(MainViewModel).GetNestedType("WpfImportUserInteractionService", System.Reflection.BindingFlags.NonPublic);
         var service = (IImportUserInteractionService)Activator.CreateInstance(type!, [

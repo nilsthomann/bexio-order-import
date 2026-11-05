@@ -14,7 +14,6 @@ public interface IDialogService
     /// </summary>
     ProfileCreateResult? ShowProfileCreateDialog(string? fixedFormatId);
     bool ShowProfileEditDialog(Models.MappingProfile profile, System.Collections.Generic.IEnumerable<Models.MappingProfile>? existingProfiles = null);
-    bool ShowPendingChangesDialog();
     string? ShowOpenFileDialog(string filter, string defaultExt);
     string? ShowSaveFileDialog(string filter, string defaultExt, string defaultFileName);
     bool ShowConfirmDialog(string message, string title);
@@ -31,9 +30,9 @@ public interface IDialogService
     string? ShowInputDialog(string message, string title, string? errorMessage, string? placeholder);
 
     /// <summary>
-    /// Shows one button per option. The index of the chosen option, or null if the user cancels.
+    /// Shows one button per option, with the warning icon if <paramref name="warning"/>. The index of the chosen option, or null if the user cancels.
     /// </summary>
-    int? ShowChoiceDialog(string message, string title, IReadOnlyList<string> options);
+    int? ShowChoiceDialog(string message, string title, IReadOnlyList<string> options, bool warning = false);
     void ShowErrorDialog(string message, string title);
 
     /// <summary>

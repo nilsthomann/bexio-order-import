@@ -109,6 +109,7 @@ public static class Translations
     public static string Import_FileLockedMessage => ResourceManager.GetString(nameof(Import_FileLockedMessage)) ?? string.Empty;
     public static string Import_XlsNotSupported => ResourceManager.GetString(nameof(Import_XlsNotSupported)) ?? string.Empty;
     public static string Dialog_DiscardChanges => ResourceManager.GetString(nameof(Dialog_DiscardChanges)) ?? string.Empty;
+    public static string Dialog_SaveChanges => ResourceManager.GetString(nameof(Dialog_SaveChanges)) ?? string.Empty;
     public static string Dialog_PendingChangesTitle => ResourceManager.GetString(nameof(Dialog_PendingChangesTitle)) ?? string.Empty;
     public static string Dialog_PendingChangesMessage => ResourceManager.GetString(nameof(Dialog_PendingChangesMessage)) ?? string.Empty;
     public static string Dialog_SettingsSavedTitle => ResourceManager.GetString(nameof(Dialog_SettingsSavedTitle)) ?? string.Empty;

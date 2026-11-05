@@ -332,12 +332,16 @@ public partial class MainViewModel : ViewModelBase
             {
                 if (IsModified)
                 {
-                    bool discard = _dialogService.ShowPendingChangesDialog();
-                    if (discard)
-                    {
-                        LoadSettings();
-                    }
-                    else
+                    int? choice = _dialogService.ShowChoiceDialog(
+                        Resources.Translations.Dialog_PendingChangesMessage,
+                        Resources.Translations.Dialog_PendingChangesTitle,
+                        [Resources.Translations.Dialog_SaveChanges, Resources.Translations.Dialog_DiscardChanges],
+                        warning: true);
+                    if (choice == 0) SaveSettings();
+                    else if (choice == 1) LoadSettings();
+
+                    // Cancelled, or saving failed: stay on the settings tab
+                    if (IsModified)
                     {
                         OnPropertyChanged(nameof(SelectedTabIndex));
                         return;

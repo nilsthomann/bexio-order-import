@@ -6,7 +6,7 @@ using BexioOrderImport.Wpf.Resources;
 
 namespace BexioOrderImport.Wpf.Views;
 
-public enum CustomDialogType { Info, Warning, Error, Confirm, PendingChanges }
+public enum CustomDialogType { Info, Warning, Error, Confirm }
 
 [System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
 public partial class CustomDialog : Window
@@ -77,12 +77,6 @@ public partial class CustomDialog : Window
                 SetIcon(Purple, PurpleDark, QuestionIcon);
                 OkButton.Content = Translations.Dialog_Yes;
                 CancelButton.Content = Translations.Dialog_No;
-                CancelButton.Visibility = Visibility.Visible;
-                break;
-            case CustomDialogType.PendingChanges:
-                SetIcon(Amber, AmberDark, WarningIcon);
-                OkButton.Content = Translations.Dialog_DiscardChanges;
-                OkButton.Width = 160;
                 CancelButton.Visibility = Visibility.Visible;
                 break;
         }
@@ -255,12 +249,13 @@ public partial class CustomDialog : Window
     }
 
     /// <summary>
-    /// Shows one button per option. The index of the chosen option, or null if the user cancels; in unit tests always null.
+    /// Shows one button per option, with the warning icon if <paramref name="warning"/>. The index of the chosen option, or null if the user cancels; in unit tests always null.
     /// </summary>
-    public static int? ShowChoice(string message, string title, IReadOnlyList<string> options)
+    public static int? ShowChoice(string message, string title, IReadOnlyList<string> options, bool warning = false)
     {
         if (IsUnitTest()) return null;
         var dlg = CreateDialog(CustomDialogType.Confirm, title, message);
+        if (warning) dlg.SetIcon(Amber, AmberDark, WarningIcon);
         dlg.OkButton.Visibility = Visibility.Collapsed;
         dlg.CancelButton.Content = Translations.Dialog_Cancel;
         dlg.CancelButton.Margin = new Thickness(0);
@@ -286,16 +281,6 @@ public partial class CustomDialog : Window
             dlg.ChoicePanel.Children.Add(button);
         }
         return dlg.ShowDialog() == true ? choice : null;
-    }
-
-    public static bool ShowPendingChanges(string? message = null, string? title = null)
-    {
-        if (IsUnitTest()) return true;
-        var dlg = CreateDialog(
-            CustomDialogType.PendingChanges,
-            title ?? Translations.Dialog_PendingChangesTitle,
-            message ?? Translations.Dialog_PendingChangesMessage);
-        return dlg.ShowDialog() == true;
     }
 
     private static CustomDialog CreateDialog(CustomDialogType type, string title, string message)

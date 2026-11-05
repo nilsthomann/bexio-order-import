@@ -61,11 +61,6 @@ public class WpfDialogService : IDialogService
         });
     }
 
-    public bool ShowPendingChangesDialog()
-    {
-        return InvokeOnDispatcher(() => Views.CustomDialog.ShowPendingChanges());
-    }
-
     public string? ShowOpenFileDialog(string filter, string defaultExt)
     {
         return InvokeOnDispatcher(() =>
@@ -120,9 +115,9 @@ public class WpfDialogService : IDialogService
         return InvokeOnDispatcher(() => Views.CustomDialog.ShowInput(message, title, errorMessage, placeholder));
     }
 
-    public int? ShowChoiceDialog(string message, string title, IReadOnlyList<string> options)
+    public int? ShowChoiceDialog(string message, string title, IReadOnlyList<string> options, bool warning = false)
     {
-        return InvokeOnDispatcher(() => Views.CustomDialog.ShowChoice(message, title, options));
+        return InvokeOnDispatcher(() => Views.CustomDialog.ShowChoice(message, title, options, warning));
     }
 
     public void ShowErrorDialog(string message, string title)
