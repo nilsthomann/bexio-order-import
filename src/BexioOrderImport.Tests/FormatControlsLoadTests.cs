@@ -82,7 +82,8 @@ public class FormatControlsLoadTests
             dialog.MessageText.Inlines.Should().HaveCount(3);
             dialog.MessageText.Inlines.OfType<Bold>().Should().ContainSingle()
                 .Which.Inlines.OfType<Run>().Single().Text.Should().Be("AU-12");
-            dialog.BulletList.ItemsSource.Should().BeEquivalentTo(new List<string> { "'A1' with color 'Black'", "'A2'" });
+            dialog.BulletList.Text.Should().Be($"• 'A1' with color 'Black'{Environment.NewLine}• 'A2'");
+            dialog.BulletList.IsReadOnly.Should().BeTrue();
             dialog.BulletBox.Visibility.Should().Be(Visibility.Visible);
 
             dialog.SetMessage("No list");
