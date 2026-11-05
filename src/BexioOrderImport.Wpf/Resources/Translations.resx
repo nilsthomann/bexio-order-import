@@ -403,11 +403,14 @@ Bitte schliessen Sie die Datei in Excel und versuchen Sie es erneut.</value>
   <data name="Dialog_DiscardChanges" xml:space="preserve">
     <value>Änderungen verwerfen</value>
   </data>
+  <data name="Dialog_SaveChanges" xml:space="preserve">
+    <value>Änderungen speichern</value>
+  </data>
   <data name="Dialog_PendingChangesTitle" xml:space="preserve">
     <value>Ungespeicherte Änderungen</value>
   </data>
   <data name="Dialog_PendingChangesMessage" xml:space="preserve">
-    <value>Sie haben ungespeicherte Änderungen in den Einstellungen. Möchten Sie diese verwerfen?</value>
+    <value>Sie haben ungespeicherte Änderungen in den Einstellungen. Möchten Sie diese speichern oder verwerfen?</value>
   </data>
   <data name="Import_SelectProfileHeader" xml:space="preserve">
     <value>Aktives Profil</value>
