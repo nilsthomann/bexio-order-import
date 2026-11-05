@@ -63,6 +63,26 @@ public class BexioApiClientTests
     }
 
     [Test]
+    public async Task FindContactByEmailAsync_ShouldSkipBlankValuesAndSearchTheTrimmedEmail()
+    {
+        var bodies = new List<string>();
+        var handler = new MockHttpMessageHandler
+        {
+            SendAsyncFunc = async (req, token) =>
+            {
+                bodies.Add(await req.Content!.ReadAsStringAsync(token));
+                return new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent("[]", System.Text.Encoding.UTF8, "application/json") };
+            }
+        };
+        var client = new BexioApiClient(new HttpClient(handler), "dummy-token", 1, 1);
+
+        (await client.FindContactByEmailAsync("  ")).Should().BeNull();
+        await client.FindContactByEmailAsync(" test@company.com ");
+
+        bodies.Should().ContainSingle().Which.Should().Contain("\"value\":\"test@company.com\"");
+    }
+
+    [Test]
     public async Task CreateContactAsync_ShouldReturnNewContactId()
     {
         // Arrange
