@@ -73,18 +73,4 @@ public class PeakmileSettingsTests
 
         settings.PositionTextTemplate.Should().Be(expected);
     }
-
-    [Test]
-    public void Serialize_ShouldNotWriteTheOldHeaderNames()
-    {
-        var settings = new PeakmileSettings();
-        settings.Header.EnableOrderNumber = true;
-        settings.Header.OrderNumberCell = "G1";
-
-        string json = JsonSerializer.Serialize(settings);
-
-        json.Should().Contain("\"OrderNumberCell\":\"G1\"").And.NotContain("OrderIdCell").And.NotContain("EnableOrderId")
-            .And.NotContain("EnableCustomerId").And.NotContain("CustomerIdCell");
-        JsonSerializer.Deserialize<PeakmileSettings>(json)!.Header.OrderNumberCell.Should().Be("G1");
-    }
 }

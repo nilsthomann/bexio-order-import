@@ -78,49 +78,6 @@ public class HeaderMapping
     public bool EnableCustomerNumber { get; set; }
     public string CustomerNumberCell { get; set; } = "E3";
 
-    // TODO: [Backward Compatibility] Remove in future version
-    // Names of profiles before v1.5.0. They are only read and set the new properties; the getters return the default,
-    // so they are not written again.
-    [JsonInclude]
-    [JsonPropertyName("EnableOrderId")]
-    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
-    [SuppressMessage("CodeQuality", "IDE0051", Justification = "Set by System.Text.Json when reading old profiles")]
-    private bool LegacyEnableOrderId
-    {
-        get => false;
-        set => EnableOrderNumber = value;
-    }
-
-    [JsonInclude]
-    [JsonPropertyName("OrderIdCell")]
-    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
-    [SuppressMessage("CodeQuality", "IDE0051", Justification = "Set by System.Text.Json when reading old profiles")]
-    private string? LegacyOrderIdCell
-    {
-        get => null;
-        set => OrderNumberCell = value ?? OrderNumberCell;
-    }
-
-    [JsonInclude]
-    [JsonPropertyName("EnableCustomerId")]
-    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
-    [SuppressMessage("CodeQuality", "IDE0051", Justification = "Set by System.Text.Json when reading old profiles")]
-    private bool LegacyEnableCustomerId
-    {
-        get => false;
-        set => EnableCustomerNumber = value;
-    }
-
-    [JsonInclude]
-    [JsonPropertyName("CustomerIdCell")]
-    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
-    [SuppressMessage("CodeQuality", "IDE0051", Justification = "Set by System.Text.Json when reading old profiles")]
-    private string? LegacyCustomerIdCell
-    {
-        get => null;
-        set => CustomerNumberCell = value ?? CustomerNumberCell;
-    }
-
     public string PaymentTermsCell { get; set; } = "A9";
     public string DiscountCell { get; set; } = "V12";
 }
