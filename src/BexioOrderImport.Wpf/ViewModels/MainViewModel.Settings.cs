@@ -43,8 +43,18 @@ public partial class MainViewModel
                     new() { Name = "Default", Format = PeakmileFormatAdapter.Id }
                 ]
             };
-            File.WriteAllText(_configFilePath, JsonSerializer.Serialize(defaultSettings, IndentedJson));
+            WriteSettingsFile(defaultSettings);
         }
+    }
+
+    /// <summary>
+    /// Writes a temp file and then replaces the settings file, so a crash while writing never leaves a half-written file.
+    /// </summary>
+    private void WriteSettingsFile(Models.AppSettingsDto settings)
+    {
+        string tempPath = _configFilePath + ".tmp";
+        File.WriteAllText(tempPath, JsonSerializer.Serialize(settings, IndentedJson));
+        File.Move(tempPath, _configFilePath, overwrite: true);
     }
 
     internal void LoadSettings()
@@ -72,7 +82,7 @@ public partial class MainViewModel
             {
                 foreach (var p in dto.Profiles)
                 {
-                    Profiles.Add(_profileSerializer.FromDto(p));
+                    Profiles.Add(ReadProfile(p));
                 }
             }
             else
@@ -87,10 +97,51 @@ public partial class MainViewModel
         }
         catch (Exception ex)
         {
+            KeepInvalidSettingsFile();
             _dialogService.ShowErrorDialog(ex.Message, Resources.Translations.Settings_ErrorLoad);
         }
         IsModified = false;
         SaveSettingsCommand.RaiseCanExecuteChanged();
+    }
+
+    /// <summary>
+    /// A profile with invalid settings keeps its stored settings like a profile of an unknown format,
+    /// so saving the other settings does not delete it.
+    /// </summary>
+    private Models.MappingProfile ReadProfile(Models.MappingProfileDto dto)
+    {
+        try
+        {
+            return _profileSerializer.FromDto(dto);
+        }
+        catch (JsonException ex)
+        {
+            AppendLog($"⚠️ The settings of profile '{dto.Name}' could not be read and are kept unchanged: {ex.Message}");
+            return new Models.MappingProfile
+            {
+                Name = dto.Name,
+                FormatId = dto.Format ?? PeakmileFormatAdapter.Id,
+                RawSettings = dto.Settings ?? dto.ExcelMapping
+            };
+        }
+    }
+
+    /// <summary>
+    /// Copies a settings file that can't be read, as the next save replaces it.
+    /// </summary>
+    private void KeepInvalidSettingsFile()
+    {
+        try
+        {
+            if (File.Exists(_configFilePath))
+            {
+                File.Copy(_configFilePath, Path.ChangeExtension(_configFilePath, ".invalid.json"), overwrite: true);
+            }
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+        {
+            AppendLog($"⚠️ Could not copy the invalid settings file: {ex.Message}");
+        }
     }
 
     private void SaveSettings()
@@ -114,7 +165,7 @@ public partial class MainViewModel
             };
 
             BackupLegacySettings();
-            File.WriteAllText(_configFilePath, JsonSerializer.Serialize(settingsObj, IndentedJson));
+            WriteSettingsFile(settingsObj);
 
             _ = CheckBexioConnectionAsync();
 
@@ -148,7 +199,7 @@ public partial class MainViewModel
                 string text = File.ReadAllText(_configFilePath);
                 var dto = JsonSerializer.Deserialize<Models.AppSettingsDto>(text) ?? new Models.AppSettingsDto();
                 dto.ActiveProfileName = ActiveProfile?.Name ?? "Default";
-                File.WriteAllText(_configFilePath, JsonSerializer.Serialize(dto, IndentedJson));
+                WriteSettingsFile(dto);
             }
         }
         catch (Exception ex)
