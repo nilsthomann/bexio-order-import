@@ -110,17 +110,32 @@ public class BexioArticleLookupTests
     }
 
     [Test]
-    public async Task SearchArticlesAsync_WhenBexioFails_ShouldReturnEmpty()
+    public async Task SearchArticlesAsync_WhenBexioFails_ShouldThrowInsteadOfReportingNoArticles()
     {
         var handler = new MockHttpMessageHandler
         {
-            SendAsyncFunc = (req, token) => Task.FromResult(new HttpResponseMessage(HttpStatusCode.NotFound))
+            SendAsyncFunc = (req, token) => Task.FromResult(new HttpResponseMessage(HttpStatusCode.InternalServerError) { Content = new StringContent("server down") })
         };
         var client = new BexioApiClient(new HttpClient(handler), "dummy-token", 1, 1);
 
-        var articles = await client.SearchArticlesAsync([new BexioSearchCriteria { Field = "intern_code", Value = "X", Criteria = "like" }]);
+        Func<Task> act = () => client.SearchArticlesAsync([new BexioSearchCriteria { Field = "intern_code", Value = "X", Criteria = "like" }]);
 
-        articles.Should().BeEmpty();
+        (await act.Should().ThrowAsync<HttpRequestException>().WithMessage("Error searching articles: server down"))
+            .Which.StatusCode.Should().Be(HttpStatusCode.InternalServerError);
+    }
+
+    [Test]
+    public async Task FindContactByNrAsync_WhenBexioFails_ShouldThrowInsteadOfReportingNoContact()
+    {
+        var handler = new MockHttpMessageHandler
+        {
+            SendAsyncFunc = (req, token) => Task.FromResult(new HttpResponseMessage(HttpStatusCode.Unauthorized) { Content = new StringContent("invalid token") })
+        };
+        var client = new BexioApiClient(new HttpClient(handler), "dummy-token", 1, 1);
+
+        Func<Task> act = () => client.FindContactByNrAsync("1001");
+
+        await act.Should().ThrowAsync<HttpRequestException>().WithMessage("*nr '1001'*invalid token");
     }
 
     [Test]

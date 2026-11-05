@@ -302,6 +302,7 @@ The application checks for updates automatically from its GitHub repository on e
 
 - **Check API Token**: Go to the **Settings** tab, click inside the token field to display it in plaintext, and verify that it matches your Bexio API Key exactly.
 - **Firewall/Network**: Make sure your computer has an active internet connection and can reach `https://api.bexio.com`.
+- **"Error searching …"** during an import: Bexio returned an error (eg. an expired token or a Bexio outage), so the customer, order or articles could not be searched. This is not a missing customer or article; check the token and try again later.
 
 #### 2. The Excel Parsing Fails / throws a Coordinates Error
 

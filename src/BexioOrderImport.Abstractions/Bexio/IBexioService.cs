@@ -9,17 +9,17 @@ namespace BexioOrderImport.Abstractions.Bexio;
 public interface IBexioService
 {
     /// <summary>
-    /// Searches for an existing contact by contact number (nr).
+    /// Searches for an existing contact by contact number (nr). Null if none matches; throws if Bexio returns an error.
     /// </summary>
     Task<BexioContact?> FindContactByNrAsync(string customerNumber);
 
     /// <summary>
-    /// Searches for an existing order by document number (document_nr).
+    /// Searches for an existing order by document number (document_nr). Null if none matches; throws if Bexio returns an error.
     /// </summary>
     Task<BexioOrder?> FindOrderByDocumentNrAsync(string orderNumber);
 
     /// <summary>
-    /// Searches for an existing contact by email address.
+    /// Searches for an existing contact by email address. Null if none matches; throws if Bexio returns an error.
     /// </summary>
     Task<BexioContact?> FindContactByEmailAsync(string email);
 
@@ -46,7 +46,7 @@ public interface IBexioService
 
     /// <summary>
     /// Searches articles with the given criteria (eg. intern_code "like" a value) and loads all result pages.
-    /// Not cached; empty if the search fails.
+    /// Not cached; throws an HttpRequestException if Bexio returns an error.
     /// </summary>
     Task<IReadOnlyList<BexioArticle>> SearchArticlesAsync(IReadOnlyList<BexioSearchCriteria> criteria);
 
