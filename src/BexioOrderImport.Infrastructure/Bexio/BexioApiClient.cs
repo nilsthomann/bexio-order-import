@@ -11,6 +11,8 @@ namespace BexioOrderImport.Infrastructure.Bexio;
 
 public class BexioApiClient : IBexioService
 {
+    internal const int MaxRateLimitRetries = 3;
+
     private readonly HttpClient _httpClient;
     private readonly string _apiToken;
     private readonly int? _accountId;
@@ -289,19 +291,22 @@ public class BexioApiClient : IBexioService
     /// Sends an HTTP request and inspects Bexio Rate Limit headers.
     /// If remaining requests hit 0 or HTTP 429 is returned, automatically pauses execution until the reset window.
     /// </summary>
-    private async Task<HttpResponseMessage> SendWithRateLimitCheckAsync(HttpRequestMessage request)
+    private async Task<HttpResponseMessage> SendWithRateLimitCheckAsync(HttpRequestMessage request, int retry = 0)
     {
         var response = await _httpClient.SendAsync(request);
 
         ProcessRateLimitHeaders(response.Headers, out int remaining, out int resetSeconds);
 
-        if (response.StatusCode == (System.Net.HttpStatusCode)429)
+        // After the last retry the 429 response is returned, so a used up quota fails instead of waiting forever
+        if (response.StatusCode == (System.Net.HttpStatusCode)429 && retry < MaxRateLimitRetries)
         {
             int delaySeconds = Math.Max(resetSeconds, 1);
             await Task.Delay(TimeSpan.FromSeconds(delaySeconds));
 
             var clonedRequest = await CloneRequestAsync(request);
-            return await SendWithRateLimitCheckAsync(clonedRequest);
+            response.Dispose();
+            request.Dispose();
+            return await SendWithRateLimitCheckAsync(clonedRequest, retry + 1);
         }
         else if (remaining <= 0 && resetSeconds > 0)
         {
