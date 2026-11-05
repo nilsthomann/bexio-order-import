@@ -269,6 +269,14 @@ The settings are described in [section 4](#4-understanding-the-excel-order-templ
 - Select the profile in the list and click **Set as active**.
 - The active profile is highlighted and is used by the importer when loading Excel files.
 
+### Sort profiles
+
+1. In the **Settings** tab, drag a profile by the grip (⋮⋮) at the left of its row.
+2. While you drag, the other profiles make room and a violet placeholder shows where the profile lands. Drop it there; press **Esc** to cancel.
+3. Click **Save Settings** to keep the order.
+
+The profile dropdown on the **Import** tab lists the profiles in the same order. With many profiles it scrolls.
+
 ### Profile Export / Import
 
 - **Export**: Click **Export** to save all profiles to a portable JSON file. This is useful for backups or sharing configurations between machines.

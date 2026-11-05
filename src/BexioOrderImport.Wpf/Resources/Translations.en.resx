@@ -466,4 +466,7 @@ Please close the file in Excel and try again.</value>
   <data name="Settings_ProfilesEditHint" xml:space="preserve">
     <value>Adjust how the Excel file is read and imported into Bexio.</value>
   </data>
+  <data name="Settings_ProfilesDragHandle" xml:space="preserve">
+    <value>Drag to change the order</value>
+  </data>
 </root>
