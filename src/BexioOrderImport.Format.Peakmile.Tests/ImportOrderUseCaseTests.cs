@@ -517,6 +517,28 @@ public class ImportOrderUseCaseTests
     }
 
     [Test]
+    public async Task ExecuteAsync_WithADecimalDiscount_ShouldWriteItWithAPointOnEveryWindowsCulture()
+    {
+        var order = CreateSampleOrder();
+        order.DiscountPercent = 5.5m;
+        _clientMock.Setup(c => c.FindContactByEmailAsync(order.Customer.Email)).ReturnsAsync(new BexioContact { Id = 123 });
+        _clientMock.Setup(c => c.CreateOrderAsync(123, order)).ReturnsAsync(new BexioOrder { Id = 456, DocumentNr = "AU-00456" });
+        var previousCulture = System.Globalization.CultureInfo.CurrentCulture;
+        try
+        {
+            System.Globalization.CultureInfo.CurrentCulture = new System.Globalization.CultureInfo("de-DE");
+
+            await _useCase.ExecuteAsync(order, new DelegateImportUserInteractionService());
+        }
+        finally
+        {
+            System.Globalization.CultureInfo.CurrentCulture = previousCulture;
+        }
+
+        _clientMock.Verify(c => c.AddDiscountPositionAsync(456, 5.5m, "Rabatt (5.5%)"), Times.Once);
+    }
+
+    [Test]
     public async Task ExecuteAsync_WithCustomDiscountPositionTextTemplate_ShouldFormatTextCorrectly()
     {
         // Arrange

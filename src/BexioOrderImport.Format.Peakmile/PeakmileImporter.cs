@@ -118,11 +118,13 @@ public class PeakmileImporter
 
         if (order.DiscountPercent > 0)
         {
-            interaction.LogInfo($"Adding global discount position ({order.DiscountPercent:G}%)...");
+            // The same on every PC and in every format, like the SGD discount
+            string discount = order.DiscountPercent.ToString("G", System.Globalization.CultureInfo.InvariantCulture);
+            interaction.LogInfo($"Adding global discount position ({discount}%)...");
             string textTemplate = string.IsNullOrWhiteSpace(options.DiscountPositionTextTemplate)
                 ? "Rabatt ({DiscountInPercent}%)"
                 : options.DiscountPositionTextTemplate;
-            string discountText = textTemplate.Replace("{DiscountInPercent}", order.DiscountPercent.ToString("G"));
+            string discountText = textTemplate.Replace("{DiscountInPercent}", discount);
             await _bexioClient.AddDiscountPositionAsync(orderId, order.DiscountPercent, discountText);
             interaction.LogInfo("Global discount position added successfully.");
         }
