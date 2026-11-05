@@ -59,23 +59,11 @@
                 <Border x:Name="BulletBox" Background="{StaticResource SidebarBrush}"
                         BorderBrush="{StaticResource BorderBrush}" BorderThickness="1"
                         CornerRadius="8" Padding="12,8" Margin="0,0,0,16" Visibility="Collapsed">
-                    <ScrollViewer MaxHeight="200" VerticalScrollBarVisibility="Auto">
-                        <ItemsControl x:Name="BulletList">
-                            <ItemsControl.ItemTemplate>
-                                <DataTemplate>
-                                    <Grid Margin="0,2">
-                                        <Grid.ColumnDefinitions>
-                                            <ColumnDefinition Width="14"/>
-                                            <ColumnDefinition Width="*"/>
-                                        </Grid.ColumnDefinitions>
-                                        <TextBlock Text="•" Foreground="{StaticResource TextMutedBrush}"/>
-                                        <TextBlock Grid.Column="1" Text="{Binding}" TextWrapping="Wrap"
-                                                   Foreground="{StaticResource TextBrush}"/>
-                                    </Grid>
-                                </DataTemplate>
-                            </ItemsControl.ItemTemplate>
-                        </ItemsControl>
-                    </ScrollViewer>
+                    <!-- Read-only text box, so the list can be selected and copied -->
+                    <TextBox x:Name="BulletList" Style="{StaticResource ConsoleTextBoxStyle}"
+                             FontFamily="{StaticResource MainFontFamily}" FontSize="13"
+                             Foreground="{StaticResource TextBrush}" Background="Transparent" Padding="0"
+                             MaxHeight="200" VerticalScrollBarVisibility="Auto"/>
                 </Border>
 
                 <!-- Note with a link, eg. to the Bexio order of a failed import -->

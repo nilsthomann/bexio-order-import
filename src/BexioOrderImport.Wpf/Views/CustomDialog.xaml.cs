@@ -95,10 +95,10 @@ public partial class CustomDialog : Window
     internal void SetMessage(string message)
     {
         string[] lines = message.Replace("\r", string.Empty, StringComparison.Ordinal).Split('\n');
-        var bullets = lines.Where(IsBullet).Select(l => l[2..].Trim()).ToList();
+        var bullets = lines.Where(IsBullet).Select(l => "• " + l[2..].Trim()).ToList();
         SetFormattedText(MessageText, string.Join('\n', lines.Where(l => !IsBullet(l))).Trim());
         MessageText.Visibility = MessageText.Inlines.Count > 0 ? Visibility.Visible : Visibility.Collapsed;
-        BulletList.ItemsSource = bullets;
+        BulletList.Text = string.Join(Environment.NewLine, bullets);
         BulletBox.Visibility = bullets.Count > 0 ? Visibility.Visible : Visibility.Collapsed;
 
         static bool IsBullet(string line) => line.StartsWith("• ", StringComparison.Ordinal);
