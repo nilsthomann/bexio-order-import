@@ -2,6 +2,7 @@ using System.Globalization;
 using System.IO;
 using BexioOrderImport.Abstractions.Excel;
 using BexioOrderImport.Domain.Models;
+using BexioOrderImport.Format.Peakmile.Resources;
 using ClosedXML.Excel;
 
 namespace BexioOrderImport.Format.Peakmile;
@@ -76,7 +77,7 @@ public class PeakmileExcelParser : IExcelParser
                 string priceStr = priceCell.Value.ToString(CultureInfo.CurrentCulture).Trim();
                 if (!string.IsNullOrWhiteSpace(priceStr))
                 {
-                    throw new FormatException($"Ungültiges Preisformat '{priceStr}' in Zeile {r}, Spalte {_options.Data.UnitPriceColumn}.");
+                    throw new FormatException(string.Format(CultureInfo.CurrentCulture, PeakmileTranslations.Error_InvalidPrice, priceStr, r, _options.Data.UnitPriceColumn));
                 }
                 unitPrice = 0m;
             }

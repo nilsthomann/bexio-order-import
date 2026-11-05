@@ -342,4 +342,7 @@
   <data name="Validation_PositiveNumber" xml:space="preserve">
     <value>&quot;{0}&quot; must be a whole number greater than 0.</value>
   </data>
+  <data name="Error_InvalidPrice" xml:space="preserve">
+    <value>Invalid price &quot;{0}&quot; in row {1}, column {2}.</value>
+  </data>
 </root>

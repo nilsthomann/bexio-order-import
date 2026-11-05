@@ -20,7 +20,7 @@ public class ExcelParserTests
                 ZipCityCell = "B6",
                 BuyerEmailCell = "E5",
                 BuyerNameCell = "E4",
-                OrderIdCell = "E6",
+                OrderNumberCell = "E6",
                 PaymentTermsCell = "A9",
                 DiscountCell = "V12"
             },
@@ -111,7 +111,7 @@ public class ExcelParserTests
         itemPos!.ArticleName.Should().Be("T-Shirt");
         itemPos.SizeCategory.Should().Be("Mini");
         itemPos.Quantity.Should().Be(1);
-        itemPos.UnitPrice.Should().Be(18.2m);
+        itemPos.NetUnitPrice.Should().Be(18.2m);
         itemPos.TotalPrice.Should().Be(18.2m);
     }
 
@@ -502,7 +502,7 @@ public class ExcelParserTests
                 ZipCityCell = "A3",
                 BuyerEmailCell = "A4",
                 BuyerNameCell = "A5",
-                OrderIdCell = "A6",
+                OrderNumberCell = "A6",
                 PaymentTermsCell = "A7",
                 DiscountCell = "A8"
             },

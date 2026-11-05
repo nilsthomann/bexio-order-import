@@ -29,7 +29,7 @@ public class SgdImporterTests
 
     private DelegateImportUserInteractionService Interaction(bool cancelChoice = false, bool acceptWarning = true) => new(
         logInfo: _logs.Add,
-        askText: (title, message, error) =>
+        askText: (title, message, error, _) =>
         {
             _askedTexts.Add((title, error));
             return Task.FromResult(_texts.Count > 0 ? _texts.Dequeue() : null);

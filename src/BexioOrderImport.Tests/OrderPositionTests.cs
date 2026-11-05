@@ -18,7 +18,6 @@ public class OrderPositionTests
 
         // Assert
         pos.NetUnitPrice.Should().Be(100m);
-        pos.UnitPrice.Should().Be(100m);
         pos.TotalPrice.Should().Be(500m);
     }
 
@@ -35,22 +34,7 @@ public class OrderPositionTests
 
         // Assert
         pos.NetUnitPrice.Should().Be(85m);
-        pos.UnitPrice.Should().Be(85m);
         pos.TotalPrice.Should().Be(340m);
-    }
-
-    [Test]
-    public void OrderPosition_SettingUnitPrice_ShouldUpdateGrossUnitPrice()
-    {
-        // Arrange
-        var pos = new OrderPosition();
-
-        // Act
-        pos.UnitPrice = 50m;
-
-        // Assert
-        pos.GrossUnitPrice.Should().Be(50m);
-        pos.NetUnitPrice.Should().Be(50m);
     }
 
     [Test]

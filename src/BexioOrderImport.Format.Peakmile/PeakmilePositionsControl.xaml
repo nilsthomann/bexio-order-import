@@ -62,7 +62,7 @@
                         </DataGridTemplateColumn.CellTemplate>
                     </DataGridTemplateColumn>
                     <DataGridTextColumn Header="{x:Static res:PeakmileTranslations.Import_ColQuantity}" Binding="{Binding Quantity}" Width="70" ElementStyle="{StaticResource DataGridCellTextBlockStyle}"/>
-                    <DataGridTextColumn Header="{x:Static res:PeakmileTranslations.Import_ColUnitPrice}" Binding="{Binding UnitPrice, StringFormat=F2}" Width="95" ElementStyle="{StaticResource DataGridCellTextBlockStyle}"
+                    <DataGridTextColumn Header="{x:Static res:PeakmileTranslations.Import_ColUnitPrice}" Binding="{Binding NetUnitPrice, StringFormat=F2}" Width="95" ElementStyle="{StaticResource DataGridCellTextBlockStyle}"
                                         Visibility="{Binding Data.IsRowDiscountEnabled, Source={StaticResource Proxy}, Converter={StaticResource InverseBooleanToVisibilityConverter}}"/>
                     <DataGridTextColumn Header="{x:Static res:PeakmileTranslations.Import_ColGrossPrice}" Binding="{Binding GrossUnitPrice, StringFormat=F2}" Width="85" ElementStyle="{StaticResource DataGridCellTextBlockStyle}"
                                         Visibility="{Binding Data.IsRowDiscountEnabled, Source={StaticResource Proxy}, Converter={StaticResource BooleanToVisibilityConverter}}"/>

@@ -19,12 +19,12 @@ public class PeakmileImporter
     public async Task<ImportResult> ExecuteAsync(
         Order order,
         IImportUserInteractionService interaction,
-        PeakmileImportOptions? options = null)
+        PeakmileSettings? settings = null)
     {
         ArgumentNullException.ThrowIfNull(order);
         ArgumentNullException.ThrowIfNull(interaction);
 
-        options ??= new PeakmileImportOptions();
+        settings ??= new PeakmileSettings();
 
         if (order.Positions.Count == 0)
         {
@@ -44,14 +44,14 @@ public class PeakmileImporter
         interaction.LogInfo("Connecting to Bexio API...");
 
         // All articles are found before Bexio is changed, so a missing article neither creates a customer nor an order
-        var articles = await FindArticlesAsync(order, options, interaction);
+        var articles = await FindArticlesAsync(order, settings, interaction);
 
         int orderId;
         string orderNumberDisplay;
-        string titleTemplate = options.DefaultOrderName ?? "Order: {CustomerName} {SeasonCode}";
+        string titleTemplate = settings.DefaultOrderName ?? "Order: {CustomerName} {SeasonCode}";
 
         var target = await OrderTargetResolver.ResolveAsync(
-            order, titleTemplate, options.SeasonCode, _bexioClient, interaction,
+            order, titleTemplate, settings.SeasonCode, _bexioClient, interaction,
             checkContactWithoutCustomerNumber: contactInfo => CheckEmailOfExistingOrderAsync(order, contactInfo, interaction));
 
         if (target != null)
@@ -85,7 +85,7 @@ public class PeakmileImporter
             }
             interaction.LogInfo($"Customer matched (Bexio ID: {contactId.Value}). Creating order...");
 
-            var createdOrder = await OrderTargetResolver.CreateOrderAsync(order, contactId.Value, titleTemplate, options.SeasonCode, _bexioClient);
+            var createdOrder = await OrderTargetResolver.CreateOrderAsync(order, contactId.Value, titleTemplate, settings.SeasonCode, _bexioClient);
             orderId = createdOrder.Id;
             orderNumberDisplay = createdOrder.DocumentNr;
             interaction.LogInfo($"Order created successfully (Order #{orderNumberDisplay}). Uploading positions...");
@@ -97,7 +97,7 @@ public class PeakmileImporter
         foreach (var pos in order.Positions)
         {
             var article = articles[pos];
-            string positionText = (options.PositionTextTemplate ?? string.Empty)
+            string positionText = (settings.PositionTextTemplate ?? string.Empty)
                 .Replace("{Color}", pos.Color ?? string.Empty)
                 .Replace("{SizesRows}", pos.Size ?? string.Empty)
                 .Replace("{Size}", pos.Size ?? string.Empty)
@@ -121,9 +121,9 @@ public class PeakmileImporter
             // The same on every PC and in every format, like the SGD discount
             string discount = order.DiscountPercent.ToString("G", System.Globalization.CultureInfo.InvariantCulture);
             interaction.LogInfo($"Adding global discount position ({discount}%)...");
-            string textTemplate = string.IsNullOrWhiteSpace(options.DiscountPositionTextTemplate)
+            string textTemplate = string.IsNullOrWhiteSpace(settings.DiscountPositionTextTemplate)
                 ? "Rabatt ({DiscountInPercent}%)"
-                : options.DiscountPositionTextTemplate;
+                : settings.DiscountPositionTextTemplate;
             string discountText = textTemplate.Replace("{DiscountInPercent}", discount);
             await _bexioClient.AddDiscountPositionAsync(orderId, order.DiscountPercent, discountText);
             interaction.LogInfo("Global discount position added successfully.");
@@ -139,11 +139,11 @@ public class PeakmileImporter
     /// <summary>
     /// The Bexio article of each position. Throws with all missing articles before anything is changed in Bexio.
     /// </summary>
-    private async Task<Dictionary<OrderPosition, BexioArticle>> FindArticlesAsync(Order order, PeakmileImportOptions options, IImportUserInteractionService interaction)
+    private async Task<Dictionary<OrderPosition, BexioArticle>> FindArticlesAsync(Order order, PeakmileSettings settings, IImportUserInteractionService interaction)
     {
         interaction.LogInfo("Pre-fetching article data from Bexio...");
-        string seasonCode = options.SeasonCode ?? string.Empty;
-        string[] fallbackSeasonCodes = [.. (options.SeasonFallbackCodes ?? []).Where(c => !string.IsNullOrWhiteSpace(c)).Select(c => c.Trim())];
+        string seasonCode = settings.SeasonCode ?? string.Empty;
+        string[] fallbackSeasonCodes = [.. (settings.SeasonFallbackCodes ?? []).Where(c => !string.IsNullOrWhiteSpace(c)).Select(c => c.Trim())];
         string[] allSeasonCodes = [seasonCode, .. fallbackSeasonCodes];
         var articleNumbers = order.Positions.Select(p => p.ArticleNumber).Distinct().ToList();
         foreach (var code in allSeasonCodes)

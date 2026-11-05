@@ -21,16 +21,16 @@ public class DelegateImportUserInteractionServiceTests
     {
         var calls = new List<string>();
         var interaction = new DelegateImportUserInteractionService(
-            askText: (title, message, error) => { calls.Add($"{title}|{message}|{error}"); return Task.FromResult<string?>("1001"); },
+            askText: (title, message, error, placeholder) => { calls.Add($"{title}|{message}|{error}|{placeholder}"); return Task.FromResult<string?>("1001"); },
             choose: (title, message, options) => { calls.Add($"{title}|{message}|{string.Join(",", options)}"); return Task.FromResult<int?>(1); },
             confirmWarning: (title, message) => { calls.Add($"{title}|{message}"); return Task.FromResult(true); },
             orderPositionsDeleted: () => calls.Add("deleted"));
 
-        (await interaction.AskTextAsync("T", "M", "E")).Should().Be("1001");
+        (await interaction.AskTextAsync("T", "M", "E", "P")).Should().Be("1001");
         (await interaction.ChooseAsync("T", "M", ["A", "B"])).Should().Be(1);
         (await interaction.ConfirmWarningAsync("T", "M")).Should().BeTrue();
         interaction.OrderPositionsDeleted();
 
-        calls.Should().Equal("T|M|E", "T|M|A,B", "T|M", "deleted");
+        calls.Should().Equal("T|M|E|P", "T|M|A,B", "T|M", "deleted");
     }
 }

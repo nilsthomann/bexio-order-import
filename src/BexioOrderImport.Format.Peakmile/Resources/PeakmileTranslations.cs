@@ -83,4 +83,5 @@ public static class PeakmileTranslations
     public static string Preview_TotalDiscount => ResourceManager.GetString(nameof(Preview_TotalDiscount)) ?? string.Empty;
     public static string Preview_TotalNet => ResourceManager.GetString(nameof(Preview_TotalNet)) ?? string.Empty;
     public static string Validation_PositiveNumber => ResourceManager.GetString(nameof(Validation_PositiveNumber)) ?? string.Empty;
+    public static string Error_InvalidPrice => ResourceManager.GetString(nameof(Error_InvalidPrice)) ?? string.Empty;
 }

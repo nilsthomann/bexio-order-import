@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using System.Text.Json.Serialization;
 using BexioOrderImport.Abstractions.Excel;
 using BexioOrderImport.Abstractions.Formats;
@@ -27,20 +28,13 @@ public class PeakmileSettings : IFormatSettings, IJsonOnDeserialized
 
     public string GroupedPositionTextTemplate { get; set; } = "<strong>{BexioArticleName}</strong><br />{SizesRows}<br />{BexioArticleDescription}";
 
+    /// <summary>
+    /// The position text template of the grouping mode.
+    /// </summary>
     [JsonIgnore]
-    public string PositionTextTemplate
-    {
-        get => PositionGroupingMode == PositionGroupingMode.GroupedSizePosition
-            ? GroupedPositionTextTemplate
-            : SinglePositionTextTemplate;
-        set
-        {
-            if (PositionGroupingMode == PositionGroupingMode.GroupedSizePosition)
-                GroupedPositionTextTemplate = value;
-            else
-                SinglePositionTextTemplate = value;
-        }
-    }
+    public string PositionTextTemplate => PositionGroupingMode == PositionGroupingMode.GroupedSizePosition
+        ? GroupedPositionTextTemplate
+        : SinglePositionTextTemplate;
 
     public string DiscountPositionTextTemplate { get; set; } = "Rabatt ({DiscountInPercent}%)";
     public string SizeRowTemplate { get; set; } = "{Amount}x Size {Size}";
@@ -55,7 +49,7 @@ public class PeakmileSettings : IFormatSettings, IJsonOnDeserialized
     [JsonInclude]
     [JsonPropertyName("PositionTextTemplate")]
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    [System.Diagnostics.CodeAnalysis.SuppressMessage("CodeQuality", "IDE0051", Justification = "Set by System.Text.Json when reading old profiles")]
+    [SuppressMessage("CodeQuality", "IDE0051", Justification = "Set by System.Text.Json when reading old profiles")]
     private string? LegacyPositionTextTemplate
     {
         get => null;
@@ -83,38 +77,6 @@ public class HeaderMapping
     public string OrderNumberCell { get; set; } = "E6";
     public bool EnableCustomerNumber { get; set; }
     public string CustomerNumberCell { get; set; } = "E3";
-
-    // TODO: [Backward Compatibility] Remove in future version
-    [JsonPropertyName("EnableOrderId")]
-    public bool EnableOrderId
-    {
-        get => EnableOrderNumber;
-        set => EnableOrderNumber = value;
-    }
-
-    // TODO: [Backward Compatibility] Remove in future version
-    [JsonPropertyName("OrderIdCell")]
-    public string OrderIdCell
-    {
-        get => OrderNumberCell;
-        set => OrderNumberCell = value;
-    }
-
-    // TODO: [Backward Compatibility] Remove in future version
-    [JsonPropertyName("EnableCustomerId")]
-    public bool EnableCustomerId
-    {
-        get => EnableCustomerNumber;
-        set => EnableCustomerNumber = value;
-    }
-
-    // TODO: [Backward Compatibility] Remove in future version
-    [JsonPropertyName("CustomerIdCell")]
-    public string CustomerIdCell
-    {
-        get => CustomerNumberCell;
-        set => CustomerNumberCell = value;
-    }
 
     public string PaymentTermsCell { get; set; } = "A9";
     public string DiscountCell { get; set; } = "V12";

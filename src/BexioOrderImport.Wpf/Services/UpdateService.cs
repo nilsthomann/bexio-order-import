@@ -29,7 +29,7 @@ public class UpdateService : IUpdateService
     {
         _httpClient = httpClient ?? new HttpClient();
         _appLifecycleService = appLifecycleService ?? throw new ArgumentNullException(nameof(appLifecycleService));
-        _cacheFolder = cacheFolder ?? Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "BexioOrderImport");
+        _cacheFolder = cacheFolder ?? Helpers.AppPaths.DataFolder;
         _downloadFolder = downloadFolder ?? Path.Combine(Path.GetTempPath(), "BexioOrderImportUpdate");
         if (_httpClient.DefaultRequestHeaders.UserAgent.Count == 0)
         {

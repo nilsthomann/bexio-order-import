@@ -52,7 +52,7 @@ public class ExcelParserEdgeCaseTests
         options.Header.ZipCityCell = "B3";
         options.Header.BuyerEmailCell = "B4";
         options.Header.BuyerNameCell = "B5";
-        options.Header.OrderIdCell = "B6";
+        options.Header.OrderNumberCell = "B6";
         options.Header.PaymentTermsCell = "B7";
         options.Header.DiscountCell = "B8";
 
@@ -159,7 +159,7 @@ public class ExcelParserEdgeCaseTests
             var parser = new PeakmileExcelParser(options);
             Action act = () => parser.ParseOrderForm(tempPath);
 
-            act.Should().Throw<FormatException>().WithMessage("*Ungültiges Preisformat*");
+            act.Should().Throw<FormatException>().WithMessage(string.Format(Resources.PeakmileTranslations.Error_InvalidPrice, "NOT_A_PRICE", 11, "G"));
         }
         finally
         {

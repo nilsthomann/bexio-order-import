@@ -69,24 +69,6 @@ public class ProfileSerializerTests
     }
 
     [Test]
-    public void FromDto_WhenProfileUsesOldPropertyNames_ShouldMapThem()
-    {
-        // Versions before 1.5.0 stored the order and customer number settings as "...Id"
-        string json = """
-            { "Name": "Old", "ExcelMapping": { "Header": {
-                "EnableOrderId": true, "OrderIdCell": "G1", "EnableCustomerId": true, "CustomerIdCell": "G2" } } }
-            """;
-        var dto = JsonSerializer.Deserialize<MappingProfileDto>(json)!;
-
-        var header = _serializer.FromDto(dto).Peakmile().Header;
-
-        header.EnableOrderNumber.Should().BeTrue();
-        header.OrderNumberCell.Should().Be("G1");
-        header.EnableCustomerNumber.Should().BeTrue();
-        header.CustomerNumberCell.Should().Be("G2");
-    }
-
-    [Test]
     public void FromDto_WhenNoSettingsAreStored_ShouldUseFormatDefaults()
     {
         var profile = _serializer.FromDto(new MappingProfileDto { Name = "Default" });

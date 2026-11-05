@@ -236,7 +236,7 @@ public class BexioApiClientTests
 
         var httpClient = new HttpClient(handler);
         var client = new BexioApiClient(httpClient, "dummy-token", 1, 1);
-        var pos = new OrderPosition { Quantity = 5, Color = "Red", Size = "M", UnitPrice = 12.5m, DiscountPercent = 10m };
+        var pos = new OrderPosition { Quantity = 5, Color = "Red", Size = "M", GrossUnitPrice = 12.5m, DiscountPercent = 10m };
 
         // Act
         await client.AddArticlePositionAsync(123, 77777, pos);
@@ -802,7 +802,7 @@ public class BexioApiClientTests
 
         var httpClient = new HttpClient(handler);
         var client = new BexioApiClient(httpClient, "dummy-token", 1, 1);
-        var pos = new OrderPosition { Quantity = 1, UnitPrice = 10m };
+        var pos = new OrderPosition { Quantity = 1, GrossUnitPrice = 10m };
 
         Func<Task> act = async () => await client.AddArticlePositionAsync(100, 200, pos);
         await act.Should().ThrowAsync<HttpRequestException>().WithMessage("*Error adding article position to order 100*");

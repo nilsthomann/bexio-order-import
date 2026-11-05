@@ -63,7 +63,7 @@ Profiles store a format id (`Format`) and the format's settings (`Settings`) in 
 1. Add the property with a default to `PeakmileSettings`. It is serialized as is, so existing profiles must load without it.
 2. Add the input to `PeakmileProfileConfigControl.xaml` and load, validate and save it in `PeakmileProfileConfigViewModel`. `ProfileEditWindow` only hosts the format's control and owns the profile name.
 3. Add the label and hint to the three `PeakmileTranslations` files.
-4. If the import needs it, add it to `PeakmileImportOptions` and map it in `PeakmileFormatAdapter.CreateImportOptions`.
+4. If the import needs it, read it from the settings in `PeakmileImporter`; the adapter passes the profile settings as they are.
 
 ## Bexio article lookup
 

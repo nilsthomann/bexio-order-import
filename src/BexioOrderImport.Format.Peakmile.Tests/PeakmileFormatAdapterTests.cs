@@ -136,27 +136,4 @@ public class PeakmileFormatAdapterTests
         result.ErrorMessage.Should().Be("No positions found.");
         logs.Should().Contain("No order positions with quantity > 0 found.");
     }
-
-    [Test]
-    public void CreateImportOptions_ShouldMapTheProfileSettings()
-    {
-        var settings = new PeakmileSettings
-        {
-            DefaultOrderName = "Order {CustomerName}",
-            SeasonCode = "HW26",
-            SeasonFallbackCodes = ["NOOS"],
-            PositionGroupingMode = PositionGroupingMode.GroupedSizePosition,
-            GroupedPositionTextTemplate = "{SizesRows}",
-            DiscountPositionTextTemplate = "Discount {DiscountInPercent}"
-        };
-
-        var options = PeakmileFormatAdapter.CreateImportOptions(settings);
-
-        options.Should().BeEquivalentTo(new PeakmileImportOptions(
-            DefaultOrderName: "Order {CustomerName}",
-            SeasonCode: "HW26",
-            PositionTextTemplate: "{SizesRows}",
-            DiscountPositionTextTemplate: "Discount {DiscountInPercent}",
-            SeasonFallbackCodes: ["NOOS"]));
-    }
 }

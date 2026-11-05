@@ -60,30 +60,17 @@ public class PeakmileSettingsTests
     }
 
     [Test]
-    public void PositionTextTemplate_ShouldReadAndWriteTheTemplateOfTheGroupingMode()
+    [Arguments(PositionGroupingMode.SinglePositionPerSize, "single")]
+    [Arguments(PositionGroupingMode.GroupedSizePosition, "grouped")]
+    public void PositionTextTemplate_ShouldBeTheTemplateOfTheGroupingMode(PositionGroupingMode mode, string expected)
     {
         var settings = new PeakmileSettings
         {
-            PositionTextTemplate = "single",
-            PositionGroupingMode = PositionGroupingMode.GroupedSizePosition
+            SinglePositionTextTemplate = "single",
+            GroupedPositionTextTemplate = "grouped",
+            PositionGroupingMode = mode
         };
-        settings.PositionTextTemplate = "grouped";
 
-        settings.SinglePositionTextTemplate.Should().Be("single");
-        settings.GroupedPositionTextTemplate.Should().Be("grouped");
-        settings.PositionTextTemplate.Should().Be("grouped");
-    }
-
-    [Test]
-    public void PositionTextTemplate_WhenGroupedMode_ShouldGetAndSetGroupedPositionTextTemplate()
-    {
-        var options = new PeakmileSettings
-        {
-            PositionGroupingMode = PositionGroupingMode.GroupedSizePosition
-        };
-        options.PositionTextTemplate.Should().Be(options.GroupedPositionTextTemplate);
-
-        options.PositionTextTemplate = "Custom Grouped {SizesRows}";
-        options.GroupedPositionTextTemplate.Should().Be("Custom Grouped {SizesRows}");
+        settings.PositionTextTemplate.Should().Be(expected);
     }
 }
