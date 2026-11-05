@@ -1,6 +1,7 @@
 using BexioOrderImport.Abstractions.Bexio;
 using BexioOrderImport.Abstractions.Import;
 using BexioOrderImport.Domain.Models;
+using BexioOrderImport.Domain.Models.Bexio;
 
 namespace BexioOrderImport.Format.EanList;
 
@@ -44,6 +45,10 @@ public sealed class EanListImporter
         }
 
         interaction.LogInfo("Connecting to Bexio API...");
+
+        // All articles are found before Bexio is changed, so a missing EAN creates no order
+        var articles = await FindArticlesAsync(order, interaction);
+
         var target = await OrderTargetResolver.ResolveAsync(
             order, settings.DefaultOrderName, string.Empty, _bexio, interaction, useContactNameAsCustomerName: true);
         if (target!.Failure != null)
@@ -56,14 +61,7 @@ public sealed class EanListImporter
         foreach (var position in order.Positions)
         {
             string ean = position.Ean ?? string.Empty;
-            var match = await _articleMatcher.FindArticleAsync(new EanArticleCriteria(ean));
-            if (!match.IsFound)
-            {
-                interaction.LogInfo($"⛔ EAN '{ean}' (row {position.SourceRow}) {match.FailureReason} in Bexio.");
-                throw new InvalidOperationException($"EAN '{ean}' (row {position.SourceRow}) {match.FailureReason} in Bexio.");
-            }
-
-            var article = match.Article;
+            var article = articles[position];
             if (article.SalePrice == null)
             {
                 interaction.LogInfo($"⚠️ Article '{article.Code}' has no sale price in Bexio.");
@@ -98,5 +96,36 @@ public sealed class EanListImporter
 
         interaction.LogInfo($"Successfully completed! Order #{target.DocumentNr} has been imported into Bexio.");
         return new ImportResult(Success: true, OrderNumber: target.DocumentNr, UploadedPositionsCount: count);
+    }
+
+    /// <summary>
+    /// The Bexio article of each position. Throws with all missing EANs before anything is changed in Bexio.
+    /// </summary>
+    private async Task<Dictionary<OrderPosition, BexioArticle>> FindArticlesAsync(Order order, IImportUserInteractionService interaction)
+    {
+        var articles = new Dictionary<OrderPosition, BexioArticle>();
+        var missing = new List<string>();
+        foreach (var position in order.Positions)
+        {
+            string ean = position.Ean ?? string.Empty;
+            var match = await _articleMatcher.FindArticleAsync(new EanArticleCriteria(ean));
+            if (match.IsFound)
+            {
+                articles[position] = match.Article;
+                continue;
+            }
+
+            string article = $"EAN '{ean}' (row {position.SourceRow}) {match.FailureReason}";
+            interaction.LogInfo($"⛔ {article} in Bexio.");
+            missing.Add(article);
+        }
+
+        if (missing.Count > 0)
+        {
+            throw new InvalidOperationException(
+                $"{missing.Count} EAN(s) not found in Bexio. Nothing was changed in Bexio.{Environment.NewLine}"
+                + string.Join(Environment.NewLine, missing.Select(m => $"• {m}")));
+        }
+        return articles;
     }
 }

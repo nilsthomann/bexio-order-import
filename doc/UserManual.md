@@ -123,7 +123,7 @@ During the import:
 
 1. The customer is searched by the customer number of the profile. There is no search by email and no new customer is created.
 2. Every import creates a new order for that customer. Positions are never added to an existing order.
-3. Each EAN must match the **internal code** (`intern_code`) of exactly one Bexio article. An EAN that matches no article or several articles stops the import.
+3. Each EAN must match the **internal code** (`intern_code`) of exactly one Bexio article. All EANs are checked before anything is changed in Bexio: if an EAN matches no article or several articles, the import stops, lists every such EAN with its Excel row and creates no order.
 4. Every row becomes its own position, also when an EAN appears several times. The imported quantity is **quantity × VE** (eg. 3 × VE 6 = 18 pieces). The price is the **sale price of the Bexio article**; prices in the Excel file are not read.
 5. The position text comes from the **position text template** of the profile, by default `<strong>{BexioArticleName}</strong><br />{BexioArticleDescription}<br />{EAN}`. Placeholders are `{EAN}`, `{BexioArticleName}` and `{BexioArticleDescription}`. Existing profiles keep their saved template.
 

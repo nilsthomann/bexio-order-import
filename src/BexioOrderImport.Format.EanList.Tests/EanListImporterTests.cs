@@ -77,6 +77,8 @@ public class EanListImporterTests
     [Test]
     public async Task ExecuteAsync_WhenCustomerIsNotFound_ShouldFailWithoutCreatingAnything()
     {
+        SetupArticle("4006381333931", Article(1));
+
         var result = await new EanListImporter(_bexio.Object).ExecuteAsync(Order(), _settings, Interaction());
 
         result.ErrorMessage.Should().Be("Customer 1001 not found.");
@@ -167,9 +169,28 @@ public class EanListImporterTests
 
         Func<Task> act = () => new EanListImporter(_bexio.Object, matcher.Object).ExecuteAsync(Order(eans: ["7612345678900", "4006381333931"]), _settings, Interaction());
 
-        await act.Should().ThrowAsync<InvalidOperationException>().WithMessage("EAN '4006381333931' (row 3) blocked in Bexio.");
-        _bexio.Verify(b => b.AddArticlePositionAsync(77, 2, It.IsAny<OrderPosition>(), It.IsAny<string?>()), Times.Once);
+        await act.Should().ThrowAsync<InvalidOperationException>().WithMessage("*EAN '4006381333931' (row 3) blocked*");
         _bexio.Verify(b => b.FindArticlesByInternCodeAsync(It.IsAny<string>()), Times.Never);
+    }
+
+    [Test]
+    public async Task ExecuteAsync_WhenEansAreMissing_ShouldListAllAndChangeNothingInBexio()
+    {
+        SetupNewOrder();
+        SetupArticle("4006381333931", Article(1));
+        SetupArticle("7612345678900");
+        SetupArticle("0826710896036");
+
+        Func<Task> act = () => new EanListImporter(_bexio.Object).ExecuteAsync(
+            Order(eans: ["4006381333931", "7612345678900", "0826710896036"]), _settings, Interaction());
+
+        var error = await act.Should().ThrowAsync<InvalidOperationException>();
+        error.WithMessage("2 EAN(s) not found in Bexio. Nothing was changed in Bexio.*")
+            .WithMessage("*7612345678900' (row 3) not found*")
+            .WithMessage("*0826710896036' (row 4) not found*");
+        _bexio.Verify(b => b.FindContactByNrAsync(It.IsAny<string>()), Times.Never);
+        _bexio.Verify(b => b.CreateOrderAsync(It.IsAny<int>(), It.IsAny<Order>()), Times.Never);
+        _bexio.Verify(b => b.AddArticlePositionAsync(It.IsAny<int>(), It.IsAny<int>(), It.IsAny<OrderPosition>(), It.IsAny<string?>()), Times.Never);
     }
 
     [Test]
