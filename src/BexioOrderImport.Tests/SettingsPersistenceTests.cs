@@ -276,6 +276,99 @@ public class SettingsPersistenceTests : StaTestBase, IDisposable
     }
 
     [Test]
+    public void DragProfile_WhenDropped_ShouldKeepTheNewOrderAndTheActiveProfileAfterSaving()
+    {
+        RunInSta(() =>
+        {
+            var vm = CreateVm();
+            var active = vm.ActiveProfile!;
+            vm.Profiles.Add(ProfileTestExtensions.PeakmileProfile("B"));
+            vm.Profiles.Add(ProfileTestExtensions.PeakmileProfile("C"));
+            vm.SaveSettingsCommand.Execute(null);
+            var dragged = vm.Profiles[2];
+
+            vm.BeginProfileDrag(dragged);
+            vm.MoveDraggedProfile(1);
+            vm.MoveDraggedProfile(0);
+
+            vm.DraggedProfile.Should().BeSameAs(dragged);
+            vm.IsModified.Should().BeFalse();
+
+            vm.EndProfileDrag(dropped: true);
+
+            vm.DraggedProfile.Should().BeNull();
+            vm.Profiles.Select(p => p.Name).Should().Equal("C", "Default", "B");
+            vm.ActiveProfile.Should().BeSameAs(active);
+            vm.IsModified.Should().BeTrue();
+
+            vm.SaveSettingsCommand.Execute(null);
+            vm.LoadSettings();
+
+            vm.Profiles.Select(p => p.Name).Should().Equal("C", "Default", "B");
+            vm.ActiveProfile!.Name.Should().Be("Default");
+        });
+    }
+
+    [Test]
+    public void DragProfile_WhenCancelled_ShouldRestoreTheOrder()
+    {
+        RunInSta(() =>
+        {
+            var vm = CreateVm();
+            vm.Profiles.Add(ProfileTestExtensions.PeakmileProfile("B"));
+            vm.Profiles.Add(ProfileTestExtensions.PeakmileProfile("C"));
+            vm.IsModified = false;
+
+            vm.BeginProfileDrag(vm.Profiles[0]);
+            vm.MoveDraggedProfile(9);
+            vm.Profiles.Select(p => p.Name).Should().Equal("B", "C", "Default");
+            vm.EndProfileDrag(dropped: false);
+
+            vm.Profiles.Select(p => p.Name).Should().Equal("Default", "B", "C");
+            vm.DraggedProfile.Should().BeNull();
+            vm.IsModified.Should().BeFalse();
+        });
+    }
+
+    [Test]
+    public void DragProfile_DroppedOnItsStartPosition_ShouldNotModifyTheSettings()
+    {
+        RunInSta(() =>
+        {
+            var vm = CreateVm();
+            vm.Profiles.Add(ProfileTestExtensions.PeakmileProfile("B"));
+            vm.IsModified = false;
+
+            vm.BeginProfileDrag(vm.Profiles[0]);
+            vm.MoveDraggedProfile(1);
+            vm.MoveDraggedProfile(-1);
+            vm.EndProfileDrag(dropped: true);
+
+            vm.Profiles.Select(p => p.Name).Should().Equal("Default", "B");
+            vm.IsModified.Should().BeFalse();
+        });
+    }
+
+    [Test]
+    public void DragProfile_OfAProfileNotInTheList_ShouldChangeNothing()
+    {
+        RunInSta(() =>
+        {
+            var vm = CreateVm();
+            vm.Profiles.Add(ProfileTestExtensions.PeakmileProfile("B"));
+            vm.IsModified = false;
+
+            vm.BeginProfileDrag(ProfileTestExtensions.PeakmileProfile("Unknown"));
+            vm.MoveDraggedProfile(0);
+            vm.EndProfileDrag(dropped: true);
+
+            vm.DraggedProfile.Should().BeNull();
+            vm.Profiles.Select(p => p.Name).Should().Equal("Default", "B");
+            vm.IsModified.Should().BeFalse();
+        });
+    }
+
+    [Test]
     public void SetActiveProfile_ShouldChangeActiveProfileAndPersistWithoutIsModified()
     {
         RunInSta(() =>

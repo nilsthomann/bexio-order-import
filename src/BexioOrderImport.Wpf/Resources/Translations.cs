@@ -123,4 +123,5 @@ public static class Translations
     public static string Import_ReadErrorTitle => ResourceManager.GetString(nameof(Import_ReadErrorTitle)) ?? string.Empty;
     public static string Settings_ProfilesCreateHint => ResourceManager.GetString(nameof(Settings_ProfilesCreateHint)) ?? string.Empty;
     public static string Settings_ProfilesEditHint => ResourceManager.GetString(nameof(Settings_ProfilesEditHint)) ?? string.Empty;
+    public static string Settings_ProfilesDragHandle => ResourceManager.GetString(nameof(Settings_ProfilesDragHandle)) ?? string.Empty;
 }

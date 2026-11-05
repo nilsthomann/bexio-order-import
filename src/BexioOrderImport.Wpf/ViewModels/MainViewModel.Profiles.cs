@@ -57,6 +57,54 @@ public partial class MainViewModel
         }
     }
 
+    private int _dragStartIndex;
+
+    /// <summary>
+    /// The profile that is dragged in the profile list; its row shows a placeholder at the position it would land.
+    /// </summary>
+    public Models.MappingProfile? DraggedProfile
+    {
+        get => _draggedProfile;
+        private set => SetProperty(ref _draggedProfile, value);
+    }
+    private Models.MappingProfile? _draggedProfile;
+
+    internal void BeginProfileDrag(Models.MappingProfile profile)
+    {
+        _dragStartIndex = Profiles.IndexOf(profile);
+        DraggedProfile = _dragStartIndex >= 0 ? profile : null;
+    }
+
+    /// <summary>
+    /// Moves the dragged profile to the position of the profile under the mouse while dragging.
+    /// The list order is the order in the settings file and in the import tab dropdown.
+    /// </summary>
+    internal void MoveDraggedProfile(int newIndex)
+    {
+        if (DraggedProfile == null) return;
+        int oldIndex = Profiles.IndexOf(DraggedProfile);
+        newIndex = Math.Clamp(newIndex, 0, Profiles.Count - 1);
+        if (oldIndex != newIndex) Profiles.Move(oldIndex, newIndex);
+    }
+
+    /// <summary>
+    /// Keeps the new order when the profile was dropped on the list, otherwise moves it back.
+    /// </summary>
+    internal void EndProfileDrag(bool dropped)
+    {
+        if (DraggedProfile == null) return;
+        int index = Profiles.IndexOf(DraggedProfile);
+        if (!dropped)
+        {
+            Profiles.Move(index, _dragStartIndex);
+        }
+        else if (index != _dragStartIndex)
+        {
+            SetModified();
+        }
+        DraggedProfile = null;
+    }
+
     private void SetActiveProfile(Models.MappingProfile profile)
     {
         if (profile != null)

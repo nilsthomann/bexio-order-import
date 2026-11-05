@@ -94,8 +94,12 @@
                         <TextBlock Text="{x:Static lex:Translations.Settings_ProfilesSection}" Style="{StaticResource SectionHeaderTextBlockStyle}" Margin="0,0,0,12"/>
                         
                         <!-- Profiles DataGrid -->
-                        <DataGrid ItemsSource="{Binding Profiles}" 
-                                  AutoGenerateColumns="False" 
+                        <DataGrid x:Name="ProfilesGrid"
+                                  ItemsSource="{Binding Profiles}"
+                                  AllowDrop="True"
+                                  DragOver="ProfilesGrid_DragOver"
+                                  Drop="ProfilesGrid_Drop"
+                                  AutoGenerateColumns="False"
                                   CanUserAddRows="False" 
                                   CanUserDeleteRows="False"
                                   GridLinesVisibility="Horizontal"
@@ -139,11 +143,71 @@
                                             </DataTrigger.Binding>
                                             <Setter Property="Background" Value="{StaticResource ActiveRowBrush}"/>
                                         </DataTrigger>
+                                        <!-- The dragged profile shows as a skeleton row where it would land -->
+                                        <DataTrigger Value="True">
+                                            <DataTrigger.Binding>
+                                                <MultiBinding Converter="{StaticResource EqualityConverter}">
+                                                    <Binding/>
+                                                    <Binding Path="DataContext.DraggedProfile" RelativeSource="{RelativeSource AncestorType=DataGrid}"/>
+                                                </MultiBinding>
+                                            </DataTrigger.Binding>
+                                            <Setter Property="Template">
+                                                <Setter.Value>
+                                                    <ControlTemplate TargetType="DataGridRow">
+                                                        <Grid>
+                                                            <!-- The hidden cells keep the height of a profile row -->
+                                                            <DataGridCellsPresenter Visibility="Hidden"/>
+                                                            <Border Margin="4,3" CornerRadius="6" BorderThickness="1" BorderBrush="{StaticResource AccentBrush}">
+                                                                <Border.Background>
+                                                                    <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
+                                                                        <GradientStop Color="#594F46E5" Offset="0"/>
+                                                                        <GradientStop Color="#264F46E5" Offset="1"/>
+                                                                    </LinearGradientBrush>
+                                                                </Border.Background>
+                                                                <Grid>
+                                                                    <Grid.ColumnDefinitions>
+                                                                        <ColumnDefinition Width="32"/>
+                                                                        <ColumnDefinition Width="70"/>
+                                                                        <ColumnDefinition Width="*"/>
+                                                                        <ColumnDefinition Width="220"/>
+                                                                        <ColumnDefinition Width="146"/>
+                                                                    </Grid.ColumnDefinitions>
+                                                                    <Border Grid.Column="1" Width="32" Height="12" CornerRadius="6" Background="#D9FFFFFF"/>
+                                                                    <Border Grid.Column="2" Width="160" Height="12" CornerRadius="6" Background="#D9FFFFFF" HorizontalAlignment="Left" Margin="12,0"/>
+                                                                    <Border Grid.Column="3" Width="110" Height="12" CornerRadius="6" Background="#D9FFFFFF" HorizontalAlignment="Left" Margin="12,0"/>
+                                                                    <StackPanel Grid.Column="4" Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                                                        <Border Width="14" Height="14" CornerRadius="4" Background="#D9FFFFFF"/>
+                                                                        <Border Width="14" Height="14" CornerRadius="4" Background="#D9FFFFFF" Margin="36,0"/>
+                                                                        <Border Width="14" Height="14" CornerRadius="4" Background="#D9FFFFFF"/>
+                                                                    </StackPanel>
+                                                                </Grid>
+                                                            </Border>
+                                                        </Grid>
+                                                    </ControlTemplate>
+                                                </Setter.Value>
+                                            </Setter>
+                                        </DataTrigger>
                                     </Style.Triggers>
                                 </Style>
                             </DataGrid.Resources>
                             
                             <DataGrid.Columns>
+                                <!-- Drag Handle -->
+                                <DataGridTemplateColumn Width="36" IsReadOnly="True">
+                                    <DataGridTemplateColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <Border Background="Transparent" Cursor="SizeAll"
+                                                    ToolTip="{x:Static lex:Translations.Settings_ProfilesDragHandle}"
+                                                    AutomationProperties.Name="{x:Static lex:Translations.Settings_ProfilesDragHandle}"
+                                                    PreviewMouseLeftButtonDown="DragHandle_PreviewMouseLeftButtonDown"
+                                                    MouseMove="DragHandle_MouseMove">
+                                                <Path Data="M11 18c0 1.1-.9 2-2 2s-2-.9-2-2 .9-2 2-2 2 .9 2 2zm-2-8c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0-6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm6 4c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"
+                                                      Fill="{StaticResource TextMutedBrush}" Stretch="Uniform" Width="10" Height="16" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                            </Border>
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellTemplate>
+                                </DataGridTemplateColumn>
+
                                 <!-- Active Indicator -->
                                 <DataGridTemplateColumn Header="{x:Static lex:Translations.Settings_ProfilesTableColActive}" Width="70" IsReadOnly="True">
                                     <DataGridTemplateColumn.CellTemplate>
