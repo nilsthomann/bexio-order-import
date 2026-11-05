@@ -136,18 +136,14 @@ public partial class MainViewModel
 
         _timeEstimator.Reset();
         var importStopwatch = System.Diagnostics.Stopwatch.StartNew();
-        double currentUploaded = 0;
-        double currentTotal = 0;
 
         // Periodic timer to tick elapsed time every second on UI
         var uiTimer = new System.Windows.Threading.DispatcherTimer
         {
             Interval = TimeSpan.FromSeconds(1)
         };
-        uiTimer.Tick += (s, e) =>
-        {
-            UpdateRemainingTime(currentUploaded, currentTotal, importStopwatch);
-        };
+        // Ticks the elapsed time and keeps the last estimate; the progress reports update the estimate
+        uiTimer.Tick += (s, e) => UpdateRemainingTime(0, 0, importStopwatch);
         uiTimer.Start();
 
         var interaction = new WpfImportUserInteractionService(
@@ -252,47 +248,6 @@ public partial class MainViewModel
     private void UpdateRemainingTime(double uploaded, double total, System.Diagnostics.Stopwatch stopwatch)
     {
         RemainingTimeText = _timeEstimator.GetTimeText(uploaded, total, stopwatch.Elapsed, DateTime.UtcNow);
-    }
-
-    private async Task<bool> ConfirmUploadAsync()
-    {
-        IsImportingActive = false;
-        try
-        {
-            string message = string.Format(CultureInfo.CurrentCulture, Resources.Translations.Import_ConfirmMessage, _loadedOrder?.Positions.Count ?? 0, SelectedFileName);
-            return _dialogService.ShowConfirmDialog(message, Resources.Translations.Import_ConfirmTitle);
-        }
-        finally
-        {
-            if (IsImporting) IsImportingActive = true;
-        }
-    }
-
-    private async Task<bool> ConfirmCustomerCreationAsync(Customer customer)
-    {
-        IsImportingActive = false;
-        try
-        {
-            return _dialogService.ShowCustomerConfirmDialog(customer);
-        }
-        finally
-        {
-            if (IsImporting) IsImportingActive = true;
-        }
-    }
-
-    private async Task<bool> ConfirmEmailMismatchAsync(string existingEmail, string excelEmail)
-    {
-        IsImportingActive = false;
-        try
-        {
-            string message = string.Format(Resources.Translations.Import_EmailMismatchMessage, existingEmail, excelEmail);
-            return _dialogService.ShowConfirmDialog(message, Resources.Translations.Import_EmailMismatchTitle);
-        }
-        finally
-        {
-            if (IsImporting) IsImportingActive = true;
-        }
     }
 
     /// <summary>
@@ -406,11 +361,18 @@ public partial class MainViewModel
         public Task<bool> ConfirmWarningAsync(string title, string message)
             => _vm.AskDuringImportAsync(() => _vm._dialogService.ShowWarningConfirmDialog(message, title, Resources.Translations.Dialog_Continue));
 
-        public Task<bool> ConfirmUploadAsync() => _vm.ConfirmUploadAsync();
+        public Task<bool> ConfirmUploadAsync()
+            => _vm.AskDuringImportAsync(() => _vm._dialogService.ShowConfirmDialog(
+                string.Format(CultureInfo.CurrentCulture, Resources.Translations.Import_ConfirmMessage, _vm._loadedOrder?.Positions.Count ?? 0, _vm.SelectedFileName),
+                Resources.Translations.Import_ConfirmTitle));
 
-        public Task<bool> ConfirmCustomerCreationAsync(Customer customer) => _vm.ConfirmCustomerCreationAsync(customer);
+        public Task<bool> ConfirmCustomerCreationAsync(Customer customer)
+            => _vm.AskDuringImportAsync(() => _vm._dialogService.ShowCustomerConfirmDialog(customer));
 
-        public Task<bool> ConfirmEmailMismatchAsync(string existingEmail, string excelEmail) => _vm.ConfirmEmailMismatchAsync(existingEmail, excelEmail);
+        public Task<bool> ConfirmEmailMismatchAsync(string existingEmail, string excelEmail)
+            => _vm.AskDuringImportAsync(() => _vm._dialogService.ShowConfirmDialog(
+                string.Format(CultureInfo.CurrentCulture, Resources.Translations.Import_EmailMismatchMessage, existingEmail, excelEmail),
+                Resources.Translations.Import_EmailMismatchTitle));
 
         public void LogInfo(string message) => _vm.InvokeOnUi(() => _vm.AppendLog(message));
 
