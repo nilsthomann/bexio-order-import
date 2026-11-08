@@ -604,6 +604,30 @@ public class MainViewModelTests : IDisposable
     }
 
     [Test]
+    public async Task ImportDialogs_ShouldPauseTheImportTime()
+    {
+        var vm = CreateVm();
+        vm.IsImporting = true;
+        var stopwatch = (System.Diagnostics.Stopwatch)typeof(MainViewModel)
+            .GetField("_importStopwatch", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)!.GetValue(vm)!;
+        stopwatch.Start();
+        bool runningDuringDialog = true;
+        _dialogServiceMock.Setup(d => d.ShowConfirmDialog(It.IsAny<string>(), It.IsAny<string>()))
+            .Returns(() => { runningDuringDialog = stopwatch.IsRunning; return true; });
+        var type = typeof(MainViewModel).GetNestedType("WpfImportUserInteractionService", System.Reflection.BindingFlags.NonPublic);
+        var service = (IImportUserInteractionService)Activator.CreateInstance(type!, [
+            vm,
+            (Action<double, double, System.Diagnostics.Stopwatch>)((c, t, sw) => { }),
+            stopwatch
+        ])!;
+
+        await service.ConfirmUploadAsync();
+
+        runningDuringDialog.Should().BeFalse("the time in a dialog is not import time");
+        stopwatch.IsRunning.Should().BeTrue("the import goes on after the dialog");
+    }
+
+    [Test]
     public void MainViewModel_PropertyGettersAndSetters_ShouldUpdateState()
     {
         var vm = CreateVm();
