@@ -11,6 +11,9 @@ public partial class MainViewModel
 {
     private readonly ImportTimeEstimator _timeEstimator = new();
 
+    // Paused while a dialog of the import is open, so only the import itself is timed
+    private readonly System.Diagnostics.Stopwatch _importStopwatch = new();
+
     private const string ConnectionColorConnected    = "#10B981"; // Green
     private const string ConnectionColorDisconnected = "#EF4444"; // Red
     private const string ConnectionColorChecking     = "#F59E0B"; // Amber
@@ -135,15 +138,16 @@ public partial class MainViewModel
         AppendLog("Starting import process...");
 
         _timeEstimator.Reset();
-        var importStopwatch = System.Diagnostics.Stopwatch.StartNew();
+        var importStopwatch = _importStopwatch;
+        importStopwatch.Restart();
 
         // Periodic timer to tick elapsed time every second on UI
         var uiTimer = new System.Windows.Threading.DispatcherTimer
         {
             Interval = TimeSpan.FromSeconds(1)
         };
-        // Ticks the elapsed time and keeps the last estimate; the progress reports update the estimate
-        uiTimer.Tick += (s, e) => UpdateRemainingTime(0, 0, importStopwatch);
+        // Ticks the elapsed time and counts the last estimate down; the progress reports update the estimate
+        uiTimer.Tick += (s, e) => RemainingTimeText = _timeEstimator.GetTimeText(importStopwatch.Elapsed);
         uiTimer.Start();
 
         var interaction = new WpfImportUserInteractionService(
@@ -212,6 +216,7 @@ public partial class MainViewModel
         finally
         {
             uiTimer.Stop();
+            importStopwatch.Stop();
             IsImporting = false;
             if (!IsImportSuccess)
             {
@@ -256,13 +261,18 @@ public partial class MainViewModel
     private Task<T> AskDuringImportAsync<T>(Func<T> showDialog)
     {
         IsImportingActive = false;
+        _importStopwatch.Stop();
         try
         {
             return Task.FromResult(showDialog());
         }
         finally
         {
-            if (IsImporting) IsImportingActive = true;
+            if (IsImporting)
+            {
+                IsImportingActive = true;
+                _importStopwatch.Start();
+            }
         }
     }
 

@@ -3,20 +3,28 @@ using BexioOrderImport.Wpf.Resources;
 namespace BexioOrderImport.Wpf.ViewModels;
 
 /// <summary>
-/// Elapsed and remaining time of an import. The remaining time blends the overall speed with the speed
-/// of the last seconds and is smoothed, so it does not jump with every position.
+/// Elapsed and remaining time of an import. The remaining time blends the upload speed since the first position
+/// with the speed of the last seconds, is smoothed, so it does not jump with every position, and counts down between positions.
 /// </summary>
 public sealed class ImportTimeEstimator
 {
     private readonly List<(DateTime Timestamp, double UploadedCount)> _samples = [];
+    private (DateTime Timestamp, double UploadedCount)? _firstSample;
     private double _smoothedSecondsPerItem;
-    private string _lastFormattedRemaining = "-";
+    private double _uploaded;
+    private double _total;
+    private double? _remainingSeconds;
+    private TimeSpan _estimatedAt;
 
     public void Reset()
     {
         _samples.Clear();
+        _firstSample = null;
         _smoothedSecondsPerItem = 0;
-        _lastFormattedRemaining = "-";
+        _uploaded = 0;
+        _total = 0;
+        _remainingSeconds = null;
+        _estimatedAt = TimeSpan.Zero;
     }
 
     /// <summary>
@@ -24,27 +32,24 @@ public sealed class ImportTimeEstimator
     /// </summary>
     public void AddSample(double uploaded, DateTime now)
     {
+        _firstSample ??= (now, uploaded);
         _samples.Add((now, uploaded));
         var cutoff = now.AddMinutes(-3);
         _samples.RemoveAll(s => s.Timestamp < cutoff);
     }
 
     /// <summary>
-    /// The progress text with the elapsed time and, until all positions are uploaded, the estimated remaining time.
+    /// Updates the estimate with the uploaded positions and returns the progress text.
     /// </summary>
     public string GetTimeText(double uploaded, double total, TimeSpan elapsed, DateTime now)
     {
-        string elapsedStr = string.Format("{0:D2}:{1:D2}", (int)elapsed.TotalMinutes, elapsed.Seconds);
+        _uploaded = uploaded;
+        _total = total;
 
-        if (total > 0 && uploaded >= total)
+        if (uploaded >= 3 && _samples.Count >= 2 && _firstSample is { } first && uploaded > first.UploadedCount)
         {
-            return string.Format(Translations.Import_ProgressTimeElapsedOnly, elapsedStr);
-        }
-
-        if (uploaded >= 3 && _samples.Count >= 2)
-        {
-            // Calculate overall average seconds per item
-            double overallSecondsPerItem = elapsed.TotalSeconds / Math.Max(1, uploaded);
+            // The work before the first position (article lookup, customer and order) is not upload speed
+            double overallSecondsPerItem = (now - first.Timestamp).TotalSeconds / (uploaded - first.UploadedCount);
 
             // Find a reference sample from 4+ seconds ago for rolling velocity
             var validSamples = _samples
@@ -71,13 +76,35 @@ public sealed class ImportTimeEstimator
                 ? targetSecondsPerItem
                 : (_smoothedSecondsPerItem * 0.85) + (targetSecondsPerItem * 0.15);
 
-            double remainingSeconds = Math.Max(0, (total - uploaded) * _smoothedSecondsPerItem);
+            _remainingSeconds = Math.Max(0, (total - uploaded) * _smoothedSecondsPerItem);
+            _estimatedAt = elapsed;
+        }
+
+        return GetTimeText(elapsed);
+    }
+
+    /// <summary>
+    /// The progress text with the elapsed time and, until all positions are uploaded, the last estimate counted down since it was made.
+    /// </summary>
+    public string GetTimeText(TimeSpan elapsed)
+    {
+        string elapsedStr = string.Format("{0:D2}:{1:D2}", (int)elapsed.TotalMinutes, elapsed.Seconds);
+
+        if (_total > 0 && _uploaded >= _total)
+        {
+            return string.Format(Translations.Import_ProgressTimeElapsedOnly, elapsedStr);
+        }
+
+        string remainingStr = "-";
+        if (_remainingSeconds is { } estimate)
+        {
+            double remainingSeconds = Math.Max(0, estimate - (elapsed - _estimatedAt).TotalSeconds);
             TimeSpan remainingTs = TimeSpan.FromSeconds(remainingSeconds);
-            _lastFormattedRemaining = remainingTs.TotalMinutes < 1
+            remainingStr = remainingTs.TotalMinutes < 1
                 ? $"~{Math.Max(1, (int)Math.Ceiling(remainingSeconds))}s"
                 : $"~{(int)remainingTs.TotalMinutes}m {remainingTs.Seconds}s";
         }
 
-        return string.Format(Translations.Import_ProgressTime, elapsedStr, _lastFormattedRemaining);
+        return string.Format(Translations.Import_ProgressTime, elapsedStr, remainingStr);
     }
 }

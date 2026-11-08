@@ -197,20 +197,10 @@
             </Border>
         </Grid>
 
-        <!-- Progress & Actions -->
-        <StackPanel Grid.Row="4" Margin="0,16,0,0" Orientation="Vertical">
-            <Grid Visibility="{Binding IsImporting, Converter={StaticResource BooleanToVisibilityConverter}}" Margin="0,0,0,16">
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="Auto"/>
-                </Grid.RowDefinitions>
-                <ProgressBar Value="{Binding ProgressPercentage}" Height="6" Grid.Row="0" Margin="0,0,0,6"/>
-                <TextBlock Text="{Binding RemainingTimeText}" Style="{StaticResource MutedTextBlockStyle}" FontSize="12" HorizontalAlignment="Right" Grid.Row="1"/>
-            </Grid>
-
-            <Button Content="{x:Static lex:Translations.Import_UploadButton}"
-                    Command="{Binding ImportCommand}"
-                    Style="{StaticResource ModernButtonStyle}"
-                    Width="220" HorizontalAlignment="Right"/>
-        </StackPanel>    </Grid>
+        <!-- Actions; the progress is shown in the import dialog -->
+        <Button Grid.Row="4" Margin="0,16,0,0"
+                Content="{x:Static lex:Translations.Import_UploadButton}"
+                Command="{Binding ImportCommand}"
+                Style="{StaticResource ModernButtonStyle}"
+                Width="220" HorizontalAlignment="Right"/>    </Grid>
 </UserControl>
