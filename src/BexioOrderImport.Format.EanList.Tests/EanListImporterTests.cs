@@ -75,6 +75,44 @@ public class EanListImporterTests
     }
 
     [Test]
+    [Arguments("PO-1", "Order: Muster AG PO-1")]
+    [Arguments(null, "Order: Muster AG ")]
+    public async Task ExecuteAsync_ShouldReplaceTheExternalOrderNumberInTheTitle(string? externalOrderNumber, string expected)
+    {
+        SetupNewOrder();
+        SetupArticle("4006381333931", Article(1));
+        var order = Order();
+        if (externalOrderNumber != null) order.ExternalOrderNumbers.Add(externalOrderNumber);
+        var settings = new EanListSettings { DefaultOrderName = "Order: {CustomerName} {ExternalOrderNumber}" };
+
+        await new EanListImporter(_bexio.Object).ExecuteAsync(order, settings, Interaction());
+
+        order.Title.Should().Be(expected);
+    }
+
+    [Test]
+    [Arguments(true)]
+    [Arguments(false)]
+    public async Task ExecuteAsync_WhenThereAreSeveralExternalOrderNumbers_ShouldWarnAndContinueOnlyIfAccepted(bool accept)
+    {
+        SetupNewOrder();
+        SetupArticle("4006381333931", Article(1));
+        var order = Order();
+        order.ExternalOrderNumbers.AddRange(["PO-1", "PO-2"]);
+        string? warning = null;
+        var interaction = new DelegateImportUserInteractionService(
+            confirmUpload: () => Task.FromResult(true),
+            logInfo: _logs.Add,
+            confirmWarning: (_, message) => { warning = message; return Task.FromResult(accept); });
+
+        var result = await new EanListImporter(_bexio.Object).ExecuteAsync(order, _settings, interaction);
+
+        warning.Should().Contain("PO-1, PO-2").And.Contain("**PO-1**");
+        result.Success.Should().Be(accept);
+        _bexio.Verify(b => b.CreateOrderAsync(5, It.IsAny<Order>()), accept ? Times.Once() : Times.Never());
+    }
+
+    [Test]
     public async Task ExecuteAsync_WhenCustomerIsNotFound_ShouldFailWithoutCreatingAnything()
     {
         SetupArticle("4006381333931", Article(1));

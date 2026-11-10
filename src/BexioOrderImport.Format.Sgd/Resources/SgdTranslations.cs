@@ -75,4 +75,11 @@ public static class SgdTranslations
     public static string Import_OrderNumberRequired => ResourceManager.GetString(nameof(Import_OrderNumberRequired)) ?? string.Empty;
     public static string Import_ReplaceWarningTitle => ResourceManager.GetString(nameof(Import_ReplaceWarningTitle)) ?? string.Empty;
     public static string Import_ReplaceWarningMessage => ResourceManager.GetString(nameof(Import_ReplaceWarningMessage)) ?? string.Empty;
+    public static string Settings_UseExternalOrderNumberColumn => ResourceManager.GetString(nameof(Settings_UseExternalOrderNumberColumn)) ?? string.Empty;
+    public static string Settings_ExternalOrderNumberColumn => ResourceManager.GetString(nameof(Settings_ExternalOrderNumberColumn)) ?? string.Empty;
+    public static string Validation_ExternalOrderNumberColumnRequired => ResourceManager.GetString(nameof(Validation_ExternalOrderNumberColumnRequired)) ?? string.Empty;
+    public static string Preview_ExternalOrderNumber => ResourceManager.GetString(nameof(Preview_ExternalOrderNumber)) ?? string.Empty;
+    public static string Preview_MultipleExternalOrderNumbers => ResourceManager.GetString(nameof(Preview_MultipleExternalOrderNumbers)) ?? string.Empty;
+    public static string Import_MultipleExternalOrderNumbersTitle => ResourceManager.GetString(nameof(Import_MultipleExternalOrderNumbersTitle)) ?? string.Empty;
+    public static string Import_MultipleExternalOrderNumbersMessage => ResourceManager.GetString(nameof(Import_MultipleExternalOrderNumbersMessage)) ?? string.Empty;
 }

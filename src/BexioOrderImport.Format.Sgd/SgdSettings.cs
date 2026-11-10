@@ -44,6 +44,14 @@ public class SgdSettings : IFormatSettings
     public string QuantityColumn { get; set; } = "E";
 
     /// <summary>
+    /// Reads the external order number from ExternalOrderNumberColumn for the preview and the {ExternalOrderNumber} placeholder.
+    /// </summary>
+    public bool UseExternalOrderNumberColumn { get; set; }
+
+    [JsonConverter(typeof(ExcelColumnJsonConverter))]
+    public string ExternalOrderNumberColumn { get; set; } = "F";
+
+    /// <summary>
     /// Bexio intern_code of an article: {SeasonCode}{ArticleNumber}{Color}.
     /// </summary>
     public string SeasonCode { get; set; } = "FS27";

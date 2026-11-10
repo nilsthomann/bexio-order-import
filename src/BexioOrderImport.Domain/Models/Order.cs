@@ -11,6 +11,16 @@ public class Order
     public List<OrderPosition> Positions { get; set; } = [];
 
     /// <summary>
+    /// The different external order numbers of the file in the order of their first row; more than one is a warning.
+    /// </summary>
+    public List<string> ExternalOrderNumbers { get; set; } = [];
+
+    /// <summary>
+    /// The first external order number of the file, or null if it has none.
+    /// </summary>
+    public string? ExternalOrderNumber => ExternalOrderNumbers.FirstOrDefault();
+
+    /// <summary>
     /// Rows the parser ignored, eg. because their quantity was empty or 0.
     /// </summary>
     public int SkippedRows { get; set; }

@@ -16,6 +16,8 @@ public sealed class EanListProfileConfigViewModel
     public string QuantityColumn { get; set; } = string.Empty;
     public bool UseSalesUnitColumn { get; set; }
     public string SalesUnitColumn { get; set; } = string.Empty;
+    public bool UseExternalOrderNumberColumn { get; set; }
+    public string ExternalOrderNumberColumn { get; set; } = string.Empty;
     public string CustomerNumber { get; set; } = string.Empty;
     public string DefaultOrderName { get; set; } = string.Empty;
     public string PositionTextTemplate { get; set; } = string.Empty;
@@ -29,6 +31,8 @@ public sealed class EanListProfileConfigViewModel
         QuantityColumn = settings.QuantityColumn;
         UseSalesUnitColumn = settings.UseSalesUnitColumn;
         SalesUnitColumn = settings.SalesUnitColumn;
+        UseExternalOrderNumberColumn = settings.UseExternalOrderNumberColumn;
+        ExternalOrderNumberColumn = settings.ExternalOrderNumberColumn;
         CustomerNumber = settings.CustomerNumber;
         DefaultOrderName = settings.DefaultOrderName;
         PositionTextTemplate = settings.PositionTextTemplate;
@@ -45,6 +49,14 @@ public sealed class EanListProfileConfigViewModel
         {
             AddIfNoColumn(errors, SalesUnitColumn, EanListTranslations.Settings_SalesUnitColumn);
         }
+        if (UseExternalOrderNumberColumn)
+        {
+            AddIfNoColumn(errors, ExternalOrderNumberColumn, EanListTranslations.Settings_ExternalOrderNumberColumn);
+        }
+        else if (DefaultOrderName.Contains("{ExternalOrderNumber}", StringComparison.Ordinal))
+        {
+            errors.Add(EanListTranslations.Validation_ExternalOrderNumberColumnRequired);
+        }
         if (string.IsNullOrWhiteSpace(CustomerNumber))
         {
             errors.Add(string.Format(EanListTranslations.Validation_Required, EanListTranslations.Settings_CustomerNumberLabel.TrimEnd(':', ' ')));
@@ -60,6 +72,8 @@ public sealed class EanListProfileConfigViewModel
         _settings.QuantityColumn = ExcelColumnHelper.NormalizeColumnLetter(QuantityColumn, "B");
         _settings.UseSalesUnitColumn = UseSalesUnitColumn;
         _settings.SalesUnitColumn = ExcelColumnHelper.NormalizeColumnLetter(SalesUnitColumn, "C");
+        _settings.UseExternalOrderNumberColumn = UseExternalOrderNumberColumn;
+        _settings.ExternalOrderNumberColumn = ExcelColumnHelper.NormalizeColumnLetter(ExternalOrderNumberColumn, "D");
         _settings.CustomerNumber = CustomerNumber.Trim();
         _settings.DefaultOrderName = DefaultOrderName.Trim();
         _settings.PositionTextTemplate = PositionTextTemplate.Trim();

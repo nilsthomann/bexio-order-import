@@ -22,7 +22,7 @@ public static class OrderTargetResolver
     /// Order number set: uses that existing order; a customer number must belong to its contact.
     /// Otherwise customer number set: creates a new order for that contact.
     /// </summary>
-    /// <param name="titleTemplate">Title of a new order with the placeholders {CustomerName} and {SeasonCode}.</param>
+    /// <param name="titleTemplate">Title of a new order with the placeholders {CustomerName}, {SeasonCode} and {ExternalOrderNumber}.</param>
     /// <param name="checkContactWithoutCustomerNumber">
     /// Checks the contact of an existing order when no customer number is set; returns a failure to stop the import.
     /// </param>
@@ -110,7 +110,8 @@ public static class OrderTargetResolver
     {
         order.Title = (titleTemplate ?? "Order: {CustomerName} {SeasonCode}")
             .Replace("{CustomerName}", order.Customer.CompanyName ?? string.Empty)
-            .Replace("{SeasonCode}", seasonCode ?? string.Empty);
+            .Replace("{SeasonCode}", seasonCode ?? string.Empty)
+            .Replace("{ExternalOrderNumber}", order.ExternalOrderNumber ?? string.Empty);
 
         return bexio.CreateOrderAsync(contactId, order);
     }

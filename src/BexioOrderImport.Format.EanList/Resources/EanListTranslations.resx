@@ -169,7 +169,7 @@
     <value>Auftragsname-Vorlage:</value>
   </data>
   <data name="Settings_DefaultOrderNameHint" xml:space="preserve">
-    <value>Platzhalter: {CustomerName} (Name des Bexio-Kontakts)</value>
+    <value>Platzhalter: {CustomerName} (Name des Bexio-Kontakts), {ExternalOrderNumber} (Spalte Externe Bestellnummer)</value>
   </data>
   <data name="Settings_PositionTextTemplateLabel" xml:space="preserve">
     <value>Positionstext-Vorlage:</value>
@@ -233,5 +233,26 @@
   </data>
   <data name="Preview_PricesHint" xml:space="preserve">
     <value>Artikel und Preise werden beim Import aus Bexio übernommen.</value>
+  </data>
+  <data name="Settings_UseExternalOrderNumberColumn" xml:space="preserve">
+    <value>Spalte Externe BestellNr aktivieren</value>
+  </data>
+  <data name="Settings_ExternalOrderNumberColumn" xml:space="preserve">
+    <value>Spalte Externe Bestellnummer</value>
+  </data>
+  <data name="Validation_ExternalOrderNumberColumnRequired" xml:space="preserve">
+    <value>Der Platzhalter {ExternalOrderNumber} im Auftragstitel braucht die aktivierte Spalte Externe Bestellnummer.</value>
+  </data>
+  <data name="Preview_ExternalOrderNumber" xml:space="preserve">
+    <value>Externe Bestellnummer</value>
+  </data>
+  <data name="Preview_MultipleExternalOrderNumbers" xml:space="preserve">
+    <value>Die Datei enthält mehrere externe Bestellnummern ({0}). Der Import verwendet die erste.</value>
+  </data>
+  <data name="Import_MultipleExternalOrderNumbersTitle" xml:space="preserve">
+    <value>Mehrere externe Bestellnummern</value>
+  </data>
+  <data name="Import_MultipleExternalOrderNumbersMessage" xml:space="preserve">
+    <value>Die Datei enthält mehrere externe Bestellnummern: {0}. Soll der Import trotzdem fortgesetzt werden und die erste (**{1}**) verwenden?</value>
   </data>
 </root>

@@ -20,6 +20,8 @@ public sealed class SgdProfileConfigViewModel : ViewModelBase
     public string ColorColumn { get; set; } = string.Empty;
     public string SizeColumn { get; set; } = string.Empty;
     public string QuantityColumn { get; set; } = string.Empty;
+    public bool UseExternalOrderNumberColumn { get; set; }
+    public string ExternalOrderNumberColumn { get; set; } = string.Empty;
     public string SeasonCode { get; set; } = string.Empty;
     public string SeasonFallbackCodes { get; set; } = string.Empty;
     public string DiscountPercent { get; set; } = string.Empty;
@@ -57,6 +59,8 @@ public sealed class SgdProfileConfigViewModel : ViewModelBase
         ColorColumn = settings.ColorColumn;
         SizeColumn = settings.SizeColumn;
         QuantityColumn = settings.QuantityColumn;
+        UseExternalOrderNumberColumn = settings.UseExternalOrderNumberColumn;
+        ExternalOrderNumberColumn = settings.ExternalOrderNumberColumn;
         SeasonCode = settings.SeasonCode;
         SeasonFallbackCodes = string.Join(", ", settings.SeasonFallbackCodes);
         DiscountPercent = settings.DiscountPercent.ToString(CultureInfo.CurrentCulture);
@@ -78,6 +82,14 @@ public sealed class SgdProfileConfigViewModel : ViewModelBase
         AddIfNoColumn(errors, ColorColumn, SgdTranslations.Settings_ColorColumn);
         AddIfNoColumn(errors, SizeColumn, SgdTranslations.Settings_SizeColumn);
         AddIfNoColumn(errors, QuantityColumn, SgdTranslations.Settings_QuantityColumn);
+        if (UseExternalOrderNumberColumn)
+        {
+            AddIfNoColumn(errors, ExternalOrderNumberColumn, SgdTranslations.Settings_ExternalOrderNumberColumn);
+        }
+        else if (DefaultOrderName.Contains("{ExternalOrderNumber}", StringComparison.Ordinal))
+        {
+            errors.Add(SgdTranslations.Validation_ExternalOrderNumberColumnRequired);
+        }
         if (ParseDiscount(DiscountPercent) is not (>= 0 and <= 100))
         {
             errors.Add(SgdTranslations.Validation_InvalidDiscount);
@@ -98,6 +110,8 @@ public sealed class SgdProfileConfigViewModel : ViewModelBase
         _settings.ColorColumn = ExcelColumnHelper.NormalizeColumnLetter(ColorColumn, "C");
         _settings.SizeColumn = ExcelColumnHelper.NormalizeColumnLetter(SizeColumn, "D");
         _settings.QuantityColumn = ExcelColumnHelper.NormalizeColumnLetter(QuantityColumn, "E");
+        _settings.UseExternalOrderNumberColumn = UseExternalOrderNumberColumn;
+        _settings.ExternalOrderNumberColumn = ExcelColumnHelper.NormalizeColumnLetter(ExternalOrderNumberColumn, "F");
         _settings.SeasonCode = SeasonCode.Trim();
         _settings.SeasonFallbackCodes = [.. SeasonFallbackCodes.Split([',', ';'], StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)];
         _settings.DiscountPercent = ParseDiscount(DiscountPercent) ?? 0m;

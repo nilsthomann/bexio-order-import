@@ -47,4 +47,11 @@ public static class EanListTranslations
     public static string Preview_TotalQuantity => ResourceManager.GetString(nameof(Preview_TotalQuantity)) ?? string.Empty;
     public static string Preview_SkippedRows => ResourceManager.GetString(nameof(Preview_SkippedRows)) ?? string.Empty;
     public static string Preview_PricesHint => ResourceManager.GetString(nameof(Preview_PricesHint)) ?? string.Empty;
+    public static string Settings_UseExternalOrderNumberColumn => ResourceManager.GetString(nameof(Settings_UseExternalOrderNumberColumn)) ?? string.Empty;
+    public static string Settings_ExternalOrderNumberColumn => ResourceManager.GetString(nameof(Settings_ExternalOrderNumberColumn)) ?? string.Empty;
+    public static string Validation_ExternalOrderNumberColumnRequired => ResourceManager.GetString(nameof(Validation_ExternalOrderNumberColumnRequired)) ?? string.Empty;
+    public static string Preview_ExternalOrderNumber => ResourceManager.GetString(nameof(Preview_ExternalOrderNumber)) ?? string.Empty;
+    public static string Preview_MultipleExternalOrderNumbers => ResourceManager.GetString(nameof(Preview_MultipleExternalOrderNumbers)) ?? string.Empty;
+    public static string Import_MultipleExternalOrderNumbersTitle => ResourceManager.GetString(nameof(Import_MultipleExternalOrderNumbersTitle)) ?? string.Empty;
+    public static string Import_MultipleExternalOrderNumbersMessage => ResourceManager.GetString(nameof(Import_MultipleExternalOrderNumbersMessage)) ?? string.Empty;
 }
