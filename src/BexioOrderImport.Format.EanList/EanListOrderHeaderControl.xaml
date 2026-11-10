@@ -17,7 +17,15 @@
                     <TextBlock Text="{x:Static res:EanListTranslations.Preview_CustomerNumber}" Style="{StaticResource MutedTextBlockStyle}"/>
                     <TextBlock Text="{Binding CustomerNumber}" FontWeight="SemiBold"/>
                 </StackPanel>
+                <StackPanel Grid.Column="1" Margin="0,4"
+                            Visibility="{Binding ShowExternalOrderNumber, Converter={StaticResource BooleanToVisibilityConverter}}">
+                    <TextBlock Text="{x:Static res:EanListTranslations.Preview_ExternalOrderNumber}" Style="{StaticResource MutedTextBlockStyle}"/>
+                    <TextBlock Text="{Binding ExternalOrderNumber}" FontWeight="SemiBold"/>
+                </StackPanel>
             </Grid>
+            <TextBlock Text="{Binding SeveralExternalOrderNumbersWarning}" Foreground="{StaticResource ErrorBrush}" FontWeight="SemiBold"
+                       TextWrapping="Wrap" Margin="0,8,0,0"
+                       Visibility="{Binding HasSeveralExternalOrderNumbers, Converter={StaticResource BooleanToVisibilityConverter}}"/>
             <TextBlock Text="{x:Static res:EanListTranslations.Preview_CustomerNumberMissing}" Foreground="{StaticResource ErrorBrush}" FontWeight="SemiBold"
                        TextWrapping="Wrap" Margin="0,8,0,0"
                        Visibility="{Binding IsCustomerNumberMissing, Converter={StaticResource BooleanToVisibilityConverter}}"/>

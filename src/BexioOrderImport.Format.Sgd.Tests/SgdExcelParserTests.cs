@@ -64,6 +64,36 @@ public class SgdExcelParserTests
     }
 
     [Test]
+    public void ParseOrderForm_WithExternalOrderNumberColumn_ShouldCollectTheDifferentNumbersInRowOrder()
+    {
+        using var workbook = new TempWorkbook(sheet =>
+        {
+            sheet.Cell("A2").Value = "E1"; sheet.Cell("C2").Value = "Black"; sheet.Cell("E2").Value = 1;
+            sheet.Cell("A3").Value = "E1"; sheet.Cell("C3").Value = "Black"; sheet.Cell("E3").Value = 1; sheet.Cell("F3").Value = 4711;
+            sheet.Cell("A4").Value = "E1"; sheet.Cell("C4").Value = "Black"; sheet.Cell("E4").Value = 1; sheet.Cell("F4").Value = " 4711 ";
+            sheet.Cell("A5").Value = "E1"; sheet.Cell("C5").Value = "Black"; sheet.Cell("E5").Value = 0; sheet.Cell("F5").Value = "PO-2";
+        });
+
+        var order = new SgdExcelParser(new SgdSettings { UseExternalOrderNumberColumn = true }).ParseOrderForm(workbook.Path);
+
+        order.ExternalOrderNumbers.Should().Equal("4711", "PO-2");
+        order.ExternalOrderNumber.Should().Be("4711", "the first number that is set counts");
+    }
+
+    [Test]
+    public void ParseOrderForm_WithoutExternalOrderNumberColumn_ShouldNotReadIt()
+    {
+        using var workbook = new TempWorkbook(sheet =>
+        {
+            sheet.Cell("A2").Value = "E1"; sheet.Cell("C2").Value = "Black"; sheet.Cell("E2").Value = 1; sheet.Cell("F2").Value = "PO-1";
+        });
+
+        var order = new SgdExcelParser(new SgdSettings()).ParseOrderForm(workbook.Path);
+
+        order.ExternalOrderNumber.Should().BeNull();
+    }
+
+    [Test]
     public void ParseOrderForm_ShouldUseTheConfiguredWorksheetStartRowAndColumns()
     {
         using var workbook = new TempWorkbook(sheet =>

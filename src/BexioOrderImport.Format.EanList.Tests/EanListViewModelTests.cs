@@ -9,8 +9,8 @@ public class EanListViewModelTests
     [Test]
     public void ProfileConfig_LoadAndSave_WithoutChanges_ShouldKeepAllValues()
     {
-        var settings = new EanListSettings { WorksheetIndex = 2, StartRow = 4, EanColumn = "C", QuantityColumn = "D", UseSalesUnitColumn = true, SalesUnitColumn = "G", CustomerNumber = "1001", DefaultOrderName = "Order {CustomerName}", PositionTextTemplate = "{EAN}" };
-        var expected = new EanListSettings { WorksheetIndex = 2, StartRow = 4, EanColumn = "C", QuantityColumn = "D", UseSalesUnitColumn = true, SalesUnitColumn = "G", CustomerNumber = "1001", DefaultOrderName = "Order {CustomerName}", PositionTextTemplate = "{EAN}" };
+        var settings = new EanListSettings { WorksheetIndex = 2, StartRow = 4, EanColumn = "C", QuantityColumn = "D", UseSalesUnitColumn = true, SalesUnitColumn = "G", UseExternalOrderNumberColumn = true, ExternalOrderNumberColumn = "H", CustomerNumber = "1001", DefaultOrderName = "Order {CustomerName}", PositionTextTemplate = "{EAN}" };
+        var expected = new EanListSettings { WorksheetIndex = 2, StartRow = 4, EanColumn = "C", QuantityColumn = "D", UseSalesUnitColumn = true, SalesUnitColumn = "G", UseExternalOrderNumberColumn = true, ExternalOrderNumberColumn = "H", CustomerNumber = "1001", DefaultOrderName = "Order {CustomerName}", PositionTextTemplate = "{EAN}" };
         var viewModel = new EanListProfileConfigViewModel();
 
         viewModel.Load(settings);
@@ -77,6 +77,23 @@ public class EanListViewModelTests
     }
 
     [Test]
+    public void ProfileConfig_Validate_WhenTheTitleUsesTheExternalOrderNumber_ShouldNeedItsColumn()
+    {
+        var viewModel = new EanListProfileConfigViewModel();
+        viewModel.Load(new EanListSettings { CustomerNumber = "1001", DefaultOrderName = "Order {ExternalOrderNumber}" });
+
+        viewModel.Validate().Should().Equal(EanListTranslations.Validation_ExternalOrderNumberColumnRequired);
+
+        viewModel.UseExternalOrderNumberColumn = true;
+        viewModel.ExternalOrderNumberColumn = "#";
+        viewModel.Validate().Should().ContainSingle().Which.Should().Contain(EanListTranslations.Settings_ExternalOrderNumberColumn);
+
+        viewModel.ExternalOrderNumberColumn = "f";
+        viewModel.Validate().Should().BeEmpty();
+        viewModel.Save().ExternalOrderNumberColumn.Should().Be("F");
+    }
+
+    [Test]
     public void ProfileConfig_Load_WhenSettingsAreNull_ShouldThrow()
     {
         Action act = () => new EanListProfileConfigViewModel().Load(null!);
@@ -110,6 +127,23 @@ public class EanListViewModelTests
 
         preview.CustomerNumber.Should().Be("-");
         preview.IsCustomerNumberMissing.Should().BeTrue();
+        preview.ShowExternalOrderNumber.Should().BeFalse();
+        preview.ExternalOrderNumber.Should().Be("-");
+        preview.HasSeveralExternalOrderNumbers.Should().BeFalse();
+        preview.SeveralExternalOrderNumbersWarning.Should().BeEmpty();
+    }
+
+    [Test]
+    public void Preview_WithSeveralExternalOrderNumbers_ShouldShowTheFirstAndWarn()
+    {
+        var order = new Order { ExternalOrderNumbers = ["PO-1", "PO-2"] };
+
+        var preview = new EanListPreviewViewModel(order, new EanListSettings { UseExternalOrderNumberColumn = true });
+
+        preview.ShowExternalOrderNumber.Should().BeTrue();
+        preview.ExternalOrderNumber.Should().Be("PO-1");
+        preview.HasSeveralExternalOrderNumbers.Should().BeTrue();
+        preview.SeveralExternalOrderNumbersWarning.Should().Be(string.Format(EanListTranslations.Preview_MultipleExternalOrderNumbers, "PO-1, PO-2"));
     }
 
     [Test]

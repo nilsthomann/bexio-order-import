@@ -40,6 +40,7 @@ public sealed class EanListExcelParser
                 continue;
             }
 
+            AddExternalOrderNumber(order, sheet, row);
             int? quantity = ReadWholeNumber(quantityCell, row, EanListTranslations.Error_InvalidQuantity);
             if (quantity is null or <= 0)
             {
@@ -58,6 +59,27 @@ public sealed class EanListExcelParser
 
         return order;
     }
+
+    /// <summary>
+    /// Adds the external order number of the row unless it is empty or already known.
+    /// </summary>
+    private void AddExternalOrderNumber(Order order, IXLWorksheet sheet, int row)
+    {
+        if (!_settings.UseExternalOrderNumberColumn) return;
+
+        string number = ReadText(sheet.Cell(row, _settings.ExternalOrderNumberColumn));
+        if (number.Length > 0 && !order.ExternalOrderNumbers.Contains(number, StringComparer.OrdinalIgnoreCase))
+        {
+            order.ExternalOrderNumbers.Add(number);
+        }
+    }
+
+    /// <summary>
+    /// Trimmed cell text. Numbers are written out in full (Excel shows long numbers as eg. 1.2E+5).
+    /// </summary>
+    private static string ReadText(IXLCell cell) => cell.DataType == XLDataType.Number
+        ? cell.GetDouble().ToString("0.##########", CultureInfo.InvariantCulture)
+        : cell.Value.ToString().Trim();
 
     /// <summary>
     /// An empty cell is the sales unit 1. Other values must be whole numbers greater than 0.

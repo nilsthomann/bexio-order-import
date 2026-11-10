@@ -39,6 +39,14 @@ public sealed class SgdImporter
             return new ImportResult(Success: false, ErrorMessage: "No positions found.");
         }
 
+        // Several external order numbers usually mean several orders in one file; the user may continue with the first
+        if (order.ExternalOrderNumbers.Count > 1 && !await interaction.ConfirmWarningAsync(
+            SgdTranslations.Import_MultipleExternalOrderNumbersTitle,
+            string.Format(SgdTranslations.Import_MultipleExternalOrderNumbersMessage, string.Join(", ", order.ExternalOrderNumbers), order.ExternalOrderNumber)))
+        {
+            return Cancelled(interaction);
+        }
+
         interaction.LogInfo("Connecting to Bexio API...");
         var contact = await AskCustomerAsync(interaction);
         if (contact == null)

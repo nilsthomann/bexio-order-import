@@ -20,12 +20,12 @@ public class SgdViewModelTests
     {
         var settings = new SgdSettings
         {
-            WorksheetIndex = 2, StartRow = 3, ArticleNumberColumn = "F", SeasonCode = "SS27", SeasonFallbackCodes = ["NOOS", "EX"],
+            WorksheetIndex = 2, StartRow = 3, ArticleNumberColumn = "F", UseExternalOrderNumberColumn = true, ExternalOrderNumberColumn = "G", SeasonCode = "SS27", SeasonFallbackCodes = ["NOOS", "EX"],
             DiscountPercent = 10m, PositionGroupingMode = SgdPositionGroupingMode.GroupedSizePosition, SizeRowTemplate = ""
         };
         var expected = new SgdSettings
         {
-            WorksheetIndex = 2, StartRow = 3, ArticleNumberColumn = "F", SeasonCode = "SS27", SeasonFallbackCodes = ["NOOS", "EX"],
+            WorksheetIndex = 2, StartRow = 3, ArticleNumberColumn = "F", UseExternalOrderNumberColumn = true, ExternalOrderNumberColumn = "G", SeasonCode = "SS27", SeasonFallbackCodes = ["NOOS", "EX"],
             DiscountPercent = 10m, PositionGroupingMode = SgdPositionGroupingMode.GroupedSizePosition
         };
 
@@ -129,6 +129,22 @@ public class SgdViewModelTests
     }
 
     [Test]
+    public void Validate_WhenTheTitleUsesTheExternalOrderNumber_ShouldNeedItsColumn()
+    {
+        var viewModel = Loaded(new SgdSettings { DefaultOrderName = "{SeasonCode} {ExternalOrderNumber}" });
+
+        viewModel.Validate().Should().Equal(SgdTranslations.Validation_ExternalOrderNumberColumnRequired);
+
+        viewModel.UseExternalOrderNumberColumn = true;
+        viewModel.ExternalOrderNumberColumn = "#";
+        viewModel.Validate().Should().Equal(string.Format(SgdTranslations.Validation_InvalidColumn, SgdTranslations.Settings_ExternalOrderNumberColumn));
+
+        viewModel.ExternalOrderNumberColumn = "g";
+        viewModel.Validate().Should().BeEmpty();
+        viewModel.Save().ExternalOrderNumberColumn.Should().Be("G");
+    }
+
+    [Test]
     public void IsGroupedPositions_ShouldNotifyBothModes()
     {
         var viewModel = Loaded();
@@ -174,6 +190,23 @@ public class SgdViewModelTests
 
         viewModel.SeasonCode.Should().Be("-");
         viewModel.Discount.Should().Be("-");
+        viewModel.ShowExternalOrderNumber.Should().BeFalse();
+        viewModel.ExternalOrderNumber.Should().Be("-");
+        viewModel.HasSeveralExternalOrderNumbers.Should().BeFalse();
+        viewModel.SeveralExternalOrderNumbersWarning.Should().BeEmpty();
+    }
+
+    [Test]
+    public void PreviewViewModel_WithSeveralExternalOrderNumbers_ShouldShowTheFirstAndWarn()
+    {
+        var order = new Order { ExternalOrderNumbers = ["PO-1", "PO-2"] };
+
+        var viewModel = new SgdPreviewViewModel(order, new SgdSettings { UseExternalOrderNumberColumn = true });
+
+        viewModel.ShowExternalOrderNumber.Should().BeTrue();
+        viewModel.ExternalOrderNumber.Should().Be("PO-1");
+        viewModel.HasSeveralExternalOrderNumbers.Should().BeTrue();
+        viewModel.SeveralExternalOrderNumbersWarning.Should().Be(string.Format(SgdTranslations.Preview_MultipleExternalOrderNumbers, "PO-1, PO-2"));
     }
 
     [Test]

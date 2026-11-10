@@ -1,4 +1,5 @@
 using BexioOrderImport.Domain.Models;
+using BexioOrderImport.Format.EanList.Resources;
 
 namespace BexioOrderImport.Format.EanList;
 
@@ -15,6 +16,12 @@ public sealed class EanListPreviewViewModel
         IsCustomerNumberMissing = string.IsNullOrWhiteSpace(order.CustomerNumber);
         CustomerNumber = IsCustomerNumberMissing ? "-" : order.CustomerNumber!;
 
+        ShowExternalOrderNumber = settings.UseExternalOrderNumberColumn;
+        ExternalOrderNumber = order.ExternalOrderNumber ?? "-";
+        HasSeveralExternalOrderNumbers = order.ExternalOrderNumbers.Count > 1;
+        SeveralExternalOrderNumbersWarning = HasSeveralExternalOrderNumbers
+            ? string.Format(EanListTranslations.Preview_MultipleExternalOrderNumbers, string.Join(", ", order.ExternalOrderNumbers))
+            : string.Empty;
         Positions = order.Positions;
         TotalQuantity = order.Positions.Sum(p => p.Quantity * p.SalesUnit);
         SkippedRows = order.SkippedRows;
@@ -35,4 +42,18 @@ public sealed class EanListPreviewViewModel
     public int TotalQuantity { get; }
 
     public int SkippedRows { get; }
+
+    /// <summary>
+    /// The profile reads the external order number column, so the header shows it.
+    /// </summary>
+    public bool ShowExternalOrderNumber { get; }
+
+    /// <summary>
+    /// The first external order number of the file, or "-" without one.
+    /// </summary>
+    public string ExternalOrderNumber { get; }
+
+    public bool HasSeveralExternalOrderNumbers { get; }
+
+    public string SeveralExternalOrderNumbersWarning { get; }
 }

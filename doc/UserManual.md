@@ -118,6 +118,7 @@ An EAN list has one article per row. Each customer has its own profile: the **cu
 | A | EAN | An EAN-13: 13 digits with a valid check digit. Excel drops the leading zeros of EANs stored as numbers, so shorter codes get them back: `826710896036` is read as `0826710896036`. An invalid EAN stops reading the file. |
 | B | Quantity | Whole number. Rows with an empty quantity or a quantity of 0 or less are ignored. |
 | C | Sales unit (VE) | Optional, only read if **Enable VE column** is checked in the profile. Pieces per sales unit as a whole number greater than 0; an empty cell counts as 1. Without the VE column every VE is 1. |
+| D | External order number | Optional, see [External order number](#external-order-number-ean-list-and-sgd). |
 
 Row 1 is the header; data starts in row 2.
 
@@ -142,6 +143,7 @@ An SGD list has one article, color and size per row. One profile serves all cust
 | C | Color | Required. It may start with a color code, eg. `1001 Black`; the code is ignored when the article is searched. |
 | D | Size | Eg. `M` or `38`. May be empty for one-size articles. |
 | E | Quantity | Whole number. Rows with an empty quantity or a quantity of 0 or less are ignored. |
+| F | External order number | Optional, see [External order number](#external-order-number-ean-list-and-sgd). |
 
 Row 1 is the header; data starts in row 2. Example:
 
@@ -156,9 +158,19 @@ The profile also sets:
 - **Season code** and **season fallback codes**: articles are found like Peakmile articles, see [Article lookup](#article-lookup-peakmile-and-sgd).
 - **Discount in %**: added as one discount position at the end of the order, with the **discount position text template** (placeholder `{DiscountInPercent}`). `0` adds no discount position. The file has no discount.
 - **Position creation**: **Single position per size** creates one Bexio position per row. **Grouped position per article and color** creates one position per article number and color, with one size row per size from the **size row template** (eg. `2x Size S`, `3x Size M`); equal sizes are summed. The grouped position text template must contain `{SizesRows}`.
-- **Order name template** (`{CustomerName}`, `{SeasonCode}`) and the **position text templates** with the placeholders `{Color}`, `{Size}` or `{SizesRows}`, `{ArticleNumber}`, `{ArticleName}`, `{BexioArticleName}` and `{BexioArticleDescription}`.
+- **Order name template** (`{CustomerName}`, `{SeasonCode}`, `{ExternalOrderNumber}`) and the **position text templates** with the placeholders `{Color}`, `{Size}` or `{SizesRows}`, `{ArticleNumber}`, `{ArticleName}`, `{BexioArticleName}` and `{BexioArticleDescription}`.
 
 The price of each position is the **sale price of the Bexio article**. The preview shows the season code, the discount and every position with its Excel row, article, color, size and quantity.
+
+### External order number (EAN list and SGD)
+
+The order number of the customer (eg. their purchase order number) can be read from a column of the file. Check **Enable external order number column** in the profile and set the column (default `D` for EAN lists, `F` for SGD lists).
+
+- The first cell of the column that is not empty counts, from the first data row on.
+- The preview shows it as **External Order Number** in the header, or `-` if the column is empty.
+- The **order name template** can use it as `{ExternalOrderNumber}` (eg. `Order: {CustomerName} {ExternalOrderNumber}`). If the column is empty, the placeholder is replaced by nothing. It only sets the title of a new order; an existing SGD order keeps its title. The number is not written anywhere else in Bexio.
+- A profile that uses `{ExternalOrderNumber}` in the order name can only be saved if the column is enabled.
+- If the column contains different numbers, the file probably holds several orders. The preview shows a warning, and the import asks first: **Continue** imports the file with the first number, **Cancel** stops the import without changing Bexio.
 
 ### Article lookup (Peakmile and SGD)
 
@@ -261,8 +273,8 @@ The editor starts with the profile name and the format. Below follow the setting
 | Format | Cards and settings |
 |---|---|
 | Peakmile order form | **Profile Information**: worksheet index, season code, season fallback codes. **Header Coordinates (Cells)**: customer, address, email, buyer, payment terms, discount, optional order and customer number. **Size Matrix**: rows and columns of the size headers. **Article Grid Columns**: first data row and the article columns. **Text Templates & Formatting**. |
-| EAN list | **Profile Information**: worksheet index, first data row, customer number (eg. `001234`; every import creates a new order for it). **Excel Columns**: EAN, quantity and the optional VE column. **Texts & Templates**: order name and position text. |
-| SGD (Sports Group Denmark) | **Profile Information**: worksheet index, season code, season fallback codes, first data row, discount in %. **Excel Columns**: article number, article name, color, size, quantity. **Texts & Templates**: order name, position creation and position texts. |
+| EAN list | **Profile Information**: worksheet index, first data row, customer number (eg. `001234`; every import creates a new order for it). **Excel Columns**: EAN, quantity and the optional VE and external order number columns. **Texts & Templates**: order name and position text. |
+| SGD (Sports Group Denmark) | **Profile Information**: worksheet index, season code, season fallback codes, first data row, discount in %. **Excel Columns**: article number, article name, color, size, quantity and the optional external order number column. **Texts & Templates**: order name, position creation and position texts. |
 
 The settings are described in [section 4](#4-understanding-the-excel-order-template).
 

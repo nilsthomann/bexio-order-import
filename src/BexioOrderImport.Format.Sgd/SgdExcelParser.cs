@@ -39,6 +39,7 @@ public sealed class SgdExcelParser
                 continue;
             }
 
+            AddExternalOrderNumber(order, sheet, row);
             int? quantity = ReadWholeNumber(quantityCell, row);
             if (quantity is null or <= 0)
             {
@@ -94,6 +95,20 @@ public sealed class SgdExcelParser
                     SourceRow = first.SourceRow
                 };
             })];
+    }
+
+    /// <summary>
+    /// Adds the external order number of the row unless it is empty or already known.
+    /// </summary>
+    private void AddExternalOrderNumber(Order order, IXLWorksheet sheet, int row)
+    {
+        if (!_settings.UseExternalOrderNumberColumn) return;
+
+        string number = ReadText(sheet.Cell(row, _settings.ExternalOrderNumberColumn));
+        if (number.Length > 0 && !order.ExternalOrderNumbers.Contains(number, StringComparer.OrdinalIgnoreCase))
+        {
+            order.ExternalOrderNumbers.Add(number);
+        }
     }
 
     /// <summary>

@@ -169,7 +169,7 @@
     <value>Order Name Template:</value>
   </data>
   <data name="Settings_DefaultOrderNameHint" xml:space="preserve">
-    <value>Placeholder: {CustomerName} (name of the Bexio contact)</value>
+    <value>Placeholders: {CustomerName} (name of the Bexio contact), {ExternalOrderNumber} (external order number column)</value>
   </data>
   <data name="Settings_PositionTextTemplateLabel" xml:space="preserve">
     <value>Position Text Template:</value>
@@ -233,5 +233,26 @@
   </data>
   <data name="Preview_PricesHint" xml:space="preserve">
     <value>Articles and prices are taken from Bexio during the import.</value>
+  </data>
+  <data name="Settings_UseExternalOrderNumberColumn" xml:space="preserve">
+    <value>Enable external order number column</value>
+  </data>
+  <data name="Settings_ExternalOrderNumberColumn" xml:space="preserve">
+    <value>External Order Number Column</value>
+  </data>
+  <data name="Validation_ExternalOrderNumberColumnRequired" xml:space="preserve">
+    <value>The placeholder {ExternalOrderNumber} in the order title needs the enabled external order number column.</value>
+  </data>
+  <data name="Preview_ExternalOrderNumber" xml:space="preserve">
+    <value>External Order Number</value>
+  </data>
+  <data name="Preview_MultipleExternalOrderNumbers" xml:space="preserve">
+    <value>The file contains several external order numbers ({0}). The import uses the first one.</value>
+  </data>
+  <data name="Import_MultipleExternalOrderNumbersTitle" xml:space="preserve">
+    <value>Several external order numbers</value>
+  </data>
+  <data name="Import_MultipleExternalOrderNumbersMessage" xml:space="preserve">
+    <value>The file contains several external order numbers: {0}. Continue the import anyway and use the first one (**{1}**)?</value>
   </data>
 </root>

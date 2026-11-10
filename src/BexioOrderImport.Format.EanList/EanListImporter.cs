@@ -2,6 +2,7 @@ using BexioOrderImport.Abstractions.Bexio;
 using BexioOrderImport.Abstractions.Import;
 using BexioOrderImport.Domain.Models;
 using BexioOrderImport.Domain.Models.Bexio;
+using BexioOrderImport.Format.EanList.Resources;
 
 namespace BexioOrderImport.Format.EanList;
 
@@ -38,7 +39,11 @@ public sealed class EanListImporter
             return new ImportResult(Success: false, ErrorMessage: "No positions found.");
         }
 
-        if (!await interaction.ConfirmUploadAsync())
+        // Several external order numbers usually mean several orders in one file; the user may continue with the first
+        bool continueWithFirstNumber = order.ExternalOrderNumbers.Count <= 1 || await interaction.ConfirmWarningAsync(
+            EanListTranslations.Import_MultipleExternalOrderNumbersTitle,
+            string.Format(EanListTranslations.Import_MultipleExternalOrderNumbersMessage, string.Join(", ", order.ExternalOrderNumbers), order.ExternalOrderNumber));
+        if (!continueWithFirstNumber || !await interaction.ConfirmUploadAsync())
         {
             interaction.LogInfo("Order import cancelled.");
             return new ImportResult(Success: false, ErrorMessage: "Cancelled by user.");

@@ -131,6 +131,36 @@ public class SgdImporterTests
     }
 
     [Test]
+    public async Task ExecuteAsync_ShouldReplaceTheExternalOrderNumberInTheTitle()
+    {
+        SetupNewOrder();
+        _settings.DefaultOrderName = "{SeasonCode} {ExternalOrderNumber}";
+        var order = Order();
+        order.ExternalOrderNumbers.Add("PO-1");
+
+        await Importer().ExecuteAsync(order, _settings, Interaction());
+
+        order.Title.Should().Be("FS27 PO-1");
+        _warning.Should().BeNull("one external order number needs no warning");
+    }
+
+    [Test]
+    [Arguments(true)]
+    [Arguments(false)]
+    public async Task ExecuteAsync_WhenThereAreSeveralExternalOrderNumbers_ShouldWarnBeforeAskingAndContinueOnlyIfAccepted(bool accept)
+    {
+        SetupNewOrder();
+        var order = Order();
+        order.ExternalOrderNumbers.AddRange(["PO-1", "PO-2"]);
+
+        var result = await Importer().ExecuteAsync(order, _settings, Interaction(acceptWarning: accept));
+
+        _warning.Should().Contain("PO-1, PO-2").And.Contain("**PO-1**");
+        result.Success.Should().Be(accept);
+        _askedTexts.Should().HaveCount(accept ? 1 : 0, "a declined warning cancels before the customer is asked");
+    }
+
+    [Test]
     public async Task ExecuteAsync_WhenTheOrderChoiceIsCancelled_ShouldCancelWithoutChangingBexio()
     {
         SetupNewOrder();

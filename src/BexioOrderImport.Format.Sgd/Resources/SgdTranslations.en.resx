@@ -181,7 +181,7 @@
     <value>Order name template:</value>
   </data>
   <data name="Settings_DefaultOrderNameHint" xml:space="preserve">
-    <value>Placeholders: {CustomerName} (name of the Bexio contact), {SeasonCode}</value>
+    <value>Placeholders: {CustomerName} (name of the Bexio contact), {SeasonCode}, {ExternalOrderNumber} (external order number column)</value>
   </data>
   <data name="Settings_PositionGroupingModeLabel" xml:space="preserve">
     <value>Position creation:</value>
@@ -317,5 +317,26 @@
   </data>
   <data name="Import_ReplaceWarningMessage" xml:space="preserve">
     <value>All existing positions of order **{0}** are deleted in Bexio and replaced by the positions of this file. This cannot be undone.</value>
+  </data>
+  <data name="Settings_UseExternalOrderNumberColumn" xml:space="preserve">
+    <value>Enable external order number column</value>
+  </data>
+  <data name="Settings_ExternalOrderNumberColumn" xml:space="preserve">
+    <value>External Order Number Column</value>
+  </data>
+  <data name="Validation_ExternalOrderNumberColumnRequired" xml:space="preserve">
+    <value>The placeholder {ExternalOrderNumber} in the order title needs the enabled external order number column.</value>
+  </data>
+  <data name="Preview_ExternalOrderNumber" xml:space="preserve">
+    <value>External Order Number</value>
+  </data>
+  <data name="Preview_MultipleExternalOrderNumbers" xml:space="preserve">
+    <value>The file contains several external order numbers ({0}). The import uses the first one.</value>
+  </data>
+  <data name="Import_MultipleExternalOrderNumbersTitle" xml:space="preserve">
+    <value>Several external order numbers</value>
+  </data>
+  <data name="Import_MultipleExternalOrderNumbersMessage" xml:space="preserve">
+    <value>The file contains several external order numbers: {0}. Continue the import anyway and use the first one (**{1}**)?</value>
   </data>
 </root>

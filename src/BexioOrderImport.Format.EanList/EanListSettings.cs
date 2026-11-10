@@ -25,6 +25,14 @@ public class EanListSettings : IFormatSettings
     public string SalesUnitColumn { get; set; } = "C";
 
     /// <summary>
+    /// Reads the external order number from ExternalOrderNumberColumn for the preview and the {ExternalOrderNumber} placeholder.
+    /// </summary>
+    public bool UseExternalOrderNumberColumn { get; set; }
+
+    [JsonConverter(typeof(ExcelColumnJsonConverter))]
+    public string ExternalOrderNumberColumn { get; set; } = "D";
+
+    /// <summary>
     /// Bexio contact number (nr) of the customer. Each customer has its own profile.
     /// </summary>
     public string CustomerNumber { get; set; } = string.Empty;

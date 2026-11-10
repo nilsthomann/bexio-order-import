@@ -85,6 +85,10 @@
                         <ColumnDefinition Width="*"/>
                         <ColumnDefinition Width="*"/>
                     </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
 
                     <StackPanel Grid.Column="0" Margin="0,0,8,0">
                         <TextBlock Text="{x:Static res:EanListTranslations.Settings_EanColumn}" Style="{StaticResource MutedTextBlockStyle}"/>
@@ -102,6 +106,15 @@
                     <StackPanel Grid.Column="3">
                         <TextBlock Text="{x:Static res:EanListTranslations.Settings_SalesUnitColumn}" Style="{StaticResource MutedTextBlockStyle}"/>
                         <TextBox Text="{Binding SalesUnitColumn, UpdateSourceTrigger=PropertyChanged}" IsEnabled="{Binding ElementName=UseSalesUnitColumnCheckBox, Path=IsChecked}"/>
+                    </StackPanel>
+                    <CheckBox x:Name="UseExternalOrderNumberColumnCheckBox" Grid.Row="1" Grid.Column="2"
+                              Content="{x:Static res:EanListTranslations.Settings_UseExternalOrderNumberColumn}"
+                              IsChecked="{Binding UseExternalOrderNumberColumn}"
+                              VerticalAlignment="Center" Margin="0,24,8,0"
+                              Foreground="{StaticResource TextBrush}" FontWeight="Medium"/>
+                    <StackPanel Grid.Row="1" Grid.Column="3" Margin="0,8,0,0">
+                        <TextBlock Text="{x:Static res:EanListTranslations.Settings_ExternalOrderNumberColumn}" Style="{StaticResource MutedTextBlockStyle}"/>
+                        <TextBox Text="{Binding ExternalOrderNumberColumn, UpdateSourceTrigger=PropertyChanged}" IsEnabled="{Binding ElementName=UseExternalOrderNumberColumnCheckBox, Path=IsChecked}"/>
                     </StackPanel>
                 </Grid>
 

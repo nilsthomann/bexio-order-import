@@ -21,7 +21,15 @@
                     <TextBlock Text="{x:Static res:SgdTranslations.Preview_Discount}" Style="{StaticResource MutedTextBlockStyle}"/>
                     <TextBlock Text="{Binding Discount}" FontWeight="SemiBold"/>
                 </StackPanel>
+                <StackPanel Grid.Column="2" Margin="0,4"
+                            Visibility="{Binding ShowExternalOrderNumber, Converter={StaticResource BooleanToVisibilityConverter}}">
+                    <TextBlock Text="{x:Static res:SgdTranslations.Preview_ExternalOrderNumber}" Style="{StaticResource MutedTextBlockStyle}"/>
+                    <TextBlock Text="{Binding ExternalOrderNumber}" FontWeight="SemiBold"/>
+                </StackPanel>
             </Grid>
+            <TextBlock Text="{Binding SeveralExternalOrderNumbersWarning}" Foreground="{StaticResource ErrorBrush}" FontWeight="SemiBold"
+                       TextWrapping="Wrap" Margin="0,8,0,0"
+                       Visibility="{Binding HasSeveralExternalOrderNumbers, Converter={StaticResource BooleanToVisibilityConverter}}"/>
             <TextBlock Text="{x:Static res:SgdTranslations.Preview_CustomerHint}" Style="{StaticResource MutedTextBlockStyle}"
                        FontStyle="Italic" TextWrapping="Wrap" Margin="0,8,0,0"/>
         </StackPanel>

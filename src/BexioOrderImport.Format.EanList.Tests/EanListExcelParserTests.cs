@@ -185,6 +185,37 @@ public class EanListExcelParserTests
     }
 
     [Test]
+    public void ParseOrderForm_WithExternalOrderNumberColumn_ShouldCollectTheDifferentNumbersInRowOrder()
+    {
+        using var file = new TempWorkbook(sheet =>
+        {
+            sheet.Cell("A2").Value = "4006381333931"; sheet.Cell("B2").Value = 1;
+            sheet.Cell("A3").Value = "4006381333931"; sheet.Cell("B3").Value = 1; sheet.Cell("D3").Value = " PO-1 ";
+            sheet.Cell("A4").Value = "4006381333931"; sheet.Cell("B4").Value = 0; sheet.Cell("D4").Value = 4711;
+            sheet.Cell("A5").Value = "4006381333931"; sheet.Cell("B5").Value = 1; sheet.Cell("D5").Value = "po-1";
+        });
+        var parser = new EanListExcelParser(new EanListSettings { UseExternalOrderNumberColumn = true });
+
+        var order = parser.ParseOrderForm(file.Path);
+
+        order.ExternalOrderNumbers.Should().Equal("PO-1", "4711");
+        order.ExternalOrderNumber.Should().Be("PO-1", "the first number that is set counts");
+    }
+
+    [Test]
+    public void ParseOrderForm_WithoutExternalOrderNumberColumn_ShouldNotReadIt()
+    {
+        using var file = new TempWorkbook(sheet =>
+        {
+            sheet.Cell("A2").Value = "4006381333931"; sheet.Cell("B2").Value = 1; sheet.Cell("D2").Value = "PO-1";
+        });
+
+        var order = DefaultParser.ParseOrderForm(file.Path);
+
+        order.ExternalOrderNumber.Should().BeNull();
+    }
+
+    [Test]
     public void ParseOrderForm_WhenEanIsMissing_ShouldThrowWithRow()
     {
         using var file = new TempWorkbook(sheet =>
