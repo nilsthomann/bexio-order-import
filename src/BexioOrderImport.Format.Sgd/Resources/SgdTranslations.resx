@@ -156,17 +156,53 @@
   <data name="Settings_ColumnsSection" xml:space="preserve">
     <value>Excel-Spalten</value>
   </data>
+  <data name="Settings_SeasonColumn" xml:space="preserve">
+    <value>Spalte Saison</value>
+  </data>
+  <data name="Settings_SeasonMappingSection" xml:space="preserve">
+    <value>Saison-Zuordnung</value>
+  </data>
+  <data name="Settings_SeasonMappingHint" xml:space="preserve">
+    <value>Ordnet jeder Saison aus der Spalte Saison einen Bexio-Saison-Code zu, z. B. 2026 Fall/Winter → HW26.</value>
+  </data>
+  <data name="Settings_ExternalSeasonLabel" xml:space="preserve">
+    <value>Saison im Excel</value>
+  </data>
   <data name="Settings_SeasonCodeLabel" xml:space="preserve">
-    <value>Saison-Code:</value>
+    <value>Saison-Code in Bexio</value>
   </data>
-  <data name="Settings_SeasonCodeHint" xml:space="preserve">
-    <value>Bexio-Artikel werden über den internen Code Saison-Code + Artikelnummer + Farbe gefunden.</value>
+  <data name="Settings_AddSeasonMapping" xml:space="preserve">
+    <value>Saison-Zuordnung hinzufügen</value>
   </data>
-  <data name="Settings_SeasonFallbackCodesLabel" xml:space="preserve">
-    <value>Saison-Fallback-Codes:</value>
+  <data name="Settings_RemoveSeasonMapping" xml:space="preserve">
+    <value>Saison-Zuordnung entfernen</value>
   </data>
-  <data name="Settings_SeasonFallbackCodesHint" xml:space="preserve">
-    <value>Kommagetrennt. Beispiel: NOOS, EX</value>
+  <data name="Validation_SeasonMappingRequired" xml:space="preserve">
+    <value>Erfassen Sie mindestens eine Saison-Zuordnung.</value>
+  </data>
+  <data name="Validation_SeasonMappingIncomplete" xml:space="preserve">
+    <value>Jede Saison-Zuordnung braucht eine Saison im Excel und einen Saison-Code in Bexio.</value>
+  </data>
+  <data name="Validation_DuplicateExternalSeason" xml:space="preserve">
+    <value>Die Saison &quot;{0}&quot; ist mehrmals zugeordnet.</value>
+  </data>
+  <data name="Validation_SeasonMappingNotAdded" xml:space="preserve">
+    <value>Die neue Saison-Zuordnung ist noch nicht hinzugefügt. Füllen Sie beide Felder aus und klicken Sie auf +, oder leeren Sie die Felder.</value>
+  </data>
+  <data name="Validation_SeasonCodePlaceholder" xml:space="preserve">
+    <value>Die Auftragsname-Vorlage darf den Platzhalter {SeasonCode} nicht mehr enthalten, da eine Liste mehrere Saisons haben kann.</value>
+  </data>
+  <data name="Error_MissingSeason" xml:space="preserve">
+    <value>In Zeile {0} fehlt die Saison.</value>
+  </data>
+  <data name="Error_UnknownSeasons" xml:space="preserve">
+    <value>Für diese Saisons aus der Excel-Datei gibt es im Profil keine Saison-Zuordnung. Ergänzen Sie sie im Profil:</value>
+  </data>
+  <data name="Error_UnknownSeasonRows" xml:space="preserve">
+    <value>• &quot;{0}&quot; (Zeile {1})</value>
+  </data>
+  <data name="Preview_ColSeason" xml:space="preserve">
+    <value>Saison</value>
   </data>
   <data name="Settings_DiscountLabel" xml:space="preserve">
     <value>Rabatt in %:</value>
@@ -181,7 +217,7 @@
     <value>Auftragsname-Vorlage:</value>
   </data>
   <data name="Settings_DefaultOrderNameHint" xml:space="preserve">
-    <value>Platzhalter: {CustomerName} (Name des Bexio-Kontakts), {SeasonCode}, {ExternalOrderNumber} (Spalte Externe Bestellnummer)</value>
+    <value>Platzhalter: {CustomerName} (Name des Bexio-Kontakts), {ExternalOrderNumber} (Spalte Externe Bestellnummer)</value>
   </data>
   <data name="Settings_PositionGroupingModeLabel" xml:space="preserve">
     <value>Positionserstellung:</value>
@@ -237,8 +273,8 @@
   <data name="Preview_Header" xml:space="preserve">
     <value>Bestellung</value>
   </data>
-  <data name="Preview_SeasonCode" xml:space="preserve">
-    <value>Saison-Code</value>
+  <data name="Preview_SeasonCodes" xml:space="preserve">
+    <value>Saison-Codes</value>
   </data>
   <data name="Preview_Discount" xml:space="preserve">
     <value>Rabatt</value>

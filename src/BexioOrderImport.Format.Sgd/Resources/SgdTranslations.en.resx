@@ -156,17 +156,53 @@
   <data name="Settings_ColumnsSection" xml:space="preserve">
     <value>Excel columns</value>
   </data>
+  <data name="Settings_SeasonColumn" xml:space="preserve">
+    <value>Season column</value>
+  </data>
+  <data name="Settings_SeasonMappingSection" xml:space="preserve">
+    <value>Season mapping</value>
+  </data>
+  <data name="Settings_SeasonMappingHint" xml:space="preserve">
+    <value>Maps each season of the season column to a Bexio season code, eg. 2026 Fall/Winter → HW26.</value>
+  </data>
+  <data name="Settings_ExternalSeasonLabel" xml:space="preserve">
+    <value>Season in Excel</value>
+  </data>
   <data name="Settings_SeasonCodeLabel" xml:space="preserve">
-    <value>Season code:</value>
+    <value>Bexio season code</value>
   </data>
-  <data name="Settings_SeasonCodeHint" xml:space="preserve">
-    <value>Bexio articles are found by the intern code season code + article number + color.</value>
+  <data name="Settings_AddSeasonMapping" xml:space="preserve">
+    <value>Add season mapping</value>
   </data>
-  <data name="Settings_SeasonFallbackCodesLabel" xml:space="preserve">
-    <value>Season fallback codes:</value>
+  <data name="Settings_RemoveSeasonMapping" xml:space="preserve">
+    <value>Remove season mapping</value>
   </data>
-  <data name="Settings_SeasonFallbackCodesHint" xml:space="preserve">
-    <value>Comma-separated. Example: NOOS, EX</value>
+  <data name="Validation_SeasonMappingRequired" xml:space="preserve">
+    <value>Add at least one season mapping.</value>
+  </data>
+  <data name="Validation_SeasonMappingIncomplete" xml:space="preserve">
+    <value>Each season mapping needs a season in Excel and a Bexio season code.</value>
+  </data>
+  <data name="Validation_DuplicateExternalSeason" xml:space="preserve">
+    <value>The season &quot;{0}&quot; is mapped more than once.</value>
+  </data>
+  <data name="Validation_SeasonMappingNotAdded" xml:space="preserve">
+    <value>The new season mapping is not added yet. Fill in both fields and click +, or clear the fields.</value>
+  </data>
+  <data name="Validation_SeasonCodePlaceholder" xml:space="preserve">
+    <value>The order name template can no longer contain the placeholder {SeasonCode}, as a list can have several seasons.</value>
+  </data>
+  <data name="Error_MissingSeason" xml:space="preserve">
+    <value>The season is missing in row {0}.</value>
+  </data>
+  <data name="Error_UnknownSeasons" xml:space="preserve">
+    <value>The profile has no season mapping for these seasons of the Excel file. Add them to the profile:</value>
+  </data>
+  <data name="Error_UnknownSeasonRows" xml:space="preserve">
+    <value>• &quot;{0}&quot; (row {1})</value>
+  </data>
+  <data name="Preview_ColSeason" xml:space="preserve">
+    <value>Season</value>
   </data>
   <data name="Settings_DiscountLabel" xml:space="preserve">
     <value>Discount in %:</value>
@@ -181,7 +217,7 @@
     <value>Order name template:</value>
   </data>
   <data name="Settings_DefaultOrderNameHint" xml:space="preserve">
-    <value>Placeholders: {CustomerName} (name of the Bexio contact), {SeasonCode}, {ExternalOrderNumber} (external order number column)</value>
+    <value>Placeholders: {CustomerName} (name of the Bexio contact), {ExternalOrderNumber} (external order number column)</value>
   </data>
   <data name="Settings_PositionGroupingModeLabel" xml:space="preserve">
     <value>Position creation:</value>
@@ -237,8 +273,8 @@
   <data name="Preview_Header" xml:space="preserve">
     <value>Order</value>
   </data>
-  <data name="Preview_SeasonCode" xml:space="preserve">
-    <value>Season code</value>
+  <data name="Preview_SeasonCodes" xml:space="preserve">
+    <value>Season codes</value>
   </data>
   <data name="Preview_Discount" xml:space="preserve">
     <value>Discount</value>

@@ -78,10 +78,11 @@ public sealed class SgdImporter
         }
 
         // All articles are found before Bexio is changed, so a missing article neither creates an order nor deletes positions
-        var articles = await FindArticlesAsync(order, settings, interaction);
+        var articles = await FindArticlesAsync(order, interaction);
 
+        // The rows can belong to several seasons, so the title has no {SeasonCode}
         var target = await OrderTargetResolver.ResolveAsync(
-            order, settings.DefaultOrderName, settings.SeasonCode, _bexio, interaction, useContactNameAsCustomerName: true);
+            order, settings.DefaultOrderName, string.Empty, _bexio, interaction, useContactNameAsCustomerName: true);
         if (target!.Failure != null)
         {
             return target.Failure;
@@ -196,38 +197,35 @@ public sealed class SgdImporter
     /// <summary>
     /// The Bexio article of each position. Throws with all missing articles before anything is changed in Bexio.
     /// </summary>
-    private async Task<Dictionary<OrderPosition, BexioArticle>> FindArticlesAsync(Order order, SgdSettings settings, IImportUserInteractionService interaction)
+    private async Task<Dictionary<OrderPosition, BexioArticle>> FindArticlesAsync(Order order, IImportUserInteractionService interaction)
     {
         interaction.LogInfo("Pre-fetching article data from Bexio...");
-        string seasonCode = settings.SeasonCode ?? string.Empty;
-        string[] fallbackSeasonCodes = [.. (settings.SeasonFallbackCodes ?? []).Where(c => !string.IsNullOrWhiteSpace(c)).Select(c => c.Trim())];
-        var articleNumbers = order.Positions.Select(p => p.ArticleNumber).Distinct().ToList();
-        foreach (var code in (string[])[seasonCode, .. fallbackSeasonCodes])
+        // Each row has its own season, so the articles are loaded once per season code of the list
+        foreach (var season in order.Positions.GroupBy(p => p.SeasonCode, StringComparer.OrdinalIgnoreCase))
         {
-            await _articleMatcher.PreFetchArticlesAsync(code, articleNumbers);
+            await _articleMatcher.PreFetchArticlesAsync(season.Key, [.. season.Select(p => p.ArticleNumber).Distinct()]);
         }
 
         var articles = new Dictionary<OrderPosition, BexioArticle>();
         var missing = new List<string>();
         foreach (var position in order.Positions)
         {
-            var match = await _articleMatcher.FindArticleAsync(new SgdArticleCriteria(position.ArticleNumber, position.Color, seasonCode, fallbackSeasonCodes));
+            var match = await _articleMatcher.FindArticleAsync(new SgdArticleCriteria(position.ArticleNumber, position.Color, position.SeasonCode));
             if (match.IsFound)
             {
                 articles[position] = match.Article;
                 continue;
             }
 
-            string article = $"'{position.ArticleNumber}' with color '{position.Color}' (row {position.SourceRow})";
+            string article = $"'{position.ArticleNumber}' with color '{position.Color}' and season code '{position.SeasonCode}' (row {position.SourceRow})";
             interaction.LogInfo($"⛔ Article {article} {match.FailureReason} in Bexio.");
             missing.Add(article);
         }
 
         if (missing.Count > 0)
         {
-            string seasonCodes = string.Join("', '", [seasonCode, .. fallbackSeasonCodes]);
             throw new InvalidOperationException(
-                $"{missing.Count} article(s) not found in Bexio with season code '{seasonCodes}'. Nothing was changed in Bexio.{Environment.NewLine}"
+                $"{missing.Count} article(s) not found in Bexio. Nothing was changed in Bexio.{Environment.NewLine}"
                 + string.Join(Environment.NewLine, missing.Select(m => $"• {m}")));
         }
         return articles;

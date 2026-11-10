@@ -35,7 +35,7 @@ public class SgdArticleMatcherTests
         return new SgdArticleMatcher(new BexioApiClient(new HttpClient(handler), "dummy-token", 1, 1));
     }
 
-    private static SgdArticleCriteria Criteria(string color = "1001 Black", params string[] fallbackCodes) => new("E183801", color, "FS26", fallbackCodes);
+    private static SgdArticleCriteria Criteria(string color = "1001 Black", string seasonCode = "FS26") => new("E183801", color, seasonCode);
 
     [Test]
     [Arguments("FS26E1838011001 Black")]
@@ -63,17 +63,17 @@ public class SgdArticleMatcherTests
     [Test]
     public async Task FindArticleAsync_ShouldNeedOneRequestForAllPositionsOfAnImport()
     {
-        var matcher = Matcher((1, "FS26 E183801 1001 Black"), (2, "FS26 E183801 2048 Navy"), (3, "NOOS E200 Red"));
+        var matcher = Matcher((1, "FS26 E183801 1001 Black"), (2, "FS26 E183801 2048 Navy"), (3, "HW26 E200 Red"));
 
-        await matcher.PreFetchArticlesAsync("FS26", ["E183801", "E200"]);
-        await matcher.PreFetchArticlesAsync("NOOS", ["E183801", "E200"]);
+        await matcher.PreFetchArticlesAsync("FS26", ["E183801"]);
+        await matcher.PreFetchArticlesAsync("HW26", ["E200"]);
         var black = await matcher.FindArticleAsync(Criteria());
         var navy = await matcher.FindArticleAsync(Criteria("2048 Navy"));
-        var red = await matcher.FindArticleAsync(new("E200", "Red", "FS26", ["NOOS"]));
+        var red = await matcher.FindArticleAsync(new("E200", "Red", "HW26"));
         await matcher.FindArticleAsync(Criteria());
 
         (black.Article!.Id, navy.Article!.Id, red.Article!.Id).Should().Be((1, 2, 3));
-        _searches.Should().Equal("FS26", "NOOS");
+        _searches.Should().Equal("FS26", "HW26");
     }
 
     [Test]
@@ -94,21 +94,21 @@ public class SgdArticleMatcherTests
     [Test]
     public async Task FindArticleAsync_WhenThePreFetchedSeasonHasNoMatch_ShouldSearchTheArticleNumber()
     {
-        var matcher = Matcher((1, "FS26 E999 Black"), (2, "NOOS E183801 Black"));
+        var matcher = Matcher((1, "FS26 E999 Black"), (2, "HW26 E183801 Black"));
 
         await matcher.PreFetchArticlesAsync("FS26", ["E183801"]);
-        var match = await matcher.FindArticleAsync(Criteria("1001 Black", "NOOS"));
+        var match = await matcher.FindArticleAsync(Criteria("1001 Black", "HW26"));
 
         match.Article!.Id.Should().Be(2);
         _searches.Should().Equal("FS26", "E183801");
     }
 
     [Test]
-    public async Task FindArticleAsync_ShouldPreferTheFullColorAndTheSeasonCode()
+    public async Task FindArticleAsync_ShouldPreferTheFullColor()
     {
         var matcher = Matcher((1, "NOOSE1838011001Black"), (2, "FS26E183801Black"), (3, "FS26E1838011001Black"), (4, "FS26E1838011001"));
 
-        var match = await matcher.FindArticleAsync(Criteria("1001 Black", "NOOS"));
+        var match = await matcher.FindArticleAsync(Criteria());
 
         match.Article!.Id.Should().Be(3);
     }
@@ -124,13 +124,13 @@ public class SgdArticleMatcherTests
     }
 
     [Test]
-    public async Task FindArticleAsync_WhenTheSeasonCodeMisses_ShouldMatchTheFallbackCodesInOrder()
+    public async Task FindArticleAsync_WhenTheSeasonCodeMisses_ShouldNotFallBackToAnotherSeason()
     {
-        var matcher = Matcher((1, "EX E183801 Black"), (2, "NOOS E183801 Black"));
+        var matcher = Matcher((1, "NOOS E183801 Black"), (2, "HW26 E183801 Black"));
 
-        var match = await matcher.FindArticleAsync(Criteria("1001 Black", "NOOS", "EX"));
+        var match = await matcher.FindArticleAsync(Criteria());
 
-        match.Article!.Id.Should().Be(2);
+        match.Should().Be(ArticleMatch.NotFound());
     }
 
     [Test]
