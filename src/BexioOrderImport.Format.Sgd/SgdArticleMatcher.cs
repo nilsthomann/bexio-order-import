@@ -5,10 +5,9 @@ using BexioOrderImport.Domain.Models.Bexio;
 namespace BexioOrderImport.Format.Sgd;
 
 /// <summary>
-/// Criteria to find the Bexio article of a SGD position. The fallback season codes are tried in order
-/// when the season code yields no match.
+/// Criteria to find the Bexio article of a SGD position. The season code is the one mapped from the season of its row.
 /// </summary>
-public sealed record SgdArticleCriteria(string ArticleNumber, string Color, string SeasonCode, IReadOnlyList<string>? FallbackSeasonCodes = null);
+public sealed record SgdArticleCriteria(string ArticleNumber, string Color, string SeasonCode);
 
 /// <summary>
 /// Finds the Bexio article of a SGD position.
@@ -24,7 +23,7 @@ public interface ISgdArticleMatcher : IArticleMatcher<SgdArticleCriteria>
 
 /// <summary>
 /// Matches the Bexio intern_code as {SeasonCode}{ArticleNumber}{Color}, ignoring whitespace and case, with the color as written
-/// in the order (eg. "1001 Black"), only its name ("Black") or only its code ("1001"); first with the season code, then with each fallback code.
+/// in the order (eg. "1001 Black"), only its name ("Black") or only its code ("1001"). There is no fallback season code, unlike Peakmile.
 /// So "FS26 E183801 1001 Black", "FS26E1838011001Black", "FS26E183801 Black" and "FS26E1838011001" all match. The articles come from one search per
 /// season code (<see cref="PreFetchArticlesAsync"/>) and one per article number that is not found in them; each search runs once
 /// per matcher (one import). Several articles with the same code are not unique and match none.
@@ -65,7 +64,7 @@ public sealed partial class SgdArticleMatcher : ISgdArticleMatcher
     }
 
     /// <summary>
-    /// Normalized intern codes in the order they are tried: per season code first with the full color, then with its name only, then with its code only.
+    /// Normalized intern codes in the order they are tried: first with the full color, then with its name only, then with its code only.
     /// </summary>
     private static string[] CandidateCodes(SgdArticleCriteria criteria)
     {
@@ -74,9 +73,7 @@ public sealed partial class SgdArticleMatcher : ISgdArticleMatcher
         string colorName = color[colorCode.Length..];
         // A color with code and name also matches by its name or its code alone; a color that is only a code matches as is
         string[] colors = colorCode.Success && colorName.Length > 0 ? [color, colorName, colorCode.Value] : [color];
-        return [.. ((string[])[criteria.SeasonCode, .. criteria.FallbackSeasonCodes ?? []])
-            .SelectMany(season => colors.Select(c => Normalize($"{season}{criteria.ArticleNumber}{c}")))
-            .Distinct()];
+        return [.. colors.Select(c => Normalize($"{criteria.SeasonCode}{criteria.ArticleNumber}{c}")).Distinct()];
     }
 
     /// <summary>

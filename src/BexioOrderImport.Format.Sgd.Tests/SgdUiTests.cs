@@ -57,11 +57,11 @@ public class SgdUiTests
         {
             var control = new SgdUiProvider().CreateProfileConfigControl();
 
-            control.Load(new SgdSettings { SizeColumn = "G" });
+            control.Load(SgdTestSettings.WithSeasons(new SgdSettings { SizeColumn = "H" }));
 
             control.View.DataContext.Should().BeOfType<SgdProfileConfigViewModel>();
             control.Validate().Should().BeEmpty();
-            control.Save().Should().BeOfType<SgdSettings>().Which.SizeColumn.Should().Be("G");
+            control.Save().Should().BeOfType<SgdSettings>().Which.SizeColumn.Should().Be("H");
         });
     }
 

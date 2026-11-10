@@ -134,7 +134,7 @@ The preview before the import shows the customer number, every position with its
 
 ### SGD Format (Sports Group Denmark)
 
-An SGD list has one article, color and size per row. One profile serves all customers: the **customer number is asked for when the import starts**, not stored in the profile. The columns and the first data row are set in the profile; the defaults are:
+An SGD list has one article, color, size and season per row. One profile serves all customers: the **customer number is asked for when the import starts**, not stored in the profile. The columns and the first data row are set in the profile; the defaults are:
 
 | Column | Content | Notes |
 |---|---|---|
@@ -144,23 +144,25 @@ An SGD list has one article, color and size per row. One profile serves all cust
 | D | Size | Eg. `M` or `38`. May be empty for one-size articles. |
 | E | Quantity | Whole number. Rows with an empty quantity or a quantity of 0 or less are ignored. |
 | F | External order number | Optional, see [External order number](#external-order-number-ean-list-and-sgd). |
+| G | Season | Required. The season as SGD names it, eg. `2026 Fall/Winter`; the profile maps it to a Bexio season code. |
 
 Row 1 is the header; data starts in row 2. Example:
 
-| Artikelnummer | Artikelname | Farbe | Grösse | Menge |
-|---|---|---|---|---|
-| E231001 | Endurance Run Jacket | 1001 Black | S | 2 |
-| E231001 | Endurance Run Jacket | 1001 Black | M | 3 |
-| 230455 | Whistler Fleece | 3001 Red | L | 4 |
+| Artikelnummer | Artikelname | Farbe | Grösse | Menge | | Saison |
+|---|---|---|---|---|---|---|
+| E231001 | Endurance Run Jacket | 1001 Black | S | 2 | | 2026 Fall/Winter |
+| E231001 | Endurance Run Jacket | 1001 Black | M | 3 | | 2026 Fall/Winter |
+| 230455 | Whistler Fleece | 3001 Red | L | 4 | | 2027 Spring/Summer |
 
 The profile also sets:
 
-- **Season code** and **season fallback codes**: articles are found like Peakmile articles, see [Article lookup](#article-lookup-peakmile-and-sgd).
+- **Season mapping**: one row per SGD season with its Bexio season code, eg. `2026 Fall/Winter` → `HW26` and `2027 Spring/Summer` → `FS27`. Fill in both fields and click **+** to add a mapping, **✕** removes it. Upper/lower case and spaces around the season are ignored. A profile needs at least one mapping, and each SGD season can be mapped only once. The season code of each row finds its articles, see [Article lookup](#article-lookup-peakmile-and-sgd); SGD has no season fallback codes.
+- When a file is loaded, every row with a quantity must have a season with a mapping. Otherwise the file is not loaded, and the message lists every season without mapping with its Excel rows, so all of them can be added to the profile at once. Rows with an empty quantity or a quantity of 0 are not checked. SGD profiles of earlier versions had one season code for the whole file; they have no mappings yet, so the first file lists the seasons to add.
 - **Discount in %**: added as one discount position at the end of the order, with the **discount position text template** (placeholder `{DiscountInPercent}`). `0` adds no discount position. The file has no discount.
-- **Position creation**: **Single position per size** creates one Bexio position per row. **Grouped position per article and color** creates one position per article number and color, with one size row per size from the **size row template** (eg. `2x Size S`, `3x Size M`); equal sizes are summed. The grouped position text template must contain `{SizesRows}`.
-- **Order name template** (`{CustomerName}`, `{SeasonCode}`, `{ExternalOrderNumber}`) and the **position text templates** with the placeholders `{Color}`, `{Size}` or `{SizesRows}`, `{ArticleNumber}`, `{ArticleName}`, `{BexioArticleName}` and `{BexioArticleDescription}`.
+- **Position creation**: **Single position per size** creates one Bexio position per row. **Grouped position per article and color** creates one position per article number, color and season, with one size row per size from the **size row template** (eg. `2x Size S`, `3x Size M`); equal sizes are summed. The grouped position text template must contain `{SizesRows}`.
+- **Order name template** (`{CustomerName}`, `{ExternalOrderNumber}`) and the **position text templates** with the placeholders `{Color}`, `{Size}` or `{SizesRows}`, `{ArticleNumber}`, `{ArticleName}`, `{BexioArticleName}` and `{BexioArticleDescription}`. As a file can have several seasons, the order name has no `{SeasonCode}`; a profile that still uses it can only be saved without it.
 
-The price of each position is the **sale price of the Bexio article**. The preview shows the season code, the discount and every position with its Excel row, article, color, size and quantity.
+The price of each position is the **sale price of the Bexio article**. The preview shows the season codes of the file, the discount and every position with its Excel row, article, season code, color, size and quantity.
 
 ### External order number (EAN list and SGD)
 
@@ -178,9 +180,9 @@ Peakmile and SGD find a Bexio article by its **internal code** (`intern_code`): 
 
 `FS26E1838011001 Black`, `FS26E1838011001Black`, `FS26 E183801 1001 Black`, `FS26 E183801 1001Black`, `FS26E183801 Black`, `FS26E183801Black`, `FS26 E183801 Black`, `FS26 E183801Black`, `FS26E1838011001`, `FS26 E183801 1001`
 
-- The season code is tried first, then each season fallback code (eg. `NOOS`) in order. With each code, the color with color code (`1001 Black`) comes first, then the color name (`Black`), then the color code (`1001`).
+- Peakmile uses the season code of the profile and tries it first, then each season fallback code (eg. `NOOS`) in order. SGD uses the season code mapped from the season of each row and has no fallback. With each code, the color with color code (`1001 Black`) comes first, then the color name (`Black`), then the color code (`1001`).
 - An article of another color or season is never taken instead. If several articles have the same internal code, the article is reported as *not unique*.
-- The articles are loaded with one search per season code at the start of the import, plus one search per article number that is not found there. The positions themselves cause no further requests to Bexio.
+- The articles are loaded with one search per season code at the start of the import (for SGD per season code of the file), plus one search per article number that is not found there. The positions themselves cause no further requests to Bexio.
 
 ---
 
@@ -274,7 +276,7 @@ The editor starts with the profile name and the format. Below follow the setting
 |---|---|
 | Peakmile order form | **Profile Information**: worksheet index, season code, season fallback codes. **Header Coordinates (Cells)**: customer, address, email, buyer, payment terms, discount, optional order and customer number. **Size Matrix**: rows and columns of the size headers. **Article Grid Columns**: first data row and the article columns. **Text Templates & Formatting**. |
 | EAN list | **Profile Information**: worksheet index, first data row, customer number (eg. `001234`; every import creates a new order for it). **Excel Columns**: EAN, quantity and the optional VE and external order number columns. **Texts & Templates**: order name and position text. |
-| SGD (Sports Group Denmark) | **Profile Information**: worksheet index, season code, season fallback codes, first data row, discount in %. **Excel Columns**: article number, article name, color, size, quantity and the optional external order number column. **Texts & Templates**: order name, position creation and position texts. |
+| SGD (Sports Group Denmark) | **Profile Information**: worksheet index, first data row, discount in %. **Excel Columns**: article number, article name, color, size, quantity, the optional external order number column and the season column. **Season Mapping**: SGD season and Bexio season code per row. **Texts & Templates**: order name, position creation and position texts. |
 
 The settings are described in [section 4](#4-understanding-the-excel-order-template).
 
@@ -334,7 +336,7 @@ The application checks for updates automatically from its GitHub repository on e
 #### 3. Import fails / throws article-not-found error
 
 - Peakmile and SGD imports search all articles before anything is changed in Bexio. If articles are missing, the message lists each missing article number with its color, and neither a customer, an order nor a position is created.
-- Check the season code and the season fallback codes of the profile and the internal codes of the articles in Bexio (see [Article lookup](#article-lookup-peakmile-and-sgd)).
+- Check the season code and the season fallback codes (Peakmile) or the season mapping (SGD) of the profile and the internal codes of the articles in Bexio (see [Article lookup](#article-lookup-peakmile-and-sgd)).
 - **"not unique"**: several Bexio articles have the same internal code once spaces and case are ignored (eg. `FS26 E183801 Black` and `FS26E183801Black`). Remove or rename the duplicate in Bexio.
 
 #### 4. EAN list import is cancelled or fails
@@ -345,6 +347,8 @@ The application checks for updates automatically from its GitHub repository on e
 
 #### 5. SGD import fails
 
-- **"… article(s) not found in Bexio"**: The message lists every missing article with its color and Excel row. Check the season code and the season fallback codes of the profile and the internal codes (`{SeasonCode}{ArticleNumber}{Color}`) in Bexio. Nothing was changed in Bexio.
+- **"… article(s) not found in Bexio"**: The message lists every missing article with its color, season code and Excel row. Check the season mapping of the profile and the internal codes (`{SeasonCode}{ArticleNumber}{Color}`) in Bexio. Nothing was changed in Bexio.
+- **"The profile has no season mapping for these seasons"**: The file contains seasons that the profile does not map. The message lists them with their Excel rows. Add a mapping for each in the profile and load the file again.
+- **"The season is missing in row …"**: A row with a quantity has no season. Fill in the season column of the named row.
 - **"Customer number mismatch"**: The order number belongs to another customer than the entered customer number. Nothing was deleted.
 - **"The article number / color is missing in row …"** or **"Invalid quantity"**: Fix the named Excel row and load the file again. Quantities must be whole numbers, VEs whole numbers greater than 0, EANs valid EAN-13 codes (13 digits, or fewer if only leading zeros are missing, with a correct check digit).

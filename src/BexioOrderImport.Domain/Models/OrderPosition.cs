@@ -14,6 +14,11 @@ public class OrderPosition
     /// </summary>
     public int SourceRow { get; set; }
     public string ArticleName { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Bexio season code of the position, set by formats whose rows belong to different seasons.
+    /// </summary>
+    public string SeasonCode { get; set; } = string.Empty;
     public string Color { get; set; } = string.Empty;
     public string SizeCategory { get; set; } = string.Empty;
     public string Size { get; set; } = string.Empty;

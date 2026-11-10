@@ -22,7 +22,7 @@ public class SgdFormatAdapterTests
     [Test]
     public void Parse_ShouldReadTheSgdList()
     {
-        var order = new SgdFormatAdapter().Parse(Path.Combine(AppContext.BaseDirectory, "Fixtures", "SgdOrder.xlsx"), new SgdSettings());
+        var order = new SgdFormatAdapter().Parse(Path.Combine(AppContext.BaseDirectory, "Fixtures", "SgdOrder.xlsx"), Utils.SgdTestSettings.WithSeasons());
 
         order.Positions.Should().HaveCount(6);
     }
@@ -43,7 +43,7 @@ public class SgdFormatAdapterTests
         {
             WorksheetIndex = 2, StartRow = 4,
             ArticleNumberColumn = "F", ArticleNameColumn = "G", ColorColumn = "H", SizeColumn = "I", QuantityColumn = "J",
-            SeasonCode = "SS27", SeasonFallbackCodes = ["NOOS"], DiscountPercent = 12.5m,
+            SeasonColumn = "K", SeasonMappings = [new SgdSeasonMapping { ExternalSeason = "2027 Spring/Summer", SeasonCode = "FS27" }], DiscountPercent = 12.5m,
             PositionGroupingMode = SgdPositionGroupingMode.GroupedSizePosition,
             DefaultOrderName = "X", SinglePositionTextTemplate = "S", GroupedPositionTextTemplate = "{SizesRows}",
             SizeRowTemplate = "{Amount}/{Size}", DiscountPositionTextTemplate = "D"
@@ -60,5 +60,16 @@ public class SgdFormatAdapterTests
         var restored = (SgdSettings)new SgdFormatAdapter().DeserializeSettings(System.Text.Json.JsonDocument.Parse("{}").RootElement);
 
         restored.Should().BeEquivalentTo(new SgdSettings());
+    }
+
+    [Test]
+    public void DeserializeSettings_WithTheSeasonCodesOfAnOlderVersion_ShouldIgnoreThem()
+    {
+        var json = System.Text.Json.JsonDocument.Parse("""{ "SeasonCode": "FS27", "SeasonFallbackCodes": ["NOOS"], "StartRow": 3 }""").RootElement;
+
+        var restored = (SgdSettings)new SgdFormatAdapter().DeserializeSettings(json);
+
+        restored.StartRow.Should().Be(3);
+        restored.SeasonMappings.Should().BeEmpty("the SGD season names are not known, the parser reports them");
     }
 }

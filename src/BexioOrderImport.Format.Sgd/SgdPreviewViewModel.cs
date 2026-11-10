@@ -5,7 +5,7 @@ using BexioOrderImport.Format.Sgd.Resources;
 namespace BexioOrderImport.Format.Sgd;
 
 /// <summary>
-/// Season code, discount and the positions of a parsed SGD list. Bexio is not called before the import.
+/// Season codes, discount and the positions of a parsed SGD list. Bexio is not called before the import.
 /// </summary>
 public sealed class SgdPreviewViewModel
 {
@@ -14,7 +14,8 @@ public sealed class SgdPreviewViewModel
         ArgumentNullException.ThrowIfNull(order);
         ArgumentNullException.ThrowIfNull(settings);
 
-        SeasonCode = string.IsNullOrWhiteSpace(settings.SeasonCode) ? "-" : settings.SeasonCode;
+        string[] seasonCodes = [.. order.Positions.Select(p => p.SeasonCode).Distinct(StringComparer.OrdinalIgnoreCase)];
+        SeasonCodes = seasonCodes.Length > 0 ? string.Join(", ", seasonCodes) : "-";
         Discount = settings.DiscountPercent > 0 ? $"{settings.DiscountPercent.ToString("0.##", CultureInfo.CurrentCulture)} %" : "-";
         ShowExternalOrderNumber = settings.UseExternalOrderNumberColumn;
         ExternalOrderNumber = order.ExternalOrderNumber ?? "-";
@@ -27,7 +28,10 @@ public sealed class SgdPreviewViewModel
         SkippedRows = order.SkippedRows;
     }
 
-    public string SeasonCode { get; }
+    /// <summary>
+    /// The different season codes of the positions in row order, eg. "HW26, FS27", or "-" without positions.
+    /// </summary>
+    public string SeasonCodes { get; }
 
     /// <summary>
     /// Discount of the profile, eg. "10 %", or "-" without discount.
