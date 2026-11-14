@@ -14,11 +14,11 @@ public class SgdImporterTests
     private readonly Mock<ISgdArticleMatcher> _matcher = new();
     private readonly List<string> _logs = [];
     private readonly List<string> _calls = [];
-    private readonly SgdSettings _settings = new() { SeasonCode = "FS27", SinglePositionTextTemplate = "{BexioArticleName} {Size} ({Color})" };
+    private readonly SgdSettings _settings = new() { SinglePositionTextTemplate = "{BexioArticleName} {Size} ({Color})" };
 
     private readonly Queue<string?> _texts = new();
-    private static readonly string[] ArticleNumbers = ["E1", "E2"];
-    private static readonly string[] FallbackCodes = ["NOOS"];
+    private static readonly string[] FallWinterArticles = ["E1", "E3"];
+    private static readonly string[] SpringSummerArticles = ["E2"];
 
     private int? _choice = 0;
     private readonly List<(string Title, string? Error)> _askedTexts = [];
@@ -51,8 +51,8 @@ public class SgdImporterTests
     {
         Positions =
         [
-            new OrderPosition { ArticleNumber = "E1", ArticleName = "Jacket", Color = "1001 Black", Size = "M", Quantity = 2, SourceRow = 2 },
-            new OrderPosition { ArticleNumber = "E2", ArticleName = "Fleece", Color = "Red", Size = "L", Quantity = 1, SourceRow = 3 }
+            new OrderPosition { ArticleNumber = "E1", ArticleName = "Jacket", Color = "1001 Black", Size = "M", Quantity = 2, SourceRow = 2, SeasonCode = "HW26" },
+            new OrderPosition { ArticleNumber = "E2", ArticleName = "Fleece", Color = "Red", Size = "L", Quantity = 1, SourceRow = 3, SeasonCode = "FS27" }
         ]
     };
 
@@ -134,13 +134,13 @@ public class SgdImporterTests
     public async Task ExecuteAsync_ShouldReplaceTheExternalOrderNumberInTheTitle()
     {
         SetupNewOrder();
-        _settings.DefaultOrderName = "{SeasonCode} {ExternalOrderNumber}";
+        _settings.DefaultOrderName = "Order {ExternalOrderNumber}";
         var order = Order();
         order.ExternalOrderNumbers.Add("PO-1");
 
         await Importer().ExecuteAsync(order, _settings, Interaction());
 
-        order.Title.Should().Be("FS27 PO-1");
+        order.Title.Should().Be("Order PO-1");
         _warning.Should().BeNull("one external order number needs no warning");
     }
 
@@ -175,7 +175,6 @@ public class SgdImporterTests
     public async Task ExecuteAsync_WithANewOrder_ShouldCreateItAndAddThePositionsWithTheBexioPriceAndTheDiscount()
     {
         SetupNewOrder();
-        _settings.SeasonFallbackCodes = ["NOOS", " "];
         _settings.DiscountPercent = 7.5m;
         _settings.DiscountPositionTextTemplate = "Rabatt {DiscountInPercent}%";
         var order = Order();
@@ -184,17 +183,32 @@ public class SgdImporterTests
 
         result.Should().Be(new ImportResult(Success: true, OrderNumber: "AU-77", UploadedPositionsCount: 2));
         order.CustomerNumber.Should().Be("1001");
-        order.Title.Should().Be("Order: Muster Sport AG FS27");
+        order.Title.Should().Be("Order: Muster Sport AG");
         order.Positions.Select(p => p.GrossUnitPrice).Should().Equal(50m, 50m);
         _bexio.Verify(b => b.AddArticlePositionAsync(77, 1, order.Positions[0], "Article 1 M (1001 Black)"), Times.Once);
         _bexio.Verify(b => b.AddArticlePositionAsync(77, 2, order.Positions[1], "Article 2 L (Red)"), Times.Once);
         _bexio.Verify(b => b.AddDiscountPositionAsync(77, 7.5m, "Rabatt 7.5%"), Times.Once);
         _bexio.Verify(b => b.DeleteAllPositionsAsync(It.IsAny<int>()), Times.Never);
-        _matcher.Verify(m => m.PreFetchArticlesAsync("FS27", It.Is<IEnumerable<string>>(n => n.SequenceEqual(ArticleNumbers))), Times.Once);
-        _matcher.Verify(m => m.PreFetchArticlesAsync("NOOS", It.IsAny<IEnumerable<string>>()), Times.Once);
-        _matcher.Verify(m => m.FindArticleAsync(It.Is<SgdArticleCriteria>(c => c.Color == "1001 Black" && c.SeasonCode == "FS27" && c.FallbackSeasonCodes!.SequenceEqual(FallbackCodes))), Times.Once);
+        _matcher.Verify(m => m.FindArticleAsync(It.Is<SgdArticleCriteria>(c => c.Color == "1001 Black" && c.SeasonCode == "HW26")), Times.Once);
+        _matcher.Verify(m => m.FindArticleAsync(It.Is<SgdArticleCriteria>(c => c.Color == "Red" && c.SeasonCode == "FS27")), Times.Once);
         _positionsDeleted.Should().BeFalse();
         _warning.Should().BeNull();
+    }
+
+    [Test]
+    public async Task ExecuteAsync_ShouldPreFetchTheArticlesOncePerSeasonCode()
+    {
+        SetupNewOrder();
+        var order = Order();
+        order.Positions.Add(new OrderPosition { ArticleNumber = "E1", Color = "Red", Quantity = 1, SourceRow = 4, SeasonCode = "hw26" });
+        order.Positions.Add(new OrderPosition { ArticleNumber = "E3", Color = "Red", Quantity = 1, SourceRow = 5, SeasonCode = "HW26" });
+        _matcher.Setup(m => m.FindArticleAsync(It.Is<SgdArticleCriteria>(c => c.ArticleNumber == "E3"))).ReturnsAsync(ArticleMatch.Found(Article(3)));
+
+        await Importer().ExecuteAsync(order, _settings, Interaction());
+
+        _matcher.Verify(m => m.PreFetchArticlesAsync("HW26", It.Is<IEnumerable<string>>(n => n.SequenceEqual(FallWinterArticles))), Times.Once);
+        _matcher.Verify(m => m.PreFetchArticlesAsync("FS27", It.Is<IEnumerable<string>>(n => n.SequenceEqual(SpringSummerArticles))), Times.Once);
+        _matcher.Verify(m => m.PreFetchArticlesAsync(It.IsAny<string>(), It.IsAny<IEnumerable<string>>()), Times.Exactly(2));
     }
 
     [Test]
@@ -234,7 +248,7 @@ public class SgdImporterTests
         Func<Task> act = () => Importer().ExecuteAsync(Order(), _settings, Interaction());
 
         await act.Should().ThrowAsync<InvalidOperationException>()
-            .WithMessage($"2 article(s) not found*'FS27'*Nothing was changed*• 'E1' with color '1001 Black' (row 2){Environment.NewLine}• 'E2' with color 'Red' (row 3)");
+            .WithMessage($"2 article(s) not found in Bexio. Nothing was changed*• 'E1' with color '1001 Black' and season code 'HW26' (row 2){Environment.NewLine}• 'E2' with color 'Red' and season code 'FS27' (row 3)");
         _calls.Should().BeEmpty();
         _positionsDeleted.Should().BeFalse();
         _bexio.Verify(b => b.FindOrderByDocumentNrAsync(It.IsAny<string>()), Times.Never);

@@ -6,7 +6,7 @@ using ClosedXML.Excel;
 namespace BexioOrderImport.Format.Sgd;
 
 /// <summary>
-/// Reads an SGD list: one row per article, color and size with its quantity. The customer is asked for on import.
+/// Reads an SGD list: one row per article, color, size and season with its quantity. The customer is asked for on import.
 /// </summary>
 public sealed class SgdExcelParser
 {
@@ -28,6 +28,9 @@ public sealed class SgdExcelParser
 
         var order = new Order();
         var rows = new List<OrderPosition>();
+        var seasonCodes = SeasonCodesByName();
+        // Rows of each season name without mapping, reported together so the profile can be completed at once
+        var unknownSeasons = new Dictionary<string, List<int>>(StringComparer.OrdinalIgnoreCase);
 
         int lastRow = sheet.LastRowUsed()?.RowNumber() ?? _settings.StartRow;
         for (int row = _settings.StartRow; row <= lastRow; row++)
@@ -53,10 +56,24 @@ public sealed class SgdExcelParser
             if (color.Length == 0)
                 throw new FormatException(string.Format(SgdTranslations.Error_MissingColor, row));
 
+            string season = ReadText(sheet.Cell(row, _settings.SeasonColumn));
+            if (season.Length == 0)
+                throw new FormatException(string.Format(SgdTranslations.Error_MissingSeason, row));
+            if (!seasonCodes.TryGetValue(season, out string? seasonCode))
+            {
+                if (!unknownSeasons.TryGetValue(season, out var unknownRows))
+                {
+                    unknownSeasons[season] = unknownRows = [];
+                }
+                unknownRows.Add(row);
+                continue;
+            }
+
             rows.Add(new OrderPosition
             {
                 ArticleNumber = articleNumber,
                 ArticleName = ReadText(sheet.Cell(row, _settings.ArticleNameColumn)),
+                SeasonCode = seasonCode,
                 Color = color,
                 Size = ReadText(sheet.Cell(row, _settings.SizeColumn)),
                 Quantity = quantity.Value,
@@ -64,19 +81,38 @@ public sealed class SgdExcelParser
             });
         }
 
+        if (unknownSeasons.Count > 0)
+        {
+            var lines = unknownSeasons.Select(s => string.Format(SgdTranslations.Error_UnknownSeasonRows, s.Key, string.Join(", ", s.Value)));
+            throw new FormatException(SgdTranslations.Error_UnknownSeasons + Environment.NewLine + string.Join(Environment.NewLine, lines));
+        }
+
         order.Positions = _settings.PositionGroupingMode == SgdPositionGroupingMode.GroupedSizePosition ? GroupBySize(rows) : rows;
         return order;
     }
 
     /// <summary>
-    /// One position per article and color in the order of their first row, with one size row per size (equal sizes are summed).
+    /// Bexio season code by SGD season name, ignoring case and surrounding whitespace.
+    /// </summary>
+    private Dictionary<string, string> SeasonCodesByName()
+    {
+        var codes = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        foreach (var mapping in _settings.SeasonMappings ?? [])
+        {
+            codes.TryAdd(mapping.ExternalSeason?.Trim() ?? string.Empty, mapping.SeasonCode?.Trim() ?? string.Empty);
+        }
+        return codes;
+    }
+
+    /// <summary>
+    /// One position per article, color and season in the order of their first row, with one size row per size (equal sizes are summed).
     /// </summary>
     private List<OrderPosition> GroupBySize(List<OrderPosition> rows)
     {
         string sizeRowTemplate = string.IsNullOrWhiteSpace(_settings.SizeRowTemplate) ? SgdSettings.DefaultSizeRowTemplate : _settings.SizeRowTemplate;
 
         return [.. rows
-            .GroupBy(p => (p.ArticleNumber.ToUpperInvariant(), p.Color.ToUpperInvariant()))
+            .GroupBy(p => (p.ArticleNumber.ToUpperInvariant(), p.Color.ToUpperInvariant(), p.SeasonCode.ToUpperInvariant()))
             .Select(article =>
             {
                 var sizeRows = article
@@ -89,6 +125,7 @@ public sealed class SgdExcelParser
                 {
                     ArticleNumber = first.ArticleNumber,
                     ArticleName = first.ArticleName,
+                    SeasonCode = first.SeasonCode,
                     Color = first.Color,
                     Size = string.Join("<br />", sizeRows),
                     Quantity = article.Sum(p => p.Quantity),

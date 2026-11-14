@@ -32,6 +32,7 @@
                 <DataGrid.Columns>
                     <DataGridTextColumn Header="{x:Static res:SgdTranslations.Preview_ColRow}" Binding="{Binding SourceRow}" Width="60" ElementStyle="{StaticResource DataGridCellTextBlockStyle}"/>
                     <DataGridTextColumn Header="{x:Static res:SgdTranslations.Preview_ColArticleNumber}" Binding="{Binding ArticleNumber}" Width="90" ElementStyle="{StaticResource DataGridCellTextBlockStyle}"/>
+                    <DataGridTextColumn Header="{x:Static res:SgdTranslations.Preview_ColSeason}" Binding="{Binding SeasonCode}" Width="70" ElementStyle="{StaticResource DataGridCellTextBlockStyle}"/>
                     <DataGridTextColumn Header="{x:Static res:SgdTranslations.Preview_ColArticleName}" Binding="{Binding ArticleName}" Width="2*" ElementStyle="{StaticResource DataGridCellTextBlockStyle}"/>
                     <DataGridTextColumn Header="{x:Static res:SgdTranslations.Preview_ColColor}" Binding="{Binding Color}" Width="110" ElementStyle="{StaticResource DataGridCellTextBlockStyle}"/>
                     <!-- Grouped positions list one size row per line -->

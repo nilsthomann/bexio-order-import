@@ -1,3 +1,4 @@
+using System.Collections.ObjectModel;
 using System.Globalization;
 using BexioOrderImport.Abstractions.Excel;
 using BexioOrderImport.Abstractions.Wpf;
@@ -12,6 +13,14 @@ public sealed class SgdProfileConfigViewModel : ViewModelBase
 {
     private SgdSettings _settings = new();
     private bool _isGroupedPositions;
+    private string _newExternalSeason = string.Empty;
+    private string _newSeasonCode = string.Empty;
+
+    public SgdProfileConfigViewModel()
+    {
+        AddSeasonMappingCommand = new RelayCommand(AddSeasonMapping, () => !string.IsNullOrWhiteSpace(NewExternalSeason) && !string.IsNullOrWhiteSpace(NewSeasonCode));
+        RemoveSeasonMappingCommand = new RelayCommand<SgdSeasonMapping>(mapping => SeasonMappings.Remove(mapping));
+    }
 
     public string WorksheetIndex { get; set; } = string.Empty;
     public string StartRow { get; set; } = string.Empty;
@@ -22,8 +31,7 @@ public sealed class SgdProfileConfigViewModel : ViewModelBase
     public string QuantityColumn { get; set; } = string.Empty;
     public bool UseExternalOrderNumberColumn { get; set; }
     public string ExternalOrderNumberColumn { get; set; } = string.Empty;
-    public string SeasonCode { get; set; } = string.Empty;
-    public string SeasonFallbackCodes { get; set; } = string.Empty;
+    public string SeasonColumn { get; set; } = string.Empty;
     public string DiscountPercent { get; set; } = string.Empty;
     public string DefaultOrderName { get; set; } = string.Empty;
     public string SinglePositionTextTemplate { get; set; } = string.Empty;
@@ -49,6 +57,34 @@ public sealed class SgdProfileConfigViewModel : ViewModelBase
         set => IsGroupedPositions = !value;
     }
 
+    /// <summary>
+    /// SGD season names and their Bexio season codes, edited in place. Copies, so a cancelled edit keeps the profile.
+    /// </summary>
+    public ObservableCollection<SgdSeasonMapping> SeasonMappings { get; } = [];
+
+    public string NewExternalSeason
+    {
+        get => _newExternalSeason;
+        set => SetProperty(ref _newExternalSeason, value ?? string.Empty);
+    }
+
+    public string NewSeasonCode
+    {
+        get => _newSeasonCode;
+        set => SetProperty(ref _newSeasonCode, value ?? string.Empty);
+    }
+
+    public RelayCommand AddSeasonMappingCommand { get; }
+
+    public RelayCommand<SgdSeasonMapping> RemoveSeasonMappingCommand { get; }
+
+    private void AddSeasonMapping()
+    {
+        SeasonMappings.Add(new SgdSeasonMapping { ExternalSeason = NewExternalSeason.Trim(), SeasonCode = NewSeasonCode.Trim() });
+        NewExternalSeason = string.Empty;
+        NewSeasonCode = string.Empty;
+    }
+
     public void Load(SgdSettings settings)
     {
         _settings = settings ?? throw new ArgumentNullException(nameof(settings));
@@ -61,8 +97,14 @@ public sealed class SgdProfileConfigViewModel : ViewModelBase
         QuantityColumn = settings.QuantityColumn;
         UseExternalOrderNumberColumn = settings.UseExternalOrderNumberColumn;
         ExternalOrderNumberColumn = settings.ExternalOrderNumberColumn;
-        SeasonCode = settings.SeasonCode;
-        SeasonFallbackCodes = string.Join(", ", settings.SeasonFallbackCodes);
+        SeasonColumn = settings.SeasonColumn;
+        SeasonMappings.Clear();
+        foreach (var mapping in settings.SeasonMappings ?? [])
+        {
+            SeasonMappings.Add(new SgdSeasonMapping { ExternalSeason = mapping.ExternalSeason, SeasonCode = mapping.SeasonCode });
+        }
+        NewExternalSeason = string.Empty;
+        NewSeasonCode = string.Empty;
         DiscountPercent = settings.DiscountPercent.ToString(CultureInfo.CurrentCulture);
         DefaultOrderName = settings.DefaultOrderName;
         SinglePositionTextTemplate = settings.SinglePositionTextTemplate;
@@ -82,6 +124,12 @@ public sealed class SgdProfileConfigViewModel : ViewModelBase
         AddIfNoColumn(errors, ColorColumn, SgdTranslations.Settings_ColorColumn);
         AddIfNoColumn(errors, SizeColumn, SgdTranslations.Settings_SizeColumn);
         AddIfNoColumn(errors, QuantityColumn, SgdTranslations.Settings_QuantityColumn);
+        AddIfNoColumn(errors, SeasonColumn, SgdTranslations.Settings_SeasonColumn);
+        AddSeasonMappingErrors(errors);
+        if (DefaultOrderName.Contains("{SeasonCode}", StringComparison.Ordinal))
+        {
+            errors.Add(SgdTranslations.Validation_SeasonCodePlaceholder);
+        }
         if (UseExternalOrderNumberColumn)
         {
             AddIfNoColumn(errors, ExternalOrderNumberColumn, SgdTranslations.Settings_ExternalOrderNumberColumn);
@@ -112,8 +160,8 @@ public sealed class SgdProfileConfigViewModel : ViewModelBase
         _settings.QuantityColumn = ExcelColumnHelper.NormalizeColumnLetter(QuantityColumn, "E");
         _settings.UseExternalOrderNumberColumn = UseExternalOrderNumberColumn;
         _settings.ExternalOrderNumberColumn = ExcelColumnHelper.NormalizeColumnLetter(ExternalOrderNumberColumn, "F");
-        _settings.SeasonCode = SeasonCode.Trim();
-        _settings.SeasonFallbackCodes = [.. SeasonFallbackCodes.Split([',', ';'], StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)];
+        _settings.SeasonColumn = ExcelColumnHelper.NormalizeColumnLetter(SeasonColumn, "G");
+        _settings.SeasonMappings = [.. SeasonMappings.Select(m => new SgdSeasonMapping { ExternalSeason = m.ExternalSeason.Trim(), SeasonCode = m.SeasonCode.Trim() })];
         _settings.DiscountPercent = ParseDiscount(DiscountPercent) ?? 0m;
         _settings.DefaultOrderName = DefaultOrderName.Trim();
         _settings.PositionGroupingMode = IsGroupedPositions ? SgdPositionGroupingMode.GroupedSizePosition : SgdPositionGroupingMode.SinglePositionPerSize;
@@ -135,6 +183,31 @@ public sealed class SgdProfileConfigViewModel : ViewModelBase
             || decimal.TryParse(text, NumberStyles.AllowDecimalPoint, CultureInfo.InvariantCulture, out discount)
             ? discount
             : null;
+    }
+
+    /// <summary>
+    /// The parser needs at least one complete mapping and each SGD season name once (case is ignored).
+    /// </summary>
+    private void AddSeasonMappingErrors(List<string> errors)
+    {
+        if (SeasonMappings.Count == 0)
+        {
+            errors.Add(SgdTranslations.Validation_SeasonMappingRequired);
+        }
+        if (SeasonMappings.Any(m => string.IsNullOrWhiteSpace(m.ExternalSeason) || string.IsNullOrWhiteSpace(m.SeasonCode)))
+        {
+            errors.Add(SgdTranslations.Validation_SeasonMappingIncomplete);
+        }
+        errors.AddRange(SeasonMappings
+            .Where(m => !string.IsNullOrWhiteSpace(m.ExternalSeason))
+            .GroupBy(m => m.ExternalSeason.Trim(), StringComparer.OrdinalIgnoreCase)
+            .Where(g => g.Count() > 1)
+            .Select(g => string.Format(SgdTranslations.Validation_DuplicateExternalSeason, g.Key)));
+        // Typed but not added with the plus button; saving would drop it silently
+        if (!string.IsNullOrWhiteSpace(NewExternalSeason) || !string.IsNullOrWhiteSpace(NewSeasonCode))
+        {
+            errors.Add(SgdTranslations.Validation_SeasonMappingNotAdded);
+        }
     }
 
     private static void AddIfNotPositive(List<string> errors, string value, string label)

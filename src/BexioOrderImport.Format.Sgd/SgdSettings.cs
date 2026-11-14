@@ -52,14 +52,15 @@ public class SgdSettings : IFormatSettings
     public string ExternalOrderNumberColumn { get; set; } = "F";
 
     /// <summary>
-    /// Bexio intern_code of an article: {SeasonCode}{ArticleNumber}{Color}.
+    /// Season of each row as named by SGD (eg. "2026 Fall/Winter"), mapped to a Bexio season code with SeasonMappings.
     /// </summary>
-    public string SeasonCode { get; set; } = "FS27";
+    [JsonConverter(typeof(ExcelColumnJsonConverter))]
+    public string SeasonColumn { get; set; } = "G";
 
     /// <summary>
-    /// Season codes tried in order when the season code finds no article (multi-season articles, eg. NOOS).
+    /// SGD season names and their Bexio season codes. The Bexio intern_code of an article is {SeasonCode}{ArticleNumber}{Color}.
     /// </summary>
-    public List<string> SeasonFallbackCodes { get; set; } = [];
+    public List<SgdSeasonMapping> SeasonMappings { get; set; } = [];
 
     /// <summary>
     /// Discount in percent, added as a discount position at the end of the order. 0 adds none.
@@ -68,7 +69,7 @@ public class SgdSettings : IFormatSettings
 
     public SgdPositionGroupingMode PositionGroupingMode { get; set; } = SgdPositionGroupingMode.SinglePositionPerSize;
 
-    public string DefaultOrderName { get; set; } = "Order: {CustomerName} {SeasonCode}";
+    public string DefaultOrderName { get; set; } = "Order: {CustomerName}";
 
     public string SinglePositionTextTemplate { get; set; } = "<strong>{BexioArticleName} Size {Size}</strong><br />{BexioArticleDescription}";
 
@@ -77,4 +78,14 @@ public class SgdSettings : IFormatSettings
     public string SizeRowTemplate { get; set; } = DefaultSizeRowTemplate;
 
     public string DiscountPositionTextTemplate { get; set; } = "Rabatt ({DiscountInPercent}%)";
+}
+
+/// <summary>
+/// An SGD season name (eg. "2026 Fall/Winter") and its Bexio season code (eg. "HW26").
+/// </summary>
+public class SgdSeasonMapping
+{
+    public string ExternalSeason { get; set; } = string.Empty;
+
+    public string SeasonCode { get; set; } = string.Empty;
 }

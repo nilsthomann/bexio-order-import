@@ -14,8 +14,8 @@
                     <ColumnDefinition Width="*"/>
                 </Grid.ColumnDefinitions>
                 <StackPanel Grid.Column="0" Margin="0,4">
-                    <TextBlock Text="{x:Static res:SgdTranslations.Preview_SeasonCode}" Style="{StaticResource MutedTextBlockStyle}"/>
-                    <TextBlock Text="{Binding SeasonCode}" FontWeight="SemiBold"/>
+                    <TextBlock Text="{x:Static res:SgdTranslations.Preview_SeasonCodes}" Style="{StaticResource MutedTextBlockStyle}"/>
+                    <TextBlock Text="{Binding SeasonCodes}" FontWeight="SemiBold" TextWrapping="Wrap"/>
                 </StackPanel>
                 <StackPanel Grid.Column="1" Margin="0,4">
                     <TextBlock Text="{x:Static res:SgdTranslations.Preview_Discount}" Style="{StaticResource MutedTextBlockStyle}"/>

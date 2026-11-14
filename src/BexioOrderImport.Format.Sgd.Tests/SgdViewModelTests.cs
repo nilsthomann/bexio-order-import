@@ -2,6 +2,7 @@ using System.Globalization;
 using BexioOrderImport.Domain.Models;
 using BexioOrderImport.Format.Sgd.Resources;
 using FluentAssertions;
+using static BexioOrderImport.Format.Sgd.Tests.Utils.SgdTestSettings;
 
 namespace BexioOrderImport.Format.Sgd.Tests;
 
@@ -11,27 +12,28 @@ public class SgdViewModelTests
     private static SgdProfileConfigViewModel Loaded(SgdSettings? settings = null)
     {
         var viewModel = new SgdProfileConfigViewModel();
-        viewModel.Load(settings ?? new SgdSettings());
+        viewModel.Load(settings ?? WithSeasons());
         return viewModel;
     }
 
     [Test]
     public void Load_ThenSave_ShouldKeepTheSettings()
     {
-        var settings = new SgdSettings
+        var settings = WithSeasons(new SgdSettings
         {
-            WorksheetIndex = 2, StartRow = 3, ArticleNumberColumn = "F", UseExternalOrderNumberColumn = true, ExternalOrderNumberColumn = "G", SeasonCode = "SS27", SeasonFallbackCodes = ["NOOS", "EX"],
+            WorksheetIndex = 2, StartRow = 3, ArticleNumberColumn = "F", UseExternalOrderNumberColumn = true, ExternalOrderNumberColumn = "G", SeasonColumn = "H",
             DiscountPercent = 10m, PositionGroupingMode = SgdPositionGroupingMode.GroupedSizePosition, SizeRowTemplate = ""
-        };
-        var expected = new SgdSettings
+        });
+        var expected = WithSeasons(new SgdSettings
         {
-            WorksheetIndex = 2, StartRow = 3, ArticleNumberColumn = "F", UseExternalOrderNumberColumn = true, ExternalOrderNumberColumn = "G", SeasonCode = "SS27", SeasonFallbackCodes = ["NOOS", "EX"],
+            WorksheetIndex = 2, StartRow = 3, ArticleNumberColumn = "F", UseExternalOrderNumberColumn = true, ExternalOrderNumberColumn = "G", SeasonColumn = "H",
             DiscountPercent = 10m, PositionGroupingMode = SgdPositionGroupingMode.GroupedSizePosition
-        };
+        });
 
         var viewModel = Loaded(settings);
 
-        viewModel.SeasonFallbackCodes.Should().Be("NOOS, EX");
+        viewModel.SeasonMappings.Should().BeEquivalentTo(settings.SeasonMappings, o => o.WithStrictOrdering());
+        viewModel.SeasonMappings[0].Should().NotBeSameAs(settings.SeasonMappings[0], "the editor works on copies");
         viewModel.IsGroupedPositions.Should().BeTrue();
         viewModel.IsSinglePosition.Should().BeFalse();
         viewModel.Validate().Should().BeEmpty();
@@ -45,8 +47,9 @@ public class SgdViewModelTests
         viewModel.WorksheetIndex = " 3 ";
         viewModel.QuantityColumn = "aa";
         viewModel.ColorColumn = "3";
-        viewModel.SeasonCode = " FS28 ";
-        viewModel.SeasonFallbackCodes = "NOOS; EX, ,";
+        viewModel.SeasonColumn = "h";
+        viewModel.SeasonMappings[0].ExternalSeason = " 2026 Fall/Winter ";
+        viewModel.SeasonMappings[0].SeasonCode = " HW26 ";
         viewModel.DiscountPercent = " ";
         viewModel.IsSinglePosition = true;
 
@@ -55,8 +58,8 @@ public class SgdViewModelTests
         settings.WorksheetIndex.Should().Be(3);
         settings.QuantityColumn.Should().Be("AA");
         settings.ColorColumn.Should().Be("C");
-        settings.SeasonCode.Should().Be("FS28");
-        settings.SeasonFallbackCodes.Should().Equal("NOOS", "EX");
+        settings.SeasonColumn.Should().Be("H");
+        settings.SeasonMappings[0].Should().BeEquivalentTo(new SgdSeasonMapping { ExternalSeason = FallWinter, SeasonCode = "HW26" });
         settings.DiscountPercent.Should().Be(0m, "an empty discount is none");
         settings.PositionGroupingMode.Should().Be(SgdPositionGroupingMode.SinglePositionPerSize);
     }
@@ -131,7 +134,7 @@ public class SgdViewModelTests
     [Test]
     public void Validate_WhenTheTitleUsesTheExternalOrderNumber_ShouldNeedItsColumn()
     {
-        var viewModel = Loaded(new SgdSettings { DefaultOrderName = "{SeasonCode} {ExternalOrderNumber}" });
+        var viewModel = Loaded(WithSeasons(new SgdSettings { DefaultOrderName = "Order {ExternalOrderNumber}" }));
 
         viewModel.Validate().Should().Equal(SgdTranslations.Validation_ExternalOrderNumberColumnRequired);
 
@@ -142,6 +145,90 @@ public class SgdViewModelTests
         viewModel.ExternalOrderNumberColumn = "g";
         viewModel.Validate().Should().BeEmpty();
         viewModel.Save().ExternalOrderNumberColumn.Should().Be("G");
+    }
+
+    [Test]
+    public void AddSeasonMappingCommand_ShouldNeedBothInputsAndAddTheTrimmedMapping()
+    {
+        var viewModel = Loaded(new SgdSettings());
+        var command = viewModel.AddSeasonMappingCommand;
+
+        command.CanExecute(null).Should().BeFalse();
+        viewModel.NewExternalSeason = " 2026 Fall/Winter ";
+        command.CanExecute(null).Should().BeFalse("the season code is missing");
+        viewModel.NewSeasonCode = " ";
+        command.CanExecute(null).Should().BeFalse();
+        viewModel.NewSeasonCode = " HW26";
+        command.CanExecute(null).Should().BeTrue();
+
+        command.Execute(null);
+
+        viewModel.SeasonMappings.Should().ContainSingle().Which.Should().BeEquivalentTo(new SgdSeasonMapping { ExternalSeason = FallWinter, SeasonCode = "HW26" });
+        viewModel.NewExternalSeason.Should().BeEmpty();
+        viewModel.NewSeasonCode.Should().BeEmpty();
+        viewModel.Validate().Should().BeEmpty();
+    }
+
+    [Test]
+    public void RemoveSeasonMappingCommand_ShouldRemoveTheMapping()
+    {
+        var viewModel = Loaded();
+        var first = viewModel.SeasonMappings[0];
+
+        viewModel.RemoveSeasonMappingCommand.Execute(first);
+
+        viewModel.SeasonMappings.Should().ContainSingle().Which.ExternalSeason.Should().Be(SpringSummer);
+    }
+
+    [Test]
+    public void Load_ShouldClearTheNewMappingInputs()
+    {
+        var viewModel = Loaded();
+        viewModel.NewExternalSeason = "x";
+        viewModel.NewSeasonCode = null!;
+
+        viewModel.Load(new SgdSettings { SeasonMappings = null! });
+
+        viewModel.NewExternalSeason.Should().BeEmpty();
+        viewModel.NewSeasonCode.Should().BeEmpty();
+        viewModel.SeasonMappings.Should().BeEmpty();
+    }
+
+    [Test]
+    public void Validate_ShouldReportInvalidSeasonInputs()
+    {
+        var viewModel = Loaded(new SgdSettings { DefaultOrderName = "Order {SeasonCode}" });
+        viewModel.SeasonColumn = "1A";
+
+        viewModel.Validate().Should().Equal(
+            string.Format(SgdTranslations.Validation_InvalidColumn, SgdTranslations.Settings_SeasonColumn),
+            SgdTranslations.Validation_SeasonMappingRequired,
+            SgdTranslations.Validation_SeasonCodePlaceholder);
+    }
+
+    [Test]
+    public void Validate_ShouldReportIncompleteAndDuplicateMappings()
+    {
+        var viewModel = Loaded();
+        viewModel.SeasonMappings.Add(new SgdSeasonMapping { ExternalSeason = " 2026 FALL/WINTER", SeasonCode = "X" });
+        viewModel.SeasonMappings.Add(new SgdSeasonMapping { ExternalSeason = " ", SeasonCode = "Y" });
+        viewModel.SeasonMappings.Add(new SgdSeasonMapping { ExternalSeason = "Z", SeasonCode = "" });
+
+        viewModel.Validate().Should().Equal(
+            SgdTranslations.Validation_SeasonMappingIncomplete,
+            string.Format(SgdTranslations.Validation_DuplicateExternalSeason, FallWinter));
+    }
+
+    [Test]
+    [Arguments("2028 Spring/Summer", "")]
+    [Arguments("", "FS28")]
+    public void Validate_WhenANewMappingIsNotAdded_ShouldReportIt(string externalSeason, string seasonCode)
+    {
+        var viewModel = Loaded();
+        viewModel.NewExternalSeason = externalSeason;
+        viewModel.NewSeasonCode = seasonCode;
+
+        viewModel.Validate().Should().Equal(SgdTranslations.Validation_SeasonMappingNotAdded);
     }
 
     [Test]
@@ -171,12 +258,17 @@ public class SgdViewModelTests
         var order = new Order
         {
             SkippedRows = 2,
-            Positions = [new OrderPosition { Quantity = 2 }, new OrderPosition { Quantity = 3 }]
+            Positions =
+            [
+                new OrderPosition { Quantity = 2, SeasonCode = "HW26" },
+                new OrderPosition { Quantity = 3, SeasonCode = "FS27" },
+                new OrderPosition { Quantity = 0, SeasonCode = "hw26" }
+            ]
         };
 
-        var viewModel = new SgdPreviewViewModel(order, new SgdSettings { SeasonCode = "FS27", DiscountPercent = 10m });
+        var viewModel = new SgdPreviewViewModel(order, new SgdSettings { DiscountPercent = 10m });
 
-        viewModel.SeasonCode.Should().Be("FS27");
+        viewModel.SeasonCodes.Should().Be("HW26, FS27");
         viewModel.Discount.Should().Be("10 %");
         viewModel.Positions.Should().BeSameAs(order.Positions);
         viewModel.TotalQuantity.Should().Be(5);
@@ -184,11 +276,11 @@ public class SgdViewModelTests
     }
 
     [Test]
-    public void PreviewViewModel_WithoutSeasonCodeAndDiscount_ShouldShowDashes()
+    public void PreviewViewModel_WithoutPositionsAndDiscount_ShouldShowDashes()
     {
-        var viewModel = new SgdPreviewViewModel(new Order(), new SgdSettings { SeasonCode = " ", DiscountPercent = 0m });
+        var viewModel = new SgdPreviewViewModel(new Order(), new SgdSettings { DiscountPercent = 0m });
 
-        viewModel.SeasonCode.Should().Be("-");
+        viewModel.SeasonCodes.Should().Be("-");
         viewModel.Discount.Should().Be("-");
         viewModel.ShowExternalOrderNumber.Should().BeFalse();
         viewModel.ExternalOrderNumber.Should().Be("-");
