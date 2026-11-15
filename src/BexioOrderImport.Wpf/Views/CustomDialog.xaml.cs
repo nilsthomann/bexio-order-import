@@ -2,6 +2,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Documents;
 using System.Windows.Media;
+using System.Windows.Threading;
 using BexioOrderImport.Wpf.Resources;
 
 namespace BexioOrderImport.Wpf.Views;
@@ -54,6 +55,7 @@ public partial class CustomDialog : Window
     private const string QuestionIcon = "M25,26 C25,17 39,17 39,25 C39,31 32,31 32,37 M32,44 L32,44.01";
     private const string WarningIcon = "M32,19 L32,36 M32,44 L32,44.01";
     private const string ErrorIcon = "M24,24 L40,40 M40,24 L24,40";
+    private const string CheckIcon = "M21,33 L29,41 L44,24";
 
     private void ConfigureDialog(CustomDialogType type, string title, string message)
     {
@@ -102,6 +104,20 @@ public partial class CustomDialog : Window
         BulletBox.Visibility = bullets.Count > 0 ? Visibility.Visible : Visibility.Collapsed;
 
         static bool IsBullet(string line) => line.StartsWith("• ", StringComparison.Ordinal);
+    }
+
+    /// <summary>
+    /// Shows the <paramref name="table"/> with aligned columns in the copyable box of the list, on a wider card.
+    /// </summary>
+    private void SetTable(string table)
+    {
+        Card.Width = 640;
+        BulletList.Text = table;
+        BulletList.FontFamily = new FontFamily("Consolas, Courier New");
+        BulletList.FontSize = 12;
+        BulletList.TextWrapping = TextWrapping.NoWrap;
+        BulletList.HorizontalScrollBarVisibility = ScrollBarVisibility.Auto;
+        BulletBox.Visibility = Visibility.Visible;
     }
 
     /// <summary>
@@ -225,6 +241,62 @@ public partial class CustomDialog : Window
         dlg.OkButton.Content = confirmText;
         dlg.CancelButton.Content = Translations.Dialog_Cancel;
         return dlg.ShowDialog() == true;
+    }
+
+    /// <summary>
+    /// Warning with a <paramref name="table"/>, eg. of missing articles: <paramref name="confirmText"/> and cancel. <paramref name="note"/> is shown
+    /// highlighted above the table. In unit tests always false.
+    /// </summary>
+    public static bool ShowTableConfirm(string message, string title, string table, string? note, string confirmText)
+    {
+        if (IsUnitTest()) return false;
+        var dlg = CreateDialog(CustomDialogType.Confirm, title, message);
+        dlg.SetIcon(Amber, AmberDark, WarningIcon);
+        dlg.SetTable(table);
+        if (note != null)
+        {
+            SetFormattedText(dlg.WarningNoteText, note);
+            dlg.WarningNote.Visibility = Visibility.Visible;
+        }
+        dlg.OkButton.Content = confirmText;
+        dlg.OkButton.Width = 180;
+        dlg.CancelButton.Content = Translations.Dialog_Cancel;
+        return dlg.ShowDialog() == true;
+    }
+
+    /// <summary>
+    /// Result with a <paramref name="table"/> that still needs work, eg. the articles to add by hand; the copy button puts <paramref name="copyText"/>
+    /// on the clipboard.
+    /// </summary>
+    public static void ShowTable(string message, string title, string table, string copyText, string copyButtonText)
+    {
+        if (IsUnitTest()) return;
+        var dlg = CreateDialog(CustomDialogType.Warning, title, message);
+        dlg.SetIcon(Amber, AmberDark, CheckIcon);
+        dlg.SetTable(table);
+        dlg.CopyButton.Content = copyButtonText;
+        dlg.CopyButton.Visibility = Visibility.Visible;
+        var resetCopyButton = new DispatcherTimer { Interval = TimeSpan.FromSeconds(2) };
+        resetCopyButton.Tick += (_, _) =>
+        {
+            resetCopyButton.Stop();
+            dlg.CopyButton.Content = copyButtonText;
+            dlg.CopyButton.ClearValue(BackgroundProperty);
+            dlg.CopyButton.ClearValue(BorderBrushProperty);
+            dlg.CopyButton.ClearValue(ForegroundProperty);
+        };
+        dlg.CopyButton.Click += (_, _) =>
+        {
+            Clipboard.SetText(copyText);
+            // local values win over the hover trigger, so the green shows while the mouse is still on the button
+            dlg.CopyButton.Content = Translations.MissingArticles_Copied;
+            dlg.CopyButton.Background = new SolidColorBrush(Color.FromRgb(0xEC, 0xFD, 0xF5));
+            dlg.CopyButton.BorderBrush = (Brush)dlg.FindResource("SuccessBrush");
+            dlg.CopyButton.Foreground = new SolidColorBrush(Color.FromRgb(0x04, 0x78, 0x57));
+            resetCopyButton.Stop();
+            resetCopyButton.Start();
+        };
+        dlg.ShowDialog();
     }
 
     /// <summary>

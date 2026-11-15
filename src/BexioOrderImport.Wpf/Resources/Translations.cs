@@ -125,4 +125,22 @@ public static class Translations
     public static string Settings_ProfilesCreateHint => ResourceManager.GetString(nameof(Settings_ProfilesCreateHint)) ?? string.Empty;
     public static string Settings_ProfilesEditHint => ResourceManager.GetString(nameof(Settings_ProfilesEditHint)) ?? string.Empty;
     public static string Settings_ProfilesDragHandle => ResourceManager.GetString(nameof(Settings_ProfilesDragHandle)) ?? string.Empty;
+    public static string MissingArticles_ConfirmTitle => ResourceManager.GetString(nameof(MissingArticles_ConfirmTitle)) ?? string.Empty;
+    public static string MissingArticles_ConfirmMessage => ResourceManager.GetString(nameof(MissingArticles_ConfirmMessage)) ?? string.Empty;
+    public static string MissingArticles_ConfirmButton => ResourceManager.GetString(nameof(MissingArticles_ConfirmButton)) ?? string.Empty;
+    public static string MissingArticles_ReplaceNote => ResourceManager.GetString(nameof(MissingArticles_ReplaceNote)) ?? string.Empty;
+    public static string MissingArticles_DoneTitle => ResourceManager.GetString(nameof(MissingArticles_DoneTitle)) ?? string.Empty;
+    public static string MissingArticles_DoneMessage => ResourceManager.GetString(nameof(MissingArticles_DoneMessage)) ?? string.Empty;
+    public static string MissingArticles_Copy => ResourceManager.GetString(nameof(MissingArticles_Copy)) ?? string.Empty;
+    public static string MissingArticles_Copied => ResourceManager.GetString(nameof(MissingArticles_Copied)) ?? string.Empty;
+    public static string MissingArticles_Row => ResourceManager.GetString(nameof(MissingArticles_Row)) ?? string.Empty;
+    public static string MissingArticles_Ean => ResourceManager.GetString(nameof(MissingArticles_Ean)) ?? string.Empty;
+    public static string MissingArticles_ArticleNumber => ResourceManager.GetString(nameof(MissingArticles_ArticleNumber)) ?? string.Empty;
+    public static string MissingArticles_Color => ResourceManager.GetString(nameof(MissingArticles_Color)) ?? string.Empty;
+    public static string MissingArticles_Season => ResourceManager.GetString(nameof(MissingArticles_Season)) ?? string.Empty;
+    public static string MissingArticles_Size => ResourceManager.GetString(nameof(MissingArticles_Size)) ?? string.Empty;
+    public static string MissingArticles_Quantity => ResourceManager.GetString(nameof(MissingArticles_Quantity)) ?? string.Empty;
+    public static string MissingArticles_Reason => ResourceManager.GetString(nameof(MissingArticles_Reason)) ?? string.Empty;
+    public static string MissingArticles_NotFound => ResourceManager.GetString(nameof(MissingArticles_NotFound)) ?? string.Empty;
+    public static string MissingArticles_NotUnique => ResourceManager.GetString(nameof(MissingArticles_NotUnique)) ?? string.Empty;
 }

@@ -43,8 +43,18 @@ public class PeakmileImporter
         // 2. Start API upload
         interaction.LogInfo("Connecting to Bexio API...");
 
-        // All articles are found before Bexio is changed, so a missing article neither creates a customer nor an order
-        var articles = await FindArticlesAsync(order, settings, interaction);
+        // All articles are found before Bexio is changed, so a missing article neither creates a customer nor an order unless the user skips it
+        var (articles, missing) = await FindArticlesAsync(order, settings, interaction);
+        if (missing.Count > 0)
+        {
+            if (!await interaction.ConfirmSkipMissingArticlesAsync(missing, articles.Count))
+            {
+                interaction.LogInfo("Order import cancelled.");
+                return new ImportResult(Success: false, ErrorMessage: "Cancelled by user.");
+            }
+            interaction.LogInfo($"⚠️ {missing.Count} position(s) without Bexio article are skipped.");
+        }
+        var positions = order.Positions.Where(articles.ContainsKey).ToList();
 
         int orderId;
         string orderNumberDisplay;
@@ -91,10 +101,10 @@ public class PeakmileImporter
             interaction.LogInfo($"Order created successfully (Order #{orderNumberDisplay}). Uploading positions...");
             interaction.OrderResolved(orderId, orderNumberDisplay, isNew: true);
         }
-        interaction.LogInfo($"Uploading {order.Positions.Count} positions to Bexio...");
+        interaction.LogInfo($"Uploading {positions.Count} positions to Bexio...");
 
         int count = 0;
-        foreach (var pos in order.Positions)
+        foreach (var pos in positions)
         {
             var article = articles[pos];
             string positionText = (settings.PositionTextTemplate ?? string.Empty)
@@ -109,10 +119,10 @@ public class PeakmileImporter
             await _bexioClient.AddArticlePositionAsync(orderId, article.Id, pos, positionText);
 
             count++;
-            interaction.ReportProgress(count, order.Positions.Count);
-            if (count % 5 == 0 || count == order.Positions.Count)
+            interaction.ReportProgress(count, positions.Count);
+            if (count % 5 == 0 || count == positions.Count)
             {
-                interaction.LogInfo($"Positions uploaded: {count}/{order.Positions.Count}");
+                interaction.LogInfo($"Positions uploaded: {count}/{positions.Count}");
             }
         }
 
@@ -133,13 +143,15 @@ public class PeakmileImporter
         return new ImportResult(
             Success: true,
             OrderNumber: orderNumberDisplay,
-            UploadedPositionsCount: count);
+            UploadedPositionsCount: count,
+            MissingArticles: missing.Count > 0 ? missing : null);
     }
 
     /// <summary>
-    /// The Bexio article of each position. Throws with all missing articles before anything is changed in Bexio.
+    /// The Bexio article of each position and the positions without one. Throws with all missing articles if none is found,
+    /// before anything is changed in Bexio.
     /// </summary>
-    private async Task<Dictionary<OrderPosition, BexioArticle>> FindArticlesAsync(Order order, PeakmileSettings settings, IImportUserInteractionService interaction)
+    private async Task<(Dictionary<OrderPosition, BexioArticle> Articles, List<MissingArticle> Missing)> FindArticlesAsync(Order order, PeakmileSettings settings, IImportUserInteractionService interaction)
     {
         interaction.LogInfo("Pre-fetching article data from Bexio...");
         string seasonCode = settings.SeasonCode ?? string.Empty;
@@ -152,7 +164,8 @@ public class PeakmileImporter
         }
 
         var articles = new Dictionary<OrderPosition, BexioArticle>();
-        var missing = new List<string>();
+        var missing = new List<MissingArticle>();
+        var missingArticles = new List<string>();
         foreach (var pos in order.Positions)
         {
             var match = await _articleMatcher.FindArticleAsync(new PeakmileArticleCriteria(pos.ArticleNumber, pos.Color, seasonCode, fallbackSeasonCodes));
@@ -162,23 +175,34 @@ public class PeakmileImporter
                 continue;
             }
 
-            // The sizes of an article are separate positions; list each article and color once
+            missing.Add(new MissingArticle
+            {
+                Row = pos.SourceRow,
+                ArticleNumber = pos.ArticleNumber,
+                Color = pos.Color,
+                SeasonCode = seasonCode,
+                Size = pos.Size,
+                Quantity = pos.Quantity,
+                CandidateCount = match.CandidateCount
+            });
+
+            // The sizes of an article are separate positions; log each article and color once
             string article = $"'{pos.ArticleNumber}' with color '{pos.Color}'";
-            if (!missing.Contains(article))
+            if (!missingArticles.Contains(article))
             {
                 interaction.LogInfo($"⛔ Article {article} {match.FailureReason} in Bexio.");
-                missing.Add(article);
+                missingArticles.Add(article);
             }
         }
 
-        if (missing.Count > 0)
+        if (articles.Count == 0)
         {
             string seasonCodes = string.Join("', '", allSeasonCodes);
             throw new InvalidOperationException(
-                $"{missing.Count} article(s) not found in Bexio with season code '{seasonCodes}'. Nothing was changed in Bexio.{Environment.NewLine}"
-                + string.Join(Environment.NewLine, missing.Select(m => $"• {m}")));
+                $"{missingArticles.Count} article(s) not found in Bexio with season code '{seasonCodes}'. Nothing was changed in Bexio.{Environment.NewLine}"
+                + string.Join(Environment.NewLine, missingArticles.Select(m => $"• {m}")));
         }
-        return articles;
+        return (articles, missing);
     }
 
     /// <summary>

@@ -398,7 +398,7 @@ public class MainViewModelTests : IDisposable
         vm.IsModified.Should().BeFalse();
     }
 
-    private async Task RunImportAsync(FakeFormatAdapter format)
+    private async Task<MainViewModel> RunImportAsync(FakeFormatAdapter format)
     {
         _clientMock.Setup(c => c.CreateOrderAsync(It.IsAny<int>(), It.IsAny<Order>())).ReturnsAsync(new BexioOrder { Id = 77, DocumentNr = "AU-001" });
         var vm = new MainViewModel(
@@ -419,6 +419,26 @@ public class MainViewModelTests : IDisposable
 
         var import = typeof(MainViewModel).GetMethod("ImportToBexioAsync", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
         await (Task)import!.Invoke(vm, [])!;
+        return vm;
+    }
+
+    [Test]
+    [Arguments(false)]
+    [Arguments(true)]
+    public async Task ImportToBexioAsync_WithMissingArticles_ShouldAskToSkipThemAndListThemAfterTheImport(bool skip)
+    {
+        string? note = "not asked";
+        _dialogServiceMock.Setup(d => d.ShowMissingArticlesConfirmDialog(It.IsAny<string>(), It.IsAny<string>(), It.Is<string>(t => t.Contains("E2")), It.IsAny<string?>()))
+            .Callback<string, string, string, string?>((_, _, _, n) => note = n)
+            .Returns(skip);
+
+        var vm = await RunImportAsync(new FakeFormatAdapter { MissingArticles = [new MissingArticle { Row = 4, ArticleNumber = "E2", Quantity = 1 }] });
+
+        note.Should().BeNull();
+        vm.IsImportSuccess.Should().Be(skip);
+        _dialogServiceMock.Verify(d => d.ShowMissingArticlesDialog(
+            It.Is<string>(m => m.Contains("AU-001")), BexioOrderImport.Wpf.Resources.Translations.MissingArticles_DoneTitle,
+            It.Is<string>(t => t.Contains("E2")), It.Is<string>(c => c.Contains("\tE2\t"))), skip ? Times.Once() : Times.Never());
     }
 
     [Test]
@@ -596,6 +616,8 @@ public class MainViewModelTests : IDisposable
         (await service.AskTextAsync("Customer", "Customer?", "unknown", "001234")).Should().Be("1001");
         (await service.ChooseAsync("Order", "New or existing?", ["New", "Existing"])).Should().Be(1);
         (await service.ConfirmWarningAsync("Warning", "Delete all?")).Should().BeTrue();
+        _dialogServiceMock.Setup(d => d.ShowMissingArticlesConfirmDialog(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.Is<string?>(n => n!.Contains("AU-12")))).Returns(true);
+        (await service.ConfirmSkipMissingArticlesAsync([new MissingArticle { ArticleNumber = "E2" }], 3, "AU-12")).Should().BeTrue();
 
         type!.GetProperty("PositionsDeleted")!.GetValue(service).Should().Be(false);
         service.OrderPositionsDeleted();

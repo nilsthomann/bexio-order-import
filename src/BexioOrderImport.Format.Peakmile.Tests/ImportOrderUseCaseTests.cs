@@ -171,29 +171,69 @@ public class ImportOrderUseCaseTests
     }
 
     [Test]
-    public async Task ExecuteAsync_WhenArticlesAreMissing_ShouldListEachOnceAndChangeNothingInBexio()
+    public async Task ExecuteAsync_WhenArticlesAreMissingAndNotSkipped_ShouldLogEachOnceAndChangeNothingInBexio()
     {
-        var order = new Order
+        var order = OrderWithMissingArticles();
+        var logs = new List<string>();
+        IReadOnlyList<MissingArticle>? listed = null;
+        int found = 0;
+        var interaction = new DelegateImportUserInteractionService(
+            logInfo: logs.Add,
+            confirmSkipMissingArticles: (missing, foundCount, _) => { listed = missing; found = foundCount; return Task.FromResult(false); });
+
+        var result = await _useCase.ExecuteAsync(order, interaction, new PeakmileSettings { SeasonCode = "FS26" });
+
+        result.ErrorMessage.Should().Be("Cancelled by user.");
+        found.Should().Be(1);
+        listed.Should().BeEquivalentTo(new[]
+        {
+            new MissingArticle { ArticleNumber = "A1", Color = "Black", SeasonCode = "FS26", Size = "S", Quantity = 1 },
+            new MissingArticle { ArticleNumber = "A1", Color = "Black", SeasonCode = "FS26", Size = "M", Quantity = 2 },
+            new MissingArticle { ArticleNumber = "A2", Color = "Red", SeasonCode = "FS26", Size = "M", Quantity = 3, CandidateCount = 2 }
+        });
+        logs.Should().ContainSingle(l => l == "⛔ Article 'A1' with color 'Black' not found in Bexio.");
+        logs.Should().Contain("⛔ Article 'A2' with color 'Red' not unique (2 articles) in Bexio.");
+        _clientMock.Verify(c => c.FindContactByEmailAsync(It.IsAny<string>()), Times.Never);
+        _clientMock.Verify(c => c.CreateContactAsync(It.IsAny<Customer>()), Times.Never);
+        _clientMock.Verify(c => c.CreateOrderAsync(It.IsAny<int>(), It.IsAny<Order>()), Times.Never);
+    }
+
+    [Test]
+    public async Task ExecuteAsync_WhenMissingArticlesAreSkipped_ShouldImportTheFoundOnesAndReturnTheMissing()
+    {
+        var order = OrderWithMissingArticles();
+        _clientMock.Setup(c => c.FindContactByEmailAsync("t@t.com")).ReturnsAsync(new BexioContact { Id = 123 });
+        _clientMock.Setup(c => c.CreateOrderAsync(123, order)).ReturnsAsync(new BexioOrder { Id = 456, DocumentNr = "AU-00456" });
+        var interaction = new DelegateImportUserInteractionService(confirmSkipMissingArticles: (_, _, _) => Task.FromResult(true));
+
+        var result = await _useCase.ExecuteAsync(order, interaction, new PeakmileSettings { SeasonCode = "FS26" });
+
+        result.Success.Should().BeTrue();
+        result.UploadedPositionsCount.Should().Be(1);
+        result.MissingArticles.Should().HaveCount(3);
+        _clientMock.Verify(c => c.AddArticlePositionAsync(456, 3, order.Positions[3], It.IsAny<string?>()), Times.Once);
+        _clientMock.Verify(c => c.AddArticlePositionAsync(It.IsAny<int>(), It.IsAny<int>(), It.IsAny<OrderPosition>(), It.IsAny<string?>()), Times.Once);
+    }
+
+    /// <summary>
+    /// A1 (two sizes) is not found, A2 is not unique, only A3 is found.
+    /// </summary>
+    private Order OrderWithMissingArticles()
+    {
+        _matcherMock.Setup(c => c.FindArticleAsync(It.IsAny<PeakmileArticleCriteria>())).ReturnsAsync(ArticleMatch.NotFound());
+        _matcherMock.Setup(c => c.FindArticleAsync(It.Is<PeakmileArticleCriteria>(a => a.ArticleNumber == "A2"))).ReturnsAsync(ArticleMatch.NotUnique(2));
+        _matcherMock.Setup(c => c.FindArticleAsync(It.Is<PeakmileArticleCriteria>(a => a.ArticleNumber == "A3"))).ReturnsAsync(ArticleMatch.Found(new BexioArticle { Id = 3 }));
+        return new Order
         {
             Customer = new Customer { Email = "t@t.com", CompanyName = "Test AG" },
             Positions =
             [
                 new OrderPosition { ArticleNumber = "A1", Color = "Black", Size = "S", Quantity = 1 },
-                new OrderPosition { ArticleNumber = "A1", Color = "Black", Size = "M", Quantity = 1 },
-                new OrderPosition { ArticleNumber = "A2", Color = "Red", Size = "M", Quantity = 1 },
-                new OrderPosition { ArticleNumber = "A3", Color = "Blue", Size = "M", Quantity = 1 }
+                new OrderPosition { ArticleNumber = "A1", Color = "Black", Size = "M", Quantity = 2 },
+                new OrderPosition { ArticleNumber = "A2", Color = "Red", Size = "M", Quantity = 3 },
+                new OrderPosition { ArticleNumber = "A3", Color = "Blue", Size = "M", Quantity = 4 }
             ]
         };
-        _matcherMock.Setup(c => c.FindArticleAsync(It.IsAny<PeakmileArticleCriteria>())).ReturnsAsync(ArticleMatch.NotFound());
-        _matcherMock.Setup(c => c.FindArticleAsync(It.Is<PeakmileArticleCriteria>(a => a.ArticleNumber == "A3"))).ReturnsAsync(ArticleMatch.Found(new BexioArticle { Id = 3 }));
-
-        Func<Task> act = () => _useCase.ExecuteAsync(order, new DelegateImportUserInteractionService(), new PeakmileSettings { SeasonCode = "FS26" });
-
-        await act.Should().ThrowAsync<InvalidOperationException>()
-            .WithMessage($"2 article(s) not found in Bexio with season code 'FS26'. Nothing was changed in Bexio.{Environment.NewLine}• 'A1' with color 'Black'{Environment.NewLine}• 'A2' with color 'Red'");
-        _clientMock.Verify(c => c.FindContactByEmailAsync(It.IsAny<string>()), Times.Never);
-        _clientMock.Verify(c => c.CreateContactAsync(It.IsAny<Customer>()), Times.Never);
-        _clientMock.Verify(c => c.CreateOrderAsync(It.IsAny<int>(), It.IsAny<Order>()), Times.Never);
     }
 
     [Test]

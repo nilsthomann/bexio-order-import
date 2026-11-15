@@ -39,6 +39,16 @@ public interface IDialogService
     /// Error of an import that already wrote to a Bexio order: <paramref name="note"/> shows the order number at {0} as a link to <paramref name="orderUri"/>.
     /// </summary>
     void ShowImportErrorDialog(string message, string title, string note, string orderNumber, Uri orderUri);
+
+    /// <summary>
+    /// Shows the missing articles of an import as a <paramref name="table"/> and asks to import without them; <paramref name="note"/> is a warning above the table.
+    /// </summary>
+    bool ShowMissingArticlesConfirmDialog(string message, string title, string table, string? note);
+
+    /// <summary>
+    /// Shows the missing articles after an import; the copy button puts <paramref name="copyText"/> on the clipboard.
+    /// </summary>
+    void ShowMissingArticlesDialog(string message, string title, string table, string copyText);
     void ShowInfoDialog(string message, string title);
     void RestartMainWindow();
 }

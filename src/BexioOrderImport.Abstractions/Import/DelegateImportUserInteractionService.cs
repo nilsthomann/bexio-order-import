@@ -4,7 +4,7 @@ namespace BexioOrderImport.Abstractions.Import;
 
 /// <summary>
 /// Interaction with delegates. Without a delegate the confirmations of the existing flows accept,
-/// while text input and choices cancel and warnings are declined, so nothing is deleted by default.
+/// while text input and choices cancel and warnings and skipping missing articles are declined, so nothing is deleted by default.
 /// </summary>
 public class DelegateImportUserInteractionService : IImportUserInteractionService
 {
@@ -18,6 +18,7 @@ public class DelegateImportUserInteractionService : IImportUserInteractionServic
     private readonly Func<string, string, IReadOnlyList<string>, Task<int?>>? _choose;
     private readonly Func<string, string, Task<bool>>? _confirmWarning;
     private readonly Action? _orderPositionsDeleted;
+    private readonly Func<IReadOnlyList<MissingArticle>, int, string?, Task<bool>>? _confirmSkipMissingArticles;
 
     public DelegateImportUserInteractionService(
         Func<Task<bool>>? confirmUpload = null,
@@ -29,7 +30,8 @@ public class DelegateImportUserInteractionService : IImportUserInteractionServic
         Func<string, string, string?, string?, Task<string?>>? askText = null,
         Func<string, string, IReadOnlyList<string>, Task<int?>>? choose = null,
         Func<string, string, Task<bool>>? confirmWarning = null,
-        Action? orderPositionsDeleted = null)
+        Action? orderPositionsDeleted = null,
+        Func<IReadOnlyList<MissingArticle>, int, string?, Task<bool>>? confirmSkipMissingArticles = null)
     {
         _confirmUpload = confirmUpload;
         _confirmCustomerCreation = confirmCustomerCreation;
@@ -41,6 +43,7 @@ public class DelegateImportUserInteractionService : IImportUserInteractionServic
         _choose = choose;
         _confirmWarning = confirmWarning;
         _orderPositionsDeleted = orderPositionsDeleted;
+        _confirmSkipMissingArticles = confirmSkipMissingArticles;
     }
 
     public Task<bool> ConfirmUploadAsync() => _confirmUpload != null ? _confirmUpload() : Task.FromResult(true);
@@ -53,4 +56,6 @@ public class DelegateImportUserInteractionService : IImportUserInteractionServic
     public Task<int?> ChooseAsync(string title, string message, IReadOnlyList<string> options) => _choose != null ? _choose(title, message, options) : Task.FromResult<int?>(null);
     public Task<bool> ConfirmWarningAsync(string title, string message) => _confirmWarning != null ? _confirmWarning(title, message) : Task.FromResult(false);
     public void OrderPositionsDeleted() => _orderPositionsDeleted?.Invoke();
+    public Task<bool> ConfirmSkipMissingArticlesAsync(IReadOnlyList<MissingArticle> missing, int foundCount, string? replacedOrderNumber = null)
+        => _confirmSkipMissingArticles != null ? _confirmSkipMissingArticles(missing, foundCount, replacedOrderNumber) : Task.FromResult(false);
 }

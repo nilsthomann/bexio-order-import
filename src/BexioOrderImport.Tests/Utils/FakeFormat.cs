@@ -47,6 +47,11 @@ public sealed class FakeFormatAdapter : FormatAdapter<FakeSettings>
     /// </summary>
     public bool DeletesPositions { get; set; }
 
+    /// <summary>
+    /// Positions without Bexio article: the import asks to skip them and returns them.
+    /// </summary>
+    public IReadOnlyList<MissingArticle>? MissingArticles { get; set; }
+
     protected override Order Parse(string filePath, FakeSettings settings) => ParseFunc?.Invoke(filePath) ?? ParsedOrder;
 
     /// <summary>
@@ -55,6 +60,10 @@ public sealed class FakeFormatAdapter : FormatAdapter<FakeSettings>
     protected override async Task<ImportResult> ImportAsync(Order order, FakeSettings settings, IBexioService bexio, IImportUserInteractionService interaction)
     {
         if (!await interaction.ConfirmUploadAsync())
+        {
+            return new ImportResult(Success: false, ErrorMessage: "Cancelled by user.");
+        }
+        if (MissingArticles != null && !await interaction.ConfirmSkipMissingArticlesAsync(MissingArticles, order.Positions.Count))
         {
             return new ImportResult(Success: false, ErrorMessage: "Cancelled by user.");
         }
@@ -70,7 +79,7 @@ public sealed class FakeFormatAdapter : FormatAdapter<FakeSettings>
             throw UploadError;
         }
         interaction.ReportProgress(1, 1);
-        return new ImportResult(Success: true, OrderNumber: created.DocumentNr, UploadedPositionsCount: order.Positions.Count);
+        return new ImportResult(Success: true, OrderNumber: created.DocumentNr, UploadedPositionsCount: order.Positions.Count, MissingArticles: MissingArticles);
     }
 }
 

@@ -140,7 +140,7 @@ public class PeakmileArticleMatcherTests
 
         var match = await matcher.FindArticleAsync(Criteria());
 
-        match.Should().Be(ArticleMatch.NotFound("not unique (2 articles)"));
+        match.Should().Be(ArticleMatch.NotUnique(2));
     }
 
     [Test]

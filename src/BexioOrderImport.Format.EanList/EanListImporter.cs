@@ -51,8 +51,18 @@ public sealed class EanListImporter
 
         interaction.LogInfo("Connecting to Bexio API...");
 
-        // All articles are found before Bexio is changed, so a missing EAN creates no order
-        var articles = await FindArticlesAsync(order, interaction);
+        // All articles are found before Bexio is changed, so a missing EAN creates no order unless the user skips it
+        var (articles, missing) = await FindArticlesAsync(order, interaction);
+        if (missing.Count > 0)
+        {
+            if (!await interaction.ConfirmSkipMissingArticlesAsync(missing, articles.Count))
+            {
+                interaction.LogInfo("Order import cancelled.");
+                return new ImportResult(Success: false, ErrorMessage: "Cancelled by user.");
+            }
+            interaction.LogInfo($"⚠️ {missing.Count} position(s) without Bexio article are skipped.");
+        }
+        var positions = order.Positions.Where(articles.ContainsKey).ToList();
 
         var target = await OrderTargetResolver.ResolveAsync(
             order, settings.DefaultOrderName, string.Empty, _bexio, interaction, useContactNameAsCustomerName: true);
@@ -61,9 +71,9 @@ public sealed class EanListImporter
             return target.Failure;
         }
 
-        interaction.LogInfo($"Uploading {order.Positions.Count} positions to Bexio...");
+        interaction.LogInfo($"Uploading {positions.Count} positions to Bexio...");
         int count = 0;
-        foreach (var position in order.Positions)
+        foreach (var position in positions)
         {
             string ean = position.Ean ?? string.Empty;
             var article = articles[position];
@@ -92,24 +102,26 @@ public sealed class EanListImporter
             await _bexio.AddArticlePositionAsync(target.OrderId, article.Id, piecesPosition, positionText);
 
             count++;
-            interaction.ReportProgress(count, order.Positions.Count);
-            if (count % 5 == 0 || count == order.Positions.Count)
+            interaction.ReportProgress(count, positions.Count);
+            if (count % 5 == 0 || count == positions.Count)
             {
-                interaction.LogInfo($"Positions uploaded: {count}/{order.Positions.Count}");
+                interaction.LogInfo($"Positions uploaded: {count}/{positions.Count}");
             }
         }
 
         interaction.LogInfo($"Successfully completed! Order #{target.DocumentNr} has been imported into Bexio.");
-        return new ImportResult(Success: true, OrderNumber: target.DocumentNr, UploadedPositionsCount: count);
+        return new ImportResult(Success: true, OrderNumber: target.DocumentNr, UploadedPositionsCount: count, MissingArticles: missing.Count > 0 ? missing : null);
     }
 
     /// <summary>
-    /// The Bexio article of each position. Throws with all missing EANs before anything is changed in Bexio.
+    /// The Bexio article of each position and the positions without one. Throws with all missing EANs if none is found,
+    /// before anything is changed in Bexio.
     /// </summary>
-    private async Task<Dictionary<OrderPosition, BexioArticle>> FindArticlesAsync(Order order, IImportUserInteractionService interaction)
+    private async Task<(Dictionary<OrderPosition, BexioArticle> Articles, List<MissingArticle> Missing)> FindArticlesAsync(Order order, IImportUserInteractionService interaction)
     {
         var articles = new Dictionary<OrderPosition, BexioArticle>();
-        var missing = new List<string>();
+        var missing = new List<MissingArticle>();
+        var missingEans = new List<string>();
         foreach (var position in order.Positions)
         {
             string ean = position.Ean ?? string.Empty;
@@ -122,15 +134,17 @@ public sealed class EanListImporter
 
             string article = $"EAN '{ean}' (row {position.SourceRow}) {match.FailureReason}";
             interaction.LogInfo($"⛔ {article} in Bexio.");
-            missing.Add(article);
+            missingEans.Add(article);
+            // Bexio gets pieces, so they are added by hand in pieces too
+            missing.Add(new MissingArticle { Row = position.SourceRow, Ean = ean, Quantity = position.Quantity * position.SalesUnit, CandidateCount = match.CandidateCount });
         }
 
-        if (missing.Count > 0)
+        if (articles.Count == 0)
         {
             throw new InvalidOperationException(
-                $"{missing.Count} EAN(s) not found in Bexio. Nothing was changed in Bexio.{Environment.NewLine}"
-                + string.Join(Environment.NewLine, missing.Select(m => $"• {m}")));
+                $"{missingEans.Count} EAN(s) not found in Bexio. Nothing was changed in Bexio.{Environment.NewLine}"
+                + string.Join(Environment.NewLine, missingEans.Select(m => $"• {m}")));
         }
-        return articles;
+        return (articles, missing);
     }
 }
