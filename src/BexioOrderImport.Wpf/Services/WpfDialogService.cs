@@ -130,6 +130,16 @@ public class WpfDialogService : IDialogService
         InvokeOnDispatcher(() => Views.CustomDialog.ShowError(message, title, note, orderNumber, orderUri));
     }
 
+    public bool ShowMissingArticlesConfirmDialog(string message, string title, string table, string? note)
+    {
+        return InvokeOnDispatcher(() => Views.CustomDialog.ShowTableConfirm(message, title, table, note, Resources.Translations.MissingArticles_ConfirmButton));
+    }
+
+    public void ShowMissingArticlesDialog(string message, string title, string table, string copyText)
+    {
+        InvokeOnDispatcher(() => Views.CustomDialog.ShowTable(message, title, table, copyText, Resources.Translations.MissingArticles_Copy));
+    }
+
     public void ShowInfoDialog(string message, string title)
     {
         InvokeOnDispatcher(() => Views.CustomDialog.ShowInfo(message, title));

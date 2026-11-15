@@ -13,9 +13,11 @@ public class EanListImporterTests
     private readonly List<string> _logs = [];
     private readonly EanListSettings _settings = new() { DefaultOrderName = "Order: {CustomerName}" };
 
-    private DelegateImportUserInteractionService Interaction(bool confirmUpload = true) => new DelegateImportUserInteractionService(
-        confirmUpload: () => Task.FromResult(confirmUpload),
-        logInfo: _logs.Add);
+    private DelegateImportUserInteractionService Interaction(bool confirmUpload = true, Func<IReadOnlyList<MissingArticle>, int, string?, Task<bool>>? skipMissing = null)
+        => new DelegateImportUserInteractionService(
+            confirmUpload: () => Task.FromResult(confirmUpload),
+            logInfo: _logs.Add,
+            confirmSkipMissingArticles: skipMissing);
 
     private static Order Order(string? customerNumber = "1001", params string[] eans) => new()
     {
@@ -198,34 +200,79 @@ public class EanListImporterTests
     }
 
     [Test]
-    public async Task ExecuteAsync_WithArticleMatcher_ShouldUseItAndAbortWithItsReason()
+    public async Task ExecuteAsync_WhenNoEanIsFound_ShouldAbortWithoutOfferingToSkip()
+    {
+        SetupNewOrder();
+        SetupArticle("4006381333931");
+        SetupArticle("7612345678900");
+        bool asked = false;
+
+        Func<Task> act = () => new EanListImporter(_bexio.Object).ExecuteAsync(
+            Order(eans: ["4006381333931", "7612345678900"]), _settings, Interaction(skipMissing: (_, _, _) => { asked = true; return Task.FromResult(true); }));
+
+        await act.Should().ThrowAsync<InvalidOperationException>().WithMessage("2 EAN(s) not found in Bexio. Nothing was changed in Bexio.*");
+        asked.Should().BeFalse();
+        _bexio.Verify(b => b.CreateOrderAsync(It.IsAny<int>(), It.IsAny<Order>()), Times.Never);
+    }
+
+    [Test]
+    public async Task ExecuteAsync_WhenMissingEansAreSkipped_ShouldImportTheFoundOnesAndReturnTheMissingInPieces()
+    {
+        SetupNewOrder();
+        SetupArticle("4006381333931", Article(1));
+        SetupArticle("7612345678900");
+        var order = Order(eans: ["4006381333931", "7612345678900"]);
+        order.Positions[1].SalesUnit = 6;
+
+        var result = await new EanListImporter(_bexio.Object).ExecuteAsync(order, _settings, Interaction(skipMissing: (_, _, _) => Task.FromResult(true)));
+
+        result.Success.Should().BeTrue();
+        result.UploadedPositionsCount.Should().Be(1);
+        result.MissingArticles.Should().BeEquivalentTo(new[] { new MissingArticle { Row = 3, Ean = "7612345678900", Quantity = 12 } });
+        _bexio.Verify(b => b.AddArticlePositionAsync(77, 1, It.IsAny<OrderPosition>(), It.IsAny<string?>()), Times.Once);
+        _bexio.Verify(b => b.AddArticlePositionAsync(It.IsAny<int>(), It.IsAny<int>(), It.IsAny<OrderPosition>(), It.IsAny<string?>()), Times.Once);
+        _logs.Should().Contain("⚠️ 1 position(s) without Bexio article are skipped.").And.Contain("Uploading 1 positions to Bexio...");
+    }
+
+    [Test]
+    public async Task ExecuteAsync_WithArticleMatcher_ShouldUseItAndLogItsReason()
     {
         SetupNewOrder();
         var matcher = new Mock<IArticleMatcher<EanArticleCriteria>>();
         matcher.Setup(m => m.FindArticleAsync(new EanArticleCriteria("7612345678900"))).ReturnsAsync(ArticleMatch.Found(Article(2)));
         matcher.Setup(m => m.FindArticleAsync(new EanArticleCriteria("4006381333931"))).ReturnsAsync(ArticleMatch.NotFound("blocked"));
 
-        Func<Task> act = () => new EanListImporter(_bexio.Object, matcher.Object).ExecuteAsync(Order(eans: ["7612345678900", "4006381333931"]), _settings, Interaction());
+        var result = await new EanListImporter(_bexio.Object, matcher.Object).ExecuteAsync(Order(eans: ["7612345678900", "4006381333931"]), _settings, Interaction());
 
-        await act.Should().ThrowAsync<InvalidOperationException>().WithMessage("*EAN '4006381333931' (row 3) blocked*");
+        result.ErrorMessage.Should().Be("Cancelled by user.");
+        _logs.Should().Contain("⛔ EAN '4006381333931' (row 3) blocked in Bexio.");
         _bexio.Verify(b => b.FindArticlesByInternCodeAsync(It.IsAny<string>()), Times.Never);
     }
 
     [Test]
-    public async Task ExecuteAsync_WhenEansAreMissing_ShouldListAllAndChangeNothingInBexio()
+    public async Task ExecuteAsync_WhenEansAreMissingAndNotSkipped_ShouldListAllAndChangeNothingInBexio()
     {
         SetupNewOrder();
         SetupArticle("4006381333931", Article(1));
         SetupArticle("7612345678900");
-        SetupArticle("0826710896036");
+        SetupArticle("0826710896036", Article(2), Article(3));
+        IReadOnlyList<MissingArticle>? listed = null;
+        int found = 0;
+        string? replacedOrder = "not asked";
 
-        Func<Task> act = () => new EanListImporter(_bexio.Object).ExecuteAsync(
-            Order(eans: ["4006381333931", "7612345678900", "0826710896036"]), _settings, Interaction());
+        var result = await new EanListImporter(_bexio.Object).ExecuteAsync(
+            Order(eans: ["4006381333931", "7612345678900", "0826710896036"]), _settings,
+            Interaction(skipMissing: (missing, foundCount, replaced) => { listed = missing; found = foundCount; replacedOrder = replaced; return Task.FromResult(false); }));
 
-        var error = await act.Should().ThrowAsync<InvalidOperationException>();
-        error.WithMessage("2 EAN(s) not found in Bexio. Nothing was changed in Bexio.*")
-            .WithMessage("*7612345678900' (row 3) not found*")
-            .WithMessage("*0826710896036' (row 4) not found*");
+        result.Success.Should().BeFalse();
+        result.ErrorMessage.Should().Be("Cancelled by user.");
+        found.Should().Be(1);
+        replacedOrder.Should().BeNull();
+        listed.Should().BeEquivalentTo(new[]
+        {
+            new MissingArticle { Row = 3, Ean = "7612345678900", Quantity = 2 },
+            new MissingArticle { Row = 4, Ean = "0826710896036", Quantity = 3, CandidateCount = 2 }
+        });
         _bexio.Verify(b => b.FindContactByNrAsync(It.IsAny<string>()), Times.Never);
         _bexio.Verify(b => b.CreateOrderAsync(It.IsAny<int>(), It.IsAny<Order>()), Times.Never);
         _bexio.Verify(b => b.AddArticlePositionAsync(It.IsAny<int>(), It.IsAny<int>(), It.IsAny<OrderPosition>(), It.IsAny<string?>()), Times.Never);

@@ -11,7 +11,7 @@
         <Rectangle Fill="{StaticResource DialogBackdropBrush}"/>
 
         <!-- Card in the style of the import success dialog -->
-        <Border Width="440" Style="{StaticResource DialogCardStyle}">
+        <Border x:Name="Card" Width="440" Style="{StaticResource DialogCardStyle}">
             <StackPanel>
                 <!-- Icon of the dialog type, pops in like the success check -->
                 <Grid Width="64" Height="64" HorizontalAlignment="Center" Margin="0,0,0,20" RenderTransformOrigin="0.5,0.5">
@@ -55,7 +55,13 @@
                            FontSize="13" LineHeight="20" TextWrapping="Wrap" TextAlignment="Center"
                            HorizontalAlignment="Center" Margin="0,0,0,16"/>
 
-                <!-- Lines of the message that start with "• ", eg. the missing articles of an import -->
+                <!-- Warning above the list, eg. that the import replaces the positions of an order -->
+                <Border x:Name="WarningNote" Background="#FFFBEB" BorderBrush="#FDE68A" BorderThickness="1"
+                        CornerRadius="8" Padding="12,8" Margin="0,0,0,16" Visibility="Collapsed">
+                    <TextBlock x:Name="WarningNoteText" Foreground="#92400E" FontSize="13" LineHeight="18" TextWrapping="Wrap"/>
+                </Border>
+
+                <!-- Lines of the message that start with "• ", or a table, eg. the missing articles of an import -->
                 <Border x:Name="BulletBox" Background="{StaticResource SidebarBrush}"
                         BorderBrush="{StaticResource BorderBrush}" BorderThickness="1"
                         CornerRadius="8" Padding="12,8" Margin="0,0,0,16" Visibility="Collapsed">
@@ -98,6 +104,10 @@
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,8,0,0">
                     <Button x:Name="CancelButton" Click="CancelButton_Click"
                             Style="{StaticResource SecondaryButtonStyle}"
+                            Width="140" Height="36" Margin="0,0,8,0"
+                            Visibility="Collapsed"/>
+                    <!-- Copies the table, eg. to paste it into Excel -->
+                    <Button x:Name="CopyButton" Style="{StaticResource SecondaryButtonStyle}"
                             Width="140" Height="36" Margin="0,0,8,0"
                             Visibility="Collapsed"/>
                     <Button x:Name="OkButton" Click="OkButton_Click"

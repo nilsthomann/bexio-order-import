@@ -226,6 +226,17 @@ The preview depends on the format of the active profile. For Peakmile order form
    - **Existing order**: The order was partly filled. Remove the added positions manually.
    - **Updated SGD order**: Its previous positions were already deleted. Import the file again and choose **Update an existing order**; this replaces the positions again.
 
+#### Missing articles
+
+All formats search every article in Bexio before anything is changed. If some articles are not found (or are *not unique*), the dialog **… article(s) not found** lists them as a table with the Excel row, article number or EAN, color, season, size, quantity and reason:
+
+- **Cancel**: The import stops and nothing is changed in Bexio. Add the articles in Bexio and import the file again.
+- **Import anyway**: The order is created or filled with the found articles only; the missing positions are skipped. For an updated SGD order the dialog warns that its previous positions are deleted and the order then only contains the found articles.
+
+After an import with skipped positions, the dialog **Import completed with missing articles** lists them again, so you can add them to the order in Bexio by hand. The table can be selected and copied; **Copy list** copies it with tabs, so it can be pasted into Excel as columns. The quantity of an EAN list is in pieces (quantity × VE), as in Bexio.
+
+If no article of the file is found, the import is aborted with an error instead and nothing is changed in Bexio.
+
 #### Importing an SGD list
 
 An SGD import asks a few questions after you click **Import to Bexio**. **Cancel** in any of these dialogs stops the import without changing anything in Bexio.
@@ -233,7 +244,7 @@ An SGD import asks a few questions after you click **Import to Bexio**. **Cancel
 1. **Customer**: Enter the Bexio customer number. If it is empty or not found in Bexio, the dialog asks again and shows why.
 2. **Order**: Choose **Create a new order** or **Update an existing order**.
 3. For an existing order, enter its **order number**, then confirm the warning with **Continue**: **all positions of that order are deleted in Bexio** and replaced by the positions of the file. This cannot be undone.
-4. All articles are searched in Bexio before anything is changed. If articles are missing, the **Import failed** dialog lists each of them on its own line and neither an order is created nor are positions deleted.
+4. All articles are searched in Bexio before anything is changed. If articles are missing, you can cancel or import the found articles only (see [Missing articles](#missing-articles)); if you cancel, neither an order is created nor are positions deleted.
 5. A new order is created for the customer, or the existing order is checked: it must belong to the entered customer number. Then the old positions are deleted (existing order only), the positions of the file are added and the discount position follows.
 
 ---
@@ -335,7 +346,7 @@ The application checks for updates automatically from its GitHub repository on e
 
 #### 3. Import fails / throws article-not-found error
 
-- Peakmile and SGD imports search all articles before anything is changed in Bexio. If articles are missing, the message lists each missing article number with its color, and neither a customer, an order nor a position is created.
+- Peakmile and SGD imports search all articles before anything is changed in Bexio. If some articles are missing, you can cancel or import the found articles only (see [Missing articles](#missing-articles)). If no article is found, the message lists each missing article number with its color, and neither a customer, an order nor a position is created.
 - Check the season code and the season fallback codes (Peakmile) or the season mapping (SGD) of the profile and the internal codes of the articles in Bexio (see [Article lookup](#article-lookup-peakmile-and-sgd)).
 - **"not unique"**: several Bexio articles have the same internal code once spaces and case are ignored (eg. `FS26 E183801 Black` and `FS26E183801Black`). Remove or rename the duplicate in Bexio.
 
@@ -347,7 +358,7 @@ The application checks for updates automatically from its GitHub repository on e
 
 #### 5. SGD import fails
 
-- **"… article(s) not found in Bexio"**: The message lists every missing article with its color, season code and Excel row. Check the season mapping of the profile and the internal codes (`{SeasonCode}{ArticleNumber}{Color}`) in Bexio. Nothing was changed in Bexio.
+- **"… article(s) not found in Bexio"**: No article of the file was found. The message lists every missing article with its color, season code and Excel row. Check the season mapping of the profile and the internal codes (`{SeasonCode}{ArticleNumber}{Color}`) in Bexio. Nothing was changed in Bexio.
 - **"The profile has no season mapping for these seasons"**: The file contains seasons that the profile does not map. The message lists them with their Excel rows. Add a mapping for each in the profile and load the file again.
 - **"The season is missing in row …"**: A row with a quantity has no season. Fill in the season column of the named row.
 - **"Customer number mismatch"**: The order number belongs to another customer than the entered customer number. Nothing was deleted.

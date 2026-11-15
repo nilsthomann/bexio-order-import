@@ -34,6 +34,12 @@ public interface IImportUserInteractionService
     Task<bool> ConfirmWarningAsync(string title, string message);
 
     /// <summary>
+    /// Some positions have no Bexio article; true if the user imports the <paramref name="foundCount"/> found positions without them.
+    /// <paramref name="replacedOrderNumber"/> is the order whose positions the import replaces, if any.
+    /// </summary>
+    Task<bool> ConfirmSkipMissingArticlesAsync(IReadOnlyList<MissingArticle> missing, int foundCount, string? replacedOrderNumber = null);
+
+    /// <summary>
     /// The positions of the resolved order were deleted, so a failed import leaves the order without its old positions.
     /// </summary>
     void OrderPositionsDeleted();

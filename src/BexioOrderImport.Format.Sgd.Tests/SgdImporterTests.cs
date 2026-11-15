@@ -27,8 +27,10 @@ public class SgdImporterTests
 
     private SgdImporter Importer() => new(_bexio.Object, _matcher.Object);
 
-    private DelegateImportUserInteractionService Interaction(bool cancelChoice = false, bool acceptWarning = true) => new(
+    private DelegateImportUserInteractionService Interaction(
+        bool cancelChoice = false, bool acceptWarning = true, Func<IReadOnlyList<MissingArticle>, int, string?, Task<bool>>? skipMissing = null) => new(
         logInfo: _logs.Add,
+        confirmSkipMissingArticles: skipMissing,
         askText: (title, message, error, _) =>
         {
             _askedTexts.Add((title, error));
@@ -252,6 +254,27 @@ public class SgdImporterTests
         _calls.Should().BeEmpty();
         _positionsDeleted.Should().BeFalse();
         _bexio.Verify(b => b.FindOrderByDocumentNrAsync(It.IsAny<string>()), Times.Never);
+    }
+
+    [Test]
+    [Arguments(false)]
+    [Arguments(true)]
+    public async Task ExecuteAsync_WhenAnArticleIsMissing_ShouldNameTheReplacedOrderAndDeleteOnlyIfSkipped(bool skip)
+    {
+        SetupExistingOrder();
+        _matcher.Setup(m => m.FindArticleAsync(It.Is<SgdArticleCriteria>(c => c.ArticleNumber == "E2"))).ReturnsAsync(ArticleMatch.NotFound());
+        IReadOnlyList<MissingArticle>? listed = null;
+        string? replacedOrder = null;
+
+        var result = await Importer().ExecuteAsync(Order(), _settings, Interaction(
+            skipMissing: (missing, _, replaced) => { listed = missing; replacedOrder = replaced; return Task.FromResult(skip); }));
+
+        replacedOrder.Should().Be("AU-12");
+        listed.Should().BeEquivalentTo(new[] { new MissingArticle { Row = 3, ArticleNumber = "E2", Color = "Red", SeasonCode = "FS27", Size = "L", Quantity = 1 } });
+        result.Success.Should().Be(skip);
+        result.MissingArticles.Should().BeEquivalentTo(skip ? listed : null);
+        _calls.Should().Equal(skip ? ["delete", "add"] : []);
+        _positionsDeleted.Should().Be(skip);
     }
 
     [Test]

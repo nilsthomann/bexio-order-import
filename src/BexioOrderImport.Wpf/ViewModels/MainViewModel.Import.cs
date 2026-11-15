@@ -4,6 +4,7 @@ using BexioOrderImport.Abstractions.Bexio;
 using BexioOrderImport.Abstractions.Formats;
 using BexioOrderImport.Abstractions.Import;
 using BexioOrderImport.Domain.Models;
+using BexioOrderImport.Wpf.Helpers;
 
 namespace BexioOrderImport.Wpf.ViewModels;
 
@@ -182,6 +183,14 @@ public partial class MainViewModel
                     ImportDurationText = string.Format(Resources.Translations.Import_SuccessDuration, formattedDuration);
                     IsImportSuccess = true;
                 });
+
+                if (result.MissingArticles is { Count: > 0 } missing)
+                {
+                    var table = MissingArticleTable.Format(missing);
+                    _dialogService.ShowMissingArticlesDialog(
+                        string.Format(CultureInfo.CurrentCulture, Resources.Translations.MissingArticles_DoneMessage, displayOrderNr, result.UploadedPositionsCount, missing.Count),
+                        Resources.Translations.MissingArticles_DoneTitle, table.Text, table.TabSeparated);
+                }
             }
             else
             {
@@ -370,6 +379,13 @@ public partial class MainViewModel
 
         public Task<bool> ConfirmWarningAsync(string title, string message)
             => _vm.AskDuringImportAsync(() => _vm._dialogService.ShowWarningConfirmDialog(message, title, Resources.Translations.Dialog_Continue));
+
+        public Task<bool> ConfirmSkipMissingArticlesAsync(IReadOnlyList<MissingArticle> missing, int foundCount, string? replacedOrderNumber = null)
+            => _vm.AskDuringImportAsync(() => _vm._dialogService.ShowMissingArticlesConfirmDialog(
+                string.Format(CultureInfo.CurrentCulture, Resources.Translations.MissingArticles_ConfirmMessage, foundCount, foundCount + missing.Count),
+                string.Format(CultureInfo.CurrentCulture, Resources.Translations.MissingArticles_ConfirmTitle, missing.Count),
+                MissingArticleTable.Format(missing).Text,
+                replacedOrderNumber == null ? null : string.Format(CultureInfo.CurrentCulture, Resources.Translations.MissingArticles_ReplaceNote, replacedOrderNumber)));
 
         public Task<bool> ConfirmUploadAsync()
             => _vm.AskDuringImportAsync(() => _vm._dialogService.ShowConfirmDialog(

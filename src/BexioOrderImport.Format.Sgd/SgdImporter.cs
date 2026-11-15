@@ -77,8 +77,17 @@ public sealed class SgdImporter
             order.OrderNumber = orderNumber;
         }
 
-        // All articles are found before Bexio is changed, so a missing article neither creates an order nor deletes positions
-        var articles = await FindArticlesAsync(order, interaction);
+        // All articles are found before Bexio is changed, so a missing article neither creates an order nor deletes positions unless the user skips it
+        var (articles, missing) = await FindArticlesAsync(order, interaction);
+        if (missing.Count > 0)
+        {
+            if (!await interaction.ConfirmSkipMissingArticlesAsync(missing, articles.Count, order.OrderNumber))
+            {
+                return Cancelled(interaction);
+            }
+            interaction.LogInfo($"⚠️ {missing.Count} position(s) without Bexio article are skipped.");
+        }
+        var positions = order.Positions.Where(articles.ContainsKey).ToList();
 
         // The rows can belong to several seasons, so the title has no {SeasonCode}
         var target = await OrderTargetResolver.ResolveAsync(
@@ -97,12 +106,12 @@ public sealed class SgdImporter
             interaction.LogInfo($"{deleted} positions deleted.");
         }
 
-        interaction.LogInfo($"Uploading {order.Positions.Count} positions to Bexio...");
+        interaction.LogInfo($"Uploading {positions.Count} positions to Bexio...");
         string template = settings.PositionGroupingMode == SgdPositionGroupingMode.GroupedSizePosition
             ? settings.GroupedPositionTextTemplate
             : settings.SinglePositionTextTemplate;
         int count = 0;
-        foreach (var position in order.Positions)
+        foreach (var position in positions)
         {
             var article = articles[position];
             if (article.SalePrice == null)
@@ -122,10 +131,10 @@ public sealed class SgdImporter
             await _bexio.AddArticlePositionAsync(target.OrderId, article.Id, position, positionText);
 
             count++;
-            interaction.ReportProgress(count, order.Positions.Count);
-            if (count % 5 == 0 || count == order.Positions.Count)
+            interaction.ReportProgress(count, positions.Count);
+            if (count % 5 == 0 || count == positions.Count)
             {
-                interaction.LogInfo($"Positions uploaded: {count}/{order.Positions.Count}");
+                interaction.LogInfo($"Positions uploaded: {count}/{positions.Count}");
             }
         }
 
@@ -138,7 +147,7 @@ public sealed class SgdImporter
         }
 
         interaction.LogInfo($"Successfully completed! Order #{target.DocumentNr} has been imported into Bexio.");
-        return new ImportResult(Success: true, OrderNumber: target.DocumentNr, UploadedPositionsCount: count);
+        return new ImportResult(Success: true, OrderNumber: target.DocumentNr, UploadedPositionsCount: count, MissingArticles: missing.Count > 0 ? missing : null);
     }
 
     private static ImportResult Cancelled(IImportUserInteractionService interaction)
@@ -195,9 +204,10 @@ public sealed class SgdImporter
     }
 
     /// <summary>
-    /// The Bexio article of each position. Throws with all missing articles before anything is changed in Bexio.
+    /// The Bexio article of each position and the positions without one. Throws with all missing articles if none is found,
+    /// before anything is changed in Bexio.
     /// </summary>
-    private async Task<Dictionary<OrderPosition, BexioArticle>> FindArticlesAsync(Order order, IImportUserInteractionService interaction)
+    private async Task<(Dictionary<OrderPosition, BexioArticle> Articles, List<MissingArticle> Missing)> FindArticlesAsync(Order order, IImportUserInteractionService interaction)
     {
         interaction.LogInfo("Pre-fetching article data from Bexio...");
         // Each row has its own season, so the articles are loaded once per season code of the list
@@ -207,7 +217,8 @@ public sealed class SgdImporter
         }
 
         var articles = new Dictionary<OrderPosition, BexioArticle>();
-        var missing = new List<string>();
+        var missing = new List<MissingArticle>();
+        var missingArticles = new List<string>();
         foreach (var position in order.Positions)
         {
             var match = await _articleMatcher.FindArticleAsync(new SgdArticleCriteria(position.ArticleNumber, position.Color, position.SeasonCode));
@@ -219,15 +230,25 @@ public sealed class SgdImporter
 
             string article = $"'{position.ArticleNumber}' with color '{position.Color}' and season code '{position.SeasonCode}' (row {position.SourceRow})";
             interaction.LogInfo($"⛔ Article {article} {match.FailureReason} in Bexio.");
-            missing.Add(article);
+            missingArticles.Add(article);
+            missing.Add(new MissingArticle
+            {
+                Row = position.SourceRow,
+                ArticleNumber = position.ArticleNumber,
+                Color = position.Color,
+                SeasonCode = position.SeasonCode,
+                Size = position.Size,
+                Quantity = position.Quantity,
+                CandidateCount = match.CandidateCount
+            });
         }
 
-        if (missing.Count > 0)
+        if (articles.Count == 0)
         {
             throw new InvalidOperationException(
-                $"{missing.Count} article(s) not found in Bexio. Nothing was changed in Bexio.{Environment.NewLine}"
-                + string.Join(Environment.NewLine, missing.Select(m => $"• {m}")));
+                $"{missingArticles.Count} article(s) not found in Bexio. Nothing was changed in Bexio.{Environment.NewLine}"
+                + string.Join(Environment.NewLine, missingArticles.Select(m => $"• {m}")));
         }
-        return articles;
+        return (articles, missing);
     }
 }

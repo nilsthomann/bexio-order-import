@@ -13,6 +13,7 @@ public class DelegateImportUserInteractionServiceTests
         (await interaction.AskTextAsync("Title", "Message")).Should().BeNull();
         (await interaction.ChooseAsync("Title", "Message", ["A", "B"])).Should().BeNull();
         (await interaction.ConfirmWarningAsync("Title", "Message")).Should().BeFalse();
+        (await interaction.ConfirmSkipMissingArticlesAsync([new MissingArticle()], 1)).Should().BeFalse();
         interaction.OrderPositionsDeleted();
     }
 
@@ -24,13 +25,15 @@ public class DelegateImportUserInteractionServiceTests
             askText: (title, message, error, placeholder) => { calls.Add($"{title}|{message}|{error}|{placeholder}"); return Task.FromResult<string?>("1001"); },
             choose: (title, message, options) => { calls.Add($"{title}|{message}|{string.Join(",", options)}"); return Task.FromResult<int?>(1); },
             confirmWarning: (title, message) => { calls.Add($"{title}|{message}"); return Task.FromResult(true); },
-            orderPositionsDeleted: () => calls.Add("deleted"));
+            orderPositionsDeleted: () => calls.Add("deleted"),
+            confirmSkipMissingArticles: (missing, found, replaced) => { calls.Add($"{missing.Count}|{found}|{replaced}"); return Task.FromResult(true); });
 
         (await interaction.AskTextAsync("T", "M", "E", "P")).Should().Be("1001");
         (await interaction.ChooseAsync("T", "M", ["A", "B"])).Should().Be(1);
         (await interaction.ConfirmWarningAsync("T", "M")).Should().BeTrue();
         interaction.OrderPositionsDeleted();
+        (await interaction.ConfirmSkipMissingArticlesAsync([new MissingArticle()], 3, "AU-1")).Should().BeTrue();
 
-        calls.Should().Equal("T|M|E|P", "T|M|A,B", "T|M", "deleted");
+        calls.Should().Equal("T|M|E|P", "T|M|A,B", "T|M", "deleted", "1|3|AU-1");
     }
 }

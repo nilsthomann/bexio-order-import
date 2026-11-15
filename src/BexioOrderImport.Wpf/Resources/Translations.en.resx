@@ -472,4 +472,58 @@ Please close the file in Excel and try again.</value>
   <data name="Settings_ProfilesDragHandle" xml:space="preserve">
     <value>Drag to change the order</value>
   </data>
+  <data name="MissingArticles_ConfirmTitle" xml:space="preserve">
+    <value>{0} article(s) not found</value>
+  </data>
+  <data name="MissingArticles_ConfirmMessage" xml:space="preserve">
+    <value>**{0} of {1} positions** were found in Bexio. Do you want to ignore the missing articles and import all found articles?</value>
+  </data>
+  <data name="MissingArticles_ConfirmButton" xml:space="preserve">
+    <value>Import anyway</value>
+  </data>
+  <data name="MissingArticles_ReplaceNote" xml:space="preserve">
+    <value>The current positions of order **{0}** are deleted. Afterwards the order only contains the found articles.</value>
+  </data>
+  <data name="MissingArticles_DoneTitle" xml:space="preserve">
+    <value>Import completed with missing articles</value>
+  </data>
+  <data name="MissingArticles_DoneMessage" xml:space="preserve">
+    <value>Order **{0}** was imported with **{1} positions**. Add the following **{2} positions** to Bexio by hand:</value>
+  </data>
+  <data name="MissingArticles_Copy" xml:space="preserve">
+    <value>Copy list</value>
+  </data>
+  <data name="MissingArticles_Copied" xml:space="preserve">
+    <value>✓ Copied</value>
+  </data>
+  <data name="MissingArticles_Row" xml:space="preserve">
+    <value>Row</value>
+  </data>
+  <data name="MissingArticles_Ean" xml:space="preserve">
+    <value>EAN</value>
+  </data>
+  <data name="MissingArticles_ArticleNumber" xml:space="preserve">
+    <value>Article no.</value>
+  </data>
+  <data name="MissingArticles_Color" xml:space="preserve">
+    <value>Color</value>
+  </data>
+  <data name="MissingArticles_Season" xml:space="preserve">
+    <value>Season</value>
+  </data>
+  <data name="MissingArticles_Size" xml:space="preserve">
+    <value>Size</value>
+  </data>
+  <data name="MissingArticles_Quantity" xml:space="preserve">
+    <value>Quantity</value>
+  </data>
+  <data name="MissingArticles_Reason" xml:space="preserve">
+    <value>Reason</value>
+  </data>
+  <data name="MissingArticles_NotFound" xml:space="preserve">
+    <value>not found</value>
+  </data>
+  <data name="MissingArticles_NotUnique" xml:space="preserve">
+    <value>not unique ({0})</value>
+  </data>
 </root>

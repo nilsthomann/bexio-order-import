@@ -472,4 +472,58 @@ Bitte schliessen Sie die Datei in Excel und versuchen Sie es erneut.</value>
   <data name="Settings_ProfilesDragHandle" xml:space="preserve">
     <value>Ziehen, um die Reihenfolge zu ändern</value>
   </data>
+  <data name="MissingArticles_ConfirmTitle" xml:space="preserve">
+    <value>{0} Artikel nicht gefunden</value>
+  </data>
+  <data name="MissingArticles_ConfirmMessage" xml:space="preserve">
+    <value>**{0} von {1} Positionen** wurden in Bexio gefunden. Sollen die fehlenden Artikel ignoriert und alle gefundenen Artikel importiert werden?</value>
+  </data>
+  <data name="MissingArticles_ConfirmButton" xml:space="preserve">
+    <value>Trotzdem importieren</value>
+  </data>
+  <data name="MissingArticles_ReplaceNote" xml:space="preserve">
+    <value>Die bisherigen Positionen von Auftrag **{0}** werden gelöscht. Danach enthält der Auftrag nur noch die gefundenen Artikel.</value>
+  </data>
+  <data name="MissingArticles_DoneTitle" xml:space="preserve">
+    <value>Import mit fehlenden Artikeln abgeschlossen</value>
+  </data>
+  <data name="MissingArticles_DoneMessage" xml:space="preserve">
+    <value>Auftrag **{0}** wurde mit **{1} Positionen** importiert. Erfassen Sie die folgenden **{2} Positionen** manuell in Bexio:</value>
+  </data>
+  <data name="MissingArticles_Copy" xml:space="preserve">
+    <value>Liste kopieren</value>
+  </data>
+  <data name="MissingArticles_Copied" xml:space="preserve">
+    <value>✓ Kopiert</value>
+  </data>
+  <data name="MissingArticles_Row" xml:space="preserve">
+    <value>Zeile</value>
+  </data>
+  <data name="MissingArticles_Ean" xml:space="preserve">
+    <value>EAN</value>
+  </data>
+  <data name="MissingArticles_ArticleNumber" xml:space="preserve">
+    <value>Artikelnr.</value>
+  </data>
+  <data name="MissingArticles_Color" xml:space="preserve">
+    <value>Farbe</value>
+  </data>
+  <data name="MissingArticles_Season" xml:space="preserve">
+    <value>Saison</value>
+  </data>
+  <data name="MissingArticles_Size" xml:space="preserve">
+    <value>Grösse</value>
+  </data>
+  <data name="MissingArticles_Quantity" xml:space="preserve">
+    <value>Menge</value>
+  </data>
+  <data name="MissingArticles_Reason" xml:space="preserve">
+    <value>Grund</value>
+  </data>
+  <data name="MissingArticles_NotFound" xml:space="preserve">
+    <value>nicht gefunden</value>
+  </data>
+  <data name="MissingArticles_NotUnique" xml:space="preserve">
+    <value>nicht eindeutig ({0})</value>
+  </data>
 </root>
